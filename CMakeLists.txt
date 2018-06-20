@@ -811,17 +811,17 @@ if(OPT_PYTHON AND PYTHON_EXECUTABLE)
 #        set(OPENRAVE_USE_LOCAL_SYMPY 0)
 #      else()
 
-  if( OPENRAVE_USE_LOCAL_SYMPY )
-    message(STATUS "System sympy (v=${_sympy_version}) is not right version, using local sympy")
-    # extract sympy
-    if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/__init__.py" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/solvers/tests")
-      message(STATUS "extracting sympy to ${CMAKE_CURRENT_SOURCE_DIR}")
-      execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/sympy_0.7.1.tgz"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-    endif()
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sympy" DESTINATION ${OPENRAVE_PYTHON_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}python PATTERN ".svn" EXCLUDE)
-  endif()
+  # if( OPENRAVE_USE_LOCAL_SYMPY )
+    # message(STATUS "System sympy (v=${_sympy_version}) is not right version, using local sympy")
+    # # extract sympy
+    # if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/__init__.py" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/solvers/tests")
+      # message(STATUS "extracting sympy to ${CMAKE_CURRENT_SOURCE_DIR}")
+      # execute_process(
+        # COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/sympy_0.7.1.tgz"
+        # WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    # endif()
+    # install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sympy" DESTINATION ${OPENRAVE_PYTHON_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}python PATTERN ".svn" EXCLUDE)
+  # endif()
 
   set( USE_OPENRAVEPY 1)
   if( NOT WIN32 AND OPENRAVE_BIN_SUFFIX )
