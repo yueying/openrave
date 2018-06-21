@@ -255,21 +255,6 @@ if( MSVC )
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /EHc- ")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /EHc- ")
 
-  # untar the source files
-  set(EXTRA_MSVC_DEPEND msvc_boost msvc_collada msvc_libxml2 msvc_ode msvc_soqt)
-  foreach(MSVC_LIBRARY ${EXTRA_MSVC_DEPEND})
-    if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}" )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-    endif()
-
-    add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}
-      COMMAND ${CMAKE_COMMAND} -E chdir
-      ARGS "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz"
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz)
-    add_custom_target(${MSVC_LIBRARY} ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY})
-  endforeach()
-
   check_include_file(stdint.h HAVE_STDINT_H)
   if( NOT HAVE_STDINT_H )
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/msvc_include/stdint.h DESTINATION include/openrave-${OPENRAVE_VERSION_MAJOR}.${OPENRAVE_VERSION_MINOR} COMPONENT ${COMPONENT_PREFIX}dev)
@@ -277,15 +262,19 @@ if( MSVC )
   endif()
   
   # have to install dlls manually
-  if( MSVC70 OR MSVC71 )
-    set(MSVC_PREFIX "vc70")
-  elseif( MSVC80 )
-    set(MSVC_PREFIX "vc80")
-  elseif( MSVC90 )
-    set(MSVC_PREFIX "vc90")
-  else()
-    set(MSVC_PREFIX "vc100")
-  endif()
+IF (MSVC)
+  IF (${MSVC_VERSION} EQUAL 1600)
+    SET(MSVC_PREFIX "vc100") # Visual Studio 2010
+  ELSEIF (${MSVC_VERSION} EQUAL 1700)
+    SET(MSVC_PREFIX "vc110") # Visual Studio 2012
+  ELSEIF (${MSVC_VERSION} EQUAL 1800)
+    SET(MSVC_PREFIX "vc120") # Visual Studio 2013
+  ELSEIF (${MSVC_VERSION} EQUAL 1900)
+    SET(MSVC_PREFIX "vc140") # Visual Studio 2015
+  ELSEIF (${MSVC_VERSION} EQUAL 1910 OR ${MSVC_VERSION} EQUAL 1911)
+    SET(MSVC_PREFIX "vc141") # Visual Studio 2017
+  ENDIF()
+ENDIF()
   set(OPENRAVE_LIBRARY_SUFFIX "${OPENRAVE_SOVERSION}-${MSVC_PREFIX}-mt" CACHE STRING "Suffix to append to library names")
   
   # force multi-threaded DLL boost
@@ -832,17 +821,17 @@ if(OPT_PYTHON AND PYTHON_EXECUTABLE)
 #        set(OPENRAVE_USE_LOCAL_SYMPY 0)
 #      else()
 
-  if( OPENRAVE_USE_LOCAL_SYMPY )
-    message(STATUS "System sympy (v=${_sympy_version}) is not right version, using local sympy")
-    # extract sympy
-    if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/__init__.py" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/solvers/tests")
-      message(STATUS "extracting sympy to ${CMAKE_CURRENT_SOURCE_DIR}")
-      execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/sympy_0.7.1.tgz"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-    endif()
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sympy" DESTINATION ${OPENRAVE_PYTHON_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}python PATTERN ".svn" EXCLUDE)
-  endif()
+  # if( OPENRAVE_USE_LOCAL_SYMPY )
+    # message(STATUS "System sympy (v=${_sympy_version}) is not right version, using local sympy")
+    # # extract sympy
+    # if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/__init__.py" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sympy/solvers/tests")
+      # message(STATUS "extracting sympy to ${CMAKE_CURRENT_SOURCE_DIR}")
+      # execute_process(
+        # COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/sympy_0.7.1.tgz"
+        # WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    # endif()
+    # install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sympy" DESTINATION ${OPENRAVE_PYTHON_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}python PATTERN ".svn" EXCLUDE)
+  # endif()
 
   set( USE_OPENRAVEPY 1)
   if( NOT WIN32 AND OPENRAVE_BIN_SUFFIX )
