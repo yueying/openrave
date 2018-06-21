@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "libopenrave.h"
-
+#ifndef M_PI
+#	define M_PI 3.14159265358979323846	// PI
+#endif
 namespace OpenRAVE {
 
 RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) : _info(info), __probot(probot) {

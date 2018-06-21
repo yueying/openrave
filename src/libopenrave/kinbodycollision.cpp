@@ -78,13 +78,13 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
     }
 
     // check all grabbed bodies with (TODO: support CO_ActiveDOFs option)
-    FOREACH(itgrabbed, _vGrabbedBodies) {
+    FOREACHC(itgrabbed, _vGrabbedBodies) {
         GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyPtr pbody(pgrabbed->_pgrabbedbody);
         if( !pbody ) {
             continue;
         }
-        FOREACH(itrobotlink,pgrabbed->_listNonCollidingLinks) {
+        FOREACHC(itrobotlink,pgrabbed->_listNonCollidingLinks) {
             KinBody::LinkConstPtr robotlink = *itrobotlink;
             KinBodyPtr parentlink = (*itrobotlink)->GetParent(true);
             if( !parentlink ) {

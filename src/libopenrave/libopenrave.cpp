@@ -352,11 +352,13 @@ dReal RaveCeil(dReal f) {
 #endif
 
 static std::set<std::string> _gettextDomainsInitialized;
-static boost::once_flag _onceRaveInitialize = BOOST_ONCE_INIT;
+static boost::once_flag once_rave_initialize_ = BOOST_ONCE_INIT;
 
 /// there is only once global openrave state. It is created when openrave
 /// is first used, and destroyed when the program quits or RaveDestroy is called.
-class RaveGlobal : private boost::noncopyable, public boost::enable_shared_from_this<RaveGlobal>, public UserData
+class RaveGlobal : private boost::noncopyable, 
+	public boost::enable_shared_from_this<RaveGlobal>, 
+	public UserData
 {
     typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
 
@@ -365,75 +367,80 @@ class RaveGlobal : private boost::noncopyable, public boost::enable_shared_from_
         // is this really necessary? just makes bugs hard to reproduce...
         //srand(GetMilliTime());
         //RaveInitRandomGeneration(GetMilliTime());
-        _nDebugLevel = Level_Info;
+        debug_level_ = Level_Info;
         _nGlobalEnvironmentId = 0;
         _nDataAccessOptions = 0;
         _bcrlibmInit = false;
         
-        _mapinterfacenames[PT_Planner] = "planner";
-        _mapinterfacenames[PT_Robot] = "robot";
-        _mapinterfacenames[PT_SensorSystem] = "sensorsystem";
-        _mapinterfacenames[PT_Controller] = "controller";
-        _mapinterfacenames[PT_Module] = "module";
-        _mapinterfacenames[PT_IkSolver] = "iksolver";
-        _mapinterfacenames[PT_KinBody] = "kinbody";
-        _mapinterfacenames[PT_PhysicsEngine] = "physicsengine";
-        _mapinterfacenames[PT_Sensor] = "sensor";
-        _mapinterfacenames[PT_CollisionChecker] = "collisionchecker";
-        _mapinterfacenames[PT_Trajectory] = "trajectory";
-        _mapinterfacenames[PT_Viewer] = "viewer";
-        _mapinterfacenames[PT_SpaceSampler] = "spacesampler";
-        BOOST_ASSERT(_mapinterfacenames.size()==PT_NumberOfInterfaces);
+        interface_names_map_[PT_Planner] = "planner";
+        interface_names_map_[PT_Robot] = "robot";
+        interface_names_map_[PT_SensorSystem] = "sensorsystem";
+        interface_names_map_[PT_Controller] = "controller";
+        interface_names_map_[PT_Module] = "module";
+        interface_names_map_[PT_IkSolver] = "iksolver";
+        interface_names_map_[PT_KinBody] = "kinbody";
+        interface_names_map_[PT_PhysicsEngine] = "physicsengine";
+        interface_names_map_[PT_Sensor] = "sensor";
+        interface_names_map_[PT_CollisionChecker] = "collisionchecker";
+        interface_names_map_[PT_Trajectory] = "trajectory";
+        interface_names_map_[PT_Viewer] = "viewer";
+        interface_names_map_[PT_SpaceSampler] = "spacesampler";
+        BOOST_ASSERT(interface_names_map_.size()==PT_NumberOfInterfaces);
 
-        _mapikparameterization[IKP_Transform6D] = "Transform6D";
-        _mapikparameterization[IKP_Rotation3D] = "Rotation3D";
-        _mapikparameterization[IKP_Translation3D] = "Translation3D";
-        _mapikparameterization[IKP_Direction3D] = "Direction3D";
-        _mapikparameterization[IKP_Ray4D] = "Ray4D";
-        _mapikparameterization[IKP_Lookat3D] = "Lookat3D";
-        _mapikparameterization[IKP_TranslationDirection5D] = "TranslationDirection5D";
-        _mapikparameterization[IKP_TranslationXY2D] = "TranslationXY2D";
-        _mapikparameterization[IKP_TranslationXYOrientation3D] = "TranslationXYOrientation3D";
-        _mapikparameterization[IKP_TranslationLocalGlobal6D] = "TranslationLocalGlobal6D";
-        _mapikparameterization[IKP_TranslationXAxisAngle4D] = "TranslationXAxisAngle4D";
-        _mapikparameterization[IKP_TranslationYAxisAngle4D] = "TranslationYAxisAngle4D";
-        _mapikparameterization[IKP_TranslationZAxisAngle4D] = "TranslationZAxisAngle4D";
-        _mapikparameterization[IKP_TranslationXAxisAngleZNorm4D] = "TranslationXAxisAngleZNorm4D";
-        _mapikparameterization[IKP_TranslationYAxisAngleXNorm4D] = "TranslationYAxisAngleXNorm4D";
-        _mapikparameterization[IKP_TranslationZAxisAngleYNorm4D] = "TranslationZAxisAngleYNorm4D";
-        BOOST_ASSERT(_mapikparameterization.size()==IKP_NumberOfParameterizations);
-        FOREACH(it,_mapikparameterization) {
+        ik_parameterization_map_[IKP_Transform6D] = "Transform6D";
+        ik_parameterization_map_[IKP_Rotation3D] = "Rotation3D";
+        ik_parameterization_map_[IKP_Translation3D] = "Translation3D";
+        ik_parameterization_map_[IKP_Direction3D] = "Direction3D";
+        ik_parameterization_map_[IKP_Ray4D] = "Ray4D";
+        ik_parameterization_map_[IKP_Lookat3D] = "Lookat3D";
+        ik_parameterization_map_[IKP_TranslationDirection5D] = "TranslationDirection5D";
+        ik_parameterization_map_[IKP_TranslationXY2D] = "TranslationXY2D";
+        ik_parameterization_map_[IKP_TranslationXYOrientation3D] = "TranslationXYOrientation3D";
+        ik_parameterization_map_[IKP_TranslationLocalGlobal6D] = "TranslationLocalGlobal6D";
+        ik_parameterization_map_[IKP_TranslationXAxisAngle4D] = "TranslationXAxisAngle4D";
+        ik_parameterization_map_[IKP_TranslationYAxisAngle4D] = "TranslationYAxisAngle4D";
+        ik_parameterization_map_[IKP_TranslationZAxisAngle4D] = "TranslationZAxisAngle4D";
+        ik_parameterization_map_[IKP_TranslationXAxisAngleZNorm4D] = "TranslationXAxisAngleZNorm4D";
+        ik_parameterization_map_[IKP_TranslationYAxisAngleXNorm4D] = "TranslationYAxisAngleXNorm4D";
+        ik_parameterization_map_[IKP_TranslationZAxisAngleYNorm4D] = "TranslationZAxisAngleYNorm4D";
+        BOOST_ASSERT(ik_parameterization_map_.size()==IKP_NumberOfParameterizations);
+        FOREACH(it,ik_parameterization_map_) 
+		{
             std::string name = it->second;
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-            _mapikparameterizationlower[it->first] = name;
+            ik_parameterization_lower_map_[it->first] = name;
         }
     }
 public:
-    virtual ~RaveGlobal() {
+    virtual ~RaveGlobal() 
+	{
         Destroy();
     }
 
     static boost::shared_ptr<RaveGlobal>& instance()
     {
-        boost::call_once(_create,_onceRaveInitialize);
-        return _state;
+        boost::call_once(create,once_rave_initialize_);
+        return global_state_;
     }
 
-    int Initialize(bool bLoadAllPlugins, int level)
+    int Initialize(bool is_load_all_plugins, int level)
     {
-        if( _IsInitialized() ) {
+        if( IsInitialized() ) 
+		{
             return 0;     // already initialized
         }
 
-        _InitializeLogging(level);
+        InitializeLogging(level);
 
 #ifdef USE_CRLIBM
-        if( !_bcrlibmInit ) {
+        if( !_bcrlibmInit ) 
+		{
             _crlibm_fpu_state = crlibm_init();
             _bcrlibmInit = true;
         }
 #endif
-        try {
+        try 
+		{
             // TODO: eventually we should remove this call to set global locale for the process
             // and imbue each stringstream with the correct locale.
 
@@ -441,12 +448,14 @@ public:
             // std::locale::global(std::locale::classic());
             std::locale::global(std::locale(std::locale(""), std::locale::classic(), std::locale::numeric));
         }
-        catch(const std::runtime_error& e) {
+        catch(const std::runtime_error& e) 
+		{
             RAVELOG_WARN("failed to set to C locale: %s\n",e.what());
         }
 
-        _pdatabase.reset(new RaveDatabase());
-        if( !_pdatabase->Init(bLoadAllPlugins) ) {
+        database_.reset(new RaveDatabase());
+        if( !database_->Init(is_load_all_plugins) ) 
+		{
             RAVELOG_FATAL("failed to create the openrave plugin database\n");
         }
 
@@ -491,9 +500,9 @@ public:
 
     void Destroy()
     {
-        if( !!_pdatabase ) {
+        if( !!database_ ) {
             // notify all plugins that about to destroy
-            _pdatabase->OnRavePreDestroy();
+            database_->OnRavePreDestroy();
         }
 
         // don't use any log statements since global instance might be null
@@ -524,10 +533,10 @@ public:
         }
         listDestroyCallbacks.clear();
 
-        if( !!_pdatabase ) {
+        if( !!database_ ) {
             // force destroy in case some one is holding a pointer to it
-            _pdatabase->Destroy();
-            _pdatabase.reset();
+            database_->Destroy();
+            database_.reset();
         }
 #ifdef USE_CRLIBM
 
@@ -598,12 +607,12 @@ public:
             }
             _logger->setLevel(levelptr);
         }
-        _nDebugLevel = level;
+        debug_level_ = level;
     }
 
     int GetDebugLevel()
     {
-        int level = _nDebugLevel;
+        int level = debug_level_;
         if (_logger != NULL) {
             if (_logger->isEnabledFor(log4cxx::Level::getTrace())) {
                 level = Level_Verbose;
@@ -624,18 +633,18 @@ public:
                 level = Level_Fatal;
             }
         }
-        return level | (_nDebugLevel & ~Level_OutputMask);
+        return level | (debug_level_ & ~Level_OutputMask);
     }
 
 #else
     void SetDebugLevel(int level)
     {
-        _nDebugLevel = level;
+        debug_level_ = level;
     }
 
     int GetDebugLevel()
     {
-        return _nDebugLevel;
+        return debug_level_;
     }
 #endif
 
@@ -679,22 +688,22 @@ protected:
     }
 
     boost::shared_ptr<RaveDatabase> GetDatabase() const {
-        return _pdatabase;
+        return database_;
     }
     const std::map<InterfaceType,std::string>& GetInterfaceNamesMap() const {
-        return _mapinterfacenames;
+        return interface_names_map_;
     }
     const std::map<IkParameterizationType,std::string>& GetIkParameterizationMap(int alllowercase=0) {
         if( alllowercase ) {
-            return _mapikparameterizationlower;
+            return ik_parameterization_lower_map_;
         }
-        return _mapikparameterization;
+        return ik_parameterization_map_;
     }
 
     const std::string& GetInterfaceName(InterfaceType type)
     {
-        std::map<InterfaceType,std::string>::const_iterator it = _mapinterfacenames.find(type);
-        if( it == _mapinterfacenames.end() ) {
+        std::map<InterfaceType,std::string>::const_iterator it = interface_names_map_.find(type);
+        if( it == interface_names_map_.end() ) {
             throw OPENRAVE_EXCEPTION_FORMAT(_("Invalid type %d specified"), type, ORE_Failed);
         }
         return it->second;
@@ -703,7 +712,7 @@ protected:
     // have to take in pointer instead of shared_ptr since method will be called in EnvironmentBase constructor
     int RegisterEnvironment(EnvironmentBase* penv)
     {
-        BOOST_ASSERT(!!_pdatabase);
+        BOOST_ASSERT(!!database_);
         boost::mutex::scoped_lock lock(_mutexinternal);
         _mapenvironments[++_nGlobalEnvironmentId] = penv;
         return _nGlobalEnvironmentId;
@@ -851,7 +860,7 @@ protected:
         }
 
         // get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
-        boost::shared_ptr<RaveDatabase> pdatabase = _pdatabase;
+        boost::shared_ptr<RaveDatabase> pdatabase = database_;
         if( !!pdatabase ) {
             if( pdatabase->HasInterface(PT_Viewer, "qtosg") ) {
                 return std::string("qtosg");
@@ -875,15 +884,17 @@ protected:
     }
 
 protected:
-    static void _create()
+    static void create()//Singleton Pattern
     {
-        if( !_state ) {
-            _state.reset(new RaveGlobal());
+        if( !global_state_ ) 
+		{
+            global_state_.reset(new RaveGlobal());
         }
     }
 
-    bool _IsInitialized() const {
-        return !!_pdatabase;
+    bool IsInitialized() const 
+	{
+        return !!database_;
     }
 
     void _UpdateDataDirs()
@@ -1029,7 +1040,8 @@ protected:
 
 #endif
 
-    void _InitializeLogging(int level) {
+    void InitializeLogging(int level) 
+	{
 #if OPENRAVE_LOG4CXX
         _logger = log4cxx::Logger::getLogger("openrave");
 
@@ -1047,16 +1059,16 @@ protected:
     }
 
 private:
-    static boost::shared_ptr<RaveGlobal> _state;
+    static boost::shared_ptr<RaveGlobal> global_state_;
     // state that is always present
 
     // state that is initialized/destroyed
-    boost::shared_ptr<RaveDatabase> _pdatabase;
-    int _nDebugLevel;
+    boost::shared_ptr<RaveDatabase> database_;
+    int debug_level_;
     boost::mutex _mutexinternal;
     std::map<InterfaceType, READERSMAP > _mapreaders;
-    std::map<InterfaceType,string> _mapinterfacenames;
-    std::map<IkParameterizationType,string> _mapikparameterization, _mapikparameterizationlower;
+    std::map<InterfaceType,string> interface_names_map_;
+    std::map<IkParameterizationType,string> ik_parameterization_map_, ik_parameterization_lower_map_;
     std::map<int, EnvironmentBase*> _mapenvironments;
     std::list<boost::function<void()> > _listDestroyCallbacks;
     std::string _homedirectory;
@@ -1066,8 +1078,8 @@ private:
     SpaceSamplerBasePtr _pdefaultsampler;
 #ifdef USE_CRLIBM
     long long _crlibm_fpu_state;
-    bool _bcrlibmInit; ///< true if crlibm is initialized
 #endif
+	bool _bcrlibmInit; ///< true if crlibm is initialized
     int _nDataAccessOptions;
 
     std::vector<string> _vdatadirs;
@@ -1096,7 +1108,7 @@ log4cxx::LoggerPtr RaveGetLogger()
 }
 #endif
 
-boost::shared_ptr<RaveGlobal> RaveGlobal::_state;
+boost::shared_ptr<RaveGlobal> RaveGlobal::global_state_;
 
 void RaveSetDebugLevel(int level)
 {
@@ -1138,21 +1150,21 @@ std::string RaveFindDatabaseFile(const std::string& filename, bool bRead)
     return RaveGlobal::instance()->FindDatabaseFile(filename,bRead);
 }
 
-int RaveInitialize(bool bLoadAllPlugins, int level)
+int RaveInitialize(bool is_load_all_plugins, int level)
 {
-    return RaveGlobal::instance()->Initialize(bLoadAllPlugins,level);
+    return RaveGlobal::instance()->Initialize(is_load_all_plugins,level);
 }
 
 void RaveInitializeFromState(UserDataPtr globalstate)
 {
-    RaveGlobal::_state = boost::dynamic_pointer_cast<RaveGlobal>(globalstate);
+    RaveGlobal::global_state_ = boost::dynamic_pointer_cast<RaveGlobal>(globalstate);
 }
 
 UserDataPtr RaveGlobalState()
 {
     // only return valid pointer if initialized!
-    boost::shared_ptr<RaveGlobal> state = RaveGlobal::_state;
-    if( !!state && state->_IsInitialized() ) {
+    boost::shared_ptr<RaveGlobal> state = RaveGlobal::global_state_;
+    if( !!state && state->IsInitialized() ) {
         return state;
     }
     return UserDataPtr();
@@ -1900,7 +1912,7 @@ std::string CollisionReport::__str__() const
     if( vLinkColliding.size() > 0 ) {
         s << "pairs=" << vLinkColliding.size();
         int index = 0;
-        FOREACH(itlinkpair, vLinkColliding) {
+        FOREACHC(itlinkpair, vLinkColliding) {
             s << ", [" << index << "](";
             if( !!itlinkpair->first ) {
                 s << itlinkpair->first->GetParent()->GetName() << ":" << itlinkpair->first->GetName();

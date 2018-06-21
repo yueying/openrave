@@ -20,7 +20,9 @@
 #include <boost/lexical_cast.hpp>
 
 #include "fparsermulti.h"
-
+#ifndef M_PI
+#	define M_PI 3.14159265358979323846	// PI
+#endif
 namespace OpenRAVE {
 
 KinBody::JointInfo::JointInfo() : XMLReadable("joint"), _type(JointNone), _bIsActive(true) {
