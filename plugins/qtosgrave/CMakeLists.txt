@@ -9,11 +9,23 @@ find_package(OpenGL)
 if(NOT OPENGL_FOUND)
   message(STATUS "WARNING: OpenGL not found")
 endif()
-
+INCLUDE(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSGHelper.cmake)
 #include(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSG.cmake)
-find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgQt osgGA osgFX osgText osgViewer osgManipulator)
+find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgUtil osgQt osgGA osgFX osgText osgViewer osgManipulator)
 
-if (QT_FOUND AND QT_QTCORE_FOUND AND QT_QTGUI_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND AND OSGQT_FOUND)
+FIND_PACKAGE(Qt5 QUIET COMPONENTS Core Xml OpenGL Gui Widgets)
+IF( NOT Qt5_FOUND)
+	ESSAGE("Qt5 not found. Install it and set Qt5_DIR accordingly")
+	IF (WIN32)
+		MESSAGE("  In Windows, Qt5_DIR should be something like C:/Qt/5.5/msvc2013_64_opengl/lib/cmake/Qt5")
+	ENDIF()
+ENDIF()
+if(Qt5_FOUND)
+  INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS})
+  SET(MY_QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5OpenGL_LIBRARIES})
+endif()
+
+#if (QT_FOUND AND QT_QTCORE_FOUND AND QT_QTGUI_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND AND OSGQT_FOUND)
   message(STATUS "Detected Qt/OSG GUI, making plugin")
 
   include_directories(${QT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
@@ -23,15 +35,18 @@ if (QT_FOUND AND QT_QTCORE_FOUND AND QT_QTGUI_FOUND AND OPENGL_FOUND AND OPENSCE
   
   link_directories(${OPENRAVE_LINK_DIRS})
 
-  set(QTOSG_SRCS objecttree.cpp osgcartoon.cpp osgviewerwidget.cpp osgviewerwidget.h osgpick.cpp osgpick.h qtreemodel.cpp qtreemodel.h osgrenderitem.cpp osgrenderitem.h qtreeitem.cpp qtreeitem.h qtosgviewer.cpp qtosgrave.cpp osgskybox.cpp osgskybox.h)
+  set(QTOSG_SRCS objecttree.cpp osgcartoon.cpp osgviewerwidget.cpp osgviewerwidget.h 
+	osgpick.cpp osgpick.h qtreemodel.cpp qtreemodel.h osgrenderitem.cpp osgrenderitem.h 
+	qtreeitem.cpp qtreeitem.h qtosgviewer.cpp qtosgrave.cpp osgskybox.cpp osgskybox.h)
   set(QTOSG_MOCS qtosgviewer.h qtreemodel.h OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
   set(QTOSG_RCCS qtosgviewer.qrc)
 
   # generate rules for building source files from the resources
-  qt4_add_resources(QTOSG_RCC_SRCS ${QTOSG_RCCS})
-
+  QT5_ADD_RESOURCES(QTOSG_RCC_SRCS ${QTOSG_RCCS})
+  set(CMAKE_AUTOMOC ON)
+  ADD_DEFINITIONS(-DQT_DISABLE_DEPRECATED_BEFORE=0)
   include( ${QT_USE_FILE} )
-  qt4_wrap_cpp(QTOSG_MOC_SRCS ${QTOSG_MOCS})
+  #qt4_wrap_cpp(QTOSG_MOC_SRCS ${QTOSG_MOCS})
   
   check_include_file(X11/Xlib.h HAVE_X11_XLIB_H)
 
@@ -41,7 +56,8 @@ if (QT_FOUND AND QT_QTCORE_FOUND AND QT_QTGUI_FOUND AND OPENGL_FOUND AND OPENSCE
     set(QTOSG_COMPILE_FLAGS "${QTOSG_COMPILE_FLAGS} -DHAVE_X11_XLIB_H")
   endif()
 
-  set (extLIBS ${QT_LIBRARIES} ${LIBXML2_LIBRARIES} ${PTHREADS_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
+  set (extLIBS ${QT_LIBRARIES} ${LIBXML2_LIBRARIES} ${PTHREADS_LIBRARY}
+	 ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES}  ${MY_QT_LIBRARIES})
   set (extLIBS ${extLIBS} ${OPENSCENEGRAPH_LIBRARIES})
   #set (extLIBS ${extLIBS} ${OSGDB_LIBRARY_DEBUG} ${OSGQT_LIBRARY_DEBUG} ${OSGGA_LIBRARY_DEBUG} ${OSGFX_LIBRARY_DEBUG} ${OSGTEXT_LIBRARY_DEBUG} ${OSGVIEWER_LIBRARY_DEBUG} ${OSGMANIPULATOR_LIBRARY_DEBUG})
   
@@ -78,6 +94,6 @@ if (QT_FOUND AND QT_QTCORE_FOUND AND QT_QTGUI_FOUND AND OPENGL_FOUND AND OPENSCE
 
   set(CPACK_COMPONENT_${COMPONENT_PREFIX_UPPER}PLUGIN-QTOSGRAVE_DISPLAY_NAME "Plugin for a Qt/OpenSceneGraph viewer" PARENT_SCOPE)
   set(PLUGIN_COMPONENT ${COMPONENT_PREFIX}plugin-qtosgrave PARENT_SCOPE)
-else()
-    message(STATUS "Could not find OpenSceneGraph v3+. Please install OSG (http://www.openscenegraph.org/projects/osg)")
-endif()
+#else()
+ #   message(STATUS "Could not find OpenSceneGraph v3+. Please install OSG (http://www.openscenegraph.org/projects/osg)")
+#endif()

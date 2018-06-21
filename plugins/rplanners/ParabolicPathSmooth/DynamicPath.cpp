@@ -440,7 +440,8 @@ struct RampSection
 };
 
 
-int CheckRamp(const ParabolicRampND& ramp,FeasibilityCheckerBase* feas,DistanceCheckerBase* distance,int maxiters, __attribute__((unused)) int options)
+int CheckRamp(const ParabolicRampND& ramp,FeasibilityCheckerBase* feas,DistanceCheckerBase* distance,
+	int maxiters,  int options)
 {
     ramp.constraintchecked = 1;
     int ret0 = feas->ConfigFeasible(ramp.x0, ramp.dx0);

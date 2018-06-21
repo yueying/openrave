@@ -187,7 +187,7 @@ public:
                         probot->GetGrabbed(grabbedbodies);
                         FOREACH(itbody,grabbedbodies){
                             if((*itmanip)->IsGrabbing(*itbody)) {
-                                FOREACH(itlink,(*itbody)->GetLinks()){
+                                FOREACHC(itlink,(*itbody)->GetLinks()){
                                     globallinklist.push_back(*itlink);
                                 }
                             }
@@ -559,7 +559,7 @@ public:
         _dummytraj->Insert(_dummytraj->GetNumWaypoints(),_vtrajpointscache);
         ParabolicRamp::Vector vconfig;
         // TODO ramps are unitary so don't have to track switch points
-        FOREACH(itrampnd,ramps) {
+        FOREACHC(itrampnd,ramps) {
             // double-check the current ramps
             //                if(_parameters->verifyinitialpath) {
             if(!!pchecker) {

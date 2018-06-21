@@ -811,7 +811,7 @@ public:
         {
             boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
             vector<KinBodyPtr>::iterator it = _vecbodies.end();
-            FOREACHC(itbody, _vecbodies) {
+            FOREACH(itbody, _vecbodies) {
                 if( (*itbody)->GetName() == name ) {
                     it = itbody;
                     break;

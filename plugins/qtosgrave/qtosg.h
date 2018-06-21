@@ -67,16 +67,16 @@
 #include <boost/thread/condition.hpp>
 #include <boost/version.hpp>
 
-#include <QtCore/QVariant>
-#include <QtGui/QAction>
-#include <QtGui/QApplication>
-#include <QtGui/QButtonGroup>
-#include <QtGui/QMainWindow>
-#include <QtGui/QMenu>
-#include <QtGui/QMenuBar>
-#include <QtGui/QStatusBar>
-#include <QtGui/QWidget>
-#include <QtGui/QTreeWidget>
+#include <QVariant>
+#include <QAction>
+#include <QApplication>
+#include <QButtonGroup>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QStatusBar>
+#include <QWidget>
+#include <QTreeWidget>
 
 using namespace OpenRAVE;
 using namespace std;

@@ -14,7 +14,7 @@
 #include "osgviewerwidget.h"
 #include "osgcartoon.h"
 #include "osgskybox.h"
-
+#include <QGridLayout>
 #include <osg/ShadeModel>
 #include <osgDB/ReadFile>
 #include <osg/FrontFace>
@@ -235,7 +235,7 @@ public:
             BOOST_ASSERT( !!ad );
 
             // setup animation data and restore original transformation
-            ad->start( osg::Vec3d(_center) - prevCenter, ea.getTime() );
+            //ad->start( osg::Vec3d(_center) - prevCenter, ea.getTime() );
             ad->_eyemovement = (osg::Vec3d(_center) - prevEye)*0.5;
             setTransformation( prevEye, prevCenter, prevUp );
             return true;
@@ -388,7 +388,7 @@ ViewerWidget::ViewerWidget(EnvironmentBasePtr penv, const std::string& userdatak
     _osghudview = new osgViewer::View();
 
     //  Improve FPS to 60 per viewer
-    setThreadingModel(osgViewer::CompositeViewer::CullDrawThreadPerContext);
+    setThreadingModel(osgViewer::CompositeViewer::SingleThreaded);
 
     QWidget* widgetview = _AddViewWidget(_CreateCamera(0,0,100,100, metersinunit), _osgview, _CreateHUDCamera(0,0,100,100, metersinunit), _osghudview);
     QGridLayout* grid = new QGridLayout;

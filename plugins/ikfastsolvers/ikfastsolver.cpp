@@ -145,7 +145,7 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
         if( _vFreeInc.size() == 0 ) {
             return true;
         }
-        FOREACHC(it, _vFreeInc) {
+        FOREACH(it, _vFreeInc) {
             sinput >> *it;
         }
         return !!sinput;

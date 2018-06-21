@@ -56,7 +56,7 @@ public:
 
             // If all necessary constraints are checked (specified by options), then we set constraintChecked to true.
             if( (options & constraintmask) == constraintmask ) {
-                FOREACH(itrampnd, rampndVect) {
+                FOREACHC(itrampnd, rampndVect) {
                     itrampnd->constraintChecked = true;
                 }
             }
@@ -427,7 +427,7 @@ public:
                         }
                     }
 
-                    FOREACHC(itrampnd, tempRampNDVect) {
+                    FOREACH(itrampnd, tempRampNDVect) {
                         parabolicpath.AppendRampND(*itrampnd);
                     }
                     x0Vect.swap(x1Vect);
@@ -505,7 +505,7 @@ public:
 
         // Tell parabolicsmoother not to check constraints again if we already did (e.g. in linearsmoother, etc.)
         if( !_parameters->verifyinitialpath && bPathIsPerfectlyModeled ) {
-            FOREACH(itrampnd, parabolicpath.GetRampNDVect()) {
+            FOREACHC(itrampnd, parabolicpath.GetRampNDVect()) {
                 itrampnd->constraintChecked = true;
             }
         }
@@ -560,7 +560,7 @@ public:
             _pdummytraj->Init(newSpec);
 
             // Consistency checking
-            FOREACH(itrampnd, parabolicpath.GetRampNDVect()) {
+            FOREACHC(itrampnd, parabolicpath.GetRampNDVect()) {
                 OPENRAVE_ASSERT_OP((int) itrampnd->GetDOF(), ==, _parameters->GetDOF());
             }
 
@@ -1122,7 +1122,7 @@ protected:
 
                 // Keep track of zero-velocity waypoints
                 dReal duration = 0;
-                FOREACHC(itrampnd, rampndVect) {
+                FOREACH(itrampnd, rampndVect) {
                     duration += itrampnd->GetDuration();
                     parabolicpath.AppendRampND(*itrampnd);
                 }

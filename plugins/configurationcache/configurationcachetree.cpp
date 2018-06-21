@@ -757,7 +757,7 @@ void CacheTree::GetNodeValues(std::vector<dReal>& vals) const
     if( (int)vals.capacity() < _numnodes*_statedof) {
         vals.reserve(_numnodes*_statedof);
     }
-    FOREACH(itlevelnodes, _vsetLevelNodes) {
+    FOREACHC(itlevelnodes, _vsetLevelNodes) {
         FOREACH(itnode, *itlevelnodes) {
             vals.insert(vals.end(), (*itnode)->GetConfigurationState(), (*itnode)->GetConfigurationState()+_statedof);
         }

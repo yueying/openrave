@@ -18,6 +18,7 @@
 #include "osgrenderitem.h"
 
 #include <QMainWindow>
+#include <QGridLayout>
 
 #include "qtreemodel.h"
 

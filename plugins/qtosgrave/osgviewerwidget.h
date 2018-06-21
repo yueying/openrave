@@ -19,8 +19,8 @@
 #include "osgpick.h"
 #include "osgskybox.h"
 
-#include <QtCore/QTimer>
-#include <QtGui/QApplication>
+#include <QTimer>
+#include <QApplication>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osg/PositionAttitudeTransform>
@@ -44,7 +44,7 @@ public:
     virtual ~ViewerWidget();
     
     /// \brief Draws bounding box around actual kinbody
-    void DrawBoundingBox(bool pressed);
+    //void DrawBoundingBox(bool pressed);
 
     /// \brief Active selection
     void ActivateSelection(bool active);

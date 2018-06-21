@@ -15,7 +15,12 @@
 
 #include <boost/lexical_cast.hpp>
 #include <iostream>
-
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QToolButton>
+#include <QToolBar>
+#include <QDockWidget>
+#include <QAbstractButton>
 #include <osg/ArgumentParser>
 
 #include "osgviewerwidget.h"
@@ -667,7 +672,7 @@ void QtOSGViewer::polygonMode()
 
 void QtOSGViewer::_ProcessBoundingBox()
 {
-    _posgWidget->DrawBoundingBox(bboxAct->isChecked());
+    //_posgWidget->DrawBoundingBox(bboxAct->isChecked());
 }
 
 void QtOSGViewer::axes()

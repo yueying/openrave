@@ -146,7 +146,7 @@ public:
                     probot->GetGrabbed(grabbedbodies);
                     FOREACH(itbody,grabbedbodies) {
                         if(pmanip->IsGrabbing(*itbody)) {
-                            FOREACH(itlink,(*itbody)->GetLinks()) {
+                            FOREACHC(itlink,(*itbody)->GetLinks()) {
                                 globallinklist.push_back(*itlink);
                             }
                         }
@@ -387,7 +387,7 @@ public:
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // For each point in checkpoints, compute its vel and acc and check whether they satisfy the manipulator constraints
-                FOREACH(itpoint,itmanipinfo->checkpoints) {
+                FOREACHC(itpoint,itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     // RAVELOG_DEBUG_FORMAT("checkpoint = [%.15e, %.15e, %.15e]", itpoint->x%itpoint->y%itpoint->z);
@@ -483,7 +483,7 @@ public:
                 endeffaccang = endeffaccs.at(endeffindex).second;
                 Transform R = itmanipinfo->plink->GetTransform();
 
-                FOREACH(itpoint, itmanipinfo->checkpoints) {
+                FOREACHC(itpoint, itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     if (_maxmanipspeed > 0) {
@@ -535,7 +535,7 @@ public:
                 endeffaccang = endeffaccs.at(endeffindex).second;
                 Transform R = itmanipinfo->plink->GetTransform();
 
-                FOREACH(itpoint, itmanipinfo->checkpoints) {
+                FOREACHC(itpoint, itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     if (_maxmanipspeed > 0) {

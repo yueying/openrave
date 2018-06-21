@@ -17,7 +17,9 @@
 #include "colladacommon.h"
 #include <boost/algorithm/string.hpp>
 #include <openrave/xmlreaders.h>
-
+#ifndef M_PI
+#	define M_PI 3.14159265358979323846	// PI
+#endif
 namespace OpenRAVE
 {
 

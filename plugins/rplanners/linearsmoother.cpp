@@ -140,7 +140,7 @@ public:
                 }
             }
 
-            if( _nUseSingleDOFSmoothing == 3 or (isBranching and _nUseSingleDOFSmoothing == 1)) {
+            if( _nUseSingleDOFSmoothing == 3 || (isBranching && _nUseSingleDOFSmoothing == 1)) {
                 uint32_t basetime1 = utils::GetMilliTime();
                 list< vector<dReal> > listsimplepath;
                 for(size_t i = 0; i < ptraj->GetNumWaypoints(); ++i) {

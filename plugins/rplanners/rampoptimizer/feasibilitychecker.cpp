@@ -46,19 +46,23 @@ struct RampNDSection {
     dReal da, db; // obstacle distances at xa and xb
 };
 
-int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect, FeasibilityCheckerBase* feas, DistanceCheckerBase* dist, int maxiter, __attribute__((unused)) int options)
+int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect, 
+	FeasibilityCheckerBase* feas, DistanceCheckerBase* dist, 
+	int maxiter, int options)
 {
     BOOST_ASSERT(0);
     return 0xffff;
 }
 
-int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect, FeasibilityCheckerBase* feas, const std::vector<dReal>& tol, int options)
+int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect,
+	FeasibilityCheckerBase* feas, const std::vector<dReal>& tol, int options)
 {
     BOOST_ASSERT(0);
     return 0xffff;
 }
 
-RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas) : feas(_feas), tol(0), distance(NULL), maxiter(0), constraintmask(0) {
+RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas) 
+	: feas(_feas), tol(0), distance(NULL), maxiter(0), constraintmask(0) {
 }
 
 RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas, DistanceCheckerBase* _dist, int _maxiter) : feas(_feas), tol(0), distance(_dist), maxiter(_maxiter), constraintmask(0) {
@@ -67,7 +71,7 @@ RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas
 int RampNDFeasibilityChecker::Check(const std::vector<RampND>& rampndVect, int options)
 {
     if ((options & constraintmask) == constraintmask) {
-        FOREACH(itrampnd, rampndVect) {
+        FOREACHC(itrampnd, rampndVect) {
             itrampnd->constraintChecked = true;
         }
     }

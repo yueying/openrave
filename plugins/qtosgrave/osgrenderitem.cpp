@@ -484,7 +484,7 @@ void KinBodyItem::Load()
     std::vector<uint8_t> addedlinks(_pbody->GetLinks().size(), 0);
 
     //  Assemble link hierarchy
-    FOREACH(itjoint, _pbody->GetDependencyOrderedJoints()) {
+    FOREACHC(itjoint, _pbody->GetDependencyOrderedJoints()) {
         if( addedlinks[(*itjoint)->GetHierarchyChildLink()->GetIndex()] == 0 ) {
             OSGGroupPtr parent = _veclinks.at((*itjoint)->GetHierarchyParentLink()->GetIndex()).first;
             OSGGroupPtr child = _veclinks.at(((*itjoint)->GetHierarchyChildLink()->GetIndex())).first;
@@ -497,7 +497,7 @@ void KinBodyItem::Load()
     }
 
     //  Assemble passive joints
-    FOREACH(itjoint, _pbody->GetPassiveJoints()) {
+    FOREACHC(itjoint, _pbody->GetPassiveJoints()) {
         if( addedlinks[(*itjoint)->GetHierarchyChildLink()->GetIndex()] == 0 ) {
             OSGGroupPtr parent = _veclinks.at((*itjoint)->GetHierarchyParentLink()->GetIndex()).first;
             OSGGroupPtr child = _veclinks.at((*itjoint)->GetHierarchyChildLink()->GetIndex()).first;
