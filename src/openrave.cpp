@@ -50,7 +50,7 @@ void MainOpenRAVEThread();
 static bool is_display_gui = true, is_show_gui = true;
 
 static EnvironmentBasePtr s_penv;
-static ViewerBasePtr s_pviewer; ///< static viewer created by the main thread. need to quit from its main loop
+static ViewerBasePtr s_pviewer; //<! static viewer created by the main thread. need to quit from its main loop
 
 //static boost::shared_ptr<boost::thread> s_mainThread;
 static std::string s_sceneFile;

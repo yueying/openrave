@@ -646,7 +646,7 @@ protected:
     SpatialTree< SimpleNode > _treeBackward;
     dReal _fGoalBiasProb;
     std::vector< NodeBase* > _vecGoalNodes;
-    size_t _nValidGoals; ///< num valid goals
+    size_t _nValidGoals; //<! num valid goals
     std::vector<GOALPATH> _vgoalpaths;
 };
 
@@ -912,7 +912,7 @@ protected:
     dReal _fGoalBiasProb;
     bool _bOneStep;
     std::vector< std::vector<dReal> > _vecGoals;
-    int _nValidGoals; ///< num valid goals
+    int _nValidGoals; //<! num valid goals
 };
 
 class ExplorationPlanner : public RrtPlanner<SimpleNode>

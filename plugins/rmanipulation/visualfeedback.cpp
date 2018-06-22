@@ -506,15 +506,15 @@ private:
         }
         bool _bSamplingRays;
         boost::shared_ptr<VisualFeedback> _vf;
-        KinBodyPtr _ptargetbox;         ///< box to represent the target for simulating ray collisions
+        KinBodyPtr _ptargetbox;         //<! box to represent the target for simulating ray collisions
         UserDataPtr _collisionfn;
 
-        vector<OBB> _vTargetLocalOBBs;         ///< target geometry bounding boxes in the target link coordinate system
+        vector<OBB> _vTargetLocalOBBs;         //<! target geometry bounding boxes in the target link coordinate system
         vector<dReal> _vsolution;
         IkReturnPtr _ikreturn;
         CollisionReportPtr _report;
         AABB _abTarget;         // local aabb in the targetlink coordinate system
-        vector<Vector> _vconvexplanes3d; ///< the convex planes of the camera in the target link coordinate system
+        vector<Vector> _vconvexplanes3d; //<! the convex planes of the camera in the target link coordinate system
     };
 
     class GoalSampleFunction
@@ -561,9 +561,9 @@ private:
         const vector<Transform>& _visibilitytransforms;
 
 
-        Transform _ttarget;         ///< transform of target
+        Transform _ttarget;         //<! transform of target
         RandomPermutationExecutor _sphereperms;
-        vector<Transform> _vcameras;         ///< camera transformations in local coord systems
+        vector<Transform> _vcameras;         //<! camera transformations in local coord systems
     };
 
     VisualFeedback(EnvironmentBasePtr penv) : ModuleBase(penv), _preport(new CollisionReport())
@@ -1528,22 +1528,22 @@ Visibility computation checks occlusion with other objects using ray sampling in
 
 protected:
     RobotBasePtr _robot, _sensorrobot;
-    bool _bIgnoreSensorCollision; ///< if true will ignore any collisions with vf->_sensorrobot
-    KinBody::LinkPtr _targetlink; ///< the link where the verification pattern is attached
-    std::string _targetGeomName; ///< if not empty, then use only a specific geometry of the link rather than all geometries
+    bool _bIgnoreSensorCollision; //<! if true will ignore any collisions with vf->_sensorrobot
+    KinBody::LinkPtr _targetlink; //<! the link where the verification pattern is attached
+    std::string _targetGeomName; //<! if not empty, then use only a specific geometry of the link rather than all geometries
     dReal _fMaxVelMult;
     RobotBase::AttachedSensorPtr _psensor;
     RobotBase::ManipulatorPtr _pmanip;
-    bool _bCameraOnManip;     ///< true if camera is attached to manipulator
+    bool _bCameraOnManip;     //<! true if camera is attached to manipulator
     SensorBase::CameraGeomDataConstPtr _pcamerageom;
-    Transform _tToManip;     ///< transforms a coord system from the link to the gripper coordsystem. tLinkInWorld * _tToManip = tManipInWorld
-    vector<Transform> _visibilitytransforms; ///< the transform with respect to the targetlink and camera (or vice-versa)
+    Transform _tToManip;     //<! transforms a coord system from the link to the gripper coordsystem. tLinkInWorld * _tToManip = tManipInWorld
+    vector<Transform> _visibilitytransforms; //<! the transform with respect to the targetlink and camera (or vice-versa)
     dReal _fRayMinDist, _fAllowableOcclusion, _fSampleRayDensity;
 
     CollisionReportPtr _preport;
 
-    vector<Vector> _vconvexplanes;     ///< the planes defining the bounding visibility region (posive is inside). Inside camera coordinate system
-    Vector _vcenterconvex;     ///< center point on the z=1 plane of the convex region
+    vector<Vector> _vconvexplanes;     //<! the planes defining the bounding visibility region (posive is inside). Inside camera coordinate system
+    Vector _vcenterconvex;     //<! center point on the z=1 plane of the convex region
 };
 
 ModuleBasePtr CreateVisualFeedback(EnvironmentBasePtr penv) {

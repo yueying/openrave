@@ -247,9 +247,9 @@ public:
 private:
 
         boost::function<void()> _fn;
-        bool _bcalled; ///< true if function already called
-        bool _bfinished; ///< true if function processing is finished
-        bool _bisblocking; ///< if true, then the caller is blocking until the function completes
+        bool _bcalled; //<! true if function already called
+        bool _bfinished; //<! true if function processing is finished
+        bool _bisblocking; //<! if true, then the caller is blocking until the function completes
     };
     typedef boost::shared_ptr<GUIThreadFunction> GUIThreadFunctionPtr;
 
@@ -376,35 +376,35 @@ public:
     bool _ZoomCommand(ostream& sout, istream& sinput);
 
     //@{ Message Queue
-    list<GUIThreadFunctionPtr> _listGUIFunctions; ///< list of GUI functions that should be called in the viewer update thread. protected by _mutexGUIFunctions
-    mutable list<Item*> _listRemoveItems; ///< raw points of items to be deleted in the viewer update thread, triggered from _DeleteItemCallback. proteced by _mutexItems
-    boost::mutex _mutexItems; ///< protects _listRemoveItems
+    list<GUIThreadFunctionPtr> _listGUIFunctions; //<! list of GUI functions that should be called in the viewer update thread. protected by _mutexGUIFunctions
+    mutable list<Item*> _listRemoveItems; //<! raw points of items to be deleted in the viewer update thread, triggered from _DeleteItemCallback. proteced by _mutexItems
+    boost::mutex _mutexItems; //<! protects _listRemoveItems
     mutable boost::mutex _mutexGUIFunctions;
-    mutable boost::condition _notifyGUIFunctionComplete; ///< signaled when a blocking _listGUIFunctions has been completed
+    mutable boost::condition _notifyGUIFunctionComplete; //<! signaled when a blocking _listGUIFunctions has been completed
     //@}
 
     //@{ osg rendering primitives
     OSGNodePtr _selectedNode;
     //@}
 
-    std::string _userdatakey; ///< the key to use for KinBody::GetUserData and KinBody::SetUserData
-    std::map<KinBodyPtr, KinBodyItemPtr> _mapbodies;    ///< mapping of all the bodies created
-    ItemPtr _pSelectedItem;     ///< the currently selected item
+    std::string _userdatakey; //<! the key to use for KinBody::GetUserData and KinBody::SetUserData
+    std::map<KinBodyPtr, KinBodyItemPtr> _mapbodies;    //<! mapping of all the bodies created
+    ItemPtr _pSelectedItem;     //<! the currently selected item
 
     //@{ camera
-    RaveTransform<float> _Tcamera; ///< current position of the camera representing the current view, updated periodically, read only.
-    float _focalDistance;  ///< current focal distance of the camera, read-only
-    geometry::RaveCameraIntrinsics<float> _camintrinsics; ///< intrinsics of the camera representing the current view, updated periodically, read only.
+    RaveTransform<float> _Tcamera; //<! current position of the camera representing the current view, updated periodically, read only.
+    float _focalDistance;  //<! current focal distance of the camera, read-only
+    geometry::RaveCameraIntrinsics<float> _camintrinsics; //<! intrinsics of the camera representing the current view, updated periodically, read only.
     //@}
 
-    boost::mutex _mutexUpdating; ///< when inside an update function, even if just checking if the viewer should be updated, this will be locked.
-    boost::mutex _mutexUpdateModels; ///< locked when osg environment is being updated from the underlying openrave environment
-    boost::condition _condUpdateModels; ///< signaled everytime environment models are updated
+    boost::mutex _mutexUpdating; //<! when inside an update function, even if just checking if the viewer should be updated, this will be locked.
+    boost::mutex _mutexUpdateModels; //<! locked when osg environment is being updated from the underlying openrave environment
+    boost::condition _condUpdateModels; //<! signaled everytime environment models are updated
 
-    ViewGeometry _viewGeometryMode; ///< the visualization mode of the geometries
+    ViewGeometry _viewGeometryMode; //<! the visualization mode of the geometries
 
     //@{ callbacks
-    boost::mutex _mutexCallbacks; ///< maintains lock on list of callsbacks viewer has to make like _listRegisteredViewerThreadCallbacks, _listRegisteredItemSelectionCallbacks
+    boost::mutex _mutexCallbacks; //<! maintains lock on list of callsbacks viewer has to make like _listRegisteredViewerThreadCallbacks, _listRegisteredItemSelectionCallbacks
     std::list<UserDataWeakPtr> _listRegisteredItemSelectionCallbacks;
     std::list<UserDataWeakPtr> _listRegisteredViewerThreadCallbacks;
     //@}
@@ -470,17 +470,17 @@ public:
     QButtonGroup* buttonGroup;
     QButtonGroup* draggerTypeGroup;
 
-    QTreeWidget* _qobjectTree; ///< Tree of robots, joints and links
-    QTreeWidget* _qdetailsTree; ///< Details panel object
+    QTreeWidget* _qobjectTree; //<! Tree of robots, joints and links
+    QTreeWidget* _qdetailsTree; //<! Details panel object
     //@}
 
     /// tracking parameters
     //@{
-    KinBody::LinkPtr _ptrackinglink; ///< current link tracking
-    Transform _tTrackingLinkRelative; ///< relative transform in the _ptrackinglink coord system  that should be tracking.
-    RobotBase::ManipulatorPtr _ptrackingmanip; ///< current manipulator tracking
-    Transform _tTrackingCameraVelocity; ///< camera velocity
-    float _fTrackAngleToUp; ///< tilt a little when looking at the point
+    KinBody::LinkPtr _ptrackinglink; //<! current link tracking
+    Transform _tTrackingLinkRelative; //<! relative transform in the _ptrackinglink coord system  that should be tracking.
+    RobotBase::ManipulatorPtr _ptrackingmanip; //<! current manipulator tracking
+    Transform _tTrackingCameraVelocity; //<! camera velocity
+    float _fTrackAngleToUp; //<! tilt a little when looking at the point
     //@}
 
     // toggle switches
@@ -504,11 +504,11 @@ public:
     bool _bAntialiasing;
 
     // control related
-    bool _bUpdateEnvironment; ///< if true, should update the viewer to the openrave environment periodically
-    bool _bLockEnvironment; ///< if true, should lock the environment when updating from it. Otherwise, the environment can assumed to be already locked in another thread that the viewer controls
+    bool _bUpdateEnvironment; //<! if true, should update the viewer to the openrave environment periodically
+    bool _bLockEnvironment; //<! if true, should lock the environment when updating from it. Otherwise, the environment can assumed to be already locked in another thread that the viewer controls
 
-    bool _bExternalLoop; ///< If true, the Qt loop is not started by qtosgviewer, which means qtosgviewer should not terminate the Qt loop during deallocation.
-    int _nQuitMainLoop; ///< controls if the main loop's state. If 0, then nothing is initialized. If -1, then currently initializing/running. If 1, then currently quitting from the main loop. If 2, then successfully quit from the main loop.
+    bool _bExternalLoop; //<! If true, the Qt loop is not started by qtosgviewer, which means qtosgviewer should not terminate the Qt loop during deallocation.
+    int _nQuitMainLoop; //<! controls if the main loop's state. If 0, then nothing is initialized. If -1, then currently initializing/running. If 1, then currently quitting from the main loop. If 2, then successfully quit from the main loop.
 
     bool _bRenderFiguresInCamera;
 

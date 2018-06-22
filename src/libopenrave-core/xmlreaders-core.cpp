@@ -1307,20 +1307,20 @@ public:
     boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
-    MASS _mass;                            ///< current mass of the object
+    MASS _mass;                            //<! current mass of the object
     KinBody::LinkPtr& _plink;
     KinBodyPtr _pparent;
-    KinBody::LinkPtr _offsetfrom;                            ///< all transformations are relative to the this body
+    KinBody::LinkPtr _offsetfrom;                            //<! all transformations are relative to the this body
     bool _bSkipGeometry;
     Vector _vScaleGeometry;
     Transform tOrigTrans;
 
     // Mass
-    MassType _masstype;                   ///< if true, mass is craeted so that it mimics the geometry
+    MassType _masstype;                   //<! if true, mass is craeted so that it mimics the geometry
     string _processingtag;         /// if not empty, currently processing
     MASS _massCustom;
     float _fMassDensity, _fTotalMass;
-    Vector _vMassExtents;                   ///< used only if mass is a box
+    Vector _vMassExtents;                   //<! used only if mass is a box
 };
 
 bool CreateGeometries(EnvironmentBasePtr penv, const std::string& filename, const Vector &vscale, std::list<KinBody::GeometryInfo>& listGeometries)
@@ -1712,7 +1712,7 @@ public:
     boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
-    KinBody::LinkPtr _offsetfrom;         ///< all transforms are relative to this body
+    KinBody::LinkPtr _offsetfrom;         //<! all transforms are relative to this body
     KinBodyPtr _pparent;
     KinBody::JointPtr& _pjoint;
     std::vector<Vector> _vAxes;
@@ -2371,15 +2371,15 @@ protected:
     Transform _trans;
 
     // default mass type passed to every LinkXMLReader
-    int rootoffset, rootjoffset, rootjpoffset, roottransoffset;                         ///< the initial number of links when KinBody is created (so that global translations and rotations only affect the new links)
-    MassType _masstype;                     ///< if true, mass is craeted so that it mimics the geometry
-    float _fMassValue;                       ///< density or total mass
+    int rootoffset, rootjoffset, rootjpoffset, roottransoffset;                         //<! the initial number of links when KinBody is created (so that global translations and rotations only affect the new links)
+    MassType _masstype;                     //<! if true, mass is craeted so that it mimics the geometry
+    float _fMassValue;                       //<! density or total mass
     Vector _vMassExtents;
 
-    std::vector<Transform> _vTransforms;             ///< original transforms of the bodies for offsetfrom
+    std::vector<Transform> _vTransforms;             //<! original transforms of the bodies for offsetfrom
 
     string _strModelsDir, _bodyname;
-    string _prefix;         ///< add this prefix to all names of links and joints
+    string _prefix;         //<! add this prefix to all names of links and joints
     KinBody::LinkPtr _plink;
     KinBody::JointPtr _pjoint;
 
@@ -2814,7 +2814,7 @@ protected:
     RobotBase::AttachedSensorPtr& _psensor;
     InterfaceBasePtr _psensorinterface;
     string _processingtag;
-    string args;         ///< arguments to pass to sensor when initializing
+    string args;         //<! arguments to pass to sensor when initializing
     Vector _vScaleGeometry;
 };
 
@@ -3090,7 +3090,7 @@ public:
 
 protected:
     RobotBasePtr _probot;
-    InterfaceBasePtr _pcontroller;         ///< controller to set the robot at
+    InterfaceBasePtr _pcontroller;         //<! controller to set the robot at
     string _robotname;
     string _prefix;
     string _processingtag;
@@ -3101,8 +3101,8 @@ protected:
     Transform _trans;
     bool _bSkipGeometry;
     Vector _vScaleGeometry;
-    int rootoffset, roottransoffset;                         ///< the initial number of links when Robot is created (so that global translations and rotations only affect the new links)
-    int rootjoffset, rootjpoffset;         ///< the initial number of joints when Robot is created
+    int rootoffset, roottransoffset;                         //<! the initial number of links when Robot is created (so that global translations and rotations only affect the new links)
+    int rootjoffset, rootjpoffset;         //<! the initial number of joints when Robot is created
     std::set<RobotBase::ManipulatorPtr> _setInitialManipulators;
     std::set<RobotBase::AttachedSensorPtr> _setInitialSensors;
 };
@@ -3463,7 +3463,7 @@ protected:
     EnvironmentBasePtr _penv;
     InterfaceBasePtr _pinterface;         // current processed interface
     Vector vBkgndColor;
-    Transform _tCamera;         ///< default camera transformationn
+    Transform _tCamera;         //<! default camera transformationn
     float _fCameraFocalDistance;
     string _processingtag;
     bool bTransSpecified;
@@ -3615,8 +3615,8 @@ public:
 protected:
     EnvironmentBasePtr _penv;
     InterfaceBasePtr _pinterface;         // current processed interface
-    AttributesList _atts;         ///< attributes to always set on newly created interfaces
-    bool _bAddToEnvironment; ///< if true, will add interface to environment
+    AttributesList _atts;         //<! attributes to always set on newly created interfaces
+    bool _bAddToEnvironment; //<! if true, will add interface to environment
 };
 
 BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, const AttributesList &atts,bool bAddToEnvironment)

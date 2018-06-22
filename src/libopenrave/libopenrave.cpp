@@ -1077,20 +1077,20 @@ private:
     std::map<int, EnvironmentBase*> _mapenvironments;
     std::list<boost::function<void()> > _listDestroyCallbacks;
     std::string _homedirectory;
-    std::string _defaultviewertype; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
+    std::string _defaultviewertype; //<! the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
     std::vector<std::string> _vdbdirectories;
     int _nGlobalEnvironmentId;
     SpaceSamplerBasePtr _pdefaultsampler;
 #ifdef USE_CRLIBM
     long long _crlibm_fpu_state;
-	bool _bcrlibmInit; ///< true if crlibm is initialized
+	bool _bcrlibmInit; //<! true if crlibm is initialized
 #endif
 	
     int _nDataAccessOptions;
 
     std::vector<string> _vdatadirs;
 #ifdef HAVE_BOOST_FILESYSTEM
-    std::vector<boost::filesystem::path> _vBoostDataDirs; ///< \brief returns absolute filenames of the data
+    std::vector<boost::filesystem::path> _vBoostDataDirs; //<! \brief returns absolute filenames of the data
 #endif
 
 #if OPENRAVE_LOG4CXX

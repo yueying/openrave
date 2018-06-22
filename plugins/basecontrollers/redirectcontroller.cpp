@@ -150,7 +150,7 @@ private:
 
     std::vector<int> _dofindices;
     bool _bAutoSync, _bSyncDone;
-    RobotBasePtr _probot;               ///< controlled body
+    RobotBasePtr _probot;               //<! controlled body
     ControllerBasePtr _pcontroller;
 };
 

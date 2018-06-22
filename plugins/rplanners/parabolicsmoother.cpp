@@ -169,7 +169,7 @@ public:
 private:
         std::vector<dReal> vswitchtimes;
         std::vector<dReal> q0, q1, dq0, dq1;
-        std::vector<uint8_t> _vsearchsegments; ///< 1 if searched
+        std::vector<uint8_t> _vsearchsegments; //<! 1 if searched
         std::vector<ParabolicRamp::ParabolicRampND> segmentoutramps;
     };
 
@@ -2153,7 +2153,7 @@ protected:
                     }
                     else if (retcheck.retcode == CFO_CheckTimeBasedConstraints) {
                         // CFO_CheckTimeBasedConstraints can be returned becasue of two things: torque limit violation and manipulator constraint violation.
-                        dReal fOverallTimeMult = 1.0; ///< overall time mult change. use it to estimate the next possible ramp duration so can quick prune this solution
+                        dReal fOverallTimeMult = 1.0; //<! overall time mult change. use it to estimate the next possible ramp duration so can quick prune this solution
                         nNumTimeBasedConstraintsFailed++;
 
                         // Modifiy vellimits and accellimits
@@ -2573,8 +2573,8 @@ protected:
     }
 
     ConstraintTrajectoryTimingParametersPtr _parameters;
-    SpaceSamplerBasePtr _uniformsampler; ///< used for planning, seed is controlled
-    SpaceSamplerBasePtr _logginguniformsampler; ///< used for logging, seed is random
+    SpaceSamplerBasePtr _uniformsampler; //<! used for planning, seed is controlled
+    SpaceSamplerBasePtr _logginguniformsampler; //<! used for logging, seed is random
     ConstraintFilterReturnPtr _constraintreturn;
     MyRampFeasibilityChecker _feasibilitychecker;
     boost::shared_ptr<ManipConstraintChecker> _manipconstraintchecker;
@@ -2593,7 +2593,7 @@ protected:
     PlannerProgress _progress;
     bool _bUsePerturbation;
     bool _bmanipconstraints; /// if true, check workspace manip constraints
-    DebugLevel _dumplevel; ///< the loglevel that we start to dump trajectories for debugging
+    DebugLevel _dumplevel; //<! the loglevel that we start to dump trajectories for debugging
 
 #ifdef OPENRAVE_TIMING_DEBUGGING
     // for testing
@@ -2614,7 +2614,7 @@ protected:
     uint32_t tcheckstart, tcheckend;
 #endif
 
-    std::vector<dReal> _zerovelpoints; ///< keeps track of the time instance of the original unshortcutted points of the original trajectory. Whenever we perform a shortcut, have to update this structure.
+    std::vector<dReal> _zerovelpoints; //<! keeps track of the time instance of the original unshortcutted points of the original trajectory. Whenever we perform a shortcut, have to update this structure.
     bool _usingNewHeuristics;
 };
 

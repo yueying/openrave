@@ -28,9 +28,9 @@ public:
         }
         dReal fgraspdist, fgoaldist;
         Transform tgrasp;
-        vector<dReal> qgoal;     ///< ik solution that achieves tgrasp
-        bool bChecked;     ///< set to true if grasp is checked for ik solution
-        bool bProcessed;     ///< set to true if grasp has already been used in gradient descend
+        vector<dReal> qgoal;     //<! ik solution that achieves tgrasp
+        bool bChecked;     //<! set to true if grasp is checked for ik solution
+        bool bProcessed;     //<! set to true if grasp has already been used in gradient descend
     };
 
     GraspGradientPlanner(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv) {

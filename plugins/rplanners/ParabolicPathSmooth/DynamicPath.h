@@ -41,9 +41,9 @@ struct CheckReturn
     }
     int retcode; // one of CFO_X
     Real fTimeBasedSurpassMult; // if retcode == CFO_CheckTimeBasedConstraints, then the multiplier of |max|/|cur|
-    bool bDifferentVelocity; ///< end in different velocity than desired
-    Real fMaxManipSpeed; ///< if > 0, then the computed max manip speed that the return was invalid with
-    Real fMaxManipAccel; ///< if > 0, then the computed max manip accel that the return was invalid with
+    bool bDifferentVelocity; //<! end in different velocity than desired
+    Real fMaxManipSpeed; //<! if > 0, then the computed max manip speed that the return was invalid with
+    Real fMaxManipAccel; //<! if > 0, then the computed max manip accel that the return was invalid with
 };
 
 /** @brief A base class for a feasibility checker.
@@ -186,7 +186,7 @@ public:
     Vector xMin,xMax,velMax,accMax;
     /// The path is stored as a series of ramps
     std::vector<ParabolicRampND> ramps;
-    int _multidofinterp; ///< if true, will always force the max acceleration of the robot when retiming rather than using lesser acceleration whenever possible
+    int _multidofinterp; //<! if true, will always force the max acceleration of the robot when retiming rather than using lesser acceleration whenever possible
 };
 
 bool SolveMinTime(const Vector& x0,const Vector& dx0,const Vector& x1,const Vector& dx1, const Vector& accMax,const Vector& velMax,const Vector& xMin,const Vector& xMax,DynamicPath& out, int multidofinterp);

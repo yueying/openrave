@@ -431,7 +431,7 @@ protected:
 
     boost::shared_ptr<LaserGeomData> _pgeom;
     boost::shared_ptr<LaserSensorData> _pdata;
-    vector<int> _databodyids;     ///< if non 0, for each point in _data, specifies the body that was hit
+    vector<int> _databodyids;     //<! if non 0, for each point in _data, specifies the body that was hit
     CollisionReportPtr _report;
 
     // more geom stuff

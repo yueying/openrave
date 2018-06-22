@@ -492,7 +492,7 @@ protected:
 
     RobotBasePtr robot;
     string _strRRTPlannerName;
-    string _strRobotName;     ///< name of the active robot
+    string _strRobotName;     //<! name of the active robot
 };
 
 #endif

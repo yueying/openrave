@@ -306,7 +306,7 @@ public:
 
 private:
     ViewerWidget* _pviewer;
-    bool _bInSeekMode; ///< if true, in seek mode
+    bool _bInSeekMode; //<! if true, in seek mode
 };
 
 // \ brief rigid transformation dragger (does not allow scale)
@@ -352,7 +352,7 @@ public:
     }
 
 private:
-    boost::function<bool(const osgGA::GUIEventAdapter&, osgGA::GUIActionAdapter&)> _onKeyDown; ///< called when key is pressed
+    boost::function<bool(const osgGA::GUIEventAdapter&, osgGA::GUIActionAdapter&)> _onKeyDown; //<! called when key is pressed
 };
 
 //void ViewerWidget::_ShowSceneGraph(const std::string& currLevel,OSGNodePtr currNode)

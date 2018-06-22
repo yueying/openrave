@@ -355,7 +355,7 @@ public:
     {
         if( cmd.size() > 0 ) {
 #if OPENRAVE_RAPIDJSON
-            rapidjson::Document document;  ///< contains entire rapid json document to parse parameters.
+            rapidjson::Document document;  //<! contains entire rapid json document to parse parameters.
             if (document.Parse(cmd.c_str(), cmd.size()).HasParseError()) {
                 throw OPENRAVE_EXCEPTION_FORMAT("Failed to parse cmd (offset %u): %s, data=%s", ((unsigned)document.GetErrorOffset())%(GetParseError_En(document.GetParseError()))%cmd, ORE_InvalidState);
             }
@@ -1440,7 +1440,7 @@ public:
         IkParameterization param = pmanip->GetBase()->GetTransform().inverse()*globalparam;
         switch(param.GetType()) {
         case IKP_Transform6D: {
-            TransformMatrix tm = param.GetTransform6D()*pmanip->GetLocalToolTransform().inverse(); ///< ik takes the original matrix
+            TransformMatrix tm = param.GetTransform6D()*pmanip->GetLocalToolTransform().inverse(); //<! ik takes the original matrix
             o << tm.m[0] << " " << tm.m[1] << " " << tm.m[2] << " " << tm.trans[0] << " " << tm.m[4] << " " << tm.m[5] << " " << tm.m[6] << " " << tm.trans[1] << " " << tm.m[8] << " " << tm.m[9] << " " << tm.m[10] << " " << tm.trans[2] << " ";
             break;
         }
@@ -1558,8 +1558,8 @@ public:
         return IkSolverBasePtr();
     }
 
-    string _ikfastversion; ///< current ikfast version (assuming doesn't change during process lifetime)
-    string _platform; ///<  current platform architecture. ie x86-64
+    string _ikfastversion; //<! current ikfast version (assuming doesn't change during process lifetime)
+    string _platform; //<!  current platform architecture. ie x86-64
 };
 
 ModuleBasePtr CreateIkFastModule(EnvironmentBasePtr penv, std::istream& sinput)

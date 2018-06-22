@@ -1097,7 +1097,7 @@ protected:
 
     std::list< ManipConstraintInfo > _listCheckManips;
     TrajectoryBasePtr _dummytraj;
-    bool _bCheckControllerTimeStep; ///< if set to true (default), then constraints all switch points to be a multiple of _parameters->_fStepLength
+    bool _bCheckControllerTimeStep; //<! if set to true (default), then constraints all switch points to be a multiple of _parameters->_fStepLength
     bool _bmanipconstraints; /// if true, check workspace manip constraints
     PlannerProgress _progress;
 

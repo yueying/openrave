@@ -18,7 +18,7 @@
 #include "basecamera.h"
 #include <openrave/plugin.h>
 
-static list< UserDataPtr >* s_listRegisteredReaders = NULL; ///< have to make it a pointer in order to prevent static object destruction from taking precedence
+static list< UserDataPtr >* s_listRegisteredReaders = NULL; //<! have to make it a pointer in order to prevent static object destruction from taking precedence
 InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
 {
     if( !s_listRegisteredReaders ) {

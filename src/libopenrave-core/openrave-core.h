@@ -38,7 +38,7 @@ namespace OpenRAVE
 
 enum EnvironmentCreateOptions
 {
-    ECO_StartSimulationThread=1, ///< starts the simulation thread in the background.
+    ECO_StartSimulationThread=1, //<! starts the simulation thread in the background.
 };
 
 /// \brief Creates an OpenRAVE environment.

@@ -401,7 +401,7 @@ namespace OpenRAVE
 			}
 
 			boost::weak_ptr<RaveDatabase> _pdatabase;
-			std::set<pair< InterfaceType, string> > _setBadInterfaces;         ///< interfaces whose hash is wrong and shouldn't be tried for this plugin
+			std::set<pair< InterfaceType, string> > _setBadInterfaces;         //<! interfaces whose hash is wrong and shouldn't be tried for this plugin
 			string ppluginname;
 
 			void* plibrary;         // loaded library (NULL if not loaded)
@@ -413,11 +413,11 @@ namespace OpenRAVE
 			PluginExportFn_OnRaveInitialized pfnOnRaveInitialized;
 			PluginExportFn_OnRavePreDestroy pfnOnRavePreDestroy;
 			PLUGININFO _infocached;
-			boost::mutex _mutex;         ///< locked when library is getting updated, only used when plibrary==NULL
+			boost::mutex _mutex;         //<! locked when library is getting updated, only used when plibrary==NULL
 			boost::condition _cond;
-			bool _bShutdown;         ///< managed by plugin database
-			bool _bInitializing; ///< still in the initialization phase
-			bool _bHasCalledOnRaveInitialized; ///< if true, then OnRaveInitialized has been called and does not need to call it again.
+			bool _bShutdown;         //<! managed by plugin database
+			bool _bInitializing; //<! still in the initialization phase
+			bool _bHasCalledOnRaveInitialized; //<! if true, then OnRaveInitialized has been called and does not need to call it again.
 
 			friend class RaveDatabase;
 		};
@@ -1191,14 +1191,14 @@ namespace OpenRAVE
 		}
 
 		list<PluginPtr> plugins_list_;
-		mutable boost::mutex _mutex;     ///< changing plugin database
+		mutable boost::mutex _mutex;     //<! changing plugin database
 		std::list<void*> _listDestroyLibraryQueue;
 		std::list< boost::weak_ptr<RegisteredInterface> > _listRegisteredInterfaces;
 		std::list<std::string> plugin_dirs_list_;
 
 		/// \name plugin loading
 		//@{
-		mutable boost::mutex _mutexPluginLoader;     ///< specifically for loading shared objects
+		mutable boost::mutex _mutexPluginLoader;     //<! specifically for loading shared objects
 		boost::condition _condLoaderHasWork;
 		std::list<PluginPtr> _listPluginsToLoad;
 		boost::shared_ptr<boost::thread> plugin_loader_thread_;

@@ -20,11 +20,11 @@
 struct GRASPGOAL
 {
     vector<dReal> vpreshape;
-    IkParameterization tgrasp; ///< transform of the grasp
-    vector<dReal> viksolution; ///< optional joint values for robot arm that achive the grasp goal
-    list<IkParameterization> listDests; ///< transform of the grasps at the destination
+    IkParameterization tgrasp; //<! transform of the grasp
+    vector<dReal> viksolution; //<! optional joint values for robot arm that achive the grasp goal
+    list<IkParameterization> listDests; //<! transform of the grasps at the destination
     int graspindex;
-    vector<dReal> vgoalconfiguration; ///< contains the configuration if this grasp was picked
+    vector<dReal> vgoalconfiguration; //<! contains the configuration if this grasp was picked
 };
 
 #ifdef RAVE_REGISTER_BOOST
@@ -1837,7 +1837,7 @@ protected:
         return !!sinput;
     }
 
-    string _strRobotName;     ///< name of the active robot
+    string _strRobotName;     //<! name of the active robot
     RobotBasePtr _robot;
     dReal _fMaxVelMult;
     list<SensorSystemBasePtr > listsystems;

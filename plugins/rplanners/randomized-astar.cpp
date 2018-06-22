@@ -91,7 +91,7 @@ public:
             }
         }
 
-        ///< returns the index into blocks
+        //<! returns the index into blocks
         int Get(S& s)
         {
             switch(blocks.size()) {
@@ -133,11 +133,11 @@ public:
             _vXMLParameters.push_back("maxsampletries");
         }
 
-        dReal fRadius;              ///< _pDistMetric thresh is the radius that children must be within parents
-        dReal fDistThresh;          ///< gamma * _pDistMetric->thresh is the sampling radius
-        dReal fGoalCoeff;           ///< balancees exploratino vs cost
-        int nMaxChildren;           ///< limit on number of children
-        int nMaxSampleTries;         ///< max sample tries before giving up on creating a child
+        dReal fRadius;              //<! _pDistMetric thresh is the radius that children must be within parents
+        dReal fDistThresh;          //<! gamma * _pDistMetric->thresh is the sampling radius
+        dReal fGoalCoeff;           //<! balancees exploratino vs cost
+        int nMaxChildren;           //<! limit on number of children
+        int nMaxSampleTries;         //<! max sample tries before giving up on creating a child
 protected:
         bool _bProcessingRA;
         virtual bool serialize(std::ostream& O) const
@@ -268,7 +268,7 @@ public:
         list<Node*> _nodes;
         list<Node*> _dead;
         boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _pDistMetric;
-        dReal _fBestDist;         ///< valid after a call to GetNN
+        dReal _fBestDist;         //<! valid after a call to GetNN
     };
 
     enum IntervalType {
@@ -307,7 +307,7 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
     }
 
     // Planning Methods
-    ///< manipulator state is also set
+    //<! manipulator state is also set
     virtual bool InitPlan(RobotBasePtr pbase, PlannerParametersConstPtr pparams)
     {
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -612,12 +612,12 @@ private:
 
     RobotBasePtr _robot;
 
-    vector<Node*> _vdeadnodes;     ///< dead nodes
+    vector<Node*> _vdeadnodes;     //<! dead nodes
     vector<dReal> _vSampleConfig;
     vector<dReal> _jointIncrement, _jointResolutionInv;
     vector<dReal> _vzero;
 
-    vector<Transform> _vectrans;     ///< cache
+    vector<Transform> _vectrans;     //<! cache
     int nIndex;
 };
 

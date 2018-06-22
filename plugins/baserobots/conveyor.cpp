@@ -58,11 +58,11 @@ public:
         ConveyorInfo() : XMLReadable("conveyorjoint"), _fLinkDensity(10), _bIsCircular(true), _bCreated(false) {
         }
         boost::shared_ptr<KinBody::Mimic> _mimic; // always has to mimic
-        KinBody::LinkPtr _linkParent; ///< base link attached
-        TrajectoryBasePtr _trajfollow; ///< trajectory to following in base link's coordinate system
-        int _fLinkDensity; ///< number of links to create per unit of time in the trajectory
-        std::list<GeometryInfo> _listGeometries; ///< geometry to attach to each child link
-        std::string _namebase; ///< base name of joint
+        KinBody::LinkPtr _linkParent; //<! base link attached
+        TrajectoryBasePtr _trajfollow; //<! trajectory to following in base link's coordinate system
+        int _fLinkDensity; //<! number of links to create per unit of time in the trajectory
+        std::list<GeometryInfo> _listGeometries; //<! geometry to attach to each child link
+        std::string _namebase; //<! base name of joint
         bool _bIsCircular;
 
         bool _bCreated;

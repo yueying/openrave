@@ -25,7 +25,7 @@ RobotBasePtr CreateConveyorRobot(EnvironmentBasePtr penv, std::istream& sinput);
 void RegisterCollisionMapRobotReaders(std::list< UserDataPtr >& listRegisteredReaders);
 void RegisterConveyorReaders(std::list< UserDataPtr >& listRegisteredReaders);
 
-static std::list< UserDataPtr >* s_listRegisteredReaders = NULL; ///< have to make it a pointer in order to prevent static object destruction from taking precedence
+static std::list< UserDataPtr >* s_listRegisteredReaders = NULL; //<! have to make it a pointer in order to prevent static object destruction from taking precedence
 
 InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
 {

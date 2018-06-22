@@ -489,7 +489,7 @@ public:
             _listCollidingTransforms.push_back(std::make_pair(t, bcolliding));
         }
 
-        int numImpossibleSelfCollisions; ///< a count of the number of self-collisions that most likely mean that the IK itself will fail.
+        int numImpossibleSelfCollisions; //<! a count of the number of self-collisions that most likely mean that the IK itself will fail.
 protected:
         void _InitSavers()
         {
@@ -2330,39 +2330,39 @@ protected:
     }
 
     RobotBase::ManipulatorWeakPtr _pmanip;
-    std::vector<int> _vfreeparams; ///< the indices into _pmanip->GetArmIndices() for the free indices of this IK
+    std::vector<int> _vfreeparams; //<! the indices into _pmanip->GetArmIndices() for the free indices of this IK
     std::vector<uint8_t> _vfreerevolute, _vjointrevolute; // 0 if not revolute, 1 if revolute and not circular, 2 if circular
     std::vector<dReal> _vfreeparamscales;
     UserDataPtr _cblimits;
-    std::vector<KinBody::LinkPtr> _vchildlinks; ///< the child links of the manipulator
-    std::vector<KinBody::LinkPtr> _vindependentlinks; ///< independent links of the manipulator
-    std::vector<KinBody::LinkPtr> _vIndependentLinksIncludingFreeJoints; ///< independent links of the ik chain without free joints
-    std::vector<int> _vchildlinkindices; ///< indices of the links at _vchildlinks
+    std::vector<KinBody::LinkPtr> _vchildlinks; //<! the child links of the manipulator
+    std::vector<KinBody::LinkPtr> _vindependentlinks; //<! independent links of the manipulator
+    std::vector<KinBody::LinkPtr> _vIndependentLinksIncludingFreeJoints; //<! independent links of the ik chain without free joints
+    std::vector<int> _vchildlinkindices; //<! indices of the links at _vchildlinks
     boost::shared_ptr<ikfast::IkFastFunctions<IkReal> > _ikfunctions;
     std::vector<dReal> _vFreeInc;
-    dReal _fFreeIncRevolute; ///< default increment for revolute joints
-    dReal _fFreeIncPrismaticNum; ///< default number of segments to divide a free slider axis
+    dReal _fFreeIncRevolute; //<! default increment for revolute joints
+    dReal _fFreeIncPrismaticNum; //<! default number of segments to divide a free slider axis
     int _nTotalDOF;
     std::vector<dReal> _qlower, _qupper, _qmid;
-    std::vector<int> _qbigrangeindices; ///< indices into _qlower/_qupper of joints that are revolute, not circular, and have ranges > 360
+    std::vector<int> _qbigrangeindices; //<! indices into _qlower/_qupper of joints that are revolute, not circular, and have ranges > 360
     std::vector<size_t> _qbigrangemaxsols, _qbigrangemaxcumprod;
     IkParameterizationType _iktype;
     std::string _kinematicshash;
-    int _numBacktraceLinksForSelfCollisionWithNonMoving, _numBacktraceLinksForSelfCollisionWithFree; ///< when pruning self collisions, the number of links to look at. If the tip of the manip self collides with the base, then can safely quit the IK. this is used purely for optimization purposes and by default it is mostly disabled. For more complex robots with a lot of joints, can use these parameters to speed up searching for IK.
-    dReal _ikthreshold; ///< workspace distance threshold sanity checking between desired workspace goal and the workspace position with the returned ik values.
-    dReal _fRefineWithJacobianInverseAllowedError; ///< if > 0, then use jacobian inverse numerical method to refine the results until workspace error drops down this much. By default it is disabled (=-1)
+    int _numBacktraceLinksForSelfCollisionWithNonMoving, _numBacktraceLinksForSelfCollisionWithFree; //<! when pruning self collisions, the number of links to look at. If the tip of the manip self collides with the base, then can safely quit the IK. this is used purely for optimization purposes and by default it is mostly disabled. For more complex robots with a lot of joints, can use these parameters to speed up searching for IK.
+    dReal _ikthreshold; //<! workspace distance threshold sanity checking between desired workspace goal and the workspace position with the returned ik values.
+    dReal _fRefineWithJacobianInverseAllowedError; //<! if > 0, then use jacobian inverse numerical method to refine the results until workspace error drops down this much. By default it is disabled (=-1)
 
 #ifdef OPENRAVE_HAS_LAPACK
-    ikfastsolvers::JacobianInverseSolver<double> _jacobinvsolver; ///< jacobian inverse solver if _fRefineWithJacobianInverseAllowedError is > 0
+    ikfastsolvers::JacobianInverseSolver<double> _jacobinvsolver; //<! jacobian inverse solver if _fRefineWithJacobianInverseAllowedError is > 0
 #endif
 
     //@{
     // cache for current Solve call. This has to be saved/restored if any user functions are called (like filters) since the filters themselves can potentially call into this ik solver.
-    std::vector<unsigned int> _vsolutionindices; ///< holds the indices of the current solution, this is not multi-thread safe
+    std::vector<unsigned int> _vsolutionindices; //<! holds the indices of the current solution, this is not multi-thread safe
     int _nSameStateRepeatCount;
     //@}
 
-    bool _bEmptyTransform6D; ///< if true, then the iksolver has been built with identity of the manipulator transform. Only valid for Transform6D IKs.
+    bool _bEmptyTransform6D; //<! if true, then the iksolver has been built with identity of the manipulator transform. Only valid for Transform6D IKs.
 
 };
 

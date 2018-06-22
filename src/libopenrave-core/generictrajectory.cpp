@@ -1036,15 +1036,15 @@ protected:
     ConfigurationSpecification _spec;
     std::vector< boost::function<void(size_t,dReal,std::vector<dReal>&)> > _vgroupinterpolators;
     std::vector< boost::function<void(size_t,dReal)> > _vgroupvalidators;
-    std::vector<int> _vderivoffsets, _vddoffsets, _vdddoffsets; ///< for every group that relies on other info to compute its position, this will point to the derivative offset. -1 if invalid and not needed, -2 if invalid and needed
-    std::vector<int> _vintegraloffsets; ///< for every group that relies on other info to compute its position, this will point to the integral offset (ie the position for a velocity group). -1 if invalid and not needed, -2 if invalid and needed
+    std::vector<int> _vderivoffsets, _vddoffsets, _vdddoffsets; //<! for every group that relies on other info to compute its position, this will point to the derivative offset. -1 if invalid and not needed, -2 if invalid and needed
+    std::vector<int> _vintegraloffsets; //<! for every group that relies on other info to compute its position, this will point to the integral offset (ie the position for a velocity group). -1 if invalid and not needed, -2 if invalid and needed
     int _timeoffset;
 
     std::vector<dReal> _vtrajdata;
     mutable std::vector<dReal> _vaccumtime, _vdeltainvtime;
     bool _bInit;
-    mutable bool _bChanged; ///< if true, then _ComputeInternal() has to be called in order to compute _vaccumtime and _vdeltainvtime
-    mutable bool _bSamplingVerified; ///< if false, then _VerifySampling() has not be called yet to verify that all points can be sampled.
+    mutable bool _bChanged; //<! if true, then _ComputeInternal() has to be called in order to compute _vaccumtime and _vdeltainvtime
+    mutable bool _bSamplingVerified; //<! if false, then _VerifySampling() has not be called yet to verify that all points can be sampled.
 };
 
 TrajectoryBasePtr CreateGenericTrajectory(EnvironmentBasePtr penv, std::istream& sinput)

@@ -688,7 +688,7 @@ private:
     PQP_REAL tri1[3][3], tri2[3][3];
     TransformMatrix tmtemp;
 
-    RobotBaseConstPtr _pactiverobot;     ///< set if ActiveDOFs option is enabled
+    RobotBaseConstPtr _pactiverobot;     //<! set if ActiveDOFs option is enabled
     vector<uint8_t> _vactivelinks;
     std::string _userdatakey;
 

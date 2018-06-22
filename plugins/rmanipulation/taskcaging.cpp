@@ -549,9 +549,9 @@ public:
         KinBodyPtr ptarget;
         KinBody::LinkPtr ptargetlink;
         vector<vector<dReal> > vtargettraj;
-        vector<int> _vtargetjoints;         ///< active joints of the target
-        int nMaxIkIterations;         ///< for sampling free parameters
-        int nMaxSamples;         ///< for trying out heuristics
+        vector<int> _vtargetjoints;         //<! active joints of the target
+        int nMaxIkIterations;         //<! for sampling free parameters
+        int nMaxSamples;         //<! for trying out heuristics
         float fGoalThresh;
 
         // heuristics
@@ -586,7 +586,7 @@ protected:
         }
 
         bool bGenerateFeatures;
-        ofstream flog;         ///< logs features
+        ofstream flog;         //<! logs features
 
         vector<dReal> _lower, _upper, _vsample, _vbestsample, _resolution;
         vector<dReal> _J, _JJt;        // _J is 3xdof

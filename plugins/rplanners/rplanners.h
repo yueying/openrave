@@ -95,12 +95,12 @@ public:
     ~SimpleNode() {
     }
 
-    SimpleNode* rrtparent; ///< pointer to the RRT tree parent
-    std::vector<SimpleNode*> _vchildren; ///< cache tree direct children of this node (for the next cache level down). Has nothing to do with the RRT tree.
-    int16_t _level; ///< the level the node belongs to
-    uint8_t _hasselfchild; ///< if 1, then _vchildren has contains a clone of this node in the level below it.
-    uint8_t _usenn; ///< if 1, then use part of the nearest neighbor search, otherwise ignore
-    uint32_t _userdata; ///< user specified data tagging this node
+    SimpleNode* rrtparent; //<! pointer to the RRT tree parent
+    std::vector<SimpleNode*> _vchildren; //<! cache tree direct children of this node (for the next cache level down). Has nothing to do with the RRT tree.
+    int16_t _level; //<! the level the node belongs to
+    uint8_t _hasselfchild; //<! if 1, then _vchildren has contains a clone of this node in the level below it.
+    uint8_t _usenn; //<! if 1, then use part of the nearest neighbor search, otherwise ignore
+    uint32_t _userdata; //<! user specified data tagging this node
 
 #ifdef _DEBUG
     int id;
@@ -185,7 +185,7 @@ public:
         _vDeltaConfig.resize(dof);
         _vTempConfig.resize(dof);
         _maxdistance = maxdistance;
-        _mindistance = 0.001*fStepLength; ///< is it ok?
+        _mindistance = 0.001*fStepLength; //<! is it ok?
         _maxlevel = ceilf(RaveLog(_maxdistance)/RaveLog(_base));
         _minlevel = _maxlevel - 1;
         _fMaxLevelBound = RavePow(_base, _maxlevel);
@@ -399,7 +399,7 @@ public:
                 // Since the path checked by CheckPathAllConstraints can be different from a straight line segment connecting _vNewConfig and _vCurConfig, we add all checked configurations along the checked segment to the tree.
                 for(int iconfig = 0; iconfig+_dof-1 < (int)_constraintreturn->_configurations.size(); iconfig += _dof) {
                     std::copy(_constraintreturn->_configurations.begin() + iconfig, _constraintreturn->_configurations.begin() + iconfig + _dof, _vNewConfig.begin());
-                    NodePtr pnewnode = _InsertNode(pnode, _vNewConfig, 0); ///< set userdata to 0
+                    NodePtr pnewnode = _InsertNode(pnode, _vNewConfig, 0); //<! set userdata to 0
                     if( !!pnewnode ) {
                         bHasAdded = true;
                         pnode = pnewnode;
@@ -411,7 +411,7 @@ public:
                 }
             }
             else {
-                NodePtr pnewnode = _InsertNode(pnode, _vNewConfig, 0); ///< set userdata to 0
+                NodePtr pnewnode = _InsertNode(pnode, _vNewConfig, 0); //<! set userdata to 0
                 if( !!pnewnode ) {
                     pnode = pnewnode;
                     lastnode = pnode;
@@ -1028,20 +1028,20 @@ private:
     boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _distmetricfn;
     boost::weak_ptr<PlannerBase> _planner;
     dReal _fStepLength;
-    int _dof; ///< the number of values of each state
+    int _dof; //<! the number of values of each state
     int _fromgoal;
 
     // cover tree data structures
-    boost::shared_ptr< boost::pool<> > _pNodesPool; ///< pool nodes are created from
+    boost::shared_ptr< boost::pool<> > _pNodesPool; //<! pool nodes are created from
 
-    std::vector< std::set<NodePtr> > _vsetLevelNodes; ///< _vsetLevelNodes[enc(level)][node] holds the indices of the children of "node" of a given the level. enc(level) maps (-inf,inf) into [0,inf) so it can be indexed by the vector. Every node has an entry in a map here. If the node doesn't hold any children, then it is at the leaf of the tree. _vsetLevelNodes.at(_EncodeLevel(_maxlevel)) is the root.
+    std::vector< std::set<NodePtr> > _vsetLevelNodes; //<! _vsetLevelNodes[enc(level)][node] holds the indices of the children of "node" of a given the level. enc(level) maps (-inf,inf) into [0,inf) so it can be indexed by the vector. Every node has an entry in a map here. If the node doesn't hold any children, then it is at the leaf of the tree. _vsetLevelNodes.at(_EncodeLevel(_maxlevel)) is the root.
 
-    dReal _maxdistance; ///< maximum possible distance between two states. used to balance the tree. Has to be > 0.
-    dReal _mindistance; ///< minimum possible distance between two states until they are declared the same
-    dReal _base, _fBaseInv, _fBaseChildMult; ///< a constant used to control the max level of traversion. _fBaseInv = 1/_base, _fBaseChildMult=1/(_base-1)
-    int _maxlevel; ///< the maximum allowed levels in the tree, this is where the root node starts (inclusive)
-    int _minlevel; ///< the minimum allowed levels in the tree (inclusive)
-    int _numnodes; ///< the number of nodes in the current tree starting at the root at _vsetLevelNodes.at(_EncodeLevel(_maxlevel))
+    dReal _maxdistance; //<! maximum possible distance between two states. used to balance the tree. Has to be > 0.
+    dReal _mindistance; //<! minimum possible distance between two states until they are declared the same
+    dReal _base, _fBaseInv, _fBaseChildMult; //<! a constant used to control the max level of traversion. _fBaseInv = 1/_base, _fBaseChildMult=1/(_base-1)
+    int _maxlevel; //<! the maximum allowed levels in the tree, this is where the root node starts (inclusive)
+    int _minlevel; //<! the minimum allowed levels in the tree (inclusive)
+    int _numnodes; //<! the number of nodes in the current tree starting at the root at _vsetLevelNodes.at(_EncodeLevel(_maxlevel))
     dReal _fMaxLevelBound; // pow(_base, _maxlevel)
 
     // cache

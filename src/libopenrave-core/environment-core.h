@@ -2791,44 +2791,44 @@ protected:
         return false;
     }
 
-    std::vector<RobotBasePtr> _vecrobots;      ///< robots (possibly controlled)
-    std::vector<KinBodyPtr> _vecbodies;     ///< all objects that are collidable (includes robots)
+    std::vector<RobotBasePtr> _vecrobots;      //<! robots (possibly controlled)
+    std::vector<KinBodyPtr> _vecbodies;     //<! all objects that are collidable (includes robots)
 
-    list< std::pair<ModuleBasePtr, std::string> > _listModules;     ///< modules loaded in the environment and the strings they were intialized with. Initialization strings are used for cloning.
-    list<SensorBasePtr> _listSensors;     ///< sensors loaded in the environment
-    list<ViewerBasePtr> _listViewers;     ///< viewers loaded in the environment
+    list< std::pair<ModuleBasePtr, std::string> > _listModules;     //<! modules loaded in the environment and the strings they were intialized with. Initialization strings are used for cloning.
+    list<SensorBasePtr> _listSensors;     //<! sensors loaded in the environment
+    list<ViewerBasePtr> _listViewers;     //<! viewers loaded in the environment
 
-    dReal _fDeltaSimTime;                    ///< delta time for simulate step
-    uint64_t _nCurSimTime;                        ///< simulation time since the start of the environment
+    dReal _fDeltaSimTime;                    //<! delta time for simulate step
+    uint64_t _nCurSimTime;                        //<! simulation time since the start of the environment
     uint64_t _nSimStartTime;
-    int _nBodiesModifiedStamp;     ///< incremented every tiem bodies vector is modified
+    int _nBodiesModifiedStamp;     //<! incremented every tiem bodies vector is modified
 
     CollisionCheckerBasePtr collision_checker_;
     PhysicsEngineBasePtr physics_engine_;
 
-    int environment_index_;                   ///< next network index
-    std::map<int, KinBodyWeakPtr> _mapBodies;     ///< a map of all the bodies in the environment. Controlled through the KinBody constructor and destructors
+    int environment_index_;                   //<! next network index
+    std::map<int, KinBodyWeakPtr> _mapBodies;     //<! a map of all the bodies in the environment. Controlled through the KinBody constructor and destructors
 
-    boost::shared_ptr<boost::thread> simulation_thread_;                      ///< main loop for environment simulation
+    boost::shared_ptr<boost::thread> simulation_thread_;                      //<! main loop for environment simulation
 
-    mutable EnvironmentMutex _mutexEnvironment;          ///< protects internal data from multithreading issues
-    mutable boost::mutex _mutexEnvironmentIds;      ///< protects _vecbodies/_vecrobots from multithreading issues
-    mutable boost::timed_mutex _mutexInterfaces;     ///< lock when managing interfaces like _listOwnedInterfaces, _listModules, _mapBodies
-    mutable boost::mutex init_mutex_;     ///< lock for destroying the environment
+    mutable EnvironmentMutex _mutexEnvironment;          //<! protects internal data from multithreading issues
+    mutable boost::mutex _mutexEnvironmentIds;      //<! protects _vecbodies/_vecrobots from multithreading issues
+    mutable boost::timed_mutex _mutexInterfaces;     //<! lock when managing interfaces like _listOwnedInterfaces, _listModules, _mapBodies
+    mutable boost::mutex init_mutex_;     //<! lock for destroying the environment
 
     vector<KinBody::BodyState> _vPublishedBodies;
     string home_directory_;
-    std::pair<std::string, dReal> _unit; ///< unit name mm, cm, inches, m and the conversion for meters
+    std::pair<std::string, dReal> _unit; //<! unit name mm, cm, inches, m and the conversion for meters
 
     UserDataPtr generic_robot_handle_, generic_trajectory_handle_, multi_controller_handle_, generic_physics_engine_handle_, generic_collision_checker_handle_;
 
     list<InterfaceBasePtr> _listOwnedInterfaces;
 
-    std::list<UserDataWeakPtr> _listRegisteredCollisionCallbacks;     ///< see EnvironmentBase::RegisterCollisionCallback
-    std::list<UserDataWeakPtr> _listRegisteredBodyCallbacks;     ///< see EnvironmentBase::RegisterBodyCallback
+    std::list<UserDataWeakPtr> _listRegisteredCollisionCallbacks;     //<! see EnvironmentBase::RegisterCollisionCallback
+    std::list<UserDataWeakPtr> _listRegisteredBodyCallbacks;     //<! see EnvironmentBase::RegisterBodyCallback
 
-    bool is_init_;                   ///< environment is initialized
-    bool _bEnableSimulation;            ///< enable simulation loop
+    bool is_init_;                   //<! environment is initialized
+    bool _bEnableSimulation;            //<! enable simulation loop
     bool is_shutdown_simulation_; //<! if true, the simulation thread should shutdown
     bool _bRealTime;
 

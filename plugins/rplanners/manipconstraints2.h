@@ -25,15 +25,15 @@ struct ManipConstraintInfo2
     ManipConstraintInfo2() : fmaxdistfromcenter(0) {
     }
 
-    RobotBase::ManipulatorPtr pmanip; ///< the manipulator
-    KinBody::LinkPtr plink; ///< the end-effector of the manipulator
-    std::list<Vector> checkpoints; ///< points (in EE frame) at which to check
+    RobotBase::ManipulatorPtr pmanip; //<! the manipulator
+    KinBody::LinkPtr plink; //<! the end-effector of the manipulator
+    std::list<Vector> checkpoints; //<! points (in EE frame) at which to check
                                    ///manipconstraints. Currently they are vertices of the bounding
                                    ///box but they can be more general, e.g., the vertices of the
                                    ///convex hull.
-    dReal fmaxdistfromcenter; ///< maximum distance from any check point to the EE center
-    std::vector<int> vuseddofindices; ///< a vector of unique DOF indices targetted for the body
-    std::vector<int> vconfigindices;  ///< for every index in vusedofindices, returns the first configuration space index it came from
+    dReal fmaxdistfromcenter; //<! maximum distance from any check point to the EE center
+    std::vector<int> vuseddofindices; //<! a vector of unique DOF indices targetted for the body
+    std::vector<int> vconfigindices;  //<! for every index in vusedofindices, returns the first configuration space index it came from
 };
 
 class ManipConstraintChecker2
@@ -272,7 +272,7 @@ public:
                     }
 
                     // Vector vabstotalmove(RaveFabs(vpointvelbase.x));
-                    // dReal fworkspeed2 = vmoveaxis.lengthsqr3(); ///< total speed in work space of *itpoint
+                    // dReal fworkspeed2 = vmoveaxis.lengthsqr3(); //<! total speed in work space of *itpoint
                     // if( maxmanipspeed2 > 0 ) {
                     //     // sqrt(flen2) * vel <= maxspeed
                     //     if( fworkspeed2 * vbestvels2[j] >= maxmanipspeed2 ) {
@@ -285,7 +285,7 @@ public:
                         // TODO should really be using the hessian here accel = Jacobian * dofaccelerations + dofvelocities^T * Hessian * dofvelocities, but it might be too slow, so just approximate with
                         // accel = Jacobian * dofaccelerations
                         Vector vaccelaxis = vmoveaxis;//(RaveFabs(vmoveaxis.x), RaveFabs(vmoveaxis.y), RaveFabs(vmoveaxis.z));
-                        dReal fworkaccel2 = vaccelaxis.lengthsqr3(); ///< total speed in work space of *itpoint
+                        dReal fworkaccel2 = vaccelaxis.lengthsqr3(); //<! total speed in work space of *itpoint
 
                         if( fworkaccel2 * vbestaccels2[j] >= maxmanipaccel2 ) {
                             vbestaccels2[j] = maxmanipaccel2/fworkaccel2;
@@ -469,7 +469,7 @@ private:
     dReal _maxmanipspeed, _maxmanipaccel;
 
     //@{ cache
-    std::list< ManipConstraintInfo2 > _listCheckManips; ///< the manipulators and the points on their end efffectors to check for velocity and acceleration constraints
+    std::list< ManipConstraintInfo2 > _listCheckManips; //<! the manipulators and the points on their end efffectors to check for velocity and acceleration constraints
     std::vector<dReal> ac, qfillactive, _vfillactive; // the active DOF
     std::vector<dReal> _afill; // full robot DOF
     std::vector<std::pair<Vector,Vector> > endeffvels, endeffaccs;

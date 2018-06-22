@@ -193,9 +193,9 @@ public:
 
     struct physics_model_output
     {
-        KinBodyPtr pbody; ///< the body written for
+        KinBodyPtr pbody; //<! the body written for
         domPhysics_modelRef pmodel;
-        std::vector<std::string > vrigidbodysids;     ///< same ordering as the physics indices (and openrave link indices)
+        std::vector<std::string > vrigidbodysids;     //<! same ordering as the physics indices (and openrave link indices)
     };
 
     struct kinematics_model_output
@@ -212,12 +212,12 @@ public:
             std::string jointnodesid;
             std::string joint_sidref; /// kmodelid/joint, sidref of the joint
         };
-        KinBodyPtr pbody; ///< the body written for
+        KinBodyPtr pbody; //<! the body written for
         domKinematics_modelRef kmodel;
-        domNodeRef noderoot; ///< root node containing the body transform it should have only one child pointing to the first link of the body
-        std::vector<axis_output> vaxissids;     ///< no ordering
-        std::vector<std::string > vlinksids;     ///< linksid. same ordering as the link indices
-        std::vector<std::string > vdofsids; ///< jointsid for every DOF
+        domNodeRef noderoot; //<! root node containing the body transform it should have only one child pointing to the first link of the body
+        std::vector<axis_output> vaxissids;     //<! no ordering
+        std::vector<std::string > vlinksids;     //<! linksid. same ordering as the link indices
+        std::vector<std::string > vdofsids; //<! jointsid for every DOF
     };
 
     struct axis_sids
@@ -246,7 +246,7 @@ public:
 
     struct instance_articulated_system_output
     {
-        KinBodyPtr pbody; ///< the body written for
+        KinBodyPtr pbody; //<! the body written for
         domInstance_articulated_systemRef ias;
         boost::shared_ptr<instance_physics_model_output> ipmout; // this needs to be an array to support full spec
         std::vector<axis_sids> vaxissids;
@@ -2458,21 +2458,21 @@ private:
     domLibrary_materialsRef _materialsLib;
     domLibrary_effectsRef _effectsLib;
     domLibrary_geometriesRef _geometriesLib;
-    domTechniqueRef _sensorsLib, _actuatorsLib;     ///< custom libraries
+    domTechniqueRef _sensorsLib, _actuatorsLib;     //<! custom libraries
     SCENE _scene;
-    //dReal _globalunit; ///< how many real-world meters in one distance unit
+    //dReal _globalunit; //<! how many real-world meters in one distance unit
     EnvironmentBaseConstPtr _penv;
     std::list<kinbody_models> _listkinbodies;
-    std::string _vForceResolveOpenRAVEScheme; ///< if specified, writer will attempt to convert a local system URI (**file:/**) to a a relative path with respect to $OPENRAVE_DATA paths and use **customscheme** as the scheme
-    std::list<std::string> _listExternalRefExports; ///< body names to try to export externally
-    std::list<std::string> _listIgnoreExternalURIs; ///< don't use these URIs for external indexing
+    std::string _vForceResolveOpenRAVEScheme; //<! if specified, writer will attempt to convert a local system URI (**file:/**) to a a relative path with respect to $OPENRAVE_DATA paths and use **customscheme** as the scheme
+    std::list<std::string> _listExternalRefExports; //<! body names to try to export externally
+    std::list<std::string> _listIgnoreExternalURIs; //<! don't use these URIs for external indexing
     std::set<std::string> _setForceWriteOptions;
     std::set<std::string> _setSkipWriteOptions;
 
-    std::map<int, int> _mapBodyIds; ///< map from body environment id to unique collada ids
-    bool _bExternalRefAllBodies; ///< if true, attempts to externally write all bodies
-    bool _bForceWriteAll; ///< if true, attemps to write all modifiable data to externally saved bodies
-    bool _bReuseSimilar; ///< if true, attemps to resuse similar looking meshes and structures to reduce size
+    std::map<int, int> _mapBodyIds; //<! map from body environment id to unique collada ids
+    bool _bExternalRefAllBodies; //<! if true, attempts to externally write all bodies
+    bool _bForceWriteAll; //<! if true, attemps to write all modifiable data to externally saved bodies
+    bool _bReuseSimilar; //<! if true, attemps to resuse similar looking meshes and structures to reduce size
 };
 
 // register for typeof (MSVC only)

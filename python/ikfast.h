@@ -52,11 +52,11 @@ public:
     IkSingleDOFSolutionBase() : fmul(0), foffset(0), freeind(-1), maxsolutions(1) {
         indices[0] = indices[1] = indices[2] = indices[3] = indices[4] = -1;
     }
-    T fmul, foffset; ///< joint value is fmul*sol[freeind]+foffset
-    signed char freeind; ///< if >= 0, mimics another joint
-    unsigned char jointtype; ///< joint type, 0x01 is revolute, 0x11 is slider
-    unsigned char maxsolutions; ///< max possible indices, 0 if controlled by free index or a free joint itself
-    unsigned char indices[5]; ///< unique index of the solution used to keep track on what part it came from. sometimes a solution can be repeated for different indices. store at least another repeated root
+    T fmul, foffset; //<! joint value is fmul*sol[freeind]+foffset
+    signed char freeind; //<! if >= 0, mimics another joint
+    unsigned char jointtype; //<! joint type, 0x01 is revolute, 0x11 is slider
+    unsigned char maxsolutions; //<! max possible indices, 0 if controlled by free index or a free joint itself
+    unsigned char indices[5]; //<! unique index of the solution used to keep track on what part it came from. sometimes a solution can be repeated for different indices. store at least another repeated root
 };
 
 /// \brief The discrete solutions are returned in this structure.
@@ -228,7 +228,7 @@ public:
         }
     }
 
-    std::vector< IkSingleDOFSolutionBase<T> > _vbasesol;       ///< solution and their offsets if joints are mimiced
+    std::vector< IkSingleDOFSolutionBase<T> > _vbasesol;       //<! solution and their offsets if joints are mimiced
     std::vector<int> _vfree;
 };
 

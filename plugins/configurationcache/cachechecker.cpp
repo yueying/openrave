@@ -679,10 +679,10 @@ protected:
     ConfigurationCachePtr _cache;
     ConfigurationCachePtr _selfcache;
     CollisionCheckerBasePtr _pintchecker;
-    std::string _strRobotName; ///< the robot name to track
+    std::string _strRobotName; //<! the robot name to track
     std::string __cachehash;
     std::string _robothash;
-    RobotBasePtr _probot; ///< robot pointer, shouldn't be used directly, use with GetRobot()
+    RobotBasePtr _probot; //<! robot pointer, shouldn't be used directly, use with GetRobot()
     int _numdofs;
     int _cachedcollisionchecks, _cachedcollisionhits, _cachedfreehits, _size;
     int _selfcachedcollisionchecks, _selfcachedcollisionhits, _selfcachedfreehits;

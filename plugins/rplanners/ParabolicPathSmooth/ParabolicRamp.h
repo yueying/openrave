@@ -157,8 +157,8 @@ public:
     Real endTime;
     std::vector<ParabolicRamp1D> ramps;
 
-    mutable int constraintchecked; ///< 0 if collision hasn't been checked yet, otherwise 1
-    mutable int modified; ///< 0 if has not been modified by the merging operation, otherwise 1
+    mutable int constraintchecked; //<! 0 if collision hasn't been checked yet, otherwise 1
+    mutable int modified; //<! 0 if has not been modified by the merging operation, otherwise 1
 
 };
 

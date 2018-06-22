@@ -148,10 +148,10 @@ public:
         InstanceModelBinding(domInstance_nodeRef inode, domNodeRef node, domInstance_kinematics_modelRef ikmodel, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>(), const std::string& idsuffix=std::string()) : _inode(inode), _node(node), _ikmodel(ikmodel), _idsuffix(idsuffix) {
             _listInstanceScopeKModel = listInstanceScope;
         }
-        domInstance_nodeRef _inode; ///< optional instance node that the visual node could have come from
-        domNodeRef _node; ///< visual nod
+        domInstance_nodeRef _inode; //<! optional instance node that the visual node could have come from
+        domNodeRef _node; //<! visual nod
         domInstance_kinematics_modelRef _ikmodel;
-        std::string _idsuffix; ///< if _node is instantiated (cloned), then this holds the suffix used to instantiate
+        std::string _idsuffix; //<! if _node is instantiated (cloned), then this holds the suffix used to instantiate
         domInstance_physics_modelRef _ipmodel;
         std::list<daeElementRef> _listInstanceScopeKModel;
         domKinematics_modelRef _kmodel; // the resolved model from _ikmodel
@@ -189,13 +189,13 @@ public:
 
         daeElementRef pvisualtrans;
         domAxis_constraintRef pkinematicaxis;
-        dReal jointvalue; ///< this value is in degrees/meters
-        domInstance_nodeRef ivisualnode; ///< if the visual node comes from instantiating, this points to the instance_node element
-        domNodeRef visualnode; ///< the visual node
+        dReal jointvalue; //<! this value is in degrees/meters
+        domInstance_nodeRef ivisualnode; //<! if the visual node comes from instantiating, this points to the instance_node element
+        domNodeRef visualnode; //<! the visual node
         domKinematics_axis_infoRef kinematics_axis_info;
         domMotion_axis_infoRef motion_axis_info;
         KinBody::JointPtr _pjoint;
-        std::string _jointsidref; ///< the sid of the joint
+        std::string _jointsidref; //<! the sid of the joint
         std::list<daeElementRef> _listInstanceScopeAxis; // <joint>
         int _iaxis;
     };
@@ -206,12 +206,12 @@ public:
 public:
         KinBody::LinkPtr _link;
         domNodeRef _node;
-        boost::shared_ptr<daeURI> _nodeurifromphysics; ///< node URL from instance_rigid_body
+        boost::shared_ptr<daeURI> _nodeurifromphysics; //<! node URL from instance_rigid_body
         domLinkRef _domlink;
         domInstance_rigid_bodyRef _irigidbody;
         domRigid_bodyRef _rigidbody;
-        domNodeRef _nodephysicsoffset; ///< the physics rigid body is in this coordinate system
-        domInstance_physics_modelRef _ipmodel; ///< parent to _irigidbody
+        domNodeRef _nodephysicsoffset; //<! the physics rigid body is in this coordinate system
+        domInstance_physics_modelRef _ipmodel; //<! parent to _irigidbody
     };
 
     /// \brief inter-collada bindings for a kinematics scene
@@ -5064,12 +5064,12 @@ private:
     std::set<RobotBase::ManipulatorPtr> _setInitialManipulators;
     std::set<RobotBase::AttachedSensorPtr> _setInitialSensors;
     std::vector<std::string> _vOpenRAVESchemeAliases;
-    std::map<std::string,daeURI> _mapInverseResolvedURIList; ///< holds a list of inverse resolved relationships file:// -> openrave://
-    std::map<domNodeRef, std::pair<domInstance_nodeRef, std::string> > _mapInstantiatedNodes; ///< holds a map of the instantiated (cloned) node and the original instance_node elements. Also contains the idsuffix used to instantiate the node.
+    std::map<std::string,daeURI> _mapInverseResolvedURIList; //<! holds a list of inverse resolved relationships file:// -> openrave://
+    std::map<domNodeRef, std::pair<domInstance_nodeRef, std::string> > _mapInstantiatedNodes; //<! holds a map of the instantiated (cloned) node and the original instance_node elements. Also contains the idsuffix used to instantiate the node.
 
-    bool _bOpeningZAE; ///< true if currently opening a zae
+    bool _bOpeningZAE; //<! true if currently opening a zae
     bool _bSkipGeometry;
-    bool _bBackCompatValuesInRadians; ///< if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
+    bool _bBackCompatValuesInRadians; //<! if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
 };
 
 bool RaveParseColladaURI(EnvironmentBasePtr penv, const std::string& uri,const AttributesList& atts)

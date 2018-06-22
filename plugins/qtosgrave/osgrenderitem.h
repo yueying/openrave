@@ -93,13 +93,13 @@ public:
 protected:
 
     // Instance Data
-    OSGGroupPtr _osgSceneRoot, _osgFigureRoot; ///< used for adding and removing itself from the viewer node
-    string _name; ///< item name
-    //OSGGroupPtr _osgitemroot; ///< root of this object's OSG data hierarchy
-    OSGMatrixTransformPtr _osgWorldTransform; ///< Kinbody position
-    OSGGroupPtr _osgdata; ///< item geometry hierarchy
+    OSGGroupPtr _osgSceneRoot, _osgFigureRoot; //<! used for adding and removing itself from the viewer node
+    string _name; //<! item name
+    //OSGGroupPtr _osgitemroot; //<! root of this object's OSG data hierarchy
+    OSGMatrixTransformPtr _osgWorldTransform; //<! Kinbody position
+    OSGGroupPtr _osgdata; //<! item geometry hierarchy
     OSGGroupPtr _osgwireframe;
-    std::string _visualizationmode; ///< current visualization mode that item is set to
+    std::string _visualizationmode; //<! current visualization mode that item is set to
 };
 
 typedef boost::shared_ptr<Item> ItemPtr;
@@ -191,8 +191,8 @@ protected:
     typedef std::pair<OSGGroupPtr, OSGMatrixTransformPtr> LinkNodes;
 
     KinBodyPtr _pbody;
-    int _environmentid;        ///< _pbody->GetEnvironmentId()
-    std::vector<LinkNodes> _veclinks; ///< render items for each link, indexed same as links. The group's hierarchy mimics the kinematics hierarchy. For each pair, the first Group node is used for the hierarchy, the second node contains the transform with respect to the body's transform
+    int _environmentid;        //<! _pbody->GetEnvironmentId()
+    std::vector<LinkNodes> _veclinks; //<! render items for each link, indexed same as links. The group's hierarchy mimics the kinematics hierarchy. For each pair, the first Group node is used for the hierarchy, the second node contains the transform with respect to the body's transform
     bool bEnabled;
     bool bGrabbed, _bReload, _bDrawStateChanged;
     ViewGeometry _viewmode;
