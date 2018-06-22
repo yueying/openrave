@@ -1,5 +1,15 @@
 cmake_policy(SET CMP0005 NEW)
-set(openrave_lib_SOURCES configurationspecification.cpp controller.cpp fparsermulti.h iksolver.cpp interface.cpp kinbody.cpp kinbodycollision.cpp kinbodygeometry.cpp kinbodygrab.cpp kinbodyjoint.cpp kinbodylink.cpp  libopenrave.cpp libopenrave.h math.cpp planner.cpp plannerparameters.cpp planningutils.cpp plugindatabase.h robot.cpp robotmanipulator.cpp sensorsystem.cpp trajectory.cpp utils.cpp xmlreaders.cpp ${rave_header_files})
+set(openrave_lib_SOURCES configurationspecification.cpp controller.cpp
+	 fparsermulti.h iksolver.cpp interface.cpp kinbody.cpp 
+	kinbodycollision.cpp kinbodygeometry.cpp kinbodygrab.cpp 
+	kinbodyjoint.cpp kinbodylink.cpp  libopenrave.cpp libopenrave.h 
+	math.cpp planner.cpp plannerparameters.cpp planningutils.cpp 
+	plugindatabase.h robot.cpp robotmanipulator.cpp sensorsystem.cpp 
+	trajectory.cpp utils.cpp xmlreaders.cpp ${rave_header_files})
+
+FILE(GLOB include_file_list "../../include/openrave/*.h" 
+"../../include/openrave_c/*.h" 
+)
 
 check_function_exists(asinh HAS_ASINH)
 check_function_exists(acosh HAS_ACOSH)
@@ -18,7 +28,7 @@ endif()
 link_directories(${OPENRAVE_LINK_DIRS} ${FPARSER_LIBRARY_DIRS})
 
 include_directories(${FPARSER_INCLUDE_DIRS})
-add_library(libopenrave SHARED ${openrave_lib_SOURCES})
+add_library(libopenrave SHARED ${openrave_lib_SOURCES} ${include_file_list})
 add_dependencies(libopenrave interfacehashes_target openrave-md5)
 if( CRLIBM_FOUND )
   add_dependencies(libopenrave check_libm_accuracy-native) # forces check to be run before libopenrave is compile

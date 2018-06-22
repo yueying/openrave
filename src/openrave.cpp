@@ -241,7 +241,8 @@ int main(int argc, char ** argv)
     // add a signal handler
     signal(SIGINT,sigint_handler); // control C
 
-    if( is_list_plugins ) {
+    if( is_list_plugins ) 
+	{
 
         std::list< std::pair<std::string, PLUGININFO> > plugins;
         std::list< std::pair<std::string, PLUGININFO> >::iterator itplugin;

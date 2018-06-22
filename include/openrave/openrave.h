@@ -249,7 +249,8 @@ public:
 class OPENRAVE_API UserData
 {
 public:
-    virtual ~UserData() {
+    virtual ~UserData() 
+	{
     }
 };
 typedef boost::shared_ptr<UserData> UserDataPtr;
@@ -405,18 +406,22 @@ enum CloningOptions {
 class OPENRAVE_API XMLReadable : public UserData
 {
 public:
-    XMLReadable(const std::string& xmlid) : __xmlid(xmlid) {
+    XMLReadable(const std::string& xmlid) : xml_id_(xmlid) 
+	{
     }
-    virtual ~XMLReadable() {
+    virtual ~XMLReadable() 
+	{
     }
-    virtual const std::string& GetXMLId() const {
-        return __xmlid;
+    virtual const std::string& GetXMLId() const
+	{
+        return xml_id_;
     }
     /// \brief serializes the interface
-    virtual void Serialize(BaseXMLWriterPtr writer, int options=0) const {
+    virtual void Serialize(BaseXMLWriterPtr writer, int options=0) const 
+	{
     }
 private:
-    std::string __xmlid;
+    std::string xml_id_;
 };
 
 typedef boost::shared_ptr<XMLReadable> XMLReadablePtr;

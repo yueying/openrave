@@ -87,7 +87,8 @@ public:
 
 } // end namespace cppexamples
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, 
+	const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
 {
     if( type == PT_Module && interfacename == "mymodule" ) {
         return InterfaceBasePtr(new cppexamples::MyModule(penv));

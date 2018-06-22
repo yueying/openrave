@@ -71,7 +71,7 @@ endif()
 
 add_subdirectory(libopenrave)
 add_subdirectory(libopenrave-core)
-
+add_subdirectory(cppexamples)
 # because openrave drags in dependencies from libopenrave and libopenrave-core, have to add the correct link-directories
 if( COLLADA_DOM_FOUND )
   set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${COLLADA_DOM_LIBRARY_DIRS})

@@ -22,7 +22,8 @@
 #ifndef OPENRAVE_SENSOR_H
 #define OPENRAVE_SENSOR_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /** \brief <b>[interface]</b> A sensor measures physical properties from the environment. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_sensor.
    \ingroup interfaces

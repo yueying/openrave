@@ -15,60 +15,61 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /** \file module.h
-    \brief Modules containing useful routines and algorithms.
+	\brief Modules containing useful routines and algorithms.
 
-    Automatically included with \ref openrave.h
+	Automatically included with \ref openrave.h
  */
 #ifndef OPENRAVE_COMMAND_PROBLEM_INSTANCE_H
 #define OPENRAVE_COMMAND_PROBLEM_INSTANCE_H
 
-namespace OpenRAVE {
-
-/** \brief <b>[interface]</b> A loadable module of user code meant to solve a specific domain. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_module.
-    \ingroup interfaces
- */
-class OPENRAVE_API ModuleBase : public InterfaceBase
+namespace OpenRAVE
 {
-public:
-    ModuleBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Module, penv) {
-    }
-    virtual ~ModuleBase() {
-    }
+	/** \brief <b>[interface]</b> A loadable module of user code meant to solve a specific domain. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_module.
+		\ingroup interfaces
+	 */
+	class OPENRAVE_API ModuleBase : public InterfaceBase
+	{
+	public:
+		ModuleBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Module, penv)
+		{
+		}
+		virtual ~ModuleBase() {
+		}
 
-    /// return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
-        return PT_ProblemInstance;
-    }
+		/// return the static interface type this class points to (used for safe casting)
+		static inline InterfaceType GetInterfaceTypeStatic() {
+			return PT_ProblemInstance;
+		}
 
-    /// gets called every time a problem instance is loaded to initialize the problem.
-    /// Robots might not necessarily be set before this function call
-    /// returns 0 on success
-    virtual int main(const std::string& cmd) {
-        return 0;
-    }
+		/// gets called every time a problem instance is loaded to initialize the problem.
+		/// Robots might not necessarily be set before this function call
+		/// returns 0 on success
+		virtual int main(const std::string& cmd) {
+			return 0;
+		}
 
-    /// called when problem gets unloaded from environment
-    virtual void Destroy() {
-    }
+		/// called when problem gets unloaded from environment
+		virtual void Destroy() {
+		}
 
-    /// called when environment is reset
-    virtual void Reset() {
-    }
+		/// called when environment is reset
+		virtual void Reset() {
+		}
 
-    virtual bool SimulationStep(dReal fElapsedTime) {
-        return false;
-    }
-    
-private:
-    virtual const char* GetHash() const {
-        return OPENRAVE_MODULE_HASH;
-    }
-};
+		virtual bool SimulationStep(dReal fElapsedTime) {
+			return false;
+		}
 
-typedef ModuleBase ProblemInstance;
-typedef ModuleBasePtr ProblemInstancePtr;
-typedef ModuleBaseWeakPtr ProblemInstanceConstPtr;
-typedef ModuleBaseConstPtr ProblemInstanceWeakPtr;
+	private:
+		virtual const char* GetHash() const {
+			return OPENRAVE_MODULE_HASH;
+		}
+	};
+
+	typedef ModuleBase ProblemInstance;
+	typedef ModuleBasePtr ProblemInstancePtr;
+	typedef ModuleBaseWeakPtr ProblemInstanceConstPtr;
+	typedef ModuleBaseConstPtr ProblemInstanceWeakPtr;
 
 } // end namespace OpenRAVE
 
