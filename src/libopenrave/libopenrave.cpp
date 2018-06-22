@@ -52,9 +52,11 @@
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/consoleappender.h>
 
-namespace log4cxx {
+namespace log4cxx 
+{
 
-class ColorLayout : public Layout {
+class ColorLayout : public Layout 
+{
 public:
     DECLARE_LOG4CXX_OBJECT(ColorLayout)
     BEGIN_LOG4CXX_CAST_MAP()
@@ -88,7 +90,8 @@ protected:
 
 #endif
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 #ifdef _WIN32
 const char s_filesep = '\\';
@@ -370,8 +373,9 @@ class RaveGlobal : private boost::noncopyable,
         debug_level_ = Level_Info;
         _nGlobalEnvironmentId = 0;
         _nDataAccessOptions = 0;
+#ifdef USE_CRLIBM
         _bcrlibmInit = false;
-        
+#endif   
         interface_names_map_[PT_Planner] = "planner";
         interface_names_map_[PT_Robot] = "robot";
         interface_names_map_[PT_SensorSystem] = "sensorsystem";
@@ -460,11 +464,12 @@ public:
         }
 
         char* phomedir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
-        if( phomedir == NULL ) {
+        if( phomedir == NULL ) 
+		{
 #ifndef _WIN32
-            _homedirectory = string(getenv("HOME"))+string("/.openrave"); // getenv not thread-safe?
+            _homedirectory = std::string(getenv("HOME"))+ std::string("/.openrave"); // getenv not thread-safe?
 #else
-            _homedirectory = string(getenv("HOMEDRIVE"))+string(getenv("HOMEPATH"))+string("\\.openrave"); // getenv not thread-safe?
+            _homedirectory = std::string(getenv("HOMEDRIVE"))+ std::string(getenv("HOMEPATH"))+ std::string("\\.openrave"); // getenv not thread-safe?
 #endif
         }
         else {
@@ -1078,8 +1083,9 @@ private:
     SpaceSamplerBasePtr _pdefaultsampler;
 #ifdef USE_CRLIBM
     long long _crlibm_fpu_state;
-#endif
 	bool _bcrlibmInit; ///< true if crlibm is initialized
+#endif
+	
     int _nDataAccessOptions;
 
     std::vector<string> _vdatadirs;
@@ -1324,7 +1330,9 @@ SpaceSamplerBasePtr RaveCreateSpaceSampler(EnvironmentBasePtr penv, const std::s
     return RaveGlobal::instance()->GetDatabase()->CreateSpaceSampler(penv, name);
 }
 
-UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
+UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name,
+	const char* interfacehash, const char* envhash,
+	const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
 {
     return RaveGlobal::instance()->GetDatabase()->RegisterInterface(type, name, interfacehash,envhash,createfn);
 }
@@ -2365,8 +2373,11 @@ void DummyXMLReader::characters(const std::string& ch)
 
 EnvironmentBase::EnvironmentBase()
 {
-    if( !RaveGlobalState() ) {
-        RAVELOG_WARN("OpenRAVE global state not initialized! Need to call RaveInitialize before any OpenRAVE services can be used. For now, initializing with default parameters.\n");
+    if( !RaveGlobalState() ) 
+	{
+        RAVELOG_WARN("OpenRAVE global state not initialized!\
+			Need to call RaveInitialize before any OpenRAVE services can be used.\
+			For now, initializing with default parameters.\n");
         RaveInitialize(true);
     }
     __nUniqueId = RaveGlobal::instance()->RegisterEnvironment(this);

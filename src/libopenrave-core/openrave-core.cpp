@@ -16,42 +16,45 @@
 #include "ravep.h"
 #include "environment-core.h"
 
-namespace OpenRAVE {
-EnvironmentBasePtr RaveCreateEnvironment(int options) {
-    boost::shared_ptr<Environment> p(new Environment());
-    p->Init(!!(options&ECO_StartSimulationThread));
-    return p;
-}
+namespace OpenRAVE
+{
+	EnvironmentBasePtr RaveCreateEnvironment(int options) 
+	{
+		boost::shared_ptr<Environment> p(new Environment());
+		p->Init(!!(options&ECO_StartSimulationThread));
+		return p;
+	}
 
-EnvironmentBasePtr CreateEnvironment(bool bLoadAllPlugins) {
-    return RaveCreateEnvironment();
-}
+	EnvironmentBasePtr CreateEnvironment(bool is_load_all_plugins) 
+	{
+		return RaveCreateEnvironment();
+	}
 }
 
 #if !defined(OPENRAVE_IS_ASSIMP3) && !defined(OPENRAVE_ASSIMP)
 
-bool RaveParseXFile(EnvironmentBasePtr penv, KinBodyPtr& ppbody, const std::string& filename,const AttributesList& atts)
+bool RaveParseXFile(EnvironmentBasePtr penv, KinBodyPtr& ppbody, const std::string& filename, const AttributesList& atts)
 {
-    RAVELOG_ERROR("x-files not supported\n");
-    return false;
+	RAVELOG_ERROR("x-files not supported\n");
+	return false;
 }
 
-bool RaveParseXFile(EnvironmentBasePtr penv, RobotBasePtr& pprobot, const std::string& filename,const AttributesList& atts)
+bool RaveParseXFile(EnvironmentBasePtr penv, RobotBasePtr& pprobot, const std::string& filename, const AttributesList& atts)
 {
-    RAVELOG_ERROR("x-files not supported\n");
-    return false;
+	RAVELOG_ERROR("x-files not supported\n");
+	return false;
 }
 
-bool RaveParseXData(EnvironmentBasePtr penv, KinBodyPtr& ppbody, const std::vector<char>& data,const AttributesList& atts)
+bool RaveParseXData(EnvironmentBasePtr penv, KinBodyPtr& ppbody, const std::vector<char>& data, const AttributesList& atts)
 {
-    RAVELOG_ERROR("x-files not supported\n");
-    return false;
+	RAVELOG_ERROR("x-files not supported\n");
+	return false;
 }
 
-bool RaveParseXData(EnvironmentBasePtr penv, RobotBasePtr& pprobot, const std::vector<char>& data,const AttributesList& atts)
+bool RaveParseXData(EnvironmentBasePtr penv, RobotBasePtr& pprobot, const std::vector<char>& data, const AttributesList& atts)
 {
-    RAVELOG_ERROR("x-files not supported\n");
-    return false;
+	RAVELOG_ERROR("x-files not supported\n");
+	return false;
 }
 
 #endif

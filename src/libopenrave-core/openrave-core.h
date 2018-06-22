@@ -47,7 +47,7 @@ enum EnvironmentCreateOptions
 OPENRAVE_CORE_API EnvironmentBasePtr RaveCreateEnvironment(int options=ECO_StartSimulationThread);
 
 /// \deprecated (10/09/23) see \ref RaveCreateEnvironment
-OPENRAVE_CORE_API EnvironmentBasePtr CreateEnvironment(bool bLoadAllPlugins=true) RAVE_DEPRECATED;
+OPENRAVE_CORE_API EnvironmentBasePtr CreateEnvironment(bool is_load_all_plugins=true) RAVE_DEPRECATED;
 
 } // end namespace OpenRAVE
 

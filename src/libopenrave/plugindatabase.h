@@ -762,9 +762,11 @@ namespace OpenRAVE
 		void ReloadPlugins()
 		{
 			boost::mutex::scoped_lock lock(_mutex);
-			FOREACH(itplugin, plugins_list_) {
+			FOREACH(itplugin, plugins_list_) 
+			{
 				PluginPtr newplugin = _LoadPlugin((*itplugin)->ppluginname);
-				if (!!newplugin) {
+				if (!!newplugin) 
+				{
 					*itplugin = newplugin;
 				}
 			}
@@ -890,15 +892,22 @@ namespace OpenRAVE
 			}
 		}
 
-		UserDataPtr RegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) {
+		UserDataPtr RegisterInterface(InterfaceType type, const std::string& name,
+			const char* interfacehash, const char* envhash,
+			const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
+		{
 			BOOST_ASSERT(interfacehash != NULL && envhash != NULL);
 			BOOST_ASSERT(!!createfn);
 			BOOST_ASSERT(name.size() > 0);
-			if (strcmp(envhash, OPENRAVE_ENVIRONMENT_HASH)) {
-				throw openrave_exception(str(boost::format(_("environment invalid hash %s!=%s\n")) % envhash%OPENRAVE_ENVIRONMENT_HASH), ORE_InvalidInterfaceHash);
+			if (strcmp(envhash, OPENRAVE_ENVIRONMENT_HASH)) 
+			{
+				throw openrave_exception(str(boost::format(_("environment invalid hash %s!=%s\n"))
+					% envhash%OPENRAVE_ENVIRONMENT_HASH), ORE_InvalidInterfaceHash);
 			}
-			if (strcmp(interfacehash, RaveGetInterfaceHash(type))) {
-				throw openrave_exception(str(boost::format(_("interface %s invalid hash %s!=%s\n")) % RaveGetInterfaceName(type) % interfacehash%RaveGetInterfaceHash(type)), ORE_InvalidInterfaceHash);
+			if (strcmp(interfacehash, RaveGetInterfaceHash(type))) 
+			{
+				throw openrave_exception(str(boost::format(_("interface %s invalid hash %s!=%s\n"))
+					% RaveGetInterfaceName(type) % interfacehash%RaveGetInterfaceHash(type)), ORE_InvalidInterfaceHash);
 			}
 			boost::mutex::scoped_lock lock(_mutex);
 			RegisteredInterfacePtr pdata(new RegisteredInterface(type, name, createfn, shared_from_this()));

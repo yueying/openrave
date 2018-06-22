@@ -25,6 +25,7 @@
 #endif
 
 #include <pcrecpp.h>
+#include <array>
 
 #define CHECK_INTERFACE(pinterface) { \
         if( (pinterface)->GetEnv() != shared_from_this() ) \
@@ -102,7 +103,7 @@ public:
             }
         }
 
-        list<UserDataWeakPtr>::iterator _iterator;
+        std::list<UserDataWeakPtr>::iterator _iterator;
         BodyCallbackFn _callback;
 protected:
         boost::weak_ptr<Environment> _pweakenv;
@@ -113,25 +114,30 @@ protected:
 public:
     Environment() : EnvironmentBase()
     {
-        _homedirectory = RaveGetHomeDirectory();
-        RAVELOG_DEBUG_FORMAT("setting openrave home directory to %s", _homedirectory);
+        home_directory_ = RaveGetHomeDirectory();
+        RAVELOG_DEBUG_FORMAT("setting openrave home directory to %s", home_directory_);
 
         _nBodiesModifiedStamp = 0;
-        _nEnvironmentIndex = 1;
+        environment_index_ = 1;
 
         _fDeltaSimTime = 0.01f;
         _nCurSimTime = 0;
         _nSimStartTime = utils::GetMicroTime();
         _bRealTime = true;
-        _bInit = false;
+        is_init_ = false;
         _bEnableSimulation = true;     // need to start by default
         _unit = std::make_pair("meter",1.0); //default unit settings
 
-        _handlegenericrobot = RaveRegisterInterface(PT_Robot,"GenericRobot", RaveGetInterfaceHash(PT_Robot), GetHash(), CreateGenericRobot);
-        _handlegenerictrajectory = RaveRegisterInterface(PT_Trajectory,"GenericTrajectory", RaveGetInterfaceHash(PT_Trajectory), GetHash(), CreateGenericTrajectory);
-        _handlemulticontroller = RaveRegisterInterface(PT_Controller,"GenericMultiController", RaveGetInterfaceHash(PT_Controller), GetHash(), CreateMultiController);
-        _handlegenericphysicsengine = RaveRegisterInterface(PT_PhysicsEngine,"GenericPhysicsEngine", RaveGetInterfaceHash(PT_PhysicsEngine), GetHash(), CreateGenericPhysicsEngine);
-        _handlegenericcollisionchecker = RaveRegisterInterface(PT_CollisionChecker,"GenericCollisionChecker", RaveGetInterfaceHash(PT_CollisionChecker), GetHash(), CreateGenericCollisionChecker);
+        generic_robot_handle_ = RaveRegisterInterface(PT_Robot,"GenericRobot", 
+			RaveGetInterfaceHash(PT_Robot), GetHash(), CreateGenericRobot);
+        generic_trajectory_handle_ = RaveRegisterInterface(PT_Trajectory,"GenericTrajectory",
+			RaveGetInterfaceHash(PT_Trajectory), GetHash(), CreateGenericTrajectory);
+        multi_controller_handle_ = RaveRegisterInterface(PT_Controller,"GenericMultiController",
+			RaveGetInterfaceHash(PT_Controller), GetHash(), CreateMultiController);
+        generic_physics_engine_handle_ = RaveRegisterInterface(PT_PhysicsEngine,"GenericPhysicsEngine",
+			RaveGetInterfaceHash(PT_PhysicsEngine), GetHash(), CreateGenericPhysicsEngine);
+        generic_collision_checker_handle_ = RaveRegisterInterface(PT_CollisionChecker,"GenericCollisionChecker",
+			RaveGetInterfaceHash(PT_CollisionChecker), GetHash(), CreateGenericCollisionChecker);
     }
 
     virtual ~Environment()
@@ -139,16 +145,17 @@ public:
         Destroy();
     }
 
-    virtual void Init(bool bStartSimulationThread=true)
+    virtual void Init(bool is_start_simulation_thread=true)
     {
-        boost::mutex::scoped_lock lockinit(_mutexInit);
-        if( _bInit ) {
+        boost::mutex::scoped_lock lockinit(init_mutex_);
+        if( is_init_ ) 
+		{
             RAVELOG_WARN("environment is already initialized, ignoring\n");
             return;
         }
 
         _nBodiesModifiedStamp = 0;
-        _nEnvironmentIndex = 1;
+        environment_index_ = 1;
 
         _fDeltaSimTime = 0.01f;
         _nCurSimTime = 0;
@@ -156,72 +163,85 @@ public:
         _bRealTime = true;
         _bEnableSimulation = true;     // need to start by default
 
-        if( !_pCurrentChecker ) {
-            _pCurrentChecker = RaveCreateCollisionChecker(shared_from_this(), "GenericCollisionChecker");
+        if( !collision_checker_ ) 
+		{
+            collision_checker_ = RaveCreateCollisionChecker(shared_from_this(), "GenericCollisionChecker");
         }
-        if( !_pPhysicsEngine ) {
-            _pPhysicsEngine = RaveCreatePhysicsEngine(shared_from_this(), "GenericPhysicsEngine");
+        if( !physics_engine_ ) 
+		{
+            physics_engine_ = RaveCreatePhysicsEngine(shared_from_this(), "GenericPhysicsEngine");
             _SetDefaultGravity();
         }
 
         // try to set init as early as possible since will be calling into user code
-        _bInit = true;
+        is_init_ = true;
 
         // set a collision checker, don't call EnvironmentBase::CreateCollisionChecker
         CollisionCheckerBasePtr localchecker;
 
         const char* pOPENRAVE_DEFAULT_COLLISIONCHECKER = std::getenv("OPENRAVE_DEFAULT_COLLISIONCHECKER");
-        if( !!pOPENRAVE_DEFAULT_COLLISIONCHECKER && strlen(pOPENRAVE_DEFAULT_COLLISIONCHECKER) > 0 ) {
+        if( !!pOPENRAVE_DEFAULT_COLLISIONCHECKER && strlen(pOPENRAVE_DEFAULT_COLLISIONCHECKER) > 0 ) 
+		{
             localchecker = RaveCreateCollisionChecker(shared_from_this(), std::string(pOPENRAVE_DEFAULT_COLLISIONCHECKER));
         }
 
-        if( !localchecker ) {
-            boost::array<string,4> checker_prefs = { { "fcl_", "ode", "bullet", "pqp"}};     // ode takes priority since bullet has some bugs with deleting bodies
-            FOREACH(itchecker,checker_prefs) {
-                localchecker = RaveCreateCollisionChecker(shared_from_this(), *itchecker);
-                if( !!localchecker ) {
+        if( !localchecker ) 
+		{
+            std::array<std::string,4> checker_prefs = { { "fcl_", "ode", "bullet", "pqp"}};     // ode takes priority since bullet has some bugs with deleting bodies
+            for(auto itchecker: checker_prefs) 
+			{
+                localchecker = RaveCreateCollisionChecker(shared_from_this(), itchecker);
+                if( !!localchecker ) 
+				{
                     break;
                 }
             }
         }
 
-        if( !localchecker ) {     // take any collision checker
+        if( !localchecker )
+		{     // take any collision checker
             std::map<InterfaceType, std::vector<std::string> > interfacenames;
             RaveGetLoadedInterfaces(interfacenames);
-            std::map<InterfaceType, std::vector<std::string> >::const_iterator itnames =interfacenames.find(PT_CollisionChecker);
-            if( itnames != interfacenames.end() ) {
-                FOREACHC(itname, itnames->second) {
-                    localchecker = RaveCreateCollisionChecker(shared_from_this(), *itname);
-                    if( !!localchecker ) {
+            auto itnames =interfacenames.find(PT_CollisionChecker);
+            if( itnames != interfacenames.end() )
+			{
+                for(auto itname: itnames->second)
+				{
+                    localchecker = RaveCreateCollisionChecker(shared_from_this(), itname);
+                    if( !!localchecker ) 
+					{
                         break;
                     }
                 }
             }
         }
 
-        if( !!localchecker ) {
+        if( !!localchecker ) 
+		{
             RAVELOG_DEBUG("using %s collision checker\n", localchecker->GetXMLId().c_str());
             SetCollisionChecker(localchecker);
         }
-        else {
+        else 
+		{
             RAVELOG_WARN("failed to find any collision checker.\n");
         }
 
-        if( bStartSimulationThread ) {
+        if( is_start_simulation_thread ) 
+		{
             _StartSimulationThread();
         }
     }
 
     virtual void Destroy()
     {
-        boost::mutex::scoped_lock lockdestroy(_mutexInit);
-        if( !_bInit ) {
+        boost::mutex::scoped_lock lockdestroy(init_mutex_);
+        if( !is_init_ ) {
             RAVELOG_VERBOSE("environment is already destroyed\n");
             return;
         }
 
         // destruction order is *very* important, don't touch it without consultation
-        _bInit = false;
+        is_init_ = false;
 
         RAVELOG_VERBOSE("Environment destructor\n");
         _StopSimulationThread();
@@ -253,11 +273,11 @@ public:
         {
             EnvironmentMutex::scoped_lock lockenv(GetMutex());
             _bEnableSimulation = false;
-            if( !!_pPhysicsEngine ) {
-                _pPhysicsEngine->DestroyEnvironment();
+            if( !!physics_engine_ ) {
+                physics_engine_->DestroyEnvironment();
             }
-            if( !!_pCurrentChecker ) {
-                _pCurrentChecker->DestroyEnvironment();
+            if( !!collision_checker_ ) {
+                collision_checker_->DestroyEnvironment();
             }
 
             // clear internal interface lists, have to Destroy all kinbodys without locking _mutexInterfaces since some can hold BodyCallbackData, which requires to lock _mutexInterfaces
@@ -298,8 +318,8 @@ public:
         }
 
         // release all other interfaces, not necessary to hold a mutex?
-        _pCurrentChecker.reset();
-        _pPhysicsEngine.reset();
+        collision_checker_.reset();
+        physics_engine_.reset();
         RAVELOG_VERBOSE("Environment destroyed\n");
     }
 
@@ -317,11 +337,11 @@ public:
 
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
 
-        if( !!_pPhysicsEngine ) {
-            _pPhysicsEngine->DestroyEnvironment();
+        if( !!physics_engine_ ) {
+            physics_engine_->DestroyEnvironment();
         }
-        if( !!_pCurrentChecker ) {
-            _pCurrentChecker->DestroyEnvironment();
+        if( !!collision_checker_ ) {
+            collision_checker_->DestroyEnvironment();
         }
         std::vector<KinBodyPtr> vcallbackbodies;
         {
@@ -374,11 +394,11 @@ public:
         listModules.clear();
         _listOwnedInterfaces.clear();
 
-        if( !!_pCurrentChecker ) {
-            _pCurrentChecker->InitEnvironment();
+        if( !!collision_checker_ ) {
+            collision_checker_->InitEnvironment();
         }
-        if( !!_pPhysicsEngine ) {
-            _pPhysicsEngine->InitEnvironment();
+        if( !!physics_engine_ ) {
+            physics_engine_->InitEnvironment();
         }
     }
 
@@ -678,8 +698,8 @@ public:
             _nBodiesModifiedStamp++;
         }
         pbody->_ComputeInternalInformation();
-        _pCurrentChecker->InitKinBody(pbody);
-        _pPhysicsEngine->InitKinBody(pbody);
+        collision_checker_->InitKinBody(pbody);
+        physics_engine_->InitKinBody(pbody);
         // send all the changed callbacks of the body since anything could have changed
         pbody->_PostprocessChangedParameters(0xffffffff&~KinBody::Prop_JointMimic&~KinBody::Prop_LinkStatic&~KinBody::Prop_BodyRemoved);
         _CallBodyCallbacks(pbody, 1);
@@ -714,8 +734,8 @@ public:
             _nBodiesModifiedStamp++;
         }
         robot->_ComputeInternalInformation(); // have to do this after _vecrobots is added since SensorBase::SetName can call EnvironmentBase::GetSensor to initialize itself
-        _pCurrentChecker->InitKinBody(robot);
-        _pPhysicsEngine->InitKinBody(robot);
+        collision_checker_->InitKinBody(robot);
+        physics_engine_->InitKinBody(robot);
         // send all the changed callbacks of the body since anything could have changed
         robot->_PostprocessChangedParameters(0xffffffff&~KinBody::Prop_JointMimic&~KinBody::Prop_LinkStatic&~KinBody::Prop_BodyRemoved);
         _CallBodyCallbacks(robot, 1);
@@ -880,24 +900,24 @@ public:
     virtual bool SetPhysicsEngine(PhysicsEngineBasePtr pengine)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        if( !!_pPhysicsEngine ) {
-            _pPhysicsEngine->DestroyEnvironment();
+        if( !!physics_engine_ ) {
+            physics_engine_->DestroyEnvironment();
         }
-        _pPhysicsEngine = pengine;
-        if( !_pPhysicsEngine ) {
+        physics_engine_ = pengine;
+        if( !physics_engine_ ) {
             RAVELOG_DEBUG_FORMAT("env %d, disabling physics for", GetId());
-            _pPhysicsEngine = RaveCreatePhysicsEngine(shared_from_this(),"GenericPhysicsEngine");
+            physics_engine_ = RaveCreatePhysicsEngine(shared_from_this(),"GenericPhysicsEngine");
             _SetDefaultGravity();
         }
         else {
-            RAVELOG_DEBUG_FORMAT("setting %s physics engine", _pPhysicsEngine->GetXMLId());
+            RAVELOG_DEBUG_FORMAT("setting %s physics engine", physics_engine_->GetXMLId());
         }
-        _pPhysicsEngine->InitEnvironment();
+        physics_engine_->InitEnvironment();
         return true;
     }
 
     virtual PhysicsEngineBasePtr GetPhysicsEngine() const {
-        return _pPhysicsEngine;
+        return physics_engine_;
     }
 
     virtual UserDataPtr RegisterCollisionCallback(const CollisionCallbackFn& callback)
@@ -926,35 +946,35 @@ public:
     virtual bool SetCollisionChecker(CollisionCheckerBasePtr pchecker)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        if( _pCurrentChecker == pchecker ) {
+        if( collision_checker_ == pchecker ) {
             return true;
         }
-        if( !!_pCurrentChecker ) {
-            _pCurrentChecker->DestroyEnvironment();     // delete all resources
+        if( !!collision_checker_ ) {
+            collision_checker_->DestroyEnvironment();     // delete all resources
         }
-        _pCurrentChecker = pchecker;
-        if( !_pCurrentChecker ) {
+        collision_checker_ = pchecker;
+        if( !collision_checker_ ) {
             RAVELOG_DEBUG("disabling collisions\n");
-            _pCurrentChecker = RaveCreateCollisionChecker(shared_from_this(),"GenericCollisionChecker");
+            collision_checker_ = RaveCreateCollisionChecker(shared_from_this(),"GenericCollisionChecker");
         }
         else {
-            RAVELOG_DEBUG_FORMAT("setting %s collision checker", _pCurrentChecker->GetXMLId());
+            RAVELOG_DEBUG_FORMAT("setting %s collision checker", collision_checker_->GetXMLId());
             FOREACH(itbody,_vecbodies) {
                 (*itbody)->_ResetInternalCollisionCache();
             }
         }
-        return _pCurrentChecker->InitEnvironment();
+        return collision_checker_->InitEnvironment();
     }
 
     virtual CollisionCheckerBasePtr GetCollisionChecker() const {
-        return _pCurrentChecker;
+        return collision_checker_;
     }
 
     virtual bool CheckCollision(KinBodyConstPtr pbody1, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(pbody1);
-        return _pCurrentChecker->CheckCollision(pbody1,report);
+        return collision_checker_->CheckCollision(pbody1,report);
     }
 
     virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, CollisionReportPtr report)
@@ -962,14 +982,14 @@ public:
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(pbody1);
         CHECK_COLLISION_BODY(pbody2);
-        return _pCurrentChecker->CheckCollision(pbody1,pbody2,report);
+        return collision_checker_->CheckCollision(pbody1,pbody2,report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report )
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(plink->GetParent());
-        return _pCurrentChecker->CheckCollision(plink,report);
+        return collision_checker_->CheckCollision(plink,report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink1, KinBody::LinkConstPtr plink2, CollisionReportPtr report)
@@ -977,7 +997,7 @@ public:
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(plink1->GetParent());
         CHECK_COLLISION_BODY(plink2->GetParent());
-        return _pCurrentChecker->CheckCollision(plink1,plink2,report);
+        return collision_checker_->CheckCollision(plink1,plink2,report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, KinBodyConstPtr pbody, CollisionReportPtr report)
@@ -985,52 +1005,52 @@ public:
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(plink->GetParent());
         CHECK_COLLISION_BODY(pbody);
-        return _pCurrentChecker->CheckCollision(plink,pbody,report);
+        return collision_checker_->CheckCollision(plink,pbody,report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(plink->GetParent());
-        return _pCurrentChecker->CheckCollision(plink,vbodyexcluded,vlinkexcluded,report);
+        return collision_checker_->CheckCollision(plink,vbodyexcluded,vlinkexcluded,report);
     }
 
     virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(pbody);
-        return _pCurrentChecker->CheckCollision(pbody,vbodyexcluded,vlinkexcluded,report);
+        return collision_checker_->CheckCollision(pbody,vbodyexcluded,vlinkexcluded,report);
     }
 
     virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(plink->GetParent());
-        return _pCurrentChecker->CheckCollision(ray,plink,report);
+        return collision_checker_->CheckCollision(ray,plink,report);
     }
     virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(pbody);
-        return _pCurrentChecker->CheckCollision(ray,pbody,report);
+        return collision_checker_->CheckCollision(ray,pbody,report);
     }
     virtual bool CheckCollision(const RAY& ray, CollisionReportPtr report)
     {
-        return _pCurrentChecker->CheckCollision(ray,report);
+        return collision_checker_->CheckCollision(ray,report);
     }
 
     virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(pbody);
-        return _pCurrentChecker->CheckCollision(trimesh,pbody,report);
+        return collision_checker_->CheckCollision(trimesh,pbody,report);
     }
 
     virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_COLLISION_BODY(pbody);
-        return _pCurrentChecker->CheckStandaloneSelfCollision(pbody,report);
+        return collision_checker_->CheckStandaloneSelfCollision(pbody,report);
     }
 
     virtual void StepSimulation(dReal fTimeStep)
@@ -1041,7 +1061,7 @@ public:
         fTimeStep = (dReal)((double)step * 0.000001);
 
         // call the physics first to get forces
-        _pPhysicsEngine->SimulateStep(fTimeStep);
+        physics_engine_->SimulateStep(fTimeStep);
 
         // make a copy instead of locking the mutex pointer since will be calling into user functions
         vector<KinBodyPtr> vecbodies;
@@ -2094,11 +2114,11 @@ protected:
                 _vecrobots.erase(itrobot);
             }
         }
-        if( !!_pCurrentChecker ) {
-            _pCurrentChecker->RemoveKinBody(*it);
+        if( !!collision_checker_ ) {
+            collision_checker_->RemoveKinBody(*it);
         }
-        if( !!_pPhysicsEngine ) {
-            _pPhysicsEngine->RemoveKinBody(*it);
+        if( !!physics_engine_ ) {
+            physics_engine_->RemoveKinBody(*it);
         }
         (*it)->_PostprocessChangedParameters(KinBody::Prop_BodyRemoved);
         RemoveEnvironmentId(*it);
@@ -2108,12 +2128,13 @@ protected:
 
     void _SetDefaultGravity()
     {
-        if( !!_pPhysicsEngine ) {
+        if( !!physics_engine_ )
+		{
             // At a latitude of L with altitude H (above sea level), the acceleration due to gravity at sea level is approximately
             // g= 9.780327 * ( 1 + .0053024*sin(L)**2 - .0000058*sin(2L)**2 ) - 0.000003086*H meters per second**2.
             // tokyo,japan 35.6894875 deg
             // rate of change with respect to altitude is da/dH= -2*g*R**2/(R+H)3 = -2g*a*/(R+H)
-            _pPhysicsEngine->SetGravity(Vector(0,0,-9.797930195020351));
+            physics_engine_->SetGravity(Vector(0,0,-9.797930195020351));
         }
     }
 
@@ -2135,21 +2156,21 @@ protected:
             Destroy();
         }
 
-        boost::mutex::scoped_lock lockinit(_mutexInit);
+        boost::mutex::scoped_lock lockinit(init_mutex_);
         if( !bCheckSharedResources ) {
             SetCollisionChecker(CollisionCheckerBasePtr());
             SetPhysicsEngine(PhysicsEngineBasePtr());
         }
 
         _nBodiesModifiedStamp = r->_nBodiesModifiedStamp;
-        _homedirectory = r->_homedirectory;
+        home_directory_ = r->home_directory_;
         _fDeltaSimTime = r->_fDeltaSimTime;
         _nCurSimTime = 0;
         _nSimStartTime = utils::GetMicroTime();
-        _nEnvironmentIndex = r->_nEnvironmentIndex;
+        environment_index_ = r->environment_index_;
         _bRealTime = r->_bRealTime;
 
-        _bInit = true;
+        is_init_ = true;
         _bEnableSimulation = r->_bEnableSimulation;
 
         SetDebugLevel(r->GetDebugLevel());
@@ -2209,7 +2230,7 @@ protected:
 
         bool bCollisionCheckerChanged = false;
         if( !!r->GetCollisionChecker() ) {
-            if( !bCheckSharedResources || (!!_pCurrentChecker && _pCurrentChecker->GetXMLId() != r->GetCollisionChecker()->GetXMLId()) ) {
+            if( !bCheckSharedResources || (!!collision_checker_ && collision_checker_->GetXMLId() != r->GetCollisionChecker()->GetXMLId()) ) {
                 try {
                     CollisionCheckerBasePtr p = RaveCreateCollisionChecker(shared_from_this(),r->GetCollisionChecker()->GetXMLId());
                     p->Clone(r->GetCollisionChecker(),options);
@@ -2227,7 +2248,7 @@ protected:
 
         bool bPhysicsEngineChanged = false;
         if( !!r->GetPhysicsEngine() ) {
-            if( !bCheckSharedResources || (!!_pPhysicsEngine && _pPhysicsEngine->GetXMLId() != r->GetPhysicsEngine()->GetXMLId()) ) {
+            if( !bCheckSharedResources || (!!physics_engine_ && physics_engine_->GetXMLId() != r->GetPhysicsEngine()->GetXMLId()) ) {
                 try {
                     PhysicsEngineBasePtr p = RaveCreatePhysicsEngine(shared_from_this(),r->GetPhysicsEngine()->GetXMLId());
                     p->Clone(r->GetPhysicsEngine(),options);
@@ -2531,7 +2552,7 @@ protected:
     virtual void SetEnvironmentId(KinBodyPtr pbody)
     {
         boost::mutex::scoped_lock locknetworkid(_mutexEnvironmentIds);
-        int id = _nEnvironmentIndex++;
+        int id = environment_index_++;
         BOOST_ASSERT( _mapBodies.find(id) == _mapBodies.end() );
         pbody->_environmentid=id;
         _mapBodies[id] = pbody;
@@ -2546,29 +2567,32 @@ protected:
 
     void _StartSimulationThread()
     {
-        if( !_threadSimulation ) {
-            _bShutdownSimulation = false;
-            _threadSimulation.reset(new boost::thread(boost::bind(&Environment::_SimulationThread, this)));
+        if( !simulation_thread_ )
+		{
+            is_shutdown_simulation_ = false;
+            simulation_thread_.reset(new boost::thread(boost::bind(&Environment::_SimulationThread, this)));
         }
     }
 
     void _StopSimulationThread()
     {
-        _bShutdownSimulation = true;
-        if( !!_threadSimulation ) {
-            _threadSimulation->join();
-            _threadSimulation.reset();
+        is_shutdown_simulation_ = true;
+        if( !!simulation_thread_ ) 
+		{
+            simulation_thread_->join();
+            simulation_thread_.reset();
         }
     }
 
     void _SimulationThread()
     {
-        int environmentid = RaveGetEnvironmentId(shared_from_this());
+        int environment_id = RaveGetEnvironmentId(shared_from_this());
 
-        uint64_t nLastUpdateTime = utils::GetMicroTime();
-        uint64_t nLastSleptTime = utils::GetMicroTime();
-        RAVELOG_VERBOSE_FORMAT("starting simulation thread envid=%d", environmentid);
-        while( _bInit && !_bShutdownSimulation ) {
+        uint64_t last_update_time = utils::GetMicroTime();
+        uint64_t last_slept_time = utils::GetMicroTime();
+        RAVELOG_VERBOSE_FORMAT("starting simulation thread envid=%d", environment_id);
+        while( is_init_ && !is_shutdown_simulation_ )
+		{
             bool bNeedSleep = true;
             boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv;
             if( _bEnableSimulation ) {
@@ -2594,7 +2618,7 @@ protected:
                             int actual_sleep=max((int)sleeptime*6/8,1000);
                             boost::this_thread::sleep (boost::posix_time::microseconds(actual_sleep));
                             //RAVELOG_INFO("sleeptime ideal %d, actually slept: %d\n",(int)sleeptime,(int)actual_sleep);
-                            nLastSleptTime = utils::GetMicroTime();
+                            last_slept_time = utils::GetMicroTime();
                             //Since already slept this cycle, wait till next time to sleep.
                             bNeedSleep = false;
                         }
@@ -2605,26 +2629,26 @@ protected:
                         }
                     }
                     else {
-                        nLastSleptTime = utils::GetMicroTime();
+                        last_slept_time = utils::GetMicroTime();
                     }
 
                     //RAVELOG_INFOA("sim: %f, real: %f\n",_nCurSimTime*1e-6f,(utils::GetMicroTime()-_nSimStartTime)*1e-6f);
                 }
             }
 
-            if( utils::GetMicroTime()-nLastSleptTime > 20000 ) {     // 100000 freezes the environment
+            if( utils::GetMicroTime()-last_slept_time > 20000 ) {     // 100000 freezes the environment
                 lockenv.reset();
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));
                 bNeedSleep = false;
-                nLastSleptTime = utils::GetMicroTime();
+                last_slept_time = utils::GetMicroTime();
             }
 
-            if( utils::GetMicroTime()-nLastUpdateTime > 10000 ) {
+            if( utils::GetMicroTime()-last_update_time > 10000 ) {
                 if( !lockenv ) {
                     lockenv = _LockEnvironmentWithTimeout(100000);
                 }
                 if( !!lockenv ) {
-                    nLastUpdateTime = utils::GetMicroTime();
+                    last_update_time = utils::GetMicroTime();
                     // environment might be getting destroyed during this call, so to avoid a potential deadlock, add a timeout
                     try {
                         UpdatePublishedBodies(1000000); // 1.0s
@@ -2779,33 +2803,33 @@ protected:
     uint64_t _nSimStartTime;
     int _nBodiesModifiedStamp;     ///< incremented every tiem bodies vector is modified
 
-    CollisionCheckerBasePtr _pCurrentChecker;
-    PhysicsEngineBasePtr _pPhysicsEngine;
+    CollisionCheckerBasePtr collision_checker_;
+    PhysicsEngineBasePtr physics_engine_;
 
-    int _nEnvironmentIndex;                   ///< next network index
+    int environment_index_;                   ///< next network index
     std::map<int, KinBodyWeakPtr> _mapBodies;     ///< a map of all the bodies in the environment. Controlled through the KinBody constructor and destructors
 
-    boost::shared_ptr<boost::thread> _threadSimulation;                      ///< main loop for environment simulation
+    boost::shared_ptr<boost::thread> simulation_thread_;                      ///< main loop for environment simulation
 
     mutable EnvironmentMutex _mutexEnvironment;          ///< protects internal data from multithreading issues
     mutable boost::mutex _mutexEnvironmentIds;      ///< protects _vecbodies/_vecrobots from multithreading issues
     mutable boost::timed_mutex _mutexInterfaces;     ///< lock when managing interfaces like _listOwnedInterfaces, _listModules, _mapBodies
-    mutable boost::mutex _mutexInit;     ///< lock for destroying the environment
+    mutable boost::mutex init_mutex_;     ///< lock for destroying the environment
 
     vector<KinBody::BodyState> _vPublishedBodies;
-    string _homedirectory;
+    string home_directory_;
     std::pair<std::string, dReal> _unit; ///< unit name mm, cm, inches, m and the conversion for meters
 
-    UserDataPtr _handlegenericrobot, _handlegenerictrajectory, _handlemulticontroller, _handlegenericphysicsengine, _handlegenericcollisionchecker;
+    UserDataPtr generic_robot_handle_, generic_trajectory_handle_, multi_controller_handle_, generic_physics_engine_handle_, generic_collision_checker_handle_;
 
     list<InterfaceBasePtr> _listOwnedInterfaces;
 
     std::list<UserDataWeakPtr> _listRegisteredCollisionCallbacks;     ///< see EnvironmentBase::RegisterCollisionCallback
     std::list<UserDataWeakPtr> _listRegisteredBodyCallbacks;     ///< see EnvironmentBase::RegisterBodyCallback
 
-    bool _bInit;                   ///< environment is initialized
+    bool is_init_;                   ///< environment is initialized
     bool _bEnableSimulation;            ///< enable simulation loop
-    bool _bShutdownSimulation; ///< if true, the simulation thread should shutdown
+    bool is_shutdown_simulation_; //<! if true, the simulation thread should shutdown
     bool _bRealTime;
 
     friend class EnvironmentXMLReader;

@@ -233,8 +233,9 @@ int main(int argc, char ** argv)
     RaveSetDebugLevel(debuglevel);
     s_penv = RaveCreateEnvironment();
     RaveSetDebugLevel(debuglevel);
-    for(list<string>::iterator it = list_load_plugins.begin(); it != list_load_plugins.end(); ++it) {
-        RaveLoadPlugin(*it);
+    for(auto it : list_load_plugins)
+	{
+        RaveLoadPlugin(it);
     }
 
     // add a signal handler

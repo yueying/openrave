@@ -2446,7 +2446,9 @@ inline boost::shared_ptr<T> RaveClone(boost::shared_ptr<T const> preference, int
     \return a handle if function is successfully registered. By destroying the handle, the interface will be automatically unregistered.
     \throw openrave_exception Will throw with ORE_InvalidInterfaceHash if hashes do not match
  */
-OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
+OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name,
+	const char* interfacehash, const char* envhash, 
+	const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
 
 /** \brief Registers a custom xml reader for a particular interface.
 
