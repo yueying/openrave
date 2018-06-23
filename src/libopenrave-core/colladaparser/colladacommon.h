@@ -65,7 +65,7 @@ public:
 		{
         }
         std::string kmodel, pmodel, vmodel;
-        int index; ///< for _bindingLinkSIDs, it is the index inside the _bindingModelURIs vector
+        int index; //!< for _bindingLinkSIDs, it is the index inside the _bindingModelURIs vector
     };
 
     /// \brief sid bindings for kinematics, physics, and visual
@@ -81,7 +81,7 @@ public:
         }
         std::string kmodelaxissidref;
         std::string nodesid;
-        std::string jointsidref; ///< the sidref of the joint kmodelid/jointsid
+        std::string jointsidref; //!< the sidref of the joint kmodelid/jointsid
     };
 
     /// \brief sid bindings for kinematics, physics, and visual
@@ -95,9 +95,9 @@ public:
 			: kmodel(kmodel), pmodel(pmodel), vmodel(vmodel) 
 		{
         }
-        std::string kmodel; ///< kmodel is a SIDREF to the instance_kinematics_model that will later be used in bind_kinematics_model
+        std::string kmodel; //!< kmodel is a SIDREF to the instance_kinematics_model that will later be used in bind_kinematics_model
         std::string pmodel;
-        std::string vmodel; ///< vmodel is the node url without any translations/rotations
+        std::string vmodel; //!< vmodel is the node url without any translations/rotations
         std::string ikmodelsidref;
     };
 
@@ -105,11 +105,11 @@ public:
 	{
     }
 
-    std::list< std::pair<std::string, bool> > _articulated_systemURIs; ///< pairs of (urls, isexternal) of the articulated_system, ordered in the same way as they are read. The first is the top-most level
+    std::list< std::pair<std::string, bool> > _articulated_systemURIs; //!< pairs of (urls, isexternal) of the articulated_system, ordered in the same way as they are read. The first is the top-most level
     std::vector<ModelBinding> _bindingModelURIs;
-    std::vector<AxisBinding> _bindingAxesSIDs; ///< same order as the body DOF
-    std::list<AxisBinding> _bindingPassiveAxesSIDs; ///< same order as body->GetPassiveJoints()
-    std::vector<LinkBinding> _bindingLinkSIDs; ///< link bindings, SID for link, rigidbody, but URL for vmodel (node). same order as link indices
+    std::vector<AxisBinding> _bindingAxesSIDs; //!< same order as the body DOF
+    std::list<AxisBinding> _bindingPassiveAxesSIDs; //!< same order as body->GetPassiveJoints()
+    std::vector<LinkBinding> _bindingLinkSIDs; //!< link bindings, SID for link, rigidbody, but URL for vmodel (node). same order as link indices
 };
 
 typedef boost::shared_ptr<ColladaXMLReadable> ColladaXMLReadablePtr;

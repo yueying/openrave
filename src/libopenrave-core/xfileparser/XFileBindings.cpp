@@ -42,7 +42,7 @@ public:
         f.seekg(0,ios::beg);
         f.read(&filedata[0], filedata.size());
         Read(pbody,filedata,atts);
-        pbody->__struri = filename;
+        pbody->str_url_ = filename;
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
         boost::filesystem::path bfpath(filename);
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
@@ -65,7 +65,7 @@ public:
         f.seekg(0,ios::beg);
         f.read(&filedata[0], filedata.size());
         Read(probot,filedata,atts);
-        probot->__struri = filename;
+        probot->str_url_ = filename;
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
         boost::filesystem::path bfpath(filename);
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3

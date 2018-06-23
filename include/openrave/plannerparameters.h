@@ -32,8 +32,8 @@ public:
         _vXMLParameters.push_back("expectedsize");
     }
 
-    dReal _fExploreProb; ///< explore close to the neighbors already added
-    int _nExpectedDataSize; ///< the expected number of nodes of the RRT tree to expand to before returning a solution. This allows the RRT tree to build up 
+    dReal _fExploreProb; //!< explore close to the neighbors already added
+    int _nExpectedDataSize; //!< the expected number of nodes of the RRT tree to expand to before returning a solution. This allows the RRT tree to build up 
     
 protected:
     bool _bProcessingExploration;
@@ -103,11 +103,11 @@ public:
         _vXMLParameters.push_back("maxsampletries");
     }
 
-    dReal fRadius;          ///< _pDistMetric thresh is the radius that children must be within parents
-    dReal fDistThresh;      ///< gamma * _pDistMetric->thresh is the sampling radius
-    dReal fGoalCoeff;       ///< balancees exploratino vs cost
-    int nMaxChildren;       ///< limit on number of children
-    int nMaxSampleTries;     ///< max sample tries before giving up on creating a child
+    dReal fRadius;          //!< _pDistMetric thresh is the radius that children must be within parents
+    dReal fDistThresh;      //!< gamma * _pDistMetric->thresh is the sampling radius
+    dReal fGoalCoeff;       //!< balancees exploratino vs cost
+    int nMaxChildren;       //!< limit on number of children
+    int nMaxSampleTries;     //!< max sample tries before giving up on creating a child
 protected:
     bool _bProcessingRA;
     virtual bool serialize(std::ostream& O, int options) const
@@ -180,11 +180,11 @@ public:
         _vXMLParameters.push_back("graspdistthresh");
     }
 
-    std::vector<Transform> _vgrasps;     ///< grasps with respect to the target object
+    std::vector<Transform> _vgrasps;     //!< grasps with respect to the target object
     KinBodyPtr _ptarget;
     int _nGradientSamples;
-    dReal _fVisibiltyGraspThresh;     ///< if current grasp is less than this threshold, then visibilty is not checked
-    dReal _fGraspDistThresh;     ///< target grasps beyond this distance are ignored
+    dReal _fVisibiltyGraspThresh;     //!< if current grasp is less than this threshold, then visibilty is not checked
+    dReal _fGraspDistThresh;     //!< target grasps beyond this distance are ignored
 
 protected:
     EnvironmentBasePtr _penv;
@@ -285,27 +285,27 @@ public:
         _bProcessingGrasp = false;
     }
 
-    dReal fstandoff;     ///< start closing fingers when at this distance
-    KinBodyPtr targetbody;     ///< the target that will be grasped, all parameters will be in this coordinate system. if not present, then below transformations are in absolute coordinate system.
-    dReal ftargetroll;     ///< rotate the hand about the palm normal (if one exists) by this many radians
-    Vector vtargetdirection;     ///< direction in target space to approach object from
-    Vector vtargetposition;     ///< position in target space to start approaching (if in collision with target, gets backed up)
-    Vector vmanipulatordirection; ///< a direction for the gripper to face at when approaching (in the manipulator coordinate system)
-    bool btransformrobot;     ///< if true sets the base link of the robot given the above transformation parameters. If there is an active manipulator
-    bool breturntrajectory;     ///< if true, returns how the individual fingers moved instead of just the final grasp
-    bool bonlycontacttarget;     ///< if true, then grasp is successful only if contact is made with the target
-    bool btightgrasp;     ///< This is tricky, but basically if true will also move the basic link along the negative axes of some of the joints to get a tighter fit.
-    bool bavoidcontact;     ///< if true, will return a final robot configuration right before contact is made.
-    std::vector<std::string> vavoidlinkgeometry;     ///< list of links on the robot to avoid collisions with (for exmaple, sensors)
+    dReal fstandoff;     //!< start closing fingers when at this distance
+    KinBodyPtr targetbody;     //!< the target that will be grasped, all parameters will be in this coordinate system. if not present, then below transformations are in absolute coordinate system.
+    dReal ftargetroll;     //!< rotate the hand about the palm normal (if one exists) by this many radians
+    Vector vtargetdirection;     //!< direction in target space to approach object from
+    Vector vtargetposition;     //!< position in target space to start approaching (if in collision with target, gets backed up)
+    Vector vmanipulatordirection; //!< a direction for the gripper to face at when approaching (in the manipulator coordinate system)
+    bool btransformrobot;     //!< if true sets the base link of the robot given the above transformation parameters. If there is an active manipulator
+    bool breturntrajectory;     //!< if true, returns how the individual fingers moved instead of just the final grasp
+    bool bonlycontacttarget;     //!< if true, then grasp is successful only if contact is made with the target
+    bool btightgrasp;     //!< This is tricky, but basically if true will also move the basic link along the negative axes of some of the joints to get a tighter fit.
+    bool bavoidcontact;     //!< if true, will return a final robot configuration right before contact is made.
+    std::vector<std::string> vavoidlinkgeometry;     //!< list of links on the robot to avoid collisions with (for exmaple, sensors)
 
-    dReal fcoarsestep;      ///< step for coarse planning (in radians)
-    dReal ffinestep;     ///< step for fine planning (in radians), THIS STEP MUST BE VERY SMALL OR THE COLLISION CHECKER GIVES WILDLY BOGUS RESULTS
-    dReal ftranslationstepmult;     ///< multiplication factor for translational movements of the hand or joints
-    dReal fgraspingnoise;     ///< random undeterministic noise to add to the target object, represents the max possible displacement of any point on the object (noise added after global direction and start have been determined)
-    Vector vintersectplane; ///< if norm > 0, then the manipulator transform has to be on the plane for grabbing to work. This is mutually exclusive from the standoff.
+    dReal fcoarsestep;      //!< step for coarse planning (in radians)
+    dReal ffinestep;     //!< step for fine planning (in radians), THIS STEP MUST BE VERY SMALL OR THE COLLISION CHECKER GIVES WILDLY BOGUS RESULTS
+    dReal ftranslationstepmult;     //!< multiplication factor for translational movements of the hand or joints
+    dReal fgraspingnoise;     //!< random undeterministic noise to add to the target object, represents the max possible displacement of any point on the object (noise added after global direction and start have been determined)
+    Vector vintersectplane; //!< if norm > 0, then the manipulator transform has to be on the plane for grabbing to work. This is mutually exclusive from the standoff.
 
 protected:
-    EnvironmentBasePtr _penv;     ///< environment target belongs to
+    EnvironmentBasePtr _penv;     //!< environment target belongs to
     bool _bProcessingGrasp;
     // save the extra data to XML
     virtual bool serialize(std::ostream& O, int options=0) const
@@ -453,11 +453,11 @@ public:
     }
 
     std::string _interpolation;
-    dReal _pointtolerance; ///< multiple of dof resolutions to set on discretization tolerance
+    dReal _pointtolerance; //!< multiple of dof resolutions to set on discretization tolerance
     bool _hastimestamps, _hasvelocities;
-    bool _outputaccelchanges; ///< if true, will output a waypoint every time a DOF changes its acceleration, this allows a trajectory be executed without knowing the max velocities/accelerations. If false, will just output the waypoints.
-    int _multidofinterp; ///< if 1, will always force the max acceleration of the robot when retiming rather than using lesser acceleration whenever possible. if 0, will compute minimum acceleration. If 2, will match acceleration ramps of all dofs.
-    int verifyinitialpath; ///< if 0 then does not verify whether the path given as input is in collision
+    bool _outputaccelchanges; //!< if true, will output a waypoint every time a DOF changes its acceleration, this allows a trajectory be executed without knowing the max velocities/accelerations. If false, will just output the waypoints.
+    int _multidofinterp; //!< if 1, will always force the max acceleration of the robot when retiming rather than using lesser acceleration whenever possible. if 0, will compute minimum acceleration. If 2, will match acceleration ramps of all dofs.
+    int verifyinitialpath; //!< if 0 then does not verify whether the path given as input is in collision
 
 protected:
     bool _bProcessing;
@@ -554,26 +554,26 @@ public:
         _vXMLParameters.push_back("searchvelaccelmult");
     }
 
-    dReal maxlinkspeed; ///< max speed in m/s that any point on any link goes. 0 means no speed limit
-    dReal maxlinkaccel; ///< max accel in m/s^2 that any point on the link goes. Gravity is always included in the acceleration computations. 0 means no accel limit
+    dReal maxlinkspeed; //!< max speed in m/s that any point on any link goes. 0 means no speed limit
+    dReal maxlinkaccel; //!< max accel in m/s^2 that any point on the link goes. Gravity is always included in the acceleration computations. 0 means no accel limit
 
-    std::string manipname; ///< the manip name to constrain the speed/accel of a manipulator to.
-    dReal maxmanipspeed; ///< if non-zero then the timer shoulld consdier the max speed limit (m/s) of the active manipulators of the selected robots in the configuration space. 0 means no speed limit
-    dReal maxmanipaccel; ///< if non-zero then the timer shoulld consdier the max acceleration limit (m/s^2) of the active manipulators of the selected robots in the configuration space. Gravity is always included in the acceleration computations. 0 means no accel limit
+    std::string manipname; //!< the manip name to constrain the speed/accel of a manipulator to.
+    dReal maxmanipspeed; //!< if non-zero then the timer shoulld consdier the max speed limit (m/s) of the active manipulators of the selected robots in the configuration space. 0 means no speed limit
+    dReal maxmanipaccel; //!< if non-zero then the timer shoulld consdier the max acceleration limit (m/s^2) of the active manipulators of the selected robots in the configuration space. Gravity is always included in the acceleration computations. 0 means no accel limit
 
     Vector vConstraintManipDir, vConstraintGlobalDir; /// threshold the dot product between a direction on the manipulator and in the global world coordinate system. Use manipname
-    dReal fCosManipAngleThresh; ///< cos of the angle threshold between vConstraintManipDir and vConstraintGlobalDir. dot(manipdir, manipdir) > cosmanipanglethresh. By default it is -1
+    dReal fCosManipAngleThresh; //!< cos of the angle threshold between vConstraintManipDir and vConstraintGlobalDir. dot(manipdir, manipdir) > cosmanipanglethresh. By default it is -1
     
 
-    dReal mingripperdistance; ///< minimum distance of the hand (manipulator grippers) to any object. 0 means disabled.
+    dReal mingripperdistance; //!< minimum distance of the hand (manipulator grippers) to any object. 0 means disabled.
     dReal velocitydistancethresh; /// threshold for dot(Direction,Velocity)/MinDistance where Direction is between the closest contact points. 0 if disabled.
 
     // merging waypoint related parameters
-    int maxmergeiterations; ///< when merging several ramps together, the order that they are merged in depends. This parameters pecifies how many permutations to test before giving up.
-    dReal minswitchtime; ///< the minimum time between switching accelerations of any joint (waypoints).
-    int nshortcutcycles; ///< number of times the shortcut cycle is repeted.
+    int maxmergeiterations; //!< when merging several ramps together, the order that they are merged in depends. This parameters pecifies how many permutations to test before giving up.
+    dReal minswitchtime; //!< the minimum time between switching accelerations of any joint (waypoints).
+    int nshortcutcycles; //!< number of times the shortcut cycle is repeted.
 
-    dReal fSearchVelAccelMult; ///< a number in [0.0001,0.99999] that is the multipler of the velocity/acceleration limits when time-based constraints are invalidated (manip speed and/or dynamics). The closer to 1 it is, the more optimal the trajectory will be, but it will take more time to compute. A value around 0.5-0.8 is best.
+    dReal fSearchVelAccelMult; //!< a number in [0.0001,0.99999] that is the multipler of the velocity/acceleration limits when time-based constraints are invalidated (manip speed and/or dynamics). The closer to 1 it is, the more optimal the trajectory will be, but it will take more time to compute. A value around 0.5-0.8 is best.
 
 protected:
     bool _bCProcessing;
@@ -685,14 +685,14 @@ public:
         return _penv;
     }
 
-    dReal maxdeviationangle;     ///< the maximum angle the next iksolution can deviate from the expected direction computed by the jacobian
-    bool maintaintiming;     ///< maintain timing with input trajectory
-    bool greedysearch;     ///< if true, will greeidly choose solutions (can possibly fail even a solution exists)
-    dReal ignorefirstcollision;     ///< if > 0, will allow the robot to be in environment collision for the initial 'ignorefirstcollision' seconds of the trajectory. Once the robot gets out of collision, it will execute its normal following phase until it gets into collision again. This option is used when lifting objects from a surface, where the object is already in collision with the surface.
-    dReal ignorefirstcollisionee;     ///< if > 0, will allow the manipulator end effector to be in environment collision for the initial 'ignorefirstcollisionee' seconds of the trajectory. similar to 'ignorefirstcollision'
+    dReal maxdeviationangle;     //!< the maximum angle the next iksolution can deviate from the expected direction computed by the jacobian
+    bool maintaintiming;     //!< maintain timing with input trajectory
+    bool greedysearch;     //!< if true, will greeidly choose solutions (can possibly fail even a solution exists)
+    dReal ignorefirstcollision;     //!< if > 0, will allow the robot to be in environment collision for the initial 'ignorefirstcollision' seconds of the trajectory. Once the robot gets out of collision, it will execute its normal following phase until it gets into collision again. This option is used when lifting objects from a surface, where the object is already in collision with the surface.
+    dReal ignorefirstcollisionee;     //!< if > 0, will allow the manipulator end effector to be in environment collision for the initial 'ignorefirstcollisionee' seconds of the trajectory. similar to 'ignorefirstcollision'
     dReal ignorelastcollisionee; /// if > 0, will allow the manipulator end effector to get into collision with the environment for the last 'ignorelastcollisionee' seconds of the trajrectory. The kinematics, self collisions, and environment collisions with the other parts of the robot will still be checked
-    dReal minimumcompletetime;     ///< specifies the minimum trajectory that must be followed for planner to declare success. If 0, then the entire trajectory has to be followed.
-    TrajectoryBasePtr workspacetraj;     ///< workspace trajectory
+    dReal minimumcompletetime;     //!< specifies the minimum trajectory that must be followed for planner to declare success. If 0, then the entire trajectory has to be followed.
+    TrajectoryBasePtr workspacetraj;     //!< workspace trajectory
 
 protected:
     EnvironmentBasePtr _penv;
@@ -715,7 +715,7 @@ public:
         _vXMLParameters.push_back("minimumgoalpaths");
     }
 
-    size_t _minimumgoalpaths; ///< minimum number of goals to connect to before exiting. the goal with the shortest path is returned.
+    size_t _minimumgoalpaths; //!< minimum number of goals to connect to before exiting. the goal with the shortest path is returned.
 
 protected:
     bool _bProcessing;
@@ -776,8 +776,8 @@ public:
     }
 
     dReal _fGoalBiasProb;
-    int _nRRTExtentType; ///< the rrt extent type. if 0 then extend all the way to the sampled position. if 1, then just extend one step length before sampling again.
-    int _nMinIterations; ///< minimum iterations to do before returning a result unless user passes a PA_ReturnWithAnySolution interrupt. When the iterations are done, the RRT will choose the goal with the minimum configuration distance from the initial to return. By defautl it is 0.
+    int _nRRTExtentType; //!< the rrt extent type. if 0 then extend all the way to the sampled position. if 1, then just extend one step length before sampling again.
+    int _nMinIterations; //!< minimum iterations to do before returning a result unless user passes a PA_ReturnWithAnySolution interrupt. When the iterations are done, the RRT will choose the goal with the minimum configuration distance from the initial to return. By defautl it is 0.
     
 protected:
     bool _bProcessingBasic;

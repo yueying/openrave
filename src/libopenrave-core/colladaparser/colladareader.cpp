@@ -1035,7 +1035,7 @@ public:
             }
         }
         if( !!pbody ) {
-            pbody->__struri = struri;
+            pbody->str_url_ = struri;
         }
 
         std::string strname = strParentName;
@@ -1181,7 +1181,7 @@ public:
                 if( !pbody ) {
                     pbody = RaveCreateRobot(_penv, "");
                 }
-                pbody->__struri = struri;
+                pbody->str_url_ = struri;
                 _mapJointUnits.clear();
                 _mapJointSids.clear();
             }
@@ -1327,8 +1327,8 @@ public:
             _mapJointUnits.clear();
             _mapJointSids.clear();
         }
-        if( pkinbody->__struri.size() == 0 ) {
-            pkinbody->__struri = ikm->getUrl().str();
+        if( pkinbody->str_url_.size() == 0 ) {
+            pkinbody->str_url_ = ikm->getUrl().str();
         }
 
         // check if kmodel has asset/subject, if yes, then set it to the description
@@ -1388,8 +1388,8 @@ public:
         _mapJointUnits.clear();
         _mapJointSids.clear();
         KinBodyPtr pkinbody = RaveCreateKinBody(_penv);
-        if( pkinbody->__struri.size() == 0 ) {
-            pkinbody->__struri = daeURI(*dae_).str();
+        if( pkinbody->str_url_.size() == 0 ) {
+            pkinbody->str_url_ = daeURI(*dae_).str();
         }
         string name = !pdomnode->getName() ? "" : _ConvertToOpenRAVEName(pdomnode->getName());
         if( name.size() == 0 ) {

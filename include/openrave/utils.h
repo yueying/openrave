@@ -318,18 +318,22 @@ inline T InterpolateCircularAngle(T start, T end, T fraction, T lowerLimit, T up
 }
 
 template <typename T>
-inline T Sqr(T t) {
+inline T Sqr(T t)
+{
     return t*t;
 }
 
 /// \brief openrave valid characters to be used in names
-inline bool IsValidCharInName(char c) {
+inline bool IsValidCharInName(char c)
+{
     return c < 0 || c >= 33; //isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/';
 }
 
 /// \brief openrave valid characters to be used in names
-inline bool IsValidName(const std::string& s) {
-    if( s.size() == 0 ) {
+inline bool IsValidName(const std::string& s) 
+{
+    if( s.size() == 0 )
+	{
         return false;
     }
     return std::count_if(s.begin(), s.end(), IsValidCharInName) == (int)s.size();

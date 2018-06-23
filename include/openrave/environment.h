@@ -194,15 +194,15 @@ public:
     /// \brief A set of options used to select particular parts of the scene
     enum SelectionOptions
     {
-        SO_NoRobots = 1,               ///< everything but robots
+        SO_NoRobots = 1,               //!< everything but robots
         TO_Obstacles = 1,
-        SO_Robots = 2,                  ///< all robots
+        SO_Robots = 2,                  //!< all robots
         TO_Robots = 2,
-        SO_Everything = 3,              ///< all bodies and robots everything
+        SO_Everything = 3,              //!< all bodies and robots everything
         TO_Everything = 3,
-        SO_Body = 4,                    ///< robot/kinbody. atts 'target' key contains the body name. If multiple targets are specified, then will save all related bodies.
+        SO_Body = 4,                    //!< robot/kinbody. atts 'target' key contains the body name. If multiple targets are specified, then will save all related bodies.
         TO_Body = 4,
-        SO_AllExceptBody = 5,             ///< save everything but the robot/kinbody objects specified through the atts 'target' key. Multiple targets can be specified.
+        SO_AllExceptBody = 5,             //!< save everything but the robot/kinbody objects specified through the atts 'target' key. Multiple targets can be specified.
         TO_AllExceptBody = 5,
     };
     typedef SelectionOptions TriangulateOptions;
@@ -700,8 +700,8 @@ protected:
     }
 
 private:
-    UserDataPtr __pUserData;         ///< \see GetUserData
-    int __nUniqueId;         ///< \see RaveGetEnvironmentId
+    UserDataPtr __pUserData;         //!< \see GetUserData
+    int __nUniqueId;         //!< \see RaveGetEnvironmentId
 };
 
 } // end namespace OpenRAVE

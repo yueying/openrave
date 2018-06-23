@@ -27,10 +27,10 @@ namespace OpenRAVE {
 /// options for collision checker
 enum CollisionOptions
 {
-    CO_Distance = 1, ///< Compute distance measurements, this is usually slow and not all checkers support it.
-    CO_UseTolerance = 2, ///< not used
-    CO_Contacts = 4, ///< Return the contact points of the collision in the \ref CollisionReport. Note that this takes longer to compute.
-    CO_RayAnyHit = 8, ///< When performing collision with rays, if this is set, algorithm just returns any hit instead of the closest (can be faster)
+    CO_Distance = 1, //!< Compute distance measurements, this is usually slow and not all checkers support it.
+    CO_UseTolerance = 2, //!< not used
+    CO_Contacts = 4, //!< Return the contact points of the collision in the \ref CollisionReport. Note that this takes longer to compute.
+    CO_RayAnyHit = 8, //!< When performing collision with rays, if this is set, algorithm just returns any hit instead of the closest (can be faster)
 
     /** Allows planners to greatly reduce redundant collision checks.
         If set and the target object is a robot, then only the links controlled by the currently set active DOFs and their attached bodies will be checked for collisions.
@@ -39,15 +39,15 @@ enum CollisionOptions
         - links that do not remove with respect to each other as a result of moving the active dofs.
      */
     CO_ActiveDOFs = 0x10,
-    CO_AllLinkCollisions = 0x20, ///< if set then all the link collisions will be returned inside CollisionReport::vLinkColliding. Collision is slower because more pairs have to be checked.
-    CO_AllGeometryContacts = 0x40, ///< if set, then will return the contacts of all the colliding geometries of two links. Do not need to explore all pairs of links once the first pair is found. This option can be slow.
+    CO_AllLinkCollisions = 0x20, //!< if set then all the link collisions will be returned inside CollisionReport::vLinkColliding. Collision is slower because more pairs have to be checked.
+    CO_AllGeometryContacts = 0x40, //!< if set, then will return the contacts of all the colliding geometries of two links. Do not need to explore all pairs of links once the first pair is found. This option can be slow.
 };
 
 /// \brief action to perform whenever a collision is detected between objects
 enum CollisionAction
 {
-    CA_DefaultAction = 0, ///< let the physics/collision engine resolve the action
-    CA_Ignore = 1, ///< do nothing
+    CA_DefaultAction = 0, //!< let the physics/collision engine resolve the action
+    CA_Ignore = 1, //!< do nothing
 };
 
 /// \brief Holds information about a particular collision that occured.
@@ -63,9 +63,9 @@ public:
             depth = d;
         }
 
-        Vector pos;  ///< where the contact occured
-        Vector norm; ///< the normals of the faces
-        dReal depth; ///< the penetration depth, positive means the surfaces are penetrating, negative means the surfaces are not colliding (used for distance queries)
+        Vector pos;  //!< where the contact occured
+        Vector norm; //!< the normals of the faces
+        dReal depth; //!< the penetration depth, positive means the surfaces are penetrating, negative means the surfaces are not colliding (used for distance queries)
     };
 
     CollisionReport() {
@@ -79,20 +79,20 @@ public:
     virtual void Reset(int coloptions = 0);
     virtual std::string __str__() const;
 
-    KinBody::LinkConstPtr plink1, plink2; ///< the colliding links if a collision involves a bodies. Collisions do not always occur with 2 bodies like ray collisions, so these fields can be empty.
+    KinBody::LinkConstPtr plink1, plink2; //!< the colliding links if a collision involves a bodies. Collisions do not always occur with 2 bodies like ray collisions, so these fields can be empty.
 
-    std::vector<std::pair<KinBody::LinkConstPtr, KinBody::LinkConstPtr> > vLinkColliding; ///< all link collision pairs. Set when CO_AllCollisions is enabled.
+    std::vector<std::pair<KinBody::LinkConstPtr, KinBody::LinkConstPtr> > vLinkColliding; //!< all link collision pairs. Set when CO_AllCollisions is enabled.
 
-    std::vector<CONTACT> contacts; ///< the convention is that the normal will be "out" of plink1's surface. Filled if CO_UseContacts option is set.
+    std::vector<CONTACT> contacts; //!< the convention is that the normal will be "out" of plink1's surface. Filled if CO_UseContacts option is set.
 
-    int options; ///< the options that the CollisionReport was called with. It is overwritten by the options set on the collision checker writing the report
+    int options; //!< the options that the CollisionReport was called with. It is overwritten by the options set on the collision checker writing the report
 
-    dReal minDistance; ///< minimum distance from last query, filled if CO_Distance option is set
-    int numWithinTol; ///< number of objects within tolerance of this object, filled if CO_UseTolerance option is set
+    dReal minDistance; //!< minimum distance from last query, filled if CO_Distance option is set
+    int numWithinTol; //!< number of objects within tolerance of this object, filled if CO_UseTolerance option is set
 
-    uint8_t nKeepPrevious; ///< if 1, will keep all previous data when resetting the collision checker. otherwise will reset
+    uint8_t nKeepPrevious; //!< if 1, will keep all previous data when resetting the collision checker. otherwise will reset
 
-    //KinBody::Link::GeomConstPtr pgeom1, pgeom2; ///< the specified geometries hit for the given links
+    //KinBody::Link::GeomConstPtr pgeom1, pgeom2; //!< the specified geometries hit for the given links
 };
 
 typedef CollisionReport COLLISIONREPORT RAVE_DEPRECATED;
@@ -268,7 +268,7 @@ public:
     CollisionOptionsStateSaver(CollisionCheckerBasePtr p, int newoptions, bool required=true);
     virtual ~CollisionOptionsStateSaver();
 private:
-    int _oldoptions;     ///< saved options
+    int _oldoptions;     //!< saved options
     CollisionCheckerBasePtr _p;
 };
 

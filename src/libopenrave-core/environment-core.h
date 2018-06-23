@@ -1314,7 +1314,7 @@ public:
             if( !bSuccess || !robot ) {
                 return RobotBasePtr();
             }
-            robot->__struri = filename;
+            robot->str_url_ = filename;
         }
 
         return robot;
@@ -1362,14 +1362,14 @@ public:
             if( !bSuccess || !robot ) {
                 return RobotBasePtr();
             }
-            robot->__struri = preader->_filename;
+            robot->str_url_ = preader->_filename;
         }
 
         if( !!robot ) {
             // check if have to reset the URI
             FOREACHC(itatt, atts) {
                 if( itatt->first == "uri" ) {
-                    robot->__struri = itatt->second;
+                    robot->str_url_ = itatt->second;
                 }
             }
         }
@@ -1425,7 +1425,7 @@ public:
                     }
                     listGeometries.front()._filenamerender = fullfilename;
                     if( body->InitFromGeometries(listGeometries) ) {
-                        body->__struri = fullfilename;
+                        body->str_url_ = fullfilename;
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
                         boost::filesystem::path pfilename(filename);
@@ -1455,7 +1455,7 @@ public:
             if( !bSuccess || !body ) {
                 return KinBodyPtr();
             }
-            body->__struri = filename;
+            body->str_url_ = filename;
         }
 
         return body;
@@ -1503,14 +1503,14 @@ public:
             if( !bSuccess || !body ) {
                 return KinBodyPtr();
             }
-            body->__struri = preader->_filename;
+            body->str_url_ = preader->_filename;
         }
 
         if( !!body ) {
             // check if have to reset the URI
             FOREACHC(itatt, atts) {
                 if( itatt->first == "uri" ) {
-                    body->__struri = itatt->second;
+                    body->str_url_ = itatt->second;
                 }
             }
         }
@@ -1531,7 +1531,7 @@ public:
                 return InterfaceBasePtr();
             }
             preader->endElement(RaveGetInterfaceName(preadable->_pinterface->GetInterfaceType()));     // have to end the tag!
-            preadable->_pinterface->__struri = filename;
+            preadable->_pinterface->str_url_ = filename;
             return preadable->_pinterface;
         }
         catch(const std::exception &ex) {
@@ -1598,7 +1598,7 @@ public:
             else {
                 return InterfaceBasePtr();
             }
-            pinterface->__struri = filename;
+            pinterface->str_url_ = filename;
         }
         else {
             BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), type, pinterface, RaveGetInterfaceName(type), atts);
@@ -1616,7 +1616,7 @@ public:
                     return InterfaceBasePtr();
                 }
             }
-            pinterface->__struri = filename;
+            pinterface->str_url_ = filename;
         }
         return pinterface;
     }
@@ -1635,7 +1635,7 @@ public:
         if( !bSuccess ) {
             return InterfaceBasePtr();
         }
-        pinterface->__struri = preader->_filename;
+        pinterface->str_url_ = preader->_filename;
         return pinterface;
     }
 

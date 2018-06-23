@@ -471,7 +471,7 @@ protected:
     boost::shared_ptr<ManipConstraintChecker2> _manipconstraintchecker;
 
     // caching
-    ConfigurationSpecification _cachedoldspec, _cachednewspec; ///< the configuration specification that the cached structures have been set for
+    ConfigurationSpecification _cachedoldspec, _cachednewspec; //!< the configuration specification that the cached structures have been set for
     std::string _cachedposinterpolation;
     std::list< boost::function<dReal(std::vector<dReal>::const_iterator,std::vector<dReal>::const_iterator,std::vector<dReal>::const_iterator,bool) > > _listmintimefns;
     std::list< boost::function<void(std::vector<dReal>::const_iterator,std::vector<dReal>::const_iterator,std::vector<dReal>::iterator) > > _listvelocityfns;

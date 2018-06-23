@@ -312,7 +312,7 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
         plink->_collision.Append(trimesh);
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_url_ = uri;
     return true;
 }
 
@@ -354,7 +354,7 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         plink->_collision.Append(trimesh);
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_url_ = uri;
     return true;
 }
 
@@ -383,7 +383,7 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
         plink->_collision.Append(trimesh);
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_url_ = uri;
     return true;
 }
 
@@ -405,7 +405,7 @@ bool KinBody::InitFromTrimesh(const TriMesh& trimesh, bool visible, const std::s
     Link::GeometryPtr geom(new Link::Geometry(plink,info));
     plink->_vGeometries.push_back(geom);
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_url_ = uri;
     return true;
 }
 
@@ -434,7 +434,7 @@ bool KinBody::InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr
         plink->_collision.Append(geom->GetCollisionMesh(),geom->GetTransform());
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_url_ = uri;
     return true;
 }
 
@@ -557,7 +557,7 @@ bool KinBody::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, cons
             _vPassiveJoints.push_back(pjoint);
         }
     }
-    __struri = uri;
+    str_url_ = uri;
     return true;
 }
 

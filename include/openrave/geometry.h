@@ -473,7 +473,7 @@ public:
     template <typename U> friend std::ostream& operator<<(std::ostream& O, const RaveTransform<U>&v);
     template <typename U> friend std::istream& operator>>(std::istream& I, RaveTransform<U>&v);
 
-    RaveVector<T> rot, trans;     ///< rot is a quaternion=(cos(ang/2),axisx*sin(ang/2),axisy*sin(ang/2),axisz*sin(ang/2))
+    RaveVector<T> rot, trans;     //!< rot is a quaternion=(cos(ang/2),axisx*sin(ang/2),axisy*sin(ang/2),axisz*sin(ang/2))
 };
 
 /** \brief Affine transformation parameterized with rotation matrices. Scales and shears are not supported.
@@ -614,7 +614,7 @@ public:
     /// 3x3 rotation matrix. Note that each row is 4 elements long! So row 1 starts at m[4], row 2 at m[8]
     /// The reason is to maintain 16 byte alignment when sizeof(T) is 4 bytes
     T m[12];
-    RaveVector<T> trans;     ///< translation component
+    RaveVector<T> trans;     //!< translation component
 };
 
 /// \brief A ray defined by an origin and a direction.
@@ -733,8 +733,8 @@ public:
         - "plumb_bob" - Brown. "Decentering Distortion of Lenses", Photometric Engineering, pages 444-462, Vol. 32, No. 3, 1966
      */
     std::string distortion_model;
-    std::vector<T> distortion_coeffs;     ///< coefficients of the distortion model
-    T focal_length;     ///< physical focal length distance since focal length cannot be recovered from the intrinsic matrix, but is necessary for determining the lens plane.
+    std::vector<T> distortion_coeffs;     //!< coefficients of the distortion model
+    T focal_length;     //!< physical focal length distance since focal length cannot be recovered from the intrinsic matrix, but is necessary for determining the lens plane.
 };
 
 /// Don't add new lines to the output << operators. Some applications use it to serialize the data

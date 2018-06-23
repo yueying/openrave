@@ -614,7 +614,7 @@ namespace OpenRAVE
 				case PT_KinBody: 
 				{
 					pointer.reset(new KinBody(PT_KinBody, penv));
-					pointer->__strxmlid = ""; // don't set to KinBody since there's no officially registered interface
+					pointer->str_xml_id_ = ""; // don't set to KinBody since there's no officially registered interface
 					break;
 				}
 				case PT_PhysicsEngine: name = "GenericPhysicsEngine"; break;
@@ -659,8 +659,8 @@ namespace OpenRAVE
 								}
 								else {
 									pointer = InterfaceBasePtr(pointer.get(), utils::smart_pointer_deleter<InterfaceBasePtr>(pointer, INTERFACE_PREDELETER));
-									pointer->__strpluginname = "__internal__";
-									pointer->__strxmlid = name;
+									pointer->plugin_name_ = "__internal__";
+									pointer->str_xml_id_ = name;
 									//pointer->__plugin; // need to protect resources?
 									break;
 								}
@@ -687,8 +687,8 @@ namespace OpenRAVE
 							}
 							else {
 								pointer = InterfaceBasePtr(pointer.get(), utils::smart_pointer_deleter<InterfaceBasePtr>(pointer, INTERFACE_PREDELETER, INTERFACE_POSTDELETER(name, *itplugin)));
-								pointer->__strpluginname = (*itplugin)->ppluginname;
-								pointer->__strxmlid = name;
+								pointer->plugin_name_ = (*itplugin)->ppluginname;
+								pointer->str_xml_id_ = name;
 								pointer->__plugin = *itplugin;
 								break;
 							}

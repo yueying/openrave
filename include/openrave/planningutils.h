@@ -159,7 +159,7 @@ protected:
     std::vector<int> _vRobotActiveIndices;
     int _nRobotAffineDOF;
     Vector _vRobotRotationAxis;
-    UserDataPtr _changehandler; ///< tracks changes for the robot and re-initializes parameters
+    UserDataPtr _changehandler; //!< tracks changes for the robot and re-initializes parameters
 };
 
 typedef boost::shared_ptr<ActiveDOFTrajectorySmoother> ActiveDOFTrajectorySmootherPtr;
@@ -199,7 +199,7 @@ protected:
     std::vector<int> _vRobotActiveIndices;
     int _nRobotAffineDOF;
     Vector _vRobotRotationAxis;
-    UserDataPtr _changehandler; ///< tracks changes for the robot and re-initializes parameters
+    UserDataPtr _changehandler; //!< tracks changes for the robot and re-initializes parameters
 };
 
 typedef boost::shared_ptr<ActiveDOFTrajectoryRetimer> ActiveDOFTrajectoryRetimerPtr;
@@ -251,7 +251,7 @@ public:
 protected:
     std::string _plannername, _extraparameters;
     PlannerBase::PlannerParametersPtr _parameters;
-    PlannerBasePtr _planner; ///< the planner is setup once in the constructor
+    PlannerBasePtr _planner; //!< the planner is setup once in the constructor
 };
 
 typedef boost::shared_ptr<AffineTrajectoryRetimer> AffineTrajectoryRetimerPtr;
@@ -375,13 +375,13 @@ OPENRAVE_API TrajectoryBasePtr MergeTrajectories(const std::list<TrajectoryBaseC
 class DHParameter
 {
 public:
-    KinBody::JointConstPtr joint; ///< pointer to joint
-    int parentindex; ///< index into dh parameter array for getting cooreainte system of parent joint. If -1, no parent.
-    Transform transform; ///< the computed coordinate system of this joint, this can be automatically computed from DH parameters
-    dReal d; ///< distance along previous z
-    dReal a; ///< orthogonal distance from previous z axis to current z
-    dReal theta; ///< rotation of previous x around previous z to current x
-    dReal alpha; ///< rotation of previous z to current z
+    KinBody::JointConstPtr joint; //!< pointer to joint
+    int parentindex; //!< index into dh parameter array for getting cooreainte system of parent joint. If -1, no parent.
+    Transform transform; //!< the computed coordinate system of this joint, this can be automatically computed from DH parameters
+    dReal d; //!< distance along previous z
+    dReal a; //!< orthogonal distance from previous z axis to current z
+    dReal theta; //!< rotation of previous x around previous z to current x
+    dReal alpha; //!< rotation of previous z to current z
 };
 
 /** \brief returns the Denavit-Hartenberg parameters of the kinematics structure of the body.
@@ -456,19 +456,19 @@ protected:
     virtual void _PrintOnFailure(const std::string& prefix);
 
     PlannerBase::PlannerParametersWeakConstPtr _parameters;
-    std::vector<dReal> _vtempconfig, _vtempvelconfig, dQ, _vtempveldelta, _vtempaccelconfig, _vperturbedvalues, _vcoeff2, _vcoeff1, _vprevtempconfig, _vprevtempvelconfig, _vtempconfig2, _vdiffconfig, _vdiffvelconfig, _vstepconfig; ///< in configuration space
+    std::vector<dReal> _vtempconfig, _vtempvelconfig, dQ, _vtempveldelta, _vtempaccelconfig, _vperturbedvalues, _vcoeff2, _vcoeff1, _vprevtempconfig, _vprevtempvelconfig, _vtempconfig2, _vdiffconfig, _vdiffvelconfig, _vstepconfig; //!< in configuration space
     CollisionReportPtr _report;
     std::list<KinBodyPtr> _listCheckBodies;
     int _filtermask;
-    int _torquelimitmode; ///< 1 if should use instantaneous max torque, 0 if should use nominal torque
+    int _torquelimitmode; //!< 1 if should use instantaneous max torque, 0 if should use nominal torque
     dReal _perturbation;
     boost::array< boost::function<bool() >, 2> _usercheckfns;
 
     // for dynamics
     ConfigurationSpecification _specvel;
-    std::vector< std::pair<int, std::pair<dReal, dReal> > > _vtorquevalues; ///< cache for dof indices and the torque limits that the current torque should be in
+    std::vector< std::pair<int, std::pair<dReal, dReal> > > _vtorquevalues; //!< cache for dof indices and the torque limits that the current torque should be in
     std::vector< int > _vdofindices;
-    std::vector<dReal> _doftorques, _dofaccelerations; ///< in body DOF space
+    std::vector<dReal> _doftorques, _dofaccelerations; //!< in body DOF space
     boost::shared_ptr<ConfigurationSpecification::SetConfigurationStateFn> _setvelstatefn;
 };
 
@@ -603,9 +603,9 @@ protected:
     struct SampleInfo
     {
         IkParameterization _ikparam;
-        SpaceSamplerBasePtr _psampler; ///< sampler used to sample the free parameters of the iksolver
-        std::vector<dReal> _vfreesamples; ///< optional samples N*vfree.size()
-        std::vector< std::pair<int, dReal> > _vcachedists; ///< used for sorting freesamples. the sample closest to the midpoint is at the back of the vector (so it can be popped efficiently)
+        SpaceSamplerBasePtr _psampler; //!< sampler used to sample the free parameters of the iksolver
+        std::vector<dReal> _vfreesamples; //!< optional samples N*vfree.size()
+        std::vector< std::pair<int, dReal> > _vcachedists; //!< used for sorting freesamples. the sample closest to the midpoint is at the back of the vector (so it can be popped efficiently)
         int _numleft;
         int _orgindex;
     };
@@ -619,8 +619,8 @@ protected:
     std::vector< IkReturnPtr > _vikreturns;
     std::list<int> _listreturnedsamples;
     std::vector<dReal> _vfreestart;
-    std::vector<dReal> _vfreeweights; ///< the joint weights of the free indices
-    int _tempikindex; ///< if _vikreturns.size() > 0, points to the original ik index of those solutions
+    std::vector<dReal> _vfreeweights; //!< the joint weights of the free indices
+    int _tempikindex; //!< if _vikreturns.size() > 0, points to the original ik index of those solutions
     int _ikfilteroptions;
     bool _searchfreeparameters;
 };

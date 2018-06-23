@@ -1883,8 +1883,8 @@ public:
 
     void SetFilename(const string &filename)
     {
-        if( !!_pinterface &&( _pinterface->__struri.size() == 0) ) {
-            _pinterface->__struri = filename;
+        if( !!_pinterface &&( _pinterface->str_url_.size() == 0) ) {
+            _pinterface->str_url_ = filename;
         }
     }
 
@@ -1930,7 +1930,7 @@ public:
             if( _pcustomreader->endElement(xmlname) ) {
                 _CheckInterface();
                 if( _readername.size() > 0 ) {
-                    _pinterface->__mapReadableInterfaces[_readername] = _pcustomreader->GetReadable();
+                    _pinterface->readable_interfaces_map_[_readername] = _pcustomreader->GetReadable();
                 }
                 _pcustomreader.reset();
                 if( xmlname == _xmltag ) {

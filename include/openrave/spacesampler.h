@@ -26,10 +26,10 @@ namespace OpenRAVE {
 
 /// \brief Specifies the boundary conditions of intervals for sampling
 enum IntervalType {
-    IT_Open=0, ///< (a,b)
-    IT_OpenStart=1, ///< (a,b]
-    IT_OpenEnd=2, ///< [a,b)
-    IT_Closed=3, ///< [a,b]
+    IT_Open=0, //!< (a,b)
+    IT_OpenStart=1, //!< (a,b]
+    IT_OpenEnd=2, //!< [a,b)
+    IT_Closed=3, //!< [a,b]
 };
 
 enum SampleDataType {
@@ -168,7 +168,7 @@ private:
         return OPENRAVE_SPACESAMPLER_HASH;
     }
     
-    std::list<UserDataWeakPtr> __listRegisteredCallbacks; ///< internally managed callbacks
+    std::list<UserDataWeakPtr> __listRegisteredCallbacks; //!< internally managed callbacks
     
     friend class CustomSamplerCallbackData;
 };

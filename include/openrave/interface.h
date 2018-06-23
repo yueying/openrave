@@ -27,14 +27,14 @@ namespace OpenRAVE {
 /// serialization options for interfaces
 enum SerializationOptions
 {
-    SO_Kinematics = 0x01, ///< kinematics information
-    SO_Dynamics = 0x02, ///< dynamics information
-    SO_BodyState = 0x04, ///< state of the body
-    SO_NamesAndFiles = 0x08, ///< resource files and names
-    SO_RobotManipulators = 0x10, ///< serialize robot manipulators
-    SO_RobotSensors = 0x20, ///< serialize robot sensors
-    SO_Geometry = 0x40, ///< geometry information (for collision detection)
-    SO_InverseKinematics = 0x80, ///< information necessary for inverse kinematics. If Transform6D, then don't include the manipulator local transform
+    SO_Kinematics = 0x01, //!< kinematics information
+    SO_Dynamics = 0x02, //!< dynamics information
+    SO_BodyState = 0x04, //!< state of the body
+    SO_NamesAndFiles = 0x08, //!< resource files and names
+    SO_RobotManipulators = 0x10, //!< serialize robot manipulators
+    SO_RobotSensors = 0x20, //!< serialize robot sensors
+    SO_Geometry = 0x40, //!< geometry information (for collision detection)
+    SO_InverseKinematics = 0x80, //!< information necessary for inverse kinematics. If Transform6D, then don't include the manipulator local transform
 };
 
 /** \brief <b>[interface]</b> Base class for all interfaces that OpenRAVE provides. See \ref interface_concepts.
@@ -48,31 +48,37 @@ public:
     InterfaceBase(InterfaceType type, EnvironmentBasePtr penv);
     virtual ~InterfaceBase();
 
-    inline InterfaceType GetInterfaceType() const {
-        return __type;
+    inline InterfaceType GetInterfaceType() const 
+	{
+        return type_;
     }
 
     /// set internally by RaveDatabase <b>[multi-thread safe]</b>
     /// \return the unique identifier that describes this class type, case is ignored
     /// should be the same id used to create the object
-    inline const std::string& GetXMLId() const {
-        return __strxmlid;
+    inline const std::string& GetXMLId() const 
+	{
+        return str_xml_id_;
     }
 
     /// set internally by RaveDatabase <b>[multi-thread safe]</b>
     /// \return the pluginname this interface was loaded from
-    inline const std::string& GetPluginName() const {
-        return __strpluginname;
+    inline const std::string& GetPluginName() const 
+	{
+        return plugin_name_;
     }
 
     /// \return The environment that this interface is attached to. <b>[multi-thread safe]</b>
-    inline EnvironmentBasePtr GetEnv() const {
-        return __penv;
+    inline EnvironmentBasePtr GetEnv() const
+	{
+        return environment_;
     }
 
-    /// \brief Returns the raw map reference, this is \b not multithread safe and the GetInterfaceMutex should be locked before using.
-    inline const READERSMAP& GetReadableInterfaces() const {
-        return __mapReadableInterfaces;
+    /// \brief Returns the raw map reference, this is \b not multithread safe 
+	///  and the GetInterfaceMutex should be locked before using.
+    inline const READERSMAP& GetReadableInterfaces() const 
+	{
+        return readable_interfaces_map_;
     }
 
     /// \brief Returns the readable interface. <b>[multi-thread safe]</b>
@@ -82,39 +88,47 @@ public:
     virtual XMLReadablePtr SetReadableInterface(const std::string& xmltag, XMLReadablePtr readable);
 
     /// \brief Documentation of the interface in reStructuredText format. See \ref writing_plugins_doc. <b>[multi-thread safe]</b>
-    virtual const std::string& GetDescription() const {
+    virtual const std::string& GetDescription() const 
+	{
         return description_;
     }
 
     /// \brief sets a description <b>[multi-thread safe]</b>
-    virtual void SetDescription(const std::string& description) {
+    virtual void SetDescription(const std::string& description)
+	{
         description_ = description;
     }
 
     /// \brief set user data for a specific key. <b>[multi-thread safe]</b>
     ///
-    /// Because user data can be used for caching objects, it is necessary to allow functions taking const pointers of the interface can reset the pointers.
+    /// Because user data can be used for caching objects, 
+	/// it is necessary to allow functions taking const pointers of the interface can reset the pointers.
     virtual void SetUserData(const std::string& key, UserDataPtr data) const;
 
     /// \brief return the user custom data <b>[multi-thread safe]</b>
     virtual UserDataPtr GetUserData(const std::string& key=std::string()) const;
 
-    /// \brief removes a user data pointer. if user data pointer does not exist, then return 0, otherwise 1. <b>[multi-thread safe]</b>
+    /// \brief removes a user data pointer. if user data pointer does not exist, then return 0, otherwise 1.
+	/// <b>[multi-thread safe]</b>
     virtual bool RemoveUserData(const std::string& key) const;
 
     /// \deprecated (12/12/11)
-    virtual void SetUserData(UserDataPtr data) RAVE_DEPRECATED {
+    virtual void SetUserData(UserDataPtr data) RAVE_DEPRECATED 
+	{
         SetUserData(std::string(),data);
     }
 
     /// \brief the URI used to load the interface. <b>[multi-thread safe]</b>
     ///
-    /// Sometimes the URI could hold special markers like "#" like in COLLADA files in order to target objects insides a particular file.
-    virtual const std::string& GetURI() const {
-        return __struri;
+    /// Sometimes the URI could hold special markers like "#" like in COLLADA files
+	/// in order to target objects insides a particular file.
+    virtual const std::string& GetURI() const 
+	{
+        return str_url_;
     }
-    virtual const std::string& GetXMLFilename() const {
-        return __struri;
+    virtual const std::string& GetXMLFilename() const 
+	{
+        return str_url_;
     }
 
     /// \brief Clone the contents of an interface to the current interface.
@@ -150,13 +164,15 @@ public:
     ///
     /// This function should not be overridden by the user, therefore it isn't virtual.
     /// It is is slower than \ref SendCommand since it has to cast the strings to stringstreams.
-    inline bool SendCommand(std::string& output, const std::string& input) {
+    inline bool SendCommand(std::string& output, const std::string& input) 
+	{
         std::stringstream soutput, sinput(input);
-        bool bSuccess = SendCommand(soutput, sinput);
-        if( bSuccess ) {
+        bool is_success = SendCommand(soutput, sinput);
+        if( is_success )
+		{
             output = soutput.str();
         }
-        return bSuccess;
+        return is_success;
     }
 
 #if OPENRAVE_RAPIDJSON
@@ -209,12 +225,15 @@ protected:
     class OPENRAVE_API InterfaceCommand
     {
 public:
-        InterfaceCommand() {
+        InterfaceCommand() 
+		{
         }
-        InterfaceCommand(InterfaceCommandFn newfn, const std::string& newhelp) : fn(newfn), help(newhelp) {
+        InterfaceCommand(InterfaceCommandFn newfn, const std::string& newhelp) 
+			: fn(newfn), help(newhelp)
+		{
         }
-        InterfaceCommandFn fn; ///< command function to run
-        std::string help; ///< help string explaining command arguments
+        InterfaceCommandFn fn; //!< command function to run
+        std::string help; //!< help string explaining command arguments
     };
 
     /// \brief Registers a command and its help string. <b>[multi-thread safe]</b>
@@ -243,8 +262,8 @@ public:
         }
         InterfaceJSONCommand(InterfaceJSONCommandFn newfn, const std::string& newhelp) : fn(newfn), help(newhelp) {
         }
-        InterfaceJSONCommandFn fn; ///< command function to run
-        std::string help; ///< help string explaining command arguments
+        InterfaceJSONCommandFn fn; //!< command function to run
+        std::string help; //!< help string explaining command arguments
     };
 
     /// \brief Registers a command and its help string. <b>[multi-thread safe]</b>
@@ -262,10 +281,11 @@ public:
 
     virtual const char* GetHash() const = 0;
     std::string description_;     /// \see GetDescription()
-    std::string __struri; ///< \see GetURI
+    std::string str_url_; //!< \see GetURI
 
-    virtual boost::shared_mutex& GetInterfaceMutex() const {
-        return _mutexInterface;
+    virtual boost::shared_mutex& GetInterfaceMutex() const 
+	{
+        return interface_mutex_;
     }
 
 private:
@@ -281,21 +301,21 @@ private:
         throw openrave_exception("InterfaceBase copying not allowed");
     }
 
-    mutable boost::shared_mutex _mutexInterface; ///< internal mutex for protecting data from methods that might be access from any thread (those methods should be commented).
-    InterfaceType __type; ///< \see GetInterfaceType
-    UserDataPtr __plugin; ///< handle to plugin that controls the executable code. As long as this plugin pointer is present, module will not be unloaded.
-    std::string __strpluginname; ///< the name of the plugin, necessary?
-    std::string __strxmlid; ///< \see GetXMLId
-    EnvironmentBasePtr __penv; ///< \see GetEnv
-    mutable std::map<std::string, UserDataPtr> __mapUserData; ///< \see GetUserData
+    mutable boost::shared_mutex interface_mutex_; //!< internal mutex for protecting data from methods that might be access from any thread (those methods should be commented).
+    InterfaceType type_; //!< \see GetInterfaceType
+    UserDataPtr __plugin; //!< handle to plugin that controls the executable code. As long as this plugin pointer is present, module will not be unloaded.
+    std::string plugin_name_; //!< the name of the plugin, necessary?
+    std::string str_xml_id_; //!< \see GetXMLId
+    EnvironmentBasePtr environment_; //!< \see GetEnv
+    mutable std::map<std::string, UserDataPtr> user_data_map_; //!< \see GetUserData
 
-    READERSMAP __mapReadableInterfaces; ///< pointers to extra interfaces that are included with this object
+    READERSMAP readable_interfaces_map_; //!< pointers to extra interfaces that are included with this object
     typedef std::map<std::string, boost::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
-    CMDMAP __mapCommands; ///< all registered commands
+    CMDMAP commands_map_; //!< all registered commands
 
 #if OPENRAVE_RAPIDJSON
     typedef std::map<std::string, boost::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
-    JSONCMDMAP __mapJSONCommands; ///< all registered commands
+    JSONCMDMAP __mapJSONCommands; //!< all registered commands
 #endif
     
 #ifdef RAVE_PRIVATE

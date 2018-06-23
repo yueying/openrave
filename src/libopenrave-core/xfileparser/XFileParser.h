@@ -150,9 +150,9 @@ protected:
     void FilterHierarchy( XFile::Node* pNode);
 
 protected:
-    unsigned int mMajorVersion, mMinorVersion; ///< version numbers
-    bool mIsBinaryFormat; ///< true if the file is in binary, false if it's in text form
-    unsigned int mBinaryFloatSize; ///< float size, either 32 or 64 bits
+    unsigned int mMajorVersion, mMinorVersion; //!< version numbers
+    bool mIsBinaryFormat; //!< true if the file is in binary, false if it's in text form
+    unsigned int mBinaryFloatSize; //!< float size, either 32 or 64 bits
     // counter for number arrays in binary format
     unsigned int mBinaryNumCount;
 

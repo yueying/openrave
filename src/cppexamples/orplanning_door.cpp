@@ -218,7 +218,7 @@ public:
     RobotBase::ManipulatorPtr _pmanip;
     KinBody::LinkPtr _pdoorlink;
     KinBody::JointPtr _pdoorjoint;
-    Transform _tgrasp; ///< the grasp transform in the door link frame
+    Transform _tgrasp; //!< the grasp transform in the door link frame
     RobotBasePtr _probot, _ptarget;
     vector<dReal> _vprevsolution;
     Transform _tmanipprev, _tmanipmidreal;

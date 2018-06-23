@@ -156,17 +156,17 @@ OPENRAVE_API dReal RaveCeil(dReal f);
 /// %OpenRAVE error codes
 enum OpenRAVEErrorCode {
     ORE_Failed=0,
-    ORE_InvalidArguments=1, ///< passed in input arguments are not valid
+    ORE_InvalidArguments=1, //!< passed in input arguments are not valid
     ORE_EnvironmentNotLocked=2,
-    ORE_CommandNotSupported=3, ///< string command could not be parsed or is not supported
+    ORE_CommandNotSupported=3, //!< string command could not be parsed or is not supported
     ORE_Assert=4,
-    ORE_InvalidPlugin=5, ///< shared object is not a valid plugin
-    ORE_InvalidInterfaceHash=6, ///< interface hashes do not match between plugins
-    ORE_NotImplemented=7, ///< function is not implemented by the interface.
-    ORE_InconsistentConstraints=8, ///< returned solutions or trajectories do not follow the constraints of the planner/module. The constraints invalidated here are planning constraints, not programming constraints.
-    ORE_NotInitialized=9, ///< when object is used without it getting fully initialized
-    ORE_InvalidState=10, ///< the state of the object is not consistent with its parameters, or cannot be used. This is usually due to a programming error where a vector is not the correct length, etc.
-    ORE_Timeout=11, ///< process timed out
+    ORE_InvalidPlugin=5, //!< shared object is not a valid plugin
+    ORE_InvalidInterfaceHash=6, //!< interface hashes do not match between plugins
+    ORE_NotImplemented=7, //!< function is not implemented by the interface.
+    ORE_InconsistentConstraints=8, //!< returned solutions or trajectories do not follow the constraints of the planner/module. The constraints invalidated here are planning constraints, not programming constraints.
+    ORE_NotInitialized=9, //!< when object is used without it getting fully initialized
+    ORE_InvalidState=10, //!< the state of the object is not consistent with its parameters, or cannot be used. This is usually due to a programming error where a vector is not the correct length, etc.
+    ORE_Timeout=11, //!< process timed out
 };
 
 inline const char* GetErrorCodeString(OpenRAVEErrorCode error)
@@ -293,22 +293,22 @@ typedef boost::weak_ptr<SerializableData> SerializableDataWeakPtr;
 /// \brief Enumeration of all the interfaces.
 enum InterfaceType
 {
-    PT_Planner=1, ///< describes \ref PlannerBase interface
-    PT_Robot=2, ///< describes \ref RobotBase interface
-    PT_SensorSystem=3, ///< describes \ref SensorSystemBase interface
-    PT_Controller=4, ///< describes \ref ControllerBase interface
-    PT_Module=5, ///< describes \ref ModuleBase interface
-    PT_ProblemInstance=5, ///< describes \ref ModuleBase interface
-    PT_IkSolver=6, ///< describes \ref IkSolverBase interface
-    PT_InverseKinematicsSolver=6, ///< describes \ref IkSolverBase interface
-    PT_KinBody=7, ///< describes \ref KinBody
-    PT_PhysicsEngine=8, ///< describes \ref PhysicsEngineBase
-    PT_Sensor=9, ///< describes \ref SensorBase
-    PT_CollisionChecker=10, ///< describes \ref CollisionCheckerBase
-    PT_Trajectory=11, ///< describes \ref TrajectoryBase
-    PT_Viewer=12, ///< describes \ref ViewerBase
-    PT_SpaceSampler=13, ///< describes \ref SamplerBase
-    PT_NumberOfInterfaces=13 ///< number of interfaces, do not forget to update
+    PT_Planner=1, //!< describes \ref PlannerBase interface
+    PT_Robot=2, //!< describes \ref RobotBase interface
+    PT_SensorSystem=3, //!< describes \ref SensorSystemBase interface
+    PT_Controller=4, //!< describes \ref ControllerBase interface
+    PT_Module=5, //!< describes \ref ModuleBase interface
+    PT_ProblemInstance=5, //!< describes \ref ModuleBase interface
+    PT_IkSolver=6, //!< describes \ref IkSolverBase interface
+    PT_InverseKinematicsSolver=6, //!< describes \ref IkSolverBase interface
+    PT_KinBody=7, //!< describes \ref KinBody
+    PT_PhysicsEngine=8, //!< describes \ref PhysicsEngineBase
+    PT_Sensor=9, //!< describes \ref SensorBase
+    PT_CollisionChecker=10, //!< describes \ref CollisionCheckerBase
+    PT_Trajectory=11, //!< describes \ref TrajectoryBase
+    PT_Viewer=12, //!< describes \ref ViewerBase
+    PT_SpaceSampler=13, //!< describes \ref SamplerBase
+    PT_NumberOfInterfaces=13 //!< number of interfaces, do not forget to update
 };
 
 class CollisionReport;
@@ -390,15 +390,15 @@ class BaseXMLWriter;
 typedef boost::shared_ptr<BaseXMLWriter> BaseXMLWriterPtr;
 typedef boost::shared_ptr<BaseXMLWriter const> BaseXMLWriterConstPtr;
 
-///< Cloning Options for interfaces and environments
+//!< Cloning Options for interfaces and environments
 enum CloningOptions {
-    Clone_Bodies = 1, ///< clone all the bodies/robots of the environment, exclude attached interfaces like sensors/controllers
-    Clone_Viewer = 2, ///< clone the viewer type, although figures won't be copied, new viewer does try to match views
-    Clone_Simulation = 4, ///< clone the physics engine and simulation state (ie, timesteps, gravity)
-    Clone_RealControllers = 8, ///< if specified, will clone the real controllers of all the robots, otherwise each robot gets ideal controller
-    Clone_Sensors = 0x0010, ///< if specified, will clone the sensors attached to the robot and added to the environment
-    Clone_Modules = 0x0020, ///< if specified, will clone the modules attached to the environment
-    Clone_IgnoreAttachedBodies = 0x00010001, ///< if set, then ignore cloning any attached bodies so _listAttachedBodies becomes empty. Usually used to control grabbing states.
+    Clone_Bodies = 1, //!< clone all the bodies/robots of the environment, exclude attached interfaces like sensors/controllers
+    Clone_Viewer = 2, //!< clone the viewer type, although figures won't be copied, new viewer does try to match views
+    Clone_Simulation = 4, //!< clone the physics engine and simulation state (ie, timesteps, gravity)
+    Clone_RealControllers = 8, //!< if specified, will clone the real controllers of all the robots, otherwise each robot gets ideal controller
+    Clone_Sensors = 0x0010, //!< if specified, will clone the sensors attached to the robot and added to the environment
+    Clone_Modules = 0x0020, //!< if specified, will clone the modules attached to the environment
+    Clone_IgnoreAttachedBodies = 0x00010001, //!< if set, then ignore cloning any attached bodies so _listAttachedBodies becomes empty. Usually used to control grabbing states.
     Clone_All = 0xffffffff,
 };
 
@@ -438,9 +438,9 @@ class OPENRAVE_API BaseXMLReader : public boost::enable_shared_from_this<BaseXML
 public:
     enum ProcessElement
     {
-        PE_Pass=0,     ///< current tag was not supported, so pass onto another class
-        PE_Support=1,     ///< current tag will be processed by this class
-        PE_Ignore=2,     ///< current tag and all its children should be ignored
+        PE_Pass=0,     //!< current tag was not supported, so pass onto another class
+        PE_Support=1,     //!< current tag will be processed by this class
+        PE_Ignore=2,     //!< current tag and all its children should be ignored
     };
     BaseXMLReader() {
     }
@@ -491,7 +491,7 @@ public:
 private:
     std::string _parentname;     /// XML filename
     std::string _fieldname;
-    boost::shared_ptr<std::ostream> _osrecord;     ///< used to store the xml data
+    boost::shared_ptr<std::ostream> _osrecord;     //!< used to store the xml data
     boost::shared_ptr<BaseXMLReader> _pcurreader;
 };
 
@@ -592,28 +592,28 @@ using mathextra::mult4;
 /// The lower bits contain a unique id of the type.
 enum IkParameterizationType {
     IKP_None=0,
-    IKP_Transform6D=0x67000001,     ///< end effector reaches desired 6D transformation
-    IKP_Rotation3D=0x34000002,     ///< end effector reaches desired 3D rotation
-    IKP_Translation3D=0x33000003,     ///< end effector origin reaches desired 3D translation
-    IKP_Direction3D=0x23000004,     ///< direction on end effector coordinate system reaches desired direction
-    IKP_Ray4D=0x46000005,     ///< ray on end effector coordinate system reaches desired global ray
-    IKP_Lookat3D=0x23000006,     ///< direction on end effector coordinate system points to desired 3D position
-    IKP_TranslationDirection5D=0x56000007,     ///< end effector origin and direction reaches desired 3D translation and direction. Can be thought of as Ray IK where the origin of the ray must coincide.
-    IKP_TranslationXY2D=0x22000008,     ///< 2D translation along XY plane
-    IKP_TranslationXYOrientation3D=0x33000009,     ///< 2D translation along XY plane and 1D rotation around Z axis. The offset of the rotation is measured starting at +X, so at +X is it 0, at +Y it is pi/2.
-    IKP_TranslationLocalGlobal6D=0x3600000a,     ///< local point on end effector origin reaches desired 3D global point
+    IKP_Transform6D=0x67000001,     //!< end effector reaches desired 6D transformation
+    IKP_Rotation3D=0x34000002,     //!< end effector reaches desired 3D rotation
+    IKP_Translation3D=0x33000003,     //!< end effector origin reaches desired 3D translation
+    IKP_Direction3D=0x23000004,     //!< direction on end effector coordinate system reaches desired direction
+    IKP_Ray4D=0x46000005,     //!< ray on end effector coordinate system reaches desired global ray
+    IKP_Lookat3D=0x23000006,     //!< direction on end effector coordinate system points to desired 3D position
+    IKP_TranslationDirection5D=0x56000007,     //!< end effector origin and direction reaches desired 3D translation and direction. Can be thought of as Ray IK where the origin of the ray must coincide.
+    IKP_TranslationXY2D=0x22000008,     //!< 2D translation along XY plane
+    IKP_TranslationXYOrientation3D=0x33000009,     //!< 2D translation along XY plane and 1D rotation around Z axis. The offset of the rotation is measured starting at +X, so at +X is it 0, at +Y it is pi/2.
+    IKP_TranslationLocalGlobal6D=0x3600000a,     //!< local point on end effector origin reaches desired 3D global point
 
-    IKP_TranslationXAxisAngle4D=0x4400000b, ///< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with x-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
-    IKP_TranslationYAxisAngle4D=0x4400000c, ///< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with y-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
-    IKP_TranslationZAxisAngle4D=0x4400000d, ///< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with z-axis like a cone, angle is from 0-pi. Axes are defined in the manipulator base link's coordinate system.
+    IKP_TranslationXAxisAngle4D=0x4400000b, //!< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with x-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
+    IKP_TranslationYAxisAngle4D=0x4400000c, //!< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with y-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
+    IKP_TranslationZAxisAngle4D=0x4400000d, //!< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with z-axis like a cone, angle is from 0-pi. Axes are defined in the manipulator base link's coordinate system.
 
-    IKP_TranslationXAxisAngleZNorm4D=0x4400000e, ///< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to z-axis and be rotated at a certain angle starting from the x-axis (defined in the manipulator base link's coordinate system)
-    IKP_TranslationYAxisAngleXNorm4D=0x4400000f, ///< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to x-axis and be rotated at a certain angle starting from the y-axis (defined in the manipulator base link's coordinate system)
-    IKP_TranslationZAxisAngleYNorm4D=0x44000010, ///< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to y-axis and be rotated at a certain angle starting from the z-axis (defined in the manipulator base link's coordinate system)
+    IKP_TranslationXAxisAngleZNorm4D=0x4400000e, //!< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to z-axis and be rotated at a certain angle starting from the x-axis (defined in the manipulator base link's coordinate system)
+    IKP_TranslationYAxisAngleXNorm4D=0x4400000f, //!< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to x-axis and be rotated at a certain angle starting from the y-axis (defined in the manipulator base link's coordinate system)
+    IKP_TranslationZAxisAngleYNorm4D=0x44000010, //!< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to y-axis and be rotated at a certain angle starting from the z-axis (defined in the manipulator base link's coordinate system)
 
-    IKP_NumberOfParameterizations=16,     ///< number of parameterizations (does not count IKP_None)
+    IKP_NumberOfParameterizations=16,     //!< number of parameterizations (does not count IKP_None)
 
-    IKP_VelocityDataBit = 0x00008000, ///< bit is set if the data represents the time-derivate velocity of an IkParameterization
+    IKP_VelocityDataBit = 0x00008000, //!< bit is set if the data represents the time-derivate velocity of an IkParameterization
     IKP_Transform6DVelocity = IKP_Transform6D|IKP_VelocityDataBit,
     IKP_Rotation3DVelocity = IKP_Rotation3D|IKP_VelocityDataBit,
     IKP_Translation3DVelocity = IKP_Translation3D|IKP_VelocityDataBit,
@@ -631,8 +631,8 @@ enum IkParameterizationType {
     IKP_TranslationYAxisAngleXNorm4DVelocity = IKP_TranslationYAxisAngleXNorm4D|IKP_VelocityDataBit,
     IKP_TranslationZAxisAngleYNorm4DVelocity = IKP_TranslationZAxisAngleYNorm4D|IKP_VelocityDataBit,
 
-    IKP_UniqueIdMask = 0x0000ffff, ///< the mask for the unique ids
-    IKP_CustomDataBit = 0x00010000, ///< bit is set if the ikparameterization contains custom data, this is only used when serializing the ik parameterizations
+    IKP_UniqueIdMask = 0x0000ffff, //!< the mask for the unique ids
+    IKP_CustomDataBit = 0x00010000, //!< bit is set if the ikparameterization contains custom data, this is only used when serializing the ik parameterizations
 };
 
 /// \brief returns a string of the ik parameterization type names
@@ -2165,18 +2165,18 @@ OPENRAVE_API std::istream& operator>>(std::istream& I, TriMesh& trimesh);
 enum DOFAffine
 {
     DOF_NoTransform = 0,
-    DOF_X = 1,     ///< can move in the x direction
-    DOF_Y = 2,     ///< can move in the y direction
-    DOF_Z = 4,     ///< can move in the z direction
-    DOF_XYZ=DOF_X|DOF_Y|DOF_Z,     ///< moves in xyz direction
+    DOF_X = 1,     //!< can move in the x direction
+    DOF_Y = 2,     //!< can move in the y direction
+    DOF_Z = 4,     //!< can move in the z direction
+    DOF_XYZ=DOF_X|DOF_Y|DOF_Z,     //!< moves in xyz direction
 
     // DOF_RotationX fields are mutually exclusive
-    DOF_RotationAxis = 8,     ///< can rotate around an axis (1 dof)
-    DOF_Rotation3D = 16,     ///< can rotate freely (3 dof), the parameterization is
-                             ///< theta * v, where v is the rotation axis and theta is the angle about that axis
-    DOF_RotationQuat = 32,     ///< can rotate freely (4 dof), parameterization is a quaternion. In order for limits to work correctly, the quaternion is in the space of _vRotationQuatLimitStart. _vRotationQuatLimitStart is always left-multiplied before setting the transform!
-    DOF_RotationMask=(DOF_RotationAxis|DOF_Rotation3D|DOF_RotationQuat), ///< mask for all bits representing 3D rotations
-    DOF_Transform = (DOF_XYZ|DOF_RotationQuat), ///< translate and rotate freely in 3D space
+    DOF_RotationAxis = 8,     //!< can rotate around an axis (1 dof)
+    DOF_Rotation3D = 16,     //!< can rotate freely (3 dof), the parameterization is
+                             //!< theta * v, where v is the rotation axis and theta is the angle about that axis
+    DOF_RotationQuat = 32,     //!< can rotate freely (4 dof), parameterization is a quaternion. In order for limits to work correctly, the quaternion is in the space of _vRotationQuatLimitStart. _vRotationQuatLimitStart is always left-multiplied before setting the transform!
+    DOF_RotationMask=(DOF_RotationAxis|DOF_Rotation3D|DOF_RotationQuat), //!< mask for all bits representing 3D rotations
+    DOF_Transform = (DOF_XYZ|DOF_RotationQuat), //!< translate and rotate freely in 3D space
 };
 
 /** \brief Given a mask of affine dofs and a dof inside that mask, returns the index where the value could be found.
