@@ -61,14 +61,14 @@ public:
         RobotBase::ManipulatorPtr pmanip = probot->SetActiveManipulator("rightarm");
 
         // load inverse kinematics using ikfast
-       /* ModuleBasePtr pikfast = RaveCreateModule(penv,"ikfast");
+        ModuleBasePtr pikfast = RaveCreateModule(penv,"ikfast");
         penv->Add(pikfast,true,"");
         stringstream ssin,ssout;
         vector<dReal> vsolution;
         ssin << "LoadIKFastSolver " << probot->GetName() << " " << (int)IKP_Transform6D;
         if( !pikfast->SendCommand(ssout,ssin) ) {
             throw OPENRAVE_EXCEPTION_FORMAT0("failed to load iksolver", ORE_Assert);
-        }*/
+        }
 
         // create the planner parameters
         PlannerBasePtr planner = RaveCreatePlanner(penv,"birrt");

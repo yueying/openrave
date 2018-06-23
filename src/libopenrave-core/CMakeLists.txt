@@ -4,7 +4,9 @@ if( HAVE_MKSTEMP )
 endif()
 
 set(OPENRAVE_CORE_LIBRARIES ${openrave_libraries})
-set(openrave_core_SOURCES openrave-core.cpp environment-core.h openrave-core.h ravep.h xmlreaders-core.cpp genericcollisionchecker.cpp genericphysicsengine.cpp genericrobot.cpp multicontroller.cpp generictrajectory.cpp)
+set(openrave_core_SOURCES openrave-core.cpp environment-core.h openrave-core.h ravep.h
+	 xmlreaders-core.cpp genericcollisionchecker.cpp genericphysicsengine.cpp
+	 genericrobot.cpp multicontroller.cpp generictrajectory.cpp)
 
 if( libpcrecpp_FOUND )
   # pcre for url parsing
@@ -27,7 +29,10 @@ if( COLLADA_DOM_FOUND )
   include_directories(${COLLADA_DOM_INCLUDE_DIRS})
   set (OPENRAVE_CORE_LIBRARIES ${OPENRAVE_CORE_LIBRARIES} ${COLLADA_DOM_LIBRARIES})
   message(STATUS "Geometry Parsing: Collada DOM ${COLLADA_DOM_VERSION}")
-  set(openrave_core_SOURCES ${openrave_core_SOURCES} colladaparser/colladareader.cpp colladaparser/colladawriter.cpp colladaparser/colladacommon.cpp)
+  set(openrave_core_SOURCES ${openrave_core_SOURCES} 
+	colladaparser/colladareader.cpp  colladaparser/colladacommon.h
+	colladaparser/colladawriter.cpp 
+	colladaparser/colladacommon.cpp)
 endif()
 
 if( ASSIMP_FOUND )
@@ -49,7 +54,13 @@ if( ASSIMP_FOUND )
     set(LIBOPENRAVE_COMPILE_FLAGS "${LIBOPENRAVE_COMPILE_FLAGS} -DOPENRAVE_HAS_ZLIB")
     set(OPENRAVE_CORE_LIBRARIES ${OPENRAVE_CORE_LIBRARIES} ${ZLIB_LIBRARIES})
   endif()
-  set(openrave_core_SOURCES ${openrave_core_SOURCES}  xfileparser/XFileParser.cpp xfileparser/XFileBindings.cpp)
+  set(openrave_core_SOURCES ${openrave_core_SOURCES} 
+	xfileparser/fast_atof.h
+	xfileparser/ByteSwap.h
+	xfileparser/XFileHelper.h
+	xfileparser/XFileParser.h 
+	 xfileparser/XFileParser.cpp 
+	xfileparser/XFileBindings.cpp)
 endif()
 
 if( IVCON_FOUND )
@@ -86,7 +97,7 @@ endif()
 install(FILES openrave-core.h DESTINATION include/${OPENRAVE_INCLUDE_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}dev)
 
 if( OPT_CBINDINGS )
-  add_library(libopenrave-core_c SHARED openrave-core_c.cpp)
+  add_library(libopenrave-core_c SHARED openrave-core_c.h openrave-core_c.cpp)
   add_dependencies(libopenrave-core_c libopenrave-core)
   # remove "${LIBOPENRAVE_LINK_FLAGS} until can figure out symbol visibility issue
   set_target_properties(libopenrave-core_c PROPERTIES OUTPUT_NAME openrave${OPENRAVE_LIBRARY_SUFFIX}-core_c 

@@ -171,7 +171,7 @@ public:
     }
 
     BaseCameraSensor(EnvironmentBasePtr penv) : SensorBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nProvides a simulated camera using the standard pinhole projection.";
+        description_ = ":Interface Author: Rosen Diankov\n\nProvides a simulated camera using the standard pinhole projection.";
         RegisterCommand("power",boost::bind(&BaseCameraSensor::_Power,this,_1,_2), "deprecated");
         RegisterCommand("render",boost::bind(&BaseCameraSensor::_Render,this,_1,_2),"deprecated");
         RegisterCommand("setintrinsic",boost::bind(&BaseCameraSensor::_SetIntrinsic,this,_1,_2),

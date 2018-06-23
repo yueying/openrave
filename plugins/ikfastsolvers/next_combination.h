@@ -5,19 +5,23 @@
 template<typename Value, typename Iterator>
 void disjoint_rotate(Iterator begin1, Iterator end1, size_t size1,
                      Iterator begin2, Iterator end2, size_t size2,
-                     Value *type) {
+                     Value *type)
+{
     const size_t total = size1 + size2;
     size_t gcd = total;
-    for (size_t div = size1; div != 0; ) {
+    for (size_t div = size1; div != 0; ) 
+	{
         gcd %= div;
         std::swap(gcd, div);
     }
     const size_t skip = total / gcd - 1;
-    for (size_t i = 0; i < gcd; ++i) {
+    for (size_t i = 0; i < gcd; ++i)
+	{
         Iterator curr((i < size1) ? begin1 + i : begin2 + (i - size1));
         size_t ctr = i;
         const Value v(*curr);
-        for (size_t j = 0; j < skip; ++j) {
+        for (size_t j = 0; j < skip; ++j)
+		{
             ctr = (ctr + size1) % total;
             Iterator next((ctr < size1) ? begin1 + ctr : begin2 + (ctr - size1));
             *curr = *next;
@@ -28,8 +32,10 @@ void disjoint_rotate(Iterator begin1, Iterator end1, size_t size1,
 }
 
 template<typename Iterator>
-bool next_combination(Iterator begin, Iterator mid, Iterator end) {
-    if (begin == mid || mid == end) {
+bool next_combination(Iterator begin, Iterator mid, Iterator end)
+{
+    if (begin == mid || mid == end)
+	{
         return false;
     }
     // Starting from mid backwards, find first char that is
@@ -40,11 +46,13 @@ bool next_combination(Iterator begin, Iterator mid, Iterator end) {
     Iterator head_pos(mid);
     --head_pos;
     size_t head_len = 1;
-    while (head_pos != begin && !(*head_pos < *tail_pos)) {
+    while (head_pos != begin && !(*head_pos < *tail_pos)) 
+	{
         --head_pos;
         ++head_len;
     }
-    if (head_pos == begin && !(*head_pos < *tail_pos)) {
+    if (head_pos == begin && !(*head_pos < *tail_pos)) 
+	{
         // Last combination. We know that the smallest elements are
         // in tail (in order) and largest elements are in head (also
         // in order). rotate everything back into order and return false.
@@ -54,10 +62,12 @@ bool next_combination(Iterator begin, Iterator mid, Iterator end) {
     // Now decrement tail_pos as long as it is larger than *head_pos.
     // This way we'll find the two positions to swap.
     size_t tail_len = 1;
-    while (tail_pos > mid) {
+    while (tail_pos > mid) 
+	{
         --tail_pos;
         ++tail_len;
-        if (!(*tail_pos > *head_pos)) {
+        if (!(*tail_pos > *head_pos))
+		{
             ++tail_pos;
             --tail_len;
             break;
@@ -83,13 +93,15 @@ bool next_combination(Iterator begin, Iterator mid, Iterator end) {
 
     // Same is true if tail_len == 1 (T == ''). Proof: h H ; t -> t H ; h,
     // so this time H will stay in place and swap will suffice.
-    if (head_len == 1 || tail_len == 1) {
+    if (head_len == 1 || tail_len == 1)
+	{
         std::iter_swap(head_pos, tail_pos);
         return true;
     }
     // If head_len == tail_len, this operation reduces to a swap_ranges.
     // Proof: since len(H) == len(T), the swap is h H ; t T -> t T ; h H
-    if (head_len == tail_len) {
+    if (head_len == tail_len) 
+	{
         std::swap_ranges(head_pos, mid, tail_pos);
         return true;
     }

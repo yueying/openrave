@@ -99,7 +99,7 @@ class ConstraintParabolicSmoother : public PlannerBase, public ParabolicRamp::Fe
 public:
     ConstraintParabolicSmoother(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\nConstraint-based smoothing with `Indiana University Intelligent Motion Laboratory <http://www.iu.edu/~motion/software.html>`_ parabolic smoothing library (Kris Hauser).\n\n**Note:** The original trajectory will not be preserved at all, don't use this if the robot has to hit all points of the trajectory.\n";
+        description_ = ":Interface Author: Rosen Diankov\nConstraint-based smoothing with `Indiana University Intelligent Motion Laboratory <http://www.iu.edu/~motion/software.html>`_ parabolic smoothing library (Kris Hauser).\n\n**Note:** The original trajectory will not be preserved at all, don't use this if the robot has to hit all points of the trajectory.\n";
         _bCheckControllerTimeStep = true;
         //_distancechecker = RaveCreateCollisionChecker(penv, "pqp");
         //OPENRAVE_ASSERT_FORMAT0(!!_distancechecker, "need pqp distance checker", ORE_Assert);
@@ -125,8 +125,8 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_num_ <= 0 ) {
+            _parameters->max_iterations_num_ = 100;
         }
         // always a step length!
         if( _parameters->_fStepLength <= g_fEpsilonLinear ) {
@@ -416,7 +416,7 @@ public:
                 for(int rep=0; rep<_parameters->nshortcutcycles; rep++) {
                     ramps = initramps;
                     RAVELOG_VERBOSE_FORMAT("Start shortcut cycle %d\n",rep);
-                    numshortcuts = Shortcut(ramps, _parameters->_nMaxIterations,checker, this);
+                    numshortcuts = Shortcut(ramps, _parameters->max_iterations_num_,checker, this);
                     totaltime = mergewaypoints::ComputeRampsDuration(ramps);
                     if(totaltime < besttime) {
                         bestramps = ramps;

@@ -568,7 +568,7 @@ private:
 
     VisualFeedback(EnvironmentBasePtr penv) : ModuleBase(penv), _preport(new CollisionReport())
     {
-        __description = ":Interface Author: Rosen Diankov\n\n\
+        description_ = ":Interface Author: Rosen Diankov\n\n\
 .. image:: ../../../images/interface_visualfeedback.jpg\n\
   :width: 500\n\n\
 Adds grasp planning taking into account camera visibility constraints. The relevant paper is:\n\n\
@@ -1299,7 +1299,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         boost::shared_ptr<ostream> pOutputTrajStream;
 
         PlannerBase::PlannerParametersPtr params(new PlannerBase::PlannerParameters());
-        params->_nMaxIterations = 4000;
+        params->max_iterations_num_ = 4000;
         int affinedofs=0;
         string cmd, plannername="BiRRT";
         dReal fSampleGoalProb = 0.001f;
@@ -1318,7 +1318,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
                 sinput >> affinedofs;
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_num_;
             }
             else if( cmd == "execute" ) {
                 sinput >> bExecute;
@@ -1412,7 +1412,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         boost::shared_ptr<ostream> pOutputTrajStream;
 
         boost::shared_ptr<GraspSetParameters> params(new GraspSetParameters(GetEnv()));
-        params->_nMaxIterations = 4000;
+        params->max_iterations_num_ = 4000;
         string cmd, plannername="GraspGradient";
         params->_fVisibiltyGraspThresh = 0.05f;
         bool bUseVisibility = false;
@@ -1427,7 +1427,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
                 pOutputTrajStream = boost::shared_ptr<ostream>(&sout,utils::null_deleter());
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_num_;
             }
             else if( cmd == "visgraspthresh" ) {
                 sinput >> params->_fVisibiltyGraspThresh;

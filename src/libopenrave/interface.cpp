@@ -91,7 +91,7 @@ void InterfaceBase::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     //__mapUserData = preference->__mapUserData;
     __struri = preference->__struri;
     __mapReadableInterfaces = preference->__mapReadableInterfaces;
-    __description = preference->__description;
+    description_ = preference->description_;
 }
 
 bool InterfaceBase::SupportsCommand(const std::string& cmd)

@@ -81,7 +81,7 @@ class GrasperModule : public ModuleBase
 
 public:
     GrasperModule(EnvironmentBasePtr penv, std::istream& sinput)  : ModuleBase(penv), outfile(NULL), errfile(NULL) {
-        __description = ":Interface Author: Rosen Diankov\n\nUsed to simulate a hand grasping an object by closing its fingers until collision with all links. ";
+        description_ = ":Interface Author: Rosen Diankov\n\nUsed to simulate a hand grasping an object by closing its fingers until collision with all links. ";
         RegisterCommand("Grasp",boost::bind(&GrasperModule::_GraspCommand,this,_1,_2),
                         "Performs a grasp and returns contact points");
         RegisterCommand("GraspThreaded",boost::bind(&GrasperModule::_GraspThreadedCommand,this,_1,_2),

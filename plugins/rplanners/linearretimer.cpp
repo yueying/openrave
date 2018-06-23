@@ -22,7 +22,7 @@ class LinearTrajectoryRetimer : public TrajectoryRetimer
 public:
     LinearTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryRetimer(penv,sinput)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nLinear trajectory re-timing without modifying any of the points. Overwrites the velocities and timestamps.";
+        description_ = ":Interface Author: Rosen Diankov\n\nLinear trajectory re-timing without modifying any of the points. Overwrites the velocities and timestamps.";
     }
 
 protected:

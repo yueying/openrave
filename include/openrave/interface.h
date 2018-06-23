@@ -83,12 +83,12 @@ public:
 
     /// \brief Documentation of the interface in reStructuredText format. See \ref writing_plugins_doc. <b>[multi-thread safe]</b>
     virtual const std::string& GetDescription() const {
-        return __description;
+        return description_;
     }
 
     /// \brief sets a description <b>[multi-thread safe]</b>
     virtual void SetDescription(const std::string& description) {
-        __description = description;
+        description_ = description;
     }
 
     /// \brief set user data for a specific key. <b>[multi-thread safe]</b>
@@ -261,7 +261,7 @@ public:
 #endif // OPENRAVE_RAPIDJSON
 
     virtual const char* GetHash() const = 0;
-    std::string __description;     /// \see GetDescription()
+    std::string description_;     /// \see GetDescription()
     std::string __struri; ///< \see GetURI
 
     virtual boost::shared_mutex& GetInterfaceMutex() const {

@@ -387,7 +387,7 @@ private:
         dReal _fStepLength;
 
         /// \brief maximum number of iterations before the planner gives up. If 0 or less, planner chooses best iterations.
-        int _nMaxIterations;
+        int max_iterations_num_;
 
         /// \brief max planning time in ms. If 0, then there is no time limit
         uint32_t _nMaxPlanningTime;

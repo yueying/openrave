@@ -45,7 +45,7 @@ public:
     typedef std::map<vector<dReal>, TrajectoryBasePtr, GraspVectorCompare > PRESHAPETRAJMAP;
 
     TaskManipulation(EnvironmentBasePtr penv) : ModuleBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\n\
+        description_ = ":Interface Author: Rosen Diankov\n\n\
 Task-based manipulation planning involving target objects. A lot of the algorithms and theory are covered in:\n\
 \n\
 - Rosen Diankov. \"Automated Construction of Robotic Manipulation Programs\". PhD Thesis, CMU-RI-TR-10-29, Carnegie Mellon University, Robotics Institute, August 2010.\n";
@@ -1718,7 +1718,7 @@ protected:
         }
 
         ptraj = RaveCreateTrajectory(GetEnv(),"");
-        params->_nMaxIterations = nMaxIterations;     // max iterations before failure
+        params->max_iterations_num_ = nMaxIterations;     // max iterations before failure
 
         bool bSuccess = false;
         RAVELOG_VERBOSE("starting planning\n");

@@ -135,7 +135,7 @@ QtOSGViewer::QtOSGViewer(EnvironmentBasePtr penv, std::istream& sinput) : QMainW
         statusBar()->showMessage(tr("Status Bar"));
     }
 
-    __description = ":Interface Author: Rosen Diankov, Gustavo Puche\n\nProvides a viewer based on OpenSceneGraph library. Currently tested with v3.4. Usage:\n\n\
+    description_ = ":Interface Author: Rosen Diankov, Gustavo Puche\n\nProvides a viewer based on OpenSceneGraph library. Currently tested with v3.4. Usage:\n\n\
   - ESC to toggle between camera, selection, and joint modes.\n\
   - Left Click to rotate (or select) object.\n\
   - Middle (or Shift+Left, Left+Right) Click to pan.\n\
@@ -598,7 +598,7 @@ void QtOSGViewer::_ProcessAboutDialog()
 {
     QMessageBox msgBox;
     msgBox.setText("OpenRAVE qtosg plugin");
-    msgBox.setInformativeText(__description.c_str());
+    msgBox.setInformativeText(description_.c_str());
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();

@@ -19,7 +19,7 @@ class RedirectController : public ControllerBase
 {
 public:
     RedirectController(EnvironmentBasePtr penv, std::istream& sinput) : ControllerBase(penv), _bAutoSync(true) {
-        __description = ":Interface Author: Rosen Diankov\n\nRedirects all input and output to another controller (this avoides cloning the other controller while still allowing it to be used from cloned environments)";
+        description_ = ":Interface Author: Rosen Diankov\n\nRedirects all input and output to another controller (this avoides cloning the other controller while still allowing it to be used from cloned environments)";
     }
     virtual ~RedirectController() {
     }

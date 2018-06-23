@@ -124,7 +124,7 @@ public:
     }
 
     BaseLaser2DSensor(EnvironmentBasePtr penv) : SensorBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nProvides a simulated 2D laser range finder.\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nProvides a simulated 2D laser range finder.\n\
 \n\
 .. image:: ../../../images/interface_baselaser.jpg\n\
   :width: 400\n\
@@ -516,7 +516,7 @@ public:
     }
 
     BaseSpinningLaser2DSensor(EnvironmentBasePtr penv) : BaseLaser2DSensor(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nProvides a simulated spinning 2D laser range finder. Includes all the XML parameters from :ref:`sensor-baselaser2d` along with:\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nProvides a simulated spinning 2D laser range finder. Includes all the XML parameters from :ref:`sensor-baselaser2d` along with:\n\
 * spinaxis - the second axis to spin on\n\
 * spinpos - center of rotation of second spin axis\n\
 * spinspeed - how fast to spin in rad/s\n\

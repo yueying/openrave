@@ -372,7 +372,7 @@ class RaveGlobal : private boost::noncopyable,
         //RaveInitRandomGeneration(GetMilliTime());
         debug_level_ = Level_Info;
         _nGlobalEnvironmentId = 0;
-        _nDataAccessOptions = 0;
+        data_access_options_ = 0;
 #ifdef USE_CRLIBM
         _bcrlibmInit = false;
 #endif   
@@ -783,7 +783,8 @@ protected:
 #ifndef HAVE_BOOST_FILESYSTEM
         throw OPENRAVE_EXCEPTION_FORMAT0(_("need to compile with boost::filesystem"),ORE_Assert);
 #else
-        if( _filename.size() == 0 ) {
+        if( _filename.size() == 0 ) 
+		{
             return std::string();
         }
 
@@ -791,18 +792,23 @@ protected:
         boost::filesystem::path fullfilename;
         boost::filesystem::path filename(_filename);
 
-        if( filename.is_complete() ) {
+        if( filename.is_complete() )
+		{
             fullfilename = filename;
         }
-        else if( curdir.size() > 0 ) {
+        else if( curdir.size() > 0 ) 
+		{
             fullfilename = boost::filesystem::absolute(boost::filesystem::path(curdir)) / filename;
         }
-        else {
+        else 
+		{
             fullfilename = boost::filesystem::current_path() / filename;
         }
 
-        if( boost::filesystem::exists(fullfilename) ) {
-            if( !_ValidateFilename(fullfilename,boost::filesystem::path()) ) {
+        if( boost::filesystem::exists(fullfilename) ) 
+		{
+            if( !_ValidateFilename(fullfilename,boost::filesystem::path()) ) 
+			{
                 RAVELOG_WARN(str(boost::format("acess denied to file %s\n")%fullfilename));
                 return std::string();
             }
@@ -810,9 +816,11 @@ protected:
         }
 
         // try the openrave directories
-        FOREACHC(itdir, _vBoostDataDirs) {
-            fullfilename = *itdir / filename;
-            if( _ValidateFilename(fullfilename,boost::filesystem::path()) ) {
+        for(auto itdir: data_dirs_vector_) 
+		{
+            fullfilename = itdir / filename;
+            if( _ValidateFilename(fullfilename,boost::filesystem::path()) ) 
+			{
                 return fullfilename.string();
             }
         }
@@ -827,10 +835,10 @@ protected:
 #ifndef HAVE_BOOST_FILESYSTEM
         RAVELOG_WARN("need to compile with boost::filesystem\n");
 #else
-        // check if filename is within _vBoostDataDirs
+        // check if filename is within data_dirs_vector_
         boost::filesystem::path fullfilename = boost::filesystem::absolute(filename);
         _CustomNormalizePath(fullfilename);
-        FOREACHC(itpath,_vBoostDataDirs) {
+        FOREACHC(itpath,data_dirs_vector_) {
             std::list<boost::filesystem::path> listfilenameparts;
             boost::filesystem::path testfilename = fullfilename.parent_path();
             while( testfilename >= *itpath ) {
@@ -851,13 +859,15 @@ protected:
         return false;
     }
 
-    void SetDataAccess(int options) {
+    void SetDataAccess(int options) 
+	{
         boost::mutex::scoped_lock lock(_mutexinternal);
-        _nDataAccessOptions = options;
+        data_access_options_ = options;
     }
-    int GetDataAccess() {
+    int GetDataAccess() 
+	{
         boost::mutex::scoped_lock lock(_mutexinternal);
-        return _nDataAccessOptions;
+        return data_access_options_;
     }
     std::string GetDefaultViewerType() {
         if( _defaultviewertype.size() > 0 ) {
@@ -962,7 +972,7 @@ protected:
         }
 
 #ifdef HAVE_BOOST_FILESYSTEM
-        _vBoostDataDirs.resize(0);
+        data_dirs_vector_.resize(0);
         FOREACHC(itfilename,_vdatadirs) {
             boost::filesystem::path fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itfilename));
             _CustomNormalizePath(fullfilename);
@@ -970,7 +980,7 @@ protected:
                 // fullfilename ends in '/', so remove it
                 fullfilename = fullfilename.parent_path();
             }
-            _vBoostDataDirs.push_back(fullfilename);
+            data_dirs_vector_.push_back(fullfilename);
         }
 #endif
     }
@@ -1014,29 +1024,37 @@ protected:
 
     bool _ValidateFilename(const boost::filesystem::path& filename, const boost::filesystem::path& curdir)
     {
-        if( !boost::filesystem::exists(filename) ) {
+        if( !boost::filesystem::exists(filename) ) 
+		{
             return false;
         }
 
-        if( _nDataAccessOptions & 1 ) {
-            // check if filename is within _vBoostDataDirs
-            boost::filesystem::path fullfilename = boost::filesystem::absolute(filename,curdir.empty() ? boost::filesystem::current_path() : curdir);
+        if( data_access_options_ & 1 ) 
+		{
+            // check if filename is within data_dirs_vector_
+            boost::filesystem::path fullfilename = boost::filesystem::absolute(filename,curdir.empty()
+				? boost::filesystem::current_path() : curdir);
             _CustomNormalizePath(fullfilename);
-            bool bfound = false;
-            FOREACHC(itpath,_vBoostDataDirs) {
+            bool is_found = false;
+            FOREACHC(itpath,data_dirs_vector_)
+			{
                 boost::filesystem::path testfilename = fullfilename.parent_path();
-                while( testfilename >= *itpath ) {
-                    if( testfilename == *itpath ) {
-                        bfound = true;
+                while( testfilename >= *itpath )
+				{
+                    if( testfilename == *itpath ) 
+					{
+                        is_found = true;
                         break;
                     }
                     testfilename = testfilename.parent_path();
                 }
-                if( bfound ) {
+                if( is_found ) 
+				{
                     break;
                 }
             }
-            if( !bfound ) {
+            if( !is_found ) 
+			{
                 return false;
             }
         }
@@ -1086,11 +1104,11 @@ private:
 	bool _bcrlibmInit; //<! true if crlibm is initialized
 #endif
 	
-    int _nDataAccessOptions;
+    int data_access_options_;//!<1 means can access 
 
     std::vector<string> _vdatadirs;
 #ifdef HAVE_BOOST_FILESYSTEM
-    std::vector<boost::filesystem::path> _vBoostDataDirs; //<! \brief returns absolute filenames of the data
+    std::vector<boost::filesystem::path> data_dirs_vector_; //<! \brief returns absolute filenames of the data
 #endif
 
 #if OPENRAVE_LOG4CXX

@@ -20,7 +20,7 @@ class WorkspaceTrajectoryTracker : public PlannerBase
 public:
     WorkspaceTrajectoryTracker(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = "\
+        description_ = "\
 :Interface Author:  Rosen Diankov\n\n\
 Given a workspace trajectory of the end effector of a manipulator (active manipulator of the robot), finds a configuration space trajectory that tracks it using analytical inverse kinematics.\n\
 Options can be specified to prioritize trajectory time, trajectory smoothness, and planning time\n\

@@ -104,7 +104,7 @@ void PlannerBase::PlannerParameters::StateSaver::_Restore()
     BOOST_ASSERT(ret==0);
 }
 
-PlannerBase::PlannerParameters::PlannerParameters() : XMLReadable("plannerparameters"), _fStepLength(0.04f), _nMaxIterations(0), _nMaxPlanningTime(0), _sPostProcessingPlanner(s_linearsmoother), _nRandomGeneratorSeed(0)
+PlannerBase::PlannerParameters::PlannerParameters() : XMLReadable("plannerparameters"), _fStepLength(0.04f), max_iterations_num_(0), _nMaxPlanningTime(0), _sPostProcessingPlanner(s_linearsmoother), _nRandomGeneratorSeed(0)
 {
     _diffstatefn = SubtractStates;
     _neighstatefn = AddStates;
@@ -173,7 +173,7 @@ PlannerBase::PlannerParameters& PlannerBase::PlannerParameters::operator=(const 
     _sPostProcessingPlanner = "";
     _sPostProcessingParameters.resize(0);
     _sExtraParameters.resize(0);
-    _nMaxIterations = 0;
+    max_iterations_num_ = 0;
     _nMaxPlanningTime = 0;
     _fStepLength = 0.04f;
     _nRandomGeneratorSeed = 0;
@@ -254,7 +254,7 @@ bool PlannerBase::PlannerParameters::serialize(std::ostream& O, int options) con
     }
     O << "</_vconfigresolution>" << endl;
 
-    O << "<_nmaxiterations>" << _nMaxIterations << "</_nmaxiterations>" << endl;
+    O << "<_nmaxiterations>" << max_iterations_num_ << "</_nmaxiterations>" << endl;
     O << "<_nmaxplanningtime>" << _nMaxPlanningTime << "</_nmaxplanningtime>" << endl;
     O << "<_fsteplength>" << _fStepLength << "</_fsteplength>" << endl;
     O << "<_nrandomgeneratorseed>" << _nRandomGeneratorSeed << "</_nrandomgeneratorseed>" << endl;
@@ -371,7 +371,7 @@ bool PlannerBase::PlannerParameters::endElement(const std::string& name)
             _vConfigAccelerationLimit = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
         }
         else if( name == "_nmaxiterations") {
-            _ss >> _nMaxIterations;
+            _ss >> max_iterations_num_;
         }
         else if( name == "_nmaxplanningtime") {
             _ss >> _nMaxPlanningTime;
@@ -790,7 +790,7 @@ void PlannerBase::PlannerParameters::Validate() const
     }
     OPENRAVE_ASSERT_OP(_vConfigResolution.size(),==,(size_t)GetDOF());
     OPENRAVE_ASSERT_OP(_fStepLength,>=,0); // == 0 is valid for auto-steps
-    OPENRAVE_ASSERT_OP(_nMaxIterations,>=,0); // == 0 is valid for auto-iterations
+    OPENRAVE_ASSERT_OP(max_iterations_num_,>=,0); // == 0 is valid for auto-iterations
 
     // check all stateless functions, which means ie anything but configuration samplers
     vector<dReal> vstate;
@@ -917,7 +917,7 @@ PlannerStatus PlannerBase::_ProcessPostPlanners(RobotBasePtr probot, TrajectoryB
     params->_sExtraParameters += GetParameters()->_sPostProcessingParameters;
     params->_sPostProcessingPlanner = "";
     params->_sPostProcessingParameters = "";
-    params->_nMaxIterations = 0; // have to reset since path optimizers also use it and new parameters could be in extra parameters
+    params->max_iterations_num_ = 0; // have to reset since path optimizers also use it and new parameters could be in extra parameters
     //params->_nMaxPlanningTime = 0; // have to reset since path optimizers also use it and new parameters could be in extra parameters??
     if( __cachePostProcessPlanner->InitPlan(probot, params) ) {
         return __cachePostProcessPlanner->PlanPath(ptraj);

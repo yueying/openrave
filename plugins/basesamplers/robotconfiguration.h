@@ -21,7 +21,7 @@ class RobotConfigurationSampler : public SpaceSamplerBase
 public:
     RobotConfigurationSampler(EnvironmentBasePtr penv, std::istream& sinput) : SpaceSamplerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\n\
+		description_ = ":Interface Author: Rosen Diankov\n\n\
 Samples the robot active configuration space, treats revolute and circular joints appropriately. When creating pass the following parameters::\n\n\
   RobotConfiguration [robot name] [sampler name]\n\n\
 The sampler needs to return values in the range [0,1]. Default sampler is 'mt19937'.\n\

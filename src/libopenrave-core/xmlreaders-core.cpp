@@ -112,23 +112,27 @@ EnvironmentMutex* GetXMLMutex()
 }
 
 /// the directory of the file currently parsing
-std::string& GetParseDirectory() {
-    static string s; return s;
+std::string& GetParseDirectory()
+{
+    static string s; 
+	return s;
 }
 
 class SetParseDirectoryScope
 {
 public:
-    SetParseDirectoryScope(const std::string& newdir) {
-        _olddir = GetParseDirectory();
+    SetParseDirectoryScope(const std::string& newdir)
+	{
+        old_dir_ = GetParseDirectory();
         GetParseDirectory() = newdir;
     }
-    ~SetParseDirectoryScope() {
-        GetParseDirectory() = _olddir;
+    ~SetParseDirectoryScope() 
+	{
+        GetParseDirectory() = old_dir_;
     }
 
 private:
-    std::string _olddir;
+    std::string old_dir_;
 };
 
 int& GetXMLErrorCount()
@@ -601,10 +605,12 @@ static int raveXmlSAXUserParseFile(xmlSAXHandlerPtr sax, BaseXMLReaderPtr preade
     int ret = 0;
     xmlParserCtxtPtr ctxt;
     ctxt = xmlCreateFileParserCtxt(filename.c_str());
-    if (ctxt == NULL) {
+    if (ctxt == NULL) 
+	{
         return -1;
     }
-    if (ctxt->sax != (xmlSAXHandlerPtr) &xmlDefaultSAXHandler) {
+    if (ctxt->sax != (xmlSAXHandlerPtr) &xmlDefaultSAXHandler)
+	{
         xmlFree(ctxt->sax);
     }
     ctxt->sax = sax;
@@ -615,21 +621,27 @@ static int raveXmlSAXUserParseFile(xmlSAXHandlerPtr sax, BaseXMLReaderPtr preade
 
     xmlParseDocument(ctxt);
 
-    if (ctxt->wellFormed) {
+    if (ctxt->wellFormed) 
+	{
         ret = 0;
     }
-    else {
-        if (ctxt->errNo != 0) {
+    else 
+	{
+        if (ctxt->errNo != 0) 
+		{
             ret = ctxt->errNo;
         }
-        else {
+        else 
+		{
             ret = -1;
         }
     }
-    if (sax != NULL) {
+    if (sax != NULL) 
+	{
         ctxt->sax = NULL;
     }
-    if (ctxt->myDoc != NULL) {
+    if (ctxt->myDoc != NULL) 
+	{
         xmlFreeDoc(ctxt->myDoc);
         ctxt->myDoc = NULL;
     }
@@ -677,10 +689,11 @@ static int raveXmlSAXUserParseMemory(xmlSAXHandlerPtr sax, BaseXMLReaderPtr prea
     return ret;
 }
 
-bool ParseXMLFile(BaseXMLReaderPtr preader, const string& filename)
+bool ParseXMLFile(BaseXMLReaderPtr preader, const std::string& filename)
 {
-    string filedata = RaveFindLocalFile(filename,GetParseDirectory());
-    if( filedata.size() == 0 ) {
+	std::string filedata = RaveFindLocalFile(filename,GetParseDirectory());
+    if( filedata.size() == 0 ) 
+	{
         return false;
     }
     EnvironmentMutex::scoped_lock lock(*GetXMLMutex());
@@ -691,13 +704,16 @@ bool ParseXMLFile(BaseXMLReaderPtr preader, const string& filename)
     preader->_filename = filedata;
 
     int ret=-1;
-    try {
+    try 
+	{
         ret = raveXmlSAXUserParseFile(GetSAXHandler(), preader, filedata.c_str());
-        if( ret != 0 ) {
+        if( ret != 0 ) 
+		{
             RAVELOG_WARN(str(boost::format("xmlSAXUserParseFile: error parsing %s (error %d)\n")%filedata%ret));
         }
     }
-    catch(const std::exception& ex) {
+    catch(const std::exception& ex)
+	{
         RAVELOG_ERROR(str(boost::format("xmlSAXUserParseFile: error parsing %s: %s\n")%filedata%ex.what()));
         ret = -1;
     }
@@ -3513,7 +3529,7 @@ BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, InterfaceType ty
 class GlobalInterfaceXMLReader : public StreamXMLReader
 {
 public:
-    GlobalInterfaceXMLReader(EnvironmentBasePtr penv, const AttributesList &atts, bool bAddToEnvironment=false) : _penv(penv), _atts(atts), _bAddToEnvironment(bAddToEnvironment) {
+    GlobalInterfaceXMLReader(EnvironmentBasePtr penv, const AttributesList &atts, bool is_add_to_environment=false) : _penv(penv), _atts(atts), _bAddToEnvironment(is_add_to_environment) {
     }
     virtual ProcessElement startElement(const std::string& xmlname, const AttributesList &atts)
     {
@@ -3619,9 +3635,9 @@ protected:
     bool _bAddToEnvironment; //<! if true, will add interface to environment
 };
 
-BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, const AttributesList &atts,bool bAddToEnvironment)
+BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, const AttributesList &atts,bool is_add_to_environment)
 {
-    return BaseXMLReaderPtr(new OpenRAVEXMLParser::GlobalInterfaceXMLReader(penv,atts,bAddToEnvironment));
+    return BaseXMLReaderPtr(new OpenRAVEXMLParser::GlobalInterfaceXMLReader(penv,atts,is_add_to_environment));
 }
 
 } // end namespace OpenRAVEXMLParser

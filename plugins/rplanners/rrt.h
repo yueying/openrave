@@ -28,7 +28,7 @@ public:
 
     RrtPlanner(EnvironmentBasePtr penv) : PlannerBase(penv), _treeForward(0)
     {
-        __description = "\
+        description_ = "\
 :Interface Author:  Rosen Diankov\n\n\
 Uses the Rapidly-Exploring Random Trees Algorithm.\n\
 ";
@@ -268,7 +268,7 @@ class BirrtPlanner : public RrtPlanner<SimpleNode>
 public:
     BirrtPlanner(EnvironmentBasePtr penv) : RrtPlanner<SimpleNode>(penv), _treeBackward(1)
     {
-        __description += "Bi-directional RRTs. See\n\n\
+        description_ += "Bi-directional RRTs. See\n\n\
 - J.J. Kuffner and S.M. LaValle. RRT-Connect: An efficient approach to single-query path planning. In Proc. IEEE Int'l Conf. on Robotics and Automation (ICRA'2000), pages 995-1001, San Francisco, CA, April 2000.";
         RegisterCommand("DumpTree", boost::bind(&BirrtPlanner::_DumpTreeCommand,this,_1,_2),
                         "dumps the source and goal trees to $OPENRAVE_HOME/birrtdump.txt. The first N values are the DOF values, the last value is the parent index.\n\
@@ -343,8 +343,8 @@ Some python code to display data::\n\
             return false;
         }
 
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 10000;
+        if( _parameters->max_iterations_num_ <= 0 ) {
+            _parameters->max_iterations_num_ = 10000;
         }
 
         _vgoalpaths.resize(0);
@@ -379,7 +379,7 @@ Some python code to display data::\n\
         bool bSampleGoal = true;
         PlannerProgress progress;
         PlannerAction callbackaction=PA_None;
-        while(_vgoalpaths.size() < _parameters->_minimumgoalpaths && iter < 3*_parameters->_nMaxIterations) {
+        while(_vgoalpaths.size() < _parameters->_minimumgoalpaths && iter < 3*_parameters->max_iterations_num_) {
             RAVELOG_VERBOSE_FORMAT("env=%d, iter=%d, forward=%d, backward=%d", GetEnv()->GetId()%(iter/3)%_treeForward.GetNumNodes()%_treeBackward.GetNumNodes());
             ++iter;
 
@@ -397,7 +397,7 @@ Some python code to display data::\n\
             if( _parameters->_nMaxPlanningTime > 0 ) {
                 uint32_t elapsedtime = utils::GetMilliTime()-basetime;
                 if( elapsedtime >= _parameters->_nMaxPlanningTime ) {
-                    RAVELOG_DEBUG_FORMAT("time exceeded (%dms) so breaking. iter=%d < %d", elapsedtime%(iter/3)%_parameters->_nMaxIterations);
+                    RAVELOG_DEBUG_FORMAT("time exceeded (%dms) so breaking. iter=%d < %d", elapsedtime%(iter/3)%_parameters->max_iterations_num_);
                     break;
                 }
             }
@@ -460,7 +460,7 @@ Some python code to display data::\n\
             // although check isn't necessary, having it improves running times
             if( et == ET_Failed ) {
                 // necessary to increment iterator in case spaces are not connected
-                if( iter > 3*_parameters->_nMaxIterations ) {
+                if( iter > 3*_parameters->max_iterations_num_ ) {
                     RAVELOG_WARN("iterations exceeded\n");
                     break;
                 }
@@ -494,8 +494,8 @@ Some python code to display data::\n\
 
             swap(TreeA, TreeB);
             iter += 3;
-            if( iter > 3*_parameters->_nMaxIterations ) {
-                RAVELOG_WARN_FORMAT("iterations exceeded %d", _parameters->_nMaxIterations);
+            if( iter > 3*_parameters->max_iterations_num_ ) {
+                RAVELOG_WARN_FORMAT("iterations exceeded %d", _parameters->max_iterations_num_);
                 break;
             }
 
@@ -503,7 +503,7 @@ Some python code to display data::\n\
         }
 
         if( _vgoalpaths.size() == 0 ) {
-            RAVELOG_WARN_FORMAT("Plan failed in %fs, iter=%d, nMaxIterations=%d",(0.001f*(float)(utils::GetMilliTime()-basetime))%(iter/3)%_parameters->_nMaxIterations);
+            RAVELOG_WARN_FORMAT("Plan failed in %fs, iter=%d, nMaxIterations=%d",(0.001f*(float)(utils::GetMilliTime()-basetime))%(iter/3)%_parameters->max_iterations_num_);
             return PS_Failed;
         }
 
@@ -655,7 +655,7 @@ class BasicRrtPlanner : public RrtPlanner<SimpleNode>
 public:
     BasicRrtPlanner(EnvironmentBasePtr penv) : RrtPlanner<SimpleNode>(penv)
     {
-        __description = "Rosen's Basic RRT planner";
+        description_ = "Rosen's Basic RRT planner";
         _fGoalBiasProb = dReal(0.05);
         _bOneStep = false;
         RegisterCommand("DumpTree", boost::bind(&BasicRrtPlanner::_DumpTreeCommand,this,_1,_2),
@@ -742,7 +742,7 @@ public:
 
         int numfoundgoals = 0;
         
-        while(iter < _parameters->_nMaxIterations) {
+        while(iter < _parameters->max_iterations_num_) {
             iter++;
             if( !!bestGoalNode && iter >= _parameters->_nMinIterations ) {
                 break;
@@ -838,8 +838,8 @@ public:
             }
 
             // check if reached any goals
-            if( iter > _parameters->_nMaxIterations ) {
-                RAVELOG_WARN("iterations exceeded %d\n", _parameters->_nMaxIterations);
+            if( iter > _parameters->max_iterations_num_ ) {
+                RAVELOG_WARN("iterations exceeded %d\n", _parameters->max_iterations_num_);
                 break;
             }
 
@@ -919,7 +919,7 @@ class ExplorationPlanner : public RrtPlanner<SimpleNode>
 {
 public:
     ExplorationPlanner(EnvironmentBasePtr penv) : RrtPlanner<SimpleNode>(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nRRT-based exploration planner";
+        description_ = ":Interface Author: Rosen Diankov\n\nRRT-based exploration planner";
     }
     virtual ~ExplorationPlanner() {
     }
@@ -951,7 +951,7 @@ public:
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         int iter = 0;
-        while(iter < _parameters->_nMaxIterations && _treeForward.GetNumNodes() < _parameters->_nExpectedDataSize ) {
+        while(iter < _parameters->max_iterations_num_ && _treeForward.GetNumNodes() < _parameters->_nExpectedDataSize ) {
             ++iter;
 
             if( RaveRandomFloat() < _parameters->_fExploreProb ) {

@@ -256,62 +256,74 @@ public:
     };
 
 public:
-    ColladaReader(EnvironmentBasePtr penv) : _dom(NULL), _penv(penv), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0)
+    ColladaReader(EnvironmentBasePtr penv)
+		: _dom(NULL), _penv(penv), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0)
     {
         daeErrorHandler::setErrorHandler(this);
-        _bOpeningZAE = false;
-        _bSkipGeometry = false;
-        _fGlobalScale = 1.0/penv->GetUnit().second;
+        is_open_zae_ = false;
+        is_skip_geometry_ = false;
+        global_scale_ = 1.0/penv->GetUnit().second;
         _bBackCompatValuesInRadians = false;
-        if( sizeof(daeFloat) == 4 ) {
+        if( sizeof(daeFloat) == 4 ) 
+		{
             RAVELOG_WARN("collada-dom compiled with 32-bit floating-point, so there might be precision errors\n");
         }
     }
-    virtual ~ColladaReader() {
+    virtual ~ColladaReader() 
+	{
     }
 
-    bool InitFromURI(const string& uristr, const AttributesList& atts)
+    bool InitFromURI(const std::string& uristr, const AttributesList& atts)
     {
         _InitPreOpen(atts);
-        _bOpeningZAE = uristr.find(".zae") == uristr.size()-4;
-        daeURI urioriginal(*_dae, uristr);
+        is_open_zae_ = uristr.find(".zae") == uristr.size()-4;
+        daeURI urioriginal(*dae_, uristr);
         urioriginal.fragment(std::string()); // have to set the fragment to empty!
         std::string uriresolved;
 
-        if( find(_vOpenRAVESchemeAliases.begin(),_vOpenRAVESchemeAliases.end(),urioriginal.scheme()) != _vOpenRAVESchemeAliases.end() ) {
-            if( urioriginal.path().size() == 0 ) {
+        if(std::find(_vOpenRAVESchemeAliases.begin(),_vOpenRAVESchemeAliases.end(),urioriginal.scheme()) 
+			!= _vOpenRAVESchemeAliases.end() ) 
+		{
+            if( urioriginal.path().size() == 0 )
+			{
                 return NULL;
             }
             // remove first slash because we need relative file
             uriresolved="file:";
-            if( urioriginal.path().at(0) == '/' ) {
+            if( urioriginal.path().at(0) == '/' ) 
+			{
                 uriresolved += RaveFindLocalFile(urioriginal.path().substr(1), "/");
             }
-            else {
+            else
+			{
                 uriresolved += RaveFindLocalFile(urioriginal.path(), "/");
             }
-            if( uriresolved.size() == 5 ) {
+            if( uriresolved.size() == 5 ) 
+			{
                 return false;
             }
         }
-        _dom = daeSafeCast<domCOLLADA>(_dae->open(uriresolved.size() > 0 ? uriresolved : urioriginal.str()));
-        if( !_dom ) {
+        _dom = daeSafeCast<domCOLLADA>(dae_->open(uriresolved.size() > 0 ? uriresolved : urioriginal.str()));
+        if( !_dom ) 
+		{
             return false;
         }
-        if( uriresolved.size() > 0 ) {
-            _mapInverseResolvedURIList.insert(make_pair(uriresolved, daeURI(*_dae,urioriginal.str())));
+        if( uriresolved.size() > 0 ) 
+		{
+            _mapInverseResolvedURIList.insert(std::make_pair(uriresolved, daeURI(*dae_,urioriginal.str())));
         }
 
         return _InitPostOpen(atts);
     }
 
-    bool InitFromFile(const string& filename, const AttributesList& atts)
+    bool InitFromFile(const std::string& filename, const AttributesList& atts)
     {
         _InitPreOpen(atts);
-        _bOpeningZAE = filename.find(".zae") == filename.size()-4;
-        _dom = daeSafeCast<domCOLLADA>(_dae->open(filename));
-        _bOpeningZAE = false;
-        if (!_dom) {
+        is_open_zae_ = filename.find(".zae") == filename.size()-4;
+        _dom = daeSafeCast<domCOLLADA>(dae_->open(filename));
+        is_open_zae_ = false;
+        if (!_dom)
+		{
             return false;
         }
         _filename=filename;
@@ -321,7 +333,7 @@ public:
     bool InitFromData(const string& pdata,const AttributesList& atts)
     {
         _InitPreOpen(atts);
-        _dom = daeSafeCast<domCOLLADA>(_dae->openFromMemory(".",pdata.c_str()));
+        _dom = daeSafeCast<domCOLLADA>(dae_->openFromMemory(".",pdata.c_str()));
         if (!_dom) {
             return false;
         }
@@ -331,61 +343,75 @@ public:
     bool _InitPreOpen(const AttributesList& atts)
     {
         _mapInstantiatedNodes.clear();
-        RAVELOG_VERBOSE(str(boost::format("init COLLADA reader version: %s, namespace: %s\n")%COLLADA_VERSION%COLLADA_NAMESPACE));
-        _dae = GetGlobalDAE();
-        _bSkipGeometry = false;
+        RAVELOG_VERBOSE(str(boost::format("init COLLADA reader version: %s, namespace: %s\n")
+			%COLLADA_VERSION%COLLADA_NAMESPACE));
+        dae_ = GetGlobalDAE();
+        is_skip_geometry_ = false;
         _vOpenRAVESchemeAliases.resize(0);
-        FOREACHC(itatt,atts) {
-            if( itatt->first == "skipgeometry" ) {
-                _bSkipGeometry = _stricmp(itatt->second.c_str(), "true") == 0 || itatt->second=="1";
+        FOREACHC(itatt,atts)
+		{
+            if( itatt->first == "skipgeometry" ) 
+			{
+                is_skip_geometry_ = _stricmp(itatt->second.c_str(), "true") == 0 || itatt->second=="1";
             }
-            else if( itatt->first == "prefix" ) {
+            else if( itatt->first == "prefix" ) 
+			{
                 _prefix = itatt->second;
             }
-            else if( itatt->first == "name" ) {
-                RAVELOG_VERBOSE(str(boost::format("collada reader robot name=%s is processed from xmlreaders side")%itatt->second));
+            else if( itatt->first == "name" ) 
+			{
+                RAVELOG_VERBOSE(str(boost::format("collada reader robot name=%s is processed from xmlreaders side")
+					%itatt->second));
             }
-            else if( itatt->first == "openravescheme" ) {
-                _dae->getURIResolvers().list().clear();
-                stringstream ss(itatt->second);
-                _vOpenRAVESchemeAliases = std::vector<std::string>((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+            else if( itatt->first == "openravescheme" )
+			{
+                dae_->getURIResolvers().list().clear();
+                std::stringstream ss(itatt->second);
+                _vOpenRAVESchemeAliases = std::vector<std::string>((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
             }
-            else if( itatt->first == "uripassword" ) {
+            else if( itatt->first == "uripassword" )
+			{
                 size_t passwordindex = itatt->second.find_last_of(' ');
-                if( passwordindex != std::string::npos ) {
-                    string name = itatt->second.substr(0,passwordindex);
+                if( passwordindex != std::string::npos )
+				{
+                    std::string name = itatt->second.substr(0,passwordindex);
                     boost::trim(name);
                     string password = itatt->second.substr(passwordindex+1);
                     boost::trim(password);
                 }
             }
-            else if( itatt->first == "scalegeometry" ) {
+            else if( itatt->first == "scalegeometry" ) 
+			{
             }
-            else {
+            else
+			{
                 //RAVELOG_WARN(str(boost::format("collada reader unprocessed attribute pair: %s:%s")%itatt->first%itatt->second));
-                if( !!_dae->getIOPlugin() ) {
-                    _dae->getIOPlugin()->setOption(itatt->first.c_str(),itatt->second.c_str());
+                if( !!dae_->getIOPlugin() ) 
+				{
+                    dae_->getIOPlugin()->setOption(itatt->first.c_str(),itatt->second.c_str());
                 }
             }
         }
 
-        if( _vOpenRAVESchemeAliases.size() == 0 ) {
+        if( _vOpenRAVESchemeAliases.size() == 0 )
+		{
             _vOpenRAVESchemeAliases.push_back("openrave");
         }
-        FOREACHC(itname,_vOpenRAVESchemeAliases) {
-            _dae->getURIResolvers().list().prepend(new daeOpenRAVEURIResolver(*_dae,*itname,this));
+        for(auto itname:_vOpenRAVESchemeAliases) 
+		{
+            dae_->getURIResolvers().list().prepend(new daeOpenRAVEURIResolver(*dae_,itname,this));
         }
         return true;
     }
 
     bool _InitPostOpen(const AttributesList& atts)
     {
-        _fGlobalScale = 1.0/_penv->GetUnit().second;
+        global_scale_ = 1.0/_penv->GetUnit().second;
         _bBackCompatValuesInRadians = false;
         if( !!_dom->getAsset() ) {
-            // do not modify _fGlobalScale here since _GetUnitScale propagates up the hierarchy
+            // do not modify global_scale_ here since _GetUnitScale propagates up the hierarchy
             if( !!_dom->getAsset()->getUnit() ) {
-                _fGlobalScale *= _dom->getAsset()->getUnit()->getMeter();
+                global_scale_ *= _dom->getAsset()->getUnit()->getMeter();
             }
 
             // check the authoring tool
@@ -407,7 +433,7 @@ public:
                 stringstream ss(itatt->second);
                 Vector v(1,1,1);
                 ss >> v.x;
-                _fGlobalScale *= v.x;
+                global_scale_ *= v.x;
             }
         }
 
@@ -680,7 +706,7 @@ public:
                 SensorBase::CameraGeomDataConstPtr pcamgeom = boost::static_pointer_cast<SensorBase::CameraGeomData const>((*itsensor)->GetSensorGeometry(SensorBase::ST_Camera));
                 if( pcamgeom->target_region.size() > 0 ) {
                     std::string resolvedTargetRegion; // resolved name
-                    //daeURI uri(*_dae, pcamgeom->target_region);
+                    //daeURI uri(*dae_, pcamgeom->target_region);
                     //RAVELOG_INFO_FORMAT("asdfasf: %s", _MakeFullURI(pcamgeom->target_region));//uri.getURI());
                     // check if there's any URL matching pcamgeom->target_region
                     FOREACHC(ittestbody, vbodies) {
@@ -1363,7 +1389,7 @@ public:
         _mapJointSids.clear();
         KinBodyPtr pkinbody = RaveCreateKinBody(_penv);
         if( pkinbody->__struri.size() == 0 ) {
-            pkinbody->__struri = daeURI(*_dae).str();
+            pkinbody->__struri = daeURI(*dae_).str();
         }
         string name = !pdomnode->getName() ? "" : _ConvertToOpenRAVEName(pdomnode->getName());
         if( name.size() == 0 ) {
@@ -1851,7 +1877,7 @@ public:
                     }
                     else if( strcmp(pdomaxis->getElementName(), "prismatic") == 0 ) {
                         pjoint->_info._type = KinBody::JointPrismatic;
-                        vaxisunits[ic] = _GetUnitScale(pdomaxis,_fGlobalScale);
+                        vaxisunits[ic] = _GetUnitScale(pdomaxis,global_scale_);
                         jointtype |= 1<<(4+ic);
                         pjoint->_info._vmaxvel[ic] = 0.01;
                     }
@@ -1934,7 +1960,7 @@ public:
                         fjointmult = PI/180.0f;
                     }
                     else if( pjoint->IsPrismatic(ic) && !!kinematics_axis_info ) {
-                        fjointmult = _GetUnitScale(kinematics_axis_info,_fGlobalScale);
+                        fjointmult = _GetUnitScale(kinematics_axis_info,global_scale_);
                     }
 
                     pjoint->_info._voffsets[ic] = 0;     // to overcome -pi to pi boundary
@@ -2044,7 +2070,7 @@ public:
                         if( !has_soft_limits ) { // prioritize soft-limits
                             // contains the hard limits (prioritize over soft limits)
                             RAVELOG_VERBOSE_FORMAT("There are LIMITS in joint %s", pjoint->GetName());
-                            dReal fscale = pjoint->IsRevolute(ic) ? (PI/180.0f) : _GetUnitScale(pdomaxis,_fGlobalScale);
+                            dReal fscale = pjoint->IsRevolute(ic) ? (PI/180.0f) : _GetUnitScale(pdomaxis,global_scale_);
                             pjoint->_info._vlowerlimit.at(ic) = (dReal)pdomaxis->getLimits()->getMin()->getValue()*fscale;
                             pjoint->_info._vupperlimit.at(ic) = (dReal)pdomaxis->getLimits()->getMax()->getValue()*fscale;
                             if( pjoint->IsRevolute(ic) ) {
@@ -2102,7 +2128,7 @@ public:
         if( !!pdomnode->getID() &&( find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end()) ) {
             return false;
         }
-        if( _bSkipGeometry ) {
+        if( is_skip_geometry_ ) {
             return false;
         }
 
@@ -2169,7 +2195,7 @@ public:
         Transform tnodegeom;
         Vector vscale;
         decompose(tmnodegeom, tnodegeom, vscale);
-        vscale *= _GetUnitScale(pdomnode, _fGlobalScale); // TODO should track the scale per each listGeometryInfos
+        vscale *= _GetUnitScale(pdomnode, global_scale_); // TODO should track the scale per each listGeometryInfos
 
 
         FOREACH(itgeominfo, listGeometryInfos) {
@@ -2299,7 +2325,7 @@ public:
                 if( !node ) {
                     continue;
                 }
-                dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                dReal fUnitScale = _GetUnitScale(node,global_scale_);
                 const domFloat_arrayRef flArray = node->getFloat_array();
                 if (!!flArray) {
                     const domList_of_floats& listFloats = flArray->getValue();
@@ -2383,7 +2409,7 @@ public:
                     if( !node ) {
                         continue;
                     }
-                    dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                    dReal fUnitScale = _GetUnitScale(node,global_scale_);
                     const domFloat_arrayRef flArray = node->getFloat_array();
                     if (!!flArray) {
                         const domList_of_floats& listFloats = flArray->getValue();
@@ -2472,7 +2498,7 @@ public:
                     if( !node ) {
                         continue;
                     }
-                    dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                    dReal fUnitScale = _GetUnitScale(node,global_scale_);
                     const domFloat_arrayRef flArray = node->getFloat_array();
                     if (!!flArray) {
                         const domList_of_floats& listFloats = flArray->getValue();
@@ -2559,7 +2585,7 @@ public:
                 if( !node ) {
                     continue;
                 }
-                dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                dReal fUnitScale = _GetUnitScale(node,global_scale_);
                 const domFloat_arrayRef flArray = node->getFloat_array();
                 if (!!flArray) {
                     const domList_of_floats& listFloats = flArray->getValue();
@@ -2870,7 +2896,7 @@ public:
                         if( !node ) {
                             continue;
                         }
-                        dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                        dReal fUnitScale = _GetUnitScale(node,global_scale_);
                         const domFloat_arrayRef flArray = node->getFloat_array();
                         if (!!flArray) {
                             const domList_of_floats& listFloats = flArray->getValue();
@@ -3373,7 +3399,7 @@ public:
                     }
                     else {
                         // push back the fully resolved name
-                        atts.push_back(make_pair(domatts[j].name, _MakeFullURI(xsAnyURI(*_dae, domatts[j].value), elt)));
+                        atts.push_back(make_pair(domatts[j].name, _MakeFullURI(xsAnyURI(*dae_, domatts[j].value), elt)));
                     }
                 }
                 else {
@@ -3685,7 +3711,7 @@ public:
         if( !!ptrans ) {
             //      if( !ptrans->getSid() ) { // if sid is valid, then controlled by joint?
             t.trans = Vector(ptrans->getValue()[0], ptrans->getValue()[1], ptrans->getValue()[2]);
-            t.trans *= _GetUnitScale(pelt,_fGlobalScale);
+            t.trans *= _GetUnitScale(pelt,global_scale_);
             //      }
             return t;
         }
@@ -3698,7 +3724,7 @@ public:
                 t.m[4*i+2] = pmat->getValue()[4*i+2];
                 t.trans[i] = pmat->getValue()[4*i+3];
             }
-            t.trans *= _GetUnitScale(pelt,_fGlobalScale);
+            t.trans *= _GetUnitScale(pelt,global_scale_);
             return t;
         }
 
@@ -3715,7 +3741,7 @@ public:
             Vector campos(pcamera->getValue()[0], pcamera->getValue()[1], pcamera->getValue()[2]);
             Vector lookat(pcamera->getValue()[3], pcamera->getValue()[4], pcamera->getValue()[5]);
             Vector camup(pcamera->getValue()[6], pcamera->getValue()[7], pcamera->getValue()[8]);
-            t = transformLookat(lookat*_GetUnitScale(pelt,_fGlobalScale),campos*_GetUnitScale(pelt,_fGlobalScale),camup);
+            t = transformLookat(lookat*_GetUnitScale(pelt,global_scale_),campos*_GetUnitScale(pelt,global_scale_),camup);
             return t;
         }
 
@@ -3808,7 +3834,7 @@ public:
 
     virtual void handleError( daeString msg )
     {
-        if( _bOpeningZAE && (msg == string("Document is empty\n") || msg == string("Error parsing XML in daeLIBXMLPlugin::read\n")  ) ) {
+        if( is_open_zae_ && (msg == string("Document is empty\n") || msg == string("Error parsing XML in daeLIBXMLPlugin::read\n")  ) ) {
             return;     // collada-dom prints these messages even if no error
         }
         RAVELOG_ERROR(str(boost::format("COLLADA error: %s")%msg));
@@ -5050,10 +5076,10 @@ private:
         return 1;
     }
 
-    boost::shared_ptr<DAE> _dae;
+    boost::shared_ptr<DAE> dae_;
     domCOLLADA* _dom;
     EnvironmentBasePtr _penv;
-    dReal _fGlobalScale;
+    dReal global_scale_;
     std::map<KinBody::JointPtr, std::vector<dReal> > _mapJointUnits;
     std::map<std::string,KinBody::JointPtr> _mapJointSids;
     string _prefix;
@@ -5067,8 +5093,8 @@ private:
     std::map<std::string,daeURI> _mapInverseResolvedURIList; //<! holds a list of inverse resolved relationships file:// -> openrave://
     std::map<domNodeRef, std::pair<domInstance_nodeRef, std::string> > _mapInstantiatedNodes; //<! holds a map of the instantiated (cloned) node and the original instance_node elements. Also contains the idsuffix used to instantiate the node.
 
-    bool _bOpeningZAE; //<! true if currently opening a zae
-    bool _bSkipGeometry;
+    bool is_open_zae_; //<! true if currently opening a zae
+    bool is_skip_geometry_;
     bool _bBackCompatValuesInRadians; //<! if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
 };
 
@@ -5076,17 +5102,20 @@ bool RaveParseColladaURI(EnvironmentBasePtr penv, const std::string& uri,const A
 {
     boost::mutex::scoped_lock lock(GetGlobalDAEMutex());
     ColladaReader reader(penv);
-    if( !reader.InitFromURI(uri,atts) ) {
+    if( !reader.InitFromURI(uri,atts) ) 
+	{
         return false;
     }
     return reader.Extract();
 }
 
-bool RaveParseColladaURI(EnvironmentBasePtr penv, KinBodyPtr& pbody, const string& uri, const AttributesList& atts)
+bool RaveParseColladaURI(EnvironmentBasePtr penv, KinBodyPtr& pbody, 
+	const std::string& uri, const AttributesList& atts)
 {
     boost::mutex::scoped_lock lock(GetGlobalDAEMutex());
     ColladaReader reader(penv);
-    if (!reader.InitFromURI(uri,atts)) {
+    if (!reader.InitFromURI(uri,atts)) 
+	{
         return false;
     }
     // have to extract the fragment

@@ -481,37 +481,48 @@ public:
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         OpenRAVEXMLParser::GetXMLErrorCount() = 0;
-        if( _IsColladaURI(filename) ) {
-            if( RaveParseColladaURI(shared_from_this(), filename, atts) ) {
+        if( _IsColladaURI(filename) )
+		{
+            if( RaveParseColladaURI(shared_from_this(), filename, atts) ) 
+			{
                 UpdatePublishedBodies();
                 return true;
             }
         }
-        else if( _IsColladaFile(filename) ) {
-            if( RaveParseColladaFile(shared_from_this(), filename, atts) ) {
+        else if( _IsColladaFile(filename) ) 
+		{
+            if( RaveParseColladaFile(shared_from_this(), filename, atts) ) 
+			{
                 UpdatePublishedBodies();
                 return true;
             }
         }
-        else if( _IsXFile(filename) ) {
+        else if( _IsXFile(filename) )
+		{
             RobotBasePtr robot;
-            if( RaveParseXFile(shared_from_this(), robot, filename, atts) ) {
+            if( RaveParseXFile(shared_from_this(), robot, filename, atts) )
+			{
                 _AddRobot(robot, true);
                 UpdatePublishedBodies();
                 return true;
             }
         }
-        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) {
+        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) 
+		{
             KinBodyPtr pbody = ReadKinBodyURI(KinBodyPtr(),filename,atts);
-            if( !!pbody ) {
+            if( !!pbody ) 
+			{
                 _AddKinBody(pbody,true);
                 UpdatePublishedBodies();
                 return true;
             }
         }
-        else {
-            if( _ParseXMLFile(OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(),atts,true), filename) ) {
-                if( OpenRAVEXMLParser::GetXMLErrorCount() == 0 ) {
+        else 
+		{
+            if( _ParseXMLFile(OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(),atts,true), filename) ) 
+			{
+                if( OpenRAVEXMLParser::GetXMLErrorCount() == 0 ) 
+				{
                     UpdatePublishedBodies();
                     return true;
                 }
@@ -2722,8 +2733,8 @@ protected:
 
     static bool _IsColladaURI(const std::string& uri)
     {
-        string scheme, authority, path, query, fragment;
-        string s1, s3, s6, s8;
+        std::string scheme, authority, path, query, fragment;
+		std::string s1, s3, s6, s8;
         static pcrecpp::RE re("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
         bool bmatch = re.FullMatch(uri, &s1, &scheme, &s3, &authority, &path, &s6, &query, &s8, &fragment);
         return bmatch && scheme.size() > 0 && _IsColladaFile(path); //scheme.size() > 0;
@@ -2732,13 +2743,22 @@ protected:
     static bool _IsColladaFile(const std::string& filename)
     {
         size_t len = filename.size();
-        if( len < 4 ) {
+        if( len < 4 ) 
+		{
             return false;
         }
-        if( filename[len-4] == '.' && ::tolower(filename[len-3]) == 'd' && ::tolower(filename[len-2]) == 'a' && ::tolower(filename[len-1]) == 'e' ) {
+        if( filename[len-4] == '.' 
+			&& ::tolower(filename[len-3]) == 'd'
+			&& ::tolower(filename[len-2]) == 'a' 
+			&& ::tolower(filename[len-1]) == 'e' ) 
+		{
             return true;
         }
-        if( filename[len-4] == '.' && ::tolower(filename[len-3]) == 'z' && ::tolower(filename[len-2]) == 'a' && ::tolower(filename[len-1]) == 'e' ) {
+        if( filename[len-4] == '.' 
+			&& ::tolower(filename[len-3]) == 'z' 
+			&& ::tolower(filename[len-2]) == 'a' 
+			&& ::tolower(filename[len-1]) == 'e' ) 
+		{
             return true;
         }
         return false;

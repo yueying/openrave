@@ -34,7 +34,7 @@ public:
     };
 
     GraspGradientPlanner(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nGrasp Planning with Stochastic Gradient Descent";
+        description_ = ":Interface Author: Rosen Diankov\n\nGrasp Planning with Stochastic Gradient Descent";
         _report.reset(new CollisionReport());
     }
     virtual ~GraspGradientPlanner() {
@@ -99,8 +99,8 @@ public:
             //return false;
         }
 
-        if( parameters->_nMaxIterations <= 0 ) {
-            parameters->_nMaxIterations = 10000;
+        if( parameters->max_iterations_num_ <= 0 ) {
+            parameters->max_iterations_num_ = 10000;
         }
         _parameters = parameters;
         return true;
@@ -282,7 +282,7 @@ private:
             qgoaldir[i] = (g.qgoal[i] - _parameters->vinitialconfig[i])*fdistmult;
 
 
-        for(int iter = 0; iter < _parameters->_nMaxIterations; ++iter) {
+        for(int iter = 0; iter < _parameters->max_iterations_num_; ++iter) {
             dReal fRadius = 0.2f;
             for(int giter = 0; giter < _parameters->_nGradientSamples; ++giter, fRadius*=0.96f) {
                 if( giter == 0 ) {

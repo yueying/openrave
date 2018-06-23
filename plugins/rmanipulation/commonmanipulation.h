@@ -125,7 +125,7 @@ public:
             params->SetRobotActiveJoints(robot);
             params->_nRRTExtentType = 1; // one step
             params->_goalfn = boost::bind(&MoveUnsync::Eval,pgoalfn,_1);
-            params->_nMaxIterations = 5000;
+            params->max_iterations_num_ = 5000;
             robot->GetActiveDOFValues(params->vinitialconfig);
             params->_fStepLength = 0.04f;
 

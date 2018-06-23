@@ -21,7 +21,7 @@ class BaseManipulation : public ModuleBase
 {
 public:
     BaseManipulation(EnvironmentBasePtr penv) : ModuleBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nVery useful routines for manipulation planning and planning in general. The planners use analytical inverse kinematics and search based techniques. Most of the MoveX commands by default execute the plan on the current robot by calling :meth:`.RobotBase.GetController().SetPath`. This can be disabled by adding 'execute 0' to the command line";
+        description_ = ":Interface Author: Rosen Diankov\n\nVery useful routines for manipulation planning and planning in general. The planners use analytical inverse kinematics and search based techniques. Most of the MoveX commands by default execute the plan on the current robot by calling :meth:`.RobotBase.GetController().SetPath`. This can be disabled by adding 'execute 0' to the command line";
         RegisterCommand("Traj",boost::bind(&BaseManipulation::Traj,this,_1,_2),
                         "Execute a trajectory from a file on the local filesystem");
         RegisterCommand("GrabBody",boost::bind(&BaseManipulation::GrabBody,this,_1,_2),
@@ -357,7 +357,7 @@ protected:
         int nMaxJitterIterations = 1000;
         RRTParametersPtr params(new RRTParameters());
         params->_minimumgoalpaths = _minimumgoalpaths;
-        params->_nMaxIterations = 4000;     // max iterations before failure
+        params->max_iterations_num_ = 4000;     // max iterations before failure
         dReal jitter = 0.04;
         int usedynamicsconstraints=0;
         std::vector<dReal> vinitialconfig;
@@ -402,7 +402,7 @@ protected:
                 pOutputTrajStream = boost::shared_ptr<ostream>(&sout,utils::null_deleter());
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_num_;
             }
             else if( cmd == "execute" ) {
                 sinput >> bExecute;
@@ -587,7 +587,7 @@ protected:
 
         RRTParametersPtr params(new RRTParameters());
         params->_minimumgoalpaths = _minimumgoalpaths;
-        params->_nMaxIterations = 4000;
+        params->max_iterations_num_ = 4000;
         int nMaxJitterIterations = 1000;
         // constraint stuff
         boost::array<double,6> vconstraintfreedoms = { { 0,0,0,0,0,0}};
@@ -671,7 +671,7 @@ protected:
                 sinput >> affinedofs;
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_num_;
             }
             else if( cmd == "maxtries" ) {
                 sinput >> nMaxTries;

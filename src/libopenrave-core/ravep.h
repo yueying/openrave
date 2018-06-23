@@ -263,9 +263,13 @@ namespace OpenRAVEXMLParser
 class InterfaceXMLReadable : public XMLReadable
 {
 public:
-    InterfaceXMLReadable(InterfaceBasePtr pinterface) : XMLReadable(pinterface->GetXMLId()), _pinterface(pinterface) {
+    InterfaceXMLReadable(InterfaceBasePtr pinterface) 
+		: XMLReadable(pinterface->GetXMLId()),
+		_pinterface(pinterface) 
+	{
     }
-    virtual ~InterfaceXMLReadable() {
+    virtual ~InterfaceXMLReadable() 
+	{
     }
     InterfaceBasePtr _pinterface;
 };
@@ -277,7 +281,7 @@ bool ParseXMLFile(BaseXMLReaderPtr preader, const std::string& filename);
 bool ParseXMLData(BaseXMLReaderPtr preader, const std::string& pdata);
 BaseXMLReaderPtr CreateEnvironmentReader(EnvironmentBasePtr penv, const AttributesList& atts);
 BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, InterfaceType type, InterfaceBasePtr& pinterface, const std::string& xmltag, const AttributesList& atts);
-BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, const AttributesList& atts, bool bAddToEnvironment);
+BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, const AttributesList& atts, bool is_add_to_environment);
 
 /// \brief creates a trimesh from reading a file. tries to automatically determine the format by the filename extension
 bool CreateTriMeshFromFile(EnvironmentBasePtr, const std::string& filename, const Vector &vscale, TriMesh& trimesh, RaveVector<float>&diffuseColor, RaveVector<float>&ambientColor, float &ftransparency);

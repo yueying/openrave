@@ -20,7 +20,7 @@ class LinearSmoother : public PlannerBase
 public:
     LinearSmoother(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nPath optimizer using linear shortcuts assuming robot has no constraints and _neighstatefn is just regular addition. Should be faster than shortcut_linear.\n\nIf passing 0 or 1 to the constructor, can enable/disable single-dof smoothing.";
+        description_ = ":Interface Author: Rosen Diankov\n\nPath optimizer using linear shortcuts assuming robot has no constraints and _neighstatefn is just regular addition. Should be faster than shortcut_linear.\n\nIf passing 0 or 1 to the constructor, can enable/disable single-dof smoothing.";
         _linearretimer = RaveCreatePlanner(GetEnv(), "LinearTrajectoryRetimer");
         _nUseSingleDOFSmoothing = 1;
         sinput >> _nUseSingleDOFSmoothing;
@@ -49,8 +49,8 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_num_ <= 0 ) {
+            _parameters->max_iterations_num_ = 100;
         }
         if( _parameters->_fStepLength <= 0 ) {
             _parameters->_fStepLength = 0.04;
@@ -149,7 +149,7 @@ public:
                 }
 
                 dReal totalshiftdist = _ComputePathDurationOnVelocity(listsimplepath);
-                dReal newdist1 = _OptimizePathSingleGroupShift(listsimplepath, totalshiftdist, parameters->_nMaxIterations*10);
+                dReal newdist1 = _OptimizePathSingleGroupShift(listsimplepath, totalshiftdist, parameters->max_iterations_num_*10);
                 if( newdist1 < 0 ) {
                     return PS_Interrupted;
                 }
@@ -197,13 +197,13 @@ public:
             {
 
                 if( _nUseSingleDOFSmoothing == 1 ) {
-                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->_nMaxIterations*8/10);
+                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->max_iterations_num_*8/10);
                     if( newdist1 < 0 ) {
                         return PS_Interrupted;
                     }
                     RAVELOG_DEBUG_FORMAT("env=%d, path optimizing first stage - dist %f->%f, computation time=%fs, num=%d", GetEnv()->GetId()%totaldist%newdist1%(0.001f*(float)(utils::GetMilliTime()-basetime))%listpath.size());
                     uint32_t basetime2 = utils::GetMilliTime();
-                    dReal newdist2 = _OptimizePathSingleDOF(listpath, newdist1, parameters->_nMaxIterations*2/10);
+                    dReal newdist2 = _OptimizePathSingleDOF(listpath, newdist1, parameters->max_iterations_num_*2/10);
                     if( newdist2 < 0 ) {
                         return PS_Interrupted;
                     }
@@ -211,9 +211,9 @@ public:
                 }
                 else if( _nUseSingleDOFSmoothing == 2 ) {
                     uint32_t basetime1 = utils::GetMilliTime();
-                    int nIterationGroup = parameters->_nMaxIterations/100;
+                    int nIterationGroup = parameters->max_iterations_num_/100;
                     int nCurIterations = 0;
-                    while(nCurIterations < parameters->_nMaxIterations) {
+                    while(nCurIterations < parameters->max_iterations_num_) {
                         dReal newdist1 = _OptimizePathSingleGroup(listpath, totaldist, nIterationGroup);
                         if( newdist1 < 0 ) {
                             return PS_Interrupted;
@@ -228,7 +228,7 @@ public:
                     }
                 }
                 else {
-                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->_nMaxIterations);
+                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->max_iterations_num_);
                     RAVELOG_DEBUG(str(boost::format("path optimizing stage - dist %f->%f, computation time=%fs\n")%totaldist%newdist1%(0.001f*(float)(utils::GetMilliTime()-basetime))));
                 }
 

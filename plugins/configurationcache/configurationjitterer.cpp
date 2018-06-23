@@ -93,7 +93,7 @@ public:
     /// \param parameters The planner parameters used to define the configuration space to jitter. The following fields are required: _getstatefn, _setstatefn, _vConfigUpperLimit, _vConfigLowerLimit, _checkpathvelocityconstraintsfn, _diffstatefn, _nRandomGeneratorSeed, _samplefn. The following are used and optional : _neighstatefn (used for constraining on manifolds)
     ConfigurationJitterer(EnvironmentBasePtr penv, std::istream& is) : SpaceSamplerBase(penv)
     {
-        __description = ":Interface Author: Alejandro Perez and Rosen Diankov\n\n\
+        description_ = ":Interface Author: Alejandro Perez and Rosen Diankov\n\n\
 If the current robot configuration is in collision, then jitters the robot until it is out of collision.\n\
 By default will sample the robot's active DOFs. Parameters part of the interface name::\n\
 \n\

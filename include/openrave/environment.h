@@ -228,7 +228,8 @@ public:
     /// \brief Loads a scene from in-memory data and adds all objects in the environment. <b>[multi-thread safe]</b>
     virtual bool LoadData(const std::string& data, const AttributesList& atts = AttributesList()) = 0;
 
-    virtual bool LoadXMLData(const std::string& data, const AttributesList& atts = AttributesList()) {
+    virtual bool LoadXMLData(const std::string& data, const AttributesList& atts = AttributesList()) 
+	{
         return LoadData(data,atts);
     }
 

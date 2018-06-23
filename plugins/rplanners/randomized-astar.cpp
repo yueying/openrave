@@ -280,7 +280,7 @@ public:
 
     RandomizedAStarPlanner(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nRandomized A*. A continuous version of A*. See:\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nRandomized A*. A continuous version of A*. See:\n\
 Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf. on Intelligent Robots and Systems, October 2007.\"\n";
         bUseGauss = false;
         nIndex = 0;
@@ -365,7 +365,7 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
         pcurrent = CreateNode(0, NULL, _parameters->vinitialconfig);
 
         vector<dReal> tempconfig(GetDOF());
-        int nMaxIter = _parameters->_nMaxIterations > 0 ? _parameters->_nMaxIterations : 8000;
+        int nMaxIter = _parameters->max_iterations_num_ > 0 ? _parameters->max_iterations_num_ : 8000;
 
         while(1) {
             if( _sortedtree.blocks.size() == 0 ) {

@@ -837,7 +837,8 @@ void ViewerWidget::_UpdateHUDText()
         }
         s += _strSelectedItemText;
     }
-    _osgHudText->setText(s);
+	//TODO:add feng
+    //_osgHudText->setText(s);
 }
 
 void ViewerWidget::SetNearPlane(double nearplane)

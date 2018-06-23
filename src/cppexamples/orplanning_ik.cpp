@@ -17,22 +17,26 @@
 using namespace OpenRAVE;
 using namespace std;
 
-namespace cppexamples {
+namespace cppexamples
+{
 
 class PlanningIkExample : public OpenRAVEExample
 {
 public:
-    virtual void demothread(int argc, char ** argv) {
-        string scenefilename = "data/pa10grasp2.env.xml";
+    virtual void demothread(int argc, char ** argv)
+	{
+        std::string scenefilename = "data/pa10grasp2.env.xml";
         penv->Load(scenefilename);
 
-        vector<RobotBasePtr> vrobots;
+		std::vector<RobotBasePtr> vrobots;
         penv->GetRobots(vrobots);
         RobotBasePtr probot = vrobots.at(0);
 
         // find a manipulator chain to move
-        for(size_t i = 0; i < probot->GetManipulators().size(); ++i) {
-            if( probot->GetManipulators()[i]->GetName().find("arm") != string::npos ) {
+        for(size_t i = 0; i < probot->GetManipulators().size(); ++i)
+		{
+            if( probot->GetManipulators()[i]->GetName().find("arm") != string::npos ) 
+			{
                 probot->SetActiveManipulator(probot->GetManipulators()[i]);
                 break;
             }
@@ -42,13 +46,15 @@ public:
         // load inverse kinematics using ikfast
         ModuleBasePtr pikfast = RaveCreateModule(penv,"ikfast");
         penv->Add(pikfast,true,"");
-        stringstream ssin,ssout;
-        vector<dReal> vsolution;
+        std::stringstream ssin,ssout;
+        std::vector<dReal> vsolution;
         ssin << "LoadIKFastSolver " << probot->GetName() << " " << (int)IKP_Transform6D;
-        if( !pikfast->SendCommand(ssout,ssin) ) {
+        if( !pikfast->SendCommand(ssout,ssin) ) 
+		{
             RAVELOG_ERROR("failed to load iksolver\n");
         }
-        if( !pmanip->GetIkSolver()) {
+        if( !pmanip->GetIkSolver()) 
+		{
             throw OPENRAVE_EXCEPTION_FORMAT0("need ik solver",ORE_Assert);
         }
 

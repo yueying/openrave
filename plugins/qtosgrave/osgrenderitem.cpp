@@ -922,10 +922,10 @@ void RobotItem::Load()
 
                 text->getOrCreateStateSet()->setMode(GL_DEPTH_TEST,osg::StateAttribute::OFF);
                 //text->setFontResolution(18,18);
-
-                text->setText((*itmanip)->GetName());//str(boost::format("EE%d")%index));
-                textGeode->addDrawable(text);
-                ptextsep->addChild(textGeode);
+				//TODO:add feng
+                //text->setText((*itmanip)->GetName());//str(boost::format("EE%d")%index));
+                //textGeode->addDrawable(text);
+                //ptextsep->addChild(textGeode);
             }
         }
     }

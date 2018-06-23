@@ -266,7 +266,7 @@ public:
             probot->SetActiveDOFValues(vpreshape);
 
             doorconfig->SetPlannerParameters(params);
-            params->_nMaxIterations = 150; // max iterations before failure
+            params->max_iterations_num_ = 150; // max iterations before failure
 
             trobotorig = probot->GetTransform();
         }

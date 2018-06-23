@@ -20,7 +20,7 @@ class ShortcutLinearPlanner : public PlannerBase
 public:
     ShortcutLinearPlanner(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\npath optimizer using linear shortcuts.";
+        description_ = ":Interface Author: Rosen Diankov\n\npath optimizer using linear shortcuts.";
         _linearretimer = RaveCreatePlanner(GetEnv(), "LinearTrajectoryRetimer");
     }
     virtual ~ShortcutLinearPlanner() {
@@ -46,8 +46,8 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_num_ <= 0 ) {
+            _parameters->max_iterations_num_ = 100;
         }
         if( _parameters->_fStepLength <= 0 ) {
             _parameters->_fStepLength = 0.04;
@@ -162,7 +162,7 @@ protected:
 
         int dof = parameters->GetDOF();
         int nrejected = 0;
-        int iiter = parameters->_nMaxIterations;
+        int iiter = parameters->max_iterations_num_;
         std::vector<dReal> vnewconfig0(dof), vnewconfig1(dof);
         while(iiter > 0  && nrejected < (int)listpath.size()+4 && listpath.size() > 2 ) {
             --iiter;
@@ -251,7 +251,7 @@ protected:
                 FOREACH(ittempnode, listpath) {
                     newdistance += ittempnode->second;
                 }
-                RAVELOG_VERBOSE_FORMAT("shortcut iter=%d, path=%d, dist=%f", (parameters->_nMaxIterations-iiter)%listpath.size()%newdistance);
+                RAVELOG_VERBOSE_FORMAT("shortcut iter=%d, path=%d, dist=%f", (parameters->max_iterations_num_-iiter)%listpath.size()%newdistance);
             }
         }
     }

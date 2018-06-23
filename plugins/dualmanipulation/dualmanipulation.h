@@ -21,7 +21,7 @@ class DualManipulation : public ModuleBase
 {
 public:
     DualManipulation(EnvironmentBasePtr penv) : ModuleBase(penv) {
-        __description = ":Interface Author: Achint Aggarwal\n\nInterface for planners using more than one manipulator simultaneously.";
+        description_ = ":Interface Author: Achint Aggarwal\n\nInterface for planners using more than one manipulator simultaneously.";
         RegisterCommand("SetActiveManip",boost::bind(&DualManipulation::SetActiveManip,this,_1,_2),
                         "Set the active manipulator");
         RegisterCommand("GrabBody",boost::bind(&DualManipulation::GrabBody,this,_1,_2),
@@ -187,7 +187,7 @@ protected:
         bool bSuccess=true;
 
         PlannerBase::PlannerParametersPtr params(new PlannerBase::PlannerParameters());
-        params->_nMaxIterations = 4000;     // max iterations before failure
+        params->max_iterations_num_ = 4000;     // max iterations before failure
 
         // constraint stuff
         double constrainterrorthresh=0;
@@ -217,7 +217,7 @@ protected:
             else if( cmd == "outputtraj" )
                 pOutputTrajStream = boost::shared_ptr<ostream>(&sout,utils::null_deleter());
             else if( cmd == "maxiter" )
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_num_;
             else if( cmd == "execute" )
                 sinput >> bExecute;
             else if( cmd == "writetraj" )
@@ -284,7 +284,7 @@ protected:
             boost::shared_ptr<CM::DualArmManipulation<double> > dplanner(new CM::DualArmManipulation<double>(robot,pmanipA,pmanipI));
             dplanner->_distmetricfn = params->_distmetricfn;
             params->_neighstatefn = boost::bind(&CM::DualArmManipulation<double>::DualArmConstrained,dplanner,_1,_2);
-            params->_nMaxIterations = 1000;
+            params->max_iterations_num_ = 1000;
         }
 
         boost::shared_ptr<Trajectory> ptraj(RaveCreateTrajectory(GetEnv(),robot->GetActiveDOF()));

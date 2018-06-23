@@ -23,7 +23,7 @@ class IdealVelocityController : public ControllerBase
 public:
     IdealVelocityController(EnvironmentBasePtr penv, std::istream& sinput) : ControllerBase(penv)
     {
-        __description = ":Interface Authors: Rosen Diankov\n\nIdeal Velocity controller.";
+        description_ = ":Interface Authors: Rosen Diankov\n\nIdeal Velocity controller.";
     }
 
     virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int nControlTransformation)

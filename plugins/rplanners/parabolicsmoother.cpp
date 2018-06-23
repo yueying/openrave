@@ -176,7 +176,7 @@ private:
 public:
     ParabolicSmoother(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv), _feasibilitychecker(this)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nInterface to `Indiana University Intelligent Motion Laboratory <http://www.iu.edu/~motion/software.html>`_ parabolic smoothing library (Kris Hauser).\n\n**Note:** The original trajectory will not be preserved at all, don't use this if the robot has to hit all points of the trajectory.\n";
+        description_ = ":Interface Author: Rosen Diankov\n\nInterface to `Indiana University Intelligent Motion Laboratory <http://www.iu.edu/~motion/software.html>`_ parabolic smoothing library (Kris Hauser).\n\n**Note:** The original trajectory will not be preserved at all, don't use this if the robot has to hit all points of the trajectory.\n";
         _bmanipconstraints = false;
         _constraintreturn.reset(new ConstraintFilterReturn());
         _logginguniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
@@ -206,8 +206,8 @@ public:
     {
         _zerovelpoints.resize(0);
 
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_num_ <= 0 ) {
+            _parameters->max_iterations_num_ = 100;
         }
         _bUsePerturbation = true;
 
@@ -469,10 +469,10 @@ public:
                 // no idea what a good mintimestep is... _parameters->_fStepLength*0.5?
                 //numshortcuts = dynamicpath.Shortcut(parameters->_nMaxIterations,_feasibilitychecker,this, parameters->_fStepLength*0.99);
                 if (!_usingNewHeuristics) {
-                    numshortcuts = _Shortcut(dynamicpath, parameters->_nMaxIterations,this, parameters->_fStepLength*0.99);
+                    numshortcuts = _Shortcut(dynamicpath, parameters->max_iterations_num_,this, parameters->_fStepLength*0.99);
                 }
                 else {
-                    numshortcuts = _Shortcut2(dynamicpath, parameters->_nMaxIterations,this, parameters->_fStepLength*0.99);
+                    numshortcuts = _Shortcut2(dynamicpath, parameters->max_iterations_num_,this, parameters->_fStepLength*0.99);
                 }
                 if( numshortcuts < 0 ) {
                     return PS_Interrupted;

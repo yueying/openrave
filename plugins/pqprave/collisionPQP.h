@@ -43,7 +43,7 @@ public:
 
     CollisionCheckerPQP(EnvironmentBasePtr penv) : CollisionCheckerBase(penv)
     {
-        __description = ":Interface Authors: Dmitry Berenson, Rosen Diankov\n\nPQP collision checker, slow but allows distance queries to objects.";
+        description_ = ":Interface Authors: Dmitry Berenson, Rosen Diankov\n\nPQP collision checker, slow but allows distance queries to objects.";
         _userdatakey = std::string("pqpcollision") + boost::lexical_cast<std::string>(this);
         _rel_err = 200.0;     //temporary change
         _abs_err = 0.001;       //temporary change
@@ -547,31 +547,42 @@ private:
 
     Vector PQPRealToVector(const Vector& in, const PQP_REAL R[3][3], const PQP_REAL T[3])
     {
-        return Vector(in.x*R[0][0]+in.y*R[0][1]+in.z*R[0][2]+T[0], in.x*R[1][0]+in.y*R[1][1]+in.z*R[1][2]+T[1], in.x*R[2][0]+in.y*R[2][1]+in.z*R[2][2]+T[2]);
+        return Vector(in.x*R[0][0]+in.y*R[0][1]+in.z*R[0][2]+T[0],
+			in.x*R[1][0]+in.y*R[1][1]+in.z*R[1][2]+T[1], 
+			in.x*R[2][0]+in.y*R[2][1]+in.z*R[2][2]+T[2]);
     }
 
-    bool DoPQP(KinBody::LinkConstPtr link1, PQP_REAL R1[3][3], PQP_REAL T1[3], KinBody::LinkConstPtr link2, PQP_REAL R2[3][3], PQP_REAL T2[3], CollisionReportPtr report)
+    bool DoPQP(KinBody::LinkConstPtr link1, PQP_REAL R1[3][3], 
+		PQP_REAL T1[3], KinBody::LinkConstPtr link2, 
+		PQP_REAL R2[3][3], PQP_REAL T2[3], CollisionReportPtr report)
     {
-        if( !link1->IsEnabled() || !link2->IsEnabled() ) {
+        if( !link1->IsEnabled() || !link2->IsEnabled() ) 
+		{
             return false;
         }
-        if( !_IsActiveLink(link1->GetParent(),link1->GetIndex()) || !_IsActiveLink(link2->GetParent(),link2->GetIndex()) ) {
+        if( !_IsActiveLink(link1->GetParent(),link1->GetIndex()) 
+			|| !_IsActiveLink(link2->GetParent(),link2->GetIndex()) )
+		{
             return false;
         }
         boost::shared_ptr<PQP_Model> m1 = GetLinkModel(link1);
         boost::shared_ptr<PQP_Model> m2 = GetLinkModel(link2);
         bool bcollision = false;
-        if( !m1 || !m2 ) {
+        if( !m1 || !m2 )
+		{
             return false;
         }
         // collision
-        if(_benablecol) {
-            if( GetEnv()->HasRegisteredCollisionCallbacks() && !report ) {
+        if(_benablecol) 
+		{
+            if( GetEnv()->HasRegisteredCollisionCallbacks() && !report ) 
+			{
                 report.reset(new CollisionReport());
                 report->Reset(_options);
             }
 
-            if(!report) {
+            if(!report) 
+			{
                 PQP_CollideResult _colres;
                 PQP_Collide(&_colres,R1,T1,m1.get(),R2,T2,m2.get());
                 if(_colres.NumPairs() > 0) {

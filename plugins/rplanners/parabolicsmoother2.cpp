@@ -227,7 +227,7 @@ private:
 public:
     ParabolicSmoother2(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv), _feasibilitychecker(this)
     {
-        __description = "";
+        description_ = "";
         _bmanipconstraints = false;
         _constraintreturn.reset(new ConstraintFilterReturn());
         _logginguniformsampler = RaveCreateSpaceSampler(GetEnv(), "mt19937");
@@ -254,8 +254,8 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_num_ <= 0 ) {
+            _parameters->max_iterations_num_ = 100;
         }
 
         _bUsePerturbation = true;
@@ -525,7 +525,7 @@ public:
 
             int numShortcuts = 0;
             if( !!parameters->_setstatevaluesfn || !!parameters->_setstatefn ) {
-                numShortcuts = _Shortcut(parabolicpath, parameters->_nMaxIterations, this, parameters->_fStepLength*0.99);
+                numShortcuts = _Shortcut(parabolicpath, parameters->max_iterations_num_, this, parameters->_fStepLength*0.99);
                 if( numShortcuts < 0 ) {
                     return PS_Interrupted;
                 }

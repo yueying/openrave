@@ -752,7 +752,7 @@ private:
 
 public:
     TaskCaging(EnvironmentBasePtr penv) : ModuleBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\n\
+        description_ = ":Interface Author: Rosen Diankov\n\n\
 .. image:: ../../../images/interface_taskcaging.jpg\n\
   :width: 500\n\n\
 Implements various algorithms to open and close \
@@ -944,7 +944,7 @@ private:
 
         params->_fStepLength = fStep;
         params->_fExploreProb = fExploreProb;
-        params->_nMaxIterations = params->_nExpectedDataSize*5;
+        params->max_iterations_num_ = params->_nExpectedDataSize*5;
 
         if( !planner->InitPlan(_robot, params) ) {
             RAVELOG_WARN("failed to initplan\n");
@@ -1018,7 +1018,7 @@ private:
         params->fGoalCoeff = 1;
         params->nMaxChildren = 5;
         params->nMaxSampleTries = 2;
-        params->_nMaxIterations = 1001;
+        params->max_iterations_num_ = 1001;
 
         string cmd;
         while(!sinput.eof()) {
@@ -1072,7 +1072,7 @@ private:
                 sinput >> taskdata->nMaxSamples;
             }
             else if( cmd == "maxiterations") {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_num_;
             }
             else if( cmd == "maxikiterations") {
                 sinput >> taskdata->nMaxIkIterations;
