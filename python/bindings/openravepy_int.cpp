@@ -20,6 +20,43 @@
 #include <boost/thread/once.hpp>
 #include <boost/scoped_ptr.hpp>
 
+
+#if _MSC_VER == 1900
+#define DEFINE_BOOST_GET_POINTER(PTR) template<> const volatile PTR* get_pointer(const volatile PTR* p) { return p; }
+namespace boost {
+	DEFINE_BOOST_GET_POINTER(openravepy::PyInterfaceBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyKinBody);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyRobotBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyEnvironmentBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyCollisionReport);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyPhysicsEngineBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyCollisionCheckerBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyIkSolverBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyPlannerBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PySensorBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PySensorSystemBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyControllerBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyMultiControllerBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyTrajectoryBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyModuleBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyViewerBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PySpaceSamplerBase);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyConfigurationSpecification);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyIkParameterization);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyXMLReadable);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyCameraIntrinsics);
+	
+	DEFINE_BOOST_GET_POINTER(openravepy::PyGraphHandle);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyUserData);
+	DEFINE_BOOST_GET_POINTER(OpenRAVE::InterfaceBase);
+	DEFINE_BOOST_GET_POINTER(OpenRAVE::UserData);
+	DEFINE_BOOST_GET_POINTER(openravepy::PySerializableData);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyRay);
+	
+	
+}
+#endif
+
 namespace openravepy
 {
 
@@ -173,7 +210,7 @@ object toPyArray(const TransformMatrix& t)
     pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
     pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
     pdata[12] = 0; pdata[13] = 0; pdata[14] = 0; pdata[15] = 1;
-    return static_cast<numeric::array>(handle<>(pyvalues));
+    return object(handle<>(pyvalues));
 }
 
 
@@ -184,7 +221,7 @@ object toPyArray(const Transform& t)
     dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
     pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
     pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
-    return static_cast<numeric::array>(handle<>(pyvalues));
+    return object(handle<>(pyvalues));
 }
 
 AttributesList toAttributesList(boost::python::dict odict)
@@ -1094,12 +1131,12 @@ public:
         return bCollision;
     }
 
-    object CheckCollisionRays(boost::python::numeric::array rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false)
+    object CheckCollisionRays(numpy::ndarray& rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false)
     {
         object shape = rays.attr("shape");
         int nRays = extract<int>(shape[0]);
         if( nRays == 0 ) {
-            return boost::python::make_tuple(numeric::array(boost::python::list()).astype("i4"),numeric::array(boost::python::list()));
+            return boost::python::make_tuple( ArrayFunc::array(boost::python::list(), ArrayFunc::dtype::get_builtin<uint32_t>()), ArrayFunc::array(boost::python::list()));
         }
         if( extract<int>(shape[1]) != 6 ) {
             throw openrave_exception(_("rays object needs to be a Nx6 vector\n"));
@@ -1171,7 +1208,7 @@ public:
             }
         }
 
-        return boost::python::make_tuple(static_cast<numeric::array>(handle<>(pycollision)),static_cast<numeric::array>(handle<>(pypos)));
+        return boost::python::make_tuple(object(handle<>(pycollision)), object(handle<>(pypos)));
     }
 
     bool CheckCollision(boost::shared_ptr<PyRay> pyray)
@@ -2137,7 +2174,9 @@ BOOST_PYTHON_MODULE(openravepy_int)
     doc_options.enable_user_defined();
 #endif
     import_array();
-    numeric::array::set_module_and_type("numpy", "ndarray");
+#if BOOST_VERSION < 106500
+     ArrayFunc::array::set_module_and_type("numpy", "ndarray");
+#endif
     int_from_number<int>();
     int_from_number<uint8_t>();
     float_from_number<float>();

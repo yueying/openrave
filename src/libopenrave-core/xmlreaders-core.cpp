@@ -987,7 +987,7 @@ public:
                     // geometry is not in the default group, so we add it to the LinkInfo without instantiating it
                     string groupname = geomreader->GetGroupName();
                     if( groupname != "self" ) {
-                        _plink->_info._mapExtraGeometries[groupname].push_back(info);
+                        _plink->_info.extra_geometries_map_[groupname].push_back(info);
                         _pcurreader.reset();
                         return false;
                     }
@@ -2186,8 +2186,8 @@ public:
 
                     if( _plink->_index < 0 ) {
                         // not in array yet
-                        _plink->_index = (int)_pchain->_veclinks.size();
-                        _pchain->_veclinks.push_back(_plink);
+                        _plink->_index = (int)_pchain->links_vector_.size();
+                        _pchain->links_vector_.push_back(_plink);
                         _vTransforms.push_back(Transform());
                     }
 
@@ -2315,9 +2315,9 @@ public:
 
             // add prefix
             if( _prefix.size() > 0 ) {
-                //RAVELOG_INFO("write prefix: links: %d-%d, 0x%x\n",rootoffset,(int)_pchain->_veclinks.size(),this);
-                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_pchain->_veclinks.size());
-                for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->_veclinks.begin()+rootoffset; itlink != _pchain->_veclinks.end(); ++itlink) {
+                //RAVELOG_INFO("write prefix: links: %d-%d, 0x%x\n",rootoffset,(int)_pchain->links_vector_.size(),this);
+                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_pchain->links_vector_.size());
+                for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->links_vector_.begin()+rootoffset; itlink != _pchain->links_vector_.end(); ++itlink) {
                     (*itlink)->_info._name = _prefix + (*itlink)->_info._name;
                 }
                 BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_pchain->_vecjoints.size());
@@ -2332,7 +2332,7 @@ public:
 
             if( _bOverwriteDiffuse ) {
                 // overwrite the color
-                FOREACH(itlink, _pchain->_veclinks) {
+                FOREACH(itlink, _pchain->links_vector_) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
                         (*itgeom)->_info._vDiffuseColor = _diffusecol;
                     }
@@ -2340,7 +2340,7 @@ public:
             }
             if( _bOverwriteAmbient ) {
                 // overwrite the color
-                FOREACH(itlink, _pchain->_veclinks) {
+                FOREACH(itlink, _pchain->links_vector_) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
                         (*itgeom)->_info._vAmbientColor = _ambientcol;
                     }
@@ -2348,7 +2348,7 @@ public:
             }
             if( _bOverwriteTransparency ) {
                 // overwrite the color
-                FOREACH(itlink, _pchain->_veclinks) {
+                FOREACH(itlink, _pchain->links_vector_) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
                         (*itgeom)->_info._fTransparency = _transparency;
                     }
@@ -2357,8 +2357,8 @@ public:
 
             // transform all the bodies with trans
             Transform cur;
-            BOOST_ASSERT(roottransoffset>=0 && roottransoffset<=(int)_pchain->_veclinks.size());
-            for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->_veclinks.begin()+roottransoffset; itlink != _pchain->_veclinks.end(); ++itlink) {
+            BOOST_ASSERT(roottransoffset>=0 && roottransoffset<=(int)_pchain->links_vector_.size());
+            for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->links_vector_.begin()+roottransoffset; itlink != _pchain->links_vector_.end(); ++itlink) {
                 (*itlink)->SetTransform(_trans * (*itlink)->GetTransform());
             }
             Vector com = _pchain->GetCenterOfMass();
@@ -2541,7 +2541,7 @@ public:
             }
         }
         else if((xmlname == "joints")||(xmlname == "gripperjoints")) {
-            _manipinfo._vGripperJointNames = vector<string>((istream_iterator<string>(_ss)), istream_iterator<string>());
+            _manipinfo.gripper_joint_names_vector_ = vector<string>((istream_iterator<string>(_ss)), istream_iterator<string>());
         }
         else if( xmlname == "armjoints" ) {
             RAVELOG_WARN("<armjoints> for <manipulator> tag is not used anymore\n");
@@ -2626,10 +2626,10 @@ public:
                 RAVELOG_WARN(str(boost::format("failed to create iksolver %s")%iklibraryname));
             }
             else {
-                _manipinfo._sIkSolverXMLId = piksolver->GetXMLId();
+                _manipinfo.ik_solver_xml_id_ = piksolver->GetXMLId();
             }
             if( !!piksolver ) {
-                _manipinfo._sIkSolverXMLId = piksolver->GetXMLId();
+                _manipinfo.ik_solver_xml_id_ = piksolver->GetXMLId();
             }
         }
         else if( xmlname == "closingdirection" || xmlname == "closingdir" || xmlname == "chuckingdirection" ) {
@@ -3020,9 +3020,9 @@ public:
 
             // add prefix
             if( _prefix.size() > 0 ) {
-                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_probot->_veclinks.size());
-                vector<KinBody::LinkPtr>::iterator itlink = _probot->_veclinks.begin()+rootoffset;
-                while(itlink != _probot->_veclinks.end()) {
+                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_probot->links_vector_.size());
+                vector<KinBody::LinkPtr>::iterator itlink = _probot->links_vector_.begin()+rootoffset;
+                while(itlink != _probot->links_vector_.end()) {
                     (*itlink)->_info._name = _prefix + (*itlink)->_info._name;
                     ++itlink;
                 }
@@ -3062,12 +3062,15 @@ public:
                         (*itsensor)->_info._name = _prefix + (*itsensor)->_info._name;
                     }
                 }
-                FOREACH(itmanip,_probot->GetManipulators()) {
-                    if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
+                FOREACH(itmanip,_probot->GetManipulators())
+				{
+                    if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) 
+					{
                         (*itmanip)->_info._name = _prefix + (*itmanip)->_info._name;
                         (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
                         (*itmanip)->_info._sEffectorLinkName = _prefix + (*itmanip)->_info._sEffectorLinkName;
-                        FOREACH(itgrippername,(*itmanip)->_info._vGripperJointNames) {
+                        FOREACH(itgrippername,(*itmanip)->_info.gripper_joint_names_vector_) 
+						{
                             *itgrippername = _prefix + *itgrippername;
                         }
                     }
@@ -3075,9 +3078,9 @@ public:
             }
 
             // transform all "new" bodies with trans
-            BOOST_ASSERT(roottransoffset>=0&&roottransoffset<=(int)_probot->_veclinks.size());
-            vector<KinBody::LinkPtr>::iterator itlink = _probot->_veclinks.begin()+roottransoffset;
-            while(itlink != _probot->_veclinks.end()) {
+            BOOST_ASSERT(roottransoffset>=0&&roottransoffset<=(int)_probot->links_vector_.size());
+            vector<KinBody::LinkPtr>::iterator itlink = _probot->links_vector_.begin()+roottransoffset;
+            while(itlink != _probot->links_vector_.end()) {
                 (*itlink)->SetTransform(_trans * (*itlink)->GetTransform());
                 ++itlink;
             }
@@ -3126,16 +3129,21 @@ protected:
 template <InterfaceType type> class DummyInterfaceXMLReader : public InterfaceXMLReader
 {
 public:
-    DummyInterfaceXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, const string &xmltag, const AttributesList &atts) : InterfaceXMLReader(penv,pinterface,type,xmltag,atts) {
+    DummyInterfaceXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, 
+		const string &xmltag, const AttributesList &atts) 
+		: InterfaceXMLReader(penv,pinterface,type,xmltag,atts) {
     }
-    virtual ~DummyInterfaceXMLReader() {
+    virtual ~DummyInterfaceXMLReader() 
+	{
     }
 };
 
 class ModuleXMLReader : public InterfaceXMLReader
 {
 public:
-    ModuleXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, const AttributesList &atts) : InterfaceXMLReader(penv,pinterface,PT_Module,RaveGetInterfaceName(PT_Module),atts) {
+    ModuleXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, const AttributesList &atts) 
+		: InterfaceXMLReader(penv,pinterface,PT_Module,RaveGetInterfaceName(PT_Module),atts) 
+	{
         FOREACHC(itatt,atts) {
             if( itatt->first == "args" ) {
                 _args = itatt->second;
@@ -3158,7 +3166,8 @@ typedef boost::shared_ptr<ModuleXMLReader> ModuleXMLReaderPtr;
 class SensorXMLReader : public InterfaceXMLReader
 {
 public:
-    SensorXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, const AttributesList &atts) : InterfaceXMLReader(penv,pinterface,PT_Sensor,RaveGetInterfaceName(PT_Sensor),atts) {
+    SensorXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, const AttributesList &atts)
+		: InterfaceXMLReader(penv,pinterface,PT_Sensor,RaveGetInterfaceName(PT_Sensor),atts) {
         string args;
         _vScaleGeometry = Vector(1,1,1);
         FOREACHC(itatt,atts) {

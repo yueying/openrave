@@ -295,7 +295,7 @@ if(NOT MSVC71 AND NOT MSVC80)
     set(Boost_LIBRARY_DIRS $ENV{BOOST_LIBRARYDIR})
   endif()
   set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.45" "1.44" "1.43" "1.42" "1.41" "1.40" "1.39" "1.38" "1.37.0" "1.37" "1.35.0" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" ${Boost_ADDITIONAL_VERSIONS})
-  find_package(Boost COMPONENTS regex filesystem system python thread iostreams date_time)
+  find_package(Boost COMPONENTS regex filesystem system python numpy thread iostreams date_time)
 else()
   # have to rely on local boost and a hack
   add_definitions(-DTEMP_SPIRIT_HACK)
@@ -472,6 +472,7 @@ endif()
 
 if( ASSIMP_FOUND )
   message(STATUS "assimp version ${ASSIMP_VERSION}, ${ASSIMP_PACKAGE_VERSION}, ${ASSIMP_INCLUDE_DIRS}")
+  set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${ASSIMP_LIBRARY_DIRS})
   # For older versions of libassimp2, 
   # like the one in Ubuntu 12.04 
   set(CMAKE_REQUIRED_LIBRARIES assimp) 
@@ -790,6 +791,7 @@ add_subdirectory(locale)
 
 if(OPT_PYTHON AND PYTHON_EXECUTABLE)
   set(OPENRAVE_USE_LOCAL_SYMPY 1)
+  SET(PYTHONLIBS_FOUND 1)
   if( PYTHON_EXECUTABLE )
     # get the sympy version
     execute_process(

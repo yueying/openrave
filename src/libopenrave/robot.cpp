@@ -709,7 +709,7 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
         // first set the affine transformation of the first link before setting joints
         const dReal* pAffineValues = &velocities[_vActiveDOFIndices.size()];
 
-        _veclinks.at(0)->GetVelocity(linearvel, angularvel);
+        links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
         if( _nAffineDOFs & OpenRAVE::DOF_X ) linearvel.x = *pAffineValues++;
         if( _nAffineDOFs & OpenRAVE::DOF_Y ) linearvel.y = *pAffineValues++;
@@ -768,7 +768,7 @@ void RobotBase::GetActiveDOFVelocities(std::vector<dReal>& velocities) const
         return;
     }
     Vector linearvel, angularvel;
-    _veclinks.at(0)->GetVelocity(linearvel, angularvel);
+    links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
     if( _nAffineDOFs & OpenRAVE::DOF_X ) *pVelocities++ = linearvel.x;
     if( _nAffineDOFs & OpenRAVE::DOF_Y ) *pVelocities++ = linearvel.y;
@@ -1443,7 +1443,7 @@ const std::vector<int>& RobotBase::GetNonAdjacentLinks(int adjacentoptions) cons
         if( compute.at(AO_Enabled) ) {
             _vNonAdjacentLinks.at(AO_Enabled).resize(0);
             FOREACHC(itset, _vNonAdjacentLinks[0]) {
-                KinBody::LinkConstPtr plink1(_veclinks.at(*itset&0xffff)), plink2(_veclinks.at(*itset>>16));
+                KinBody::LinkConstPtr plink1(links_vector_.at(*itset&0xffff)), plink2(links_vector_.at(*itset>>16));
                 if( plink1->IsEnabled() && plink2->IsEnabled() ) {
                     _vNonAdjacentLinks[AO_Enabled].push_back(*itset);
                 }
@@ -1465,7 +1465,7 @@ const std::vector<int>& RobotBase::GetNonAdjacentLinks(int adjacentoptions) cons
         if( compute.at(AO_Enabled|AO_ActiveDOFs) ) {
             _vNonAdjacentLinks.at(AO_Enabled|AO_ActiveDOFs).resize(0);
             FOREACHC(itset, _vNonAdjacentLinks[AO_ActiveDOFs]) {
-                KinBody::LinkConstPtr plink1(_veclinks.at(*itset&0xffff)), plink2(_veclinks.at(*itset>>16));
+                KinBody::LinkConstPtr plink1(links_vector_.at(*itset&0xffff)), plink2(links_vector_.at(*itset>>16));
                 if( plink1->IsEnabled() && plink2->IsEnabled() ) {
                     _vNonAdjacentLinks[AO_Enabled|AO_ActiveDOFs].push_back(*itset);
                 }

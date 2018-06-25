@@ -257,10 +257,10 @@ public:
         no_load_speed = info.no_load_speed;
         stall_torque = info.stall_torque;
         max_instantaneous_torque = info.max_instantaneous_torque;
-        FOREACH(itpoint, info.nominal_speed_torque_points) {
+        FOREACHC(itpoint, info.nominal_speed_torque_points) {
             nominal_speed_torque_points.append(boost::python::make_tuple(itpoint->first, itpoint->second));
         }
-        FOREACH(itpoint, info.max_speed_torque_points) {
+        FOREACHC(itpoint, info.max_speed_torque_points) {
             max_speed_torque_points.append(boost::python::make_tuple(itpoint->first, itpoint->second));
         }
         nominal_torque = info.nominal_torque;
@@ -787,7 +787,7 @@ public:
         pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
         pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
         pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
-        return static_cast<numeric::array>(handle<>(pyvalues));
+        return object(handle<>(pyvalues));
     }
     object GetGlobalInertia() const {
         TransformMatrix t = _plink->GetGlobalInertia();
@@ -797,7 +797,7 @@ public:
         pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
         pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
         pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
-        return static_cast<numeric::array>(handle<>(pyvalues));
+        return object(handle<>(pyvalues));
     }
     dReal GetMass() const {
         return _plink->GetMass();
@@ -1568,11 +1568,11 @@ object PyKinBody::GetDOFValues() const
 object PyKinBody::GetDOFValues(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> values;
     _pbody->GetDOFValues(values,vindices);
@@ -1589,11 +1589,11 @@ object PyKinBody::GetDOFVelocities() const
 object PyKinBody::GetDOFVelocities(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> values;
     _pbody->GetDOFVelocities(values,vindices);
@@ -1638,11 +1638,11 @@ object PyKinBody::GetDOFTorqueLimits() const
 object PyKinBody::GetDOFLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return boost::python::make_tuple(numeric::array(boost::python::list()), numeric::array(boost::python::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
+        return boost::python::make_tuple( ArrayFunc::array(boost::python::list()),  ArrayFunc::array(boost::python::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return boost::python::make_tuple(numeric::array(boost::python::list()), numeric::array(boost::python::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
+        return boost::python::make_tuple( ArrayFunc::array(boost::python::list()),  ArrayFunc::array(boost::python::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
     }
     vector<dReal> vlower, vupper, vtemplower, vtempupper;
     vlower.reserve(vindices.size());
@@ -1659,11 +1659,11 @@ object PyKinBody::GetDOFLimits(object oindices) const
 object PyKinBody::GetDOFVelocityLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -1678,11 +1678,11 @@ object PyKinBody::GetDOFVelocityLimits(object oindices) const
 object PyKinBody::GetDOFAccelerationLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -1697,11 +1697,11 @@ object PyKinBody::GetDOFAccelerationLimits(object oindices) const
 object PyKinBody::GetDOFJerkLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -1716,11 +1716,11 @@ object PyKinBody::GetDOFJerkLimits(object oindices) const
 object PyKinBody::GetDOFTorqueLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -1763,11 +1763,11 @@ object PyKinBody::GetDOFWeights() const
 object PyKinBody::GetDOFWeights(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> values, v;
     values.reserve(vindices.size());
@@ -1788,11 +1788,11 @@ object PyKinBody::GetDOFResolutions() const
 object PyKinBody::GetDOFResolutions(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> values, v;
     values.reserve(vindices.size());
@@ -2050,7 +2050,7 @@ void PyKinBody::SetDOFVelocities(object odofvelocities, uint32_t checklimits, ob
 object PyKinBody::GetLinkVelocities() const
 {
     if( _pbody->GetLinks().size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     std::vector<std::pair<Vector,Vector> > velocities;
     _pbody->GetLinkVelocities(velocities);
@@ -2066,13 +2066,13 @@ object PyKinBody::GetLinkVelocities() const
         pfvel[6*i+4] = velocities[i].second.y;
         pfvel[6*i+5] = velocities[i].second.z;
     }
-    return static_cast<numeric::array>(handle<>(pyvel));
+    return object(handle<>(pyvel));
 }
 
 object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexternalaccelerations=object()) const
 {
     if( _pbody->GetLinks().size() == 0 ) {
-        return numeric::array(boost::python::list());
+        return  ArrayFunc::array(boost::python::list());
     }
     vector<dReal> vDOFAccelerations = ExtractArray<dReal>(odofaccelerations);
     KinBody::AccelerationMapPtr pmapExternalAccelerations;
@@ -2103,7 +2103,7 @@ object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexterna
         pf[6*i+4] = vLinkAccelerations[i].second.y;
         pf[6*i+5] = vLinkAccelerations[i].second.z;
     }
-    return static_cast<numeric::array>(handle<>(pyaccel));
+    return object(handle<>(pyaccel));
 }
 
 object PyKinBody::ComputeAABB(bool bEnabledOnlyLinks)
@@ -3593,3 +3593,16 @@ void init_openravepy_kinbody()
 }
 
 }
+
+
+#if _MSC_VER == 1900
+#define DEFINE_BOOST_GET_POINTER(PTR) template<> const volatile PTR* get_pointer(const volatile PTR* p) { return p; }
+namespace boost {
+	DEFINE_BOOST_GET_POINTER(openravepy::PyLink);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyLink::PyGeometry);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyJoint);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyKinBodyStateSaver);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyManageData);
+	DEFINE_BOOST_GET_POINTER(openravepy::PyStateRestoreContextBase);
+}
+#endif

@@ -621,6 +621,7 @@ private:
     int nIndex;
 };
 
-PlannerBasePtr CreateRandomizedAStarPlanner(EnvironmentBasePtr penv, std::istream& sinput) {
+PlannerBasePtr CreateRandomizedAStarPlanner(EnvironmentBasePtr penv, std::istream& sinput) 
+{
     return PlannerBasePtr(new RandomizedAStarPlanner(penv, sinput));
 }

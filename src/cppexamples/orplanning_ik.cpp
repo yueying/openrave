@@ -25,7 +25,7 @@ class PlanningIkExample : public OpenRAVEExample
 public:
     virtual void demothread(int argc, char ** argv)
 	{
-        std::string scenefilename = "data/pa10grasp2.env.xml";
+        std::string scenefilename = "data/hanoi_complex2.env.xml";
         penv->Load(scenefilename);
 
 		std::vector<RobotBasePtr> vrobots;
@@ -55,13 +55,14 @@ public:
         }
         if( !pmanip->GetIkSolver()) 
 		{
-            throw OPENRAVE_EXCEPTION_FORMAT0("need ik solver",ORE_Assert);
+           // throw OPENRAVE_EXCEPTION_FORMAT0("need ik solver",ORE_Assert);
         }
 
         ModuleBasePtr pbasemanip = RaveCreateModule(penv,"basemanipulation"); // create the module
         penv->Add(pbasemanip,true,probot->GetName()); // load the module
 
-        while(IsOk()) {
+        while(IsOk()) 
+		{
             {
                 EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
 
@@ -74,13 +75,15 @@ public:
                 ssin << "MoveToHandPosition pose " << t;
                 // start the planner and run the robot
                 RAVELOG_INFO("%s\n",ssin.str().c_str());
-                if( !pbasemanip->SendCommand(ssout,ssin) ) {
+                if( !pbasemanip->SendCommand(ssout,ssin) ) 
+				{
                     continue;
                 }
             }
 
             // unlock the environment and wait for the robot to finish
-            while(!probot->GetController()->IsDone() && IsOk()) {
+            while(!probot->GetController()->IsDone() && IsOk()) 
+			{
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));
             }
         }

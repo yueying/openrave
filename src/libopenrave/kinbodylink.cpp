@@ -284,7 +284,7 @@ void KinBody::Link::InitGeometries(std::vector<KinBody::GeometryInfoConstPtr>& g
             _vGeometries[i]->InitCollisionMesh(); // have to initialize the mesh since some plugins might not understand all geometry types
         }
     }
-    _info._mapExtraGeometries.clear();
+    _info.extra_geometries_map_.clear();
     // have to reset the self group! cannot use geometries directly since we require exclusive access to the GeometryInfo objects
     std::vector<KinBody::GeometryInfoPtr> vgeometryinfos;
     vgeometryinfos.resize(_vGeometries.size());
@@ -308,7 +308,7 @@ void KinBody::Link::InitGeometries(std::list<KinBody::GeometryInfo>& geometries)
         }
         ++i;
     }
-    _info._mapExtraGeometries.clear();
+    _info.extra_geometries_map_.clear();
     // have to reset the self group!
     std::vector<KinBody::GeometryInfoPtr> vgeometryinfos;
     vgeometryinfos.resize(_vGeometries.size());
@@ -327,8 +327,8 @@ void KinBody::Link::SetGeometriesFromGroup(const std::string& groupname)
         pvinfos = &_info._vgeometryinfos;
     }
     else {
-        std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = _info._mapExtraGeometries.find(groupname);
-        if( it == _info._mapExtraGeometries.end() ) {
+        std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = _info.extra_geometries_map_.find(groupname);
+        if( it == _info.extra_geometries_map_.end() ) {
             throw OPENRAVE_EXCEPTION_FORMAT(_("could not find geometries %s for link %s"),groupname%GetName(),ORE_InvalidArguments);
         }
         pvinfos = &it->second;
@@ -346,8 +346,8 @@ void KinBody::Link::SetGeometriesFromGroup(const std::string& groupname)
 
 const std::vector<KinBody::GeometryInfoPtr>& KinBody::Link::GetGeometriesFromGroup(const std::string& groupname) const
 {
-    std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = _info._mapExtraGeometries.find(groupname);
-    if( it == _info._mapExtraGeometries.end() ) {
+    std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = _info.extra_geometries_map_.find(groupname);
+    if( it == _info.extra_geometries_map_.end() ) {
         throw OPENRAVE_EXCEPTION_FORMAT(_("geometry group %s does not exist for link %s"), groupname%GetName(), ORE_InvalidArguments);
     }
     return it->second;
@@ -355,7 +355,7 @@ const std::vector<KinBody::GeometryInfoPtr>& KinBody::Link::GetGeometriesFromGro
 
 void KinBody::Link::SetGroupGeometries(const std::string& groupname, const std::vector<KinBody::GeometryInfoPtr>& geometries)
 {
-    std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = _info._mapExtraGeometries.insert(make_pair(groupname,std::vector<KinBody::GeometryInfoPtr>())).first;
+    std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = _info.extra_geometries_map_.insert(make_pair(groupname,std::vector<KinBody::GeometryInfoPtr>())).first;
     it->second.resize(geometries.size());
     std::copy(geometries.begin(),geometries.end(),it->second.begin());
     GetParent()->_PostprocessChangedParameters(Prop_LinkGeometryGroup); // have to notify collision checkers that the geometry info they are caching could have changed.
@@ -363,8 +363,8 @@ void KinBody::Link::SetGroupGeometries(const std::string& groupname, const std::
 
 int KinBody::Link::GetGroupNumGeometries(const std::string& groupname) const
 {
-    std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = _info._mapExtraGeometries.find(groupname);
-    if( it == _info._mapExtraGeometries.end() ) {
+    std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = _info.extra_geometries_map_.find(groupname);
+    if( it == _info.extra_geometries_map_.end() ) {
         return -1;
     }
     return it->second.size();

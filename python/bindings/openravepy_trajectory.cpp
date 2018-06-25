@@ -95,7 +95,7 @@ public:
         if( values.size() > 0 ) {
             memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
         }
-        return static_cast<numeric::array>(handle<>(pypos));
+        return object(handle<>(pypos));
     }
 
     object SamplePoints2D(object otimes, PyConfigurationSpecificationPtr pyspec) const
@@ -110,7 +110,7 @@ public:
         if( values.size() > 0 ) {
             memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
         }
-        return static_cast<numeric::array>(handle<>(pypos));
+        return object(handle<>(pypos));
     }
 
     object GetConfigurationSpecification() const {
@@ -146,7 +146,7 @@ public:
         if( values.size() > 0 ) {
             memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
         }
-        return static_cast<numeric::array>(handle<>(pypos));
+        return object(handle<>(pypos));
     }
 
     object GetAllWaypoints2D() const
@@ -164,7 +164,7 @@ public:
         if( values.size() > 0 ) {
             memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
         }
-        return static_cast<numeric::array>(handle<>(pypos));
+        return object(handle<>(pypos));
     }
 
     object GetAllWaypoints2D(PyConfigurationSpecificationPtr pyspec) const

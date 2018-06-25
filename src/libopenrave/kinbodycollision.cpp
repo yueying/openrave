@@ -96,7 +96,7 @@ namespace OpenRAVE
 				KinBodyPtr parentlink = (*itrobotlink)->GetParent(true);
 				if (!parentlink) {
 					RAVELOG_WARN_FORMAT("_listNonCollidingLinks has invalid link %s:%d", (*itrobotlink)->GetName() % (*itrobotlink)->GetIndex());
-					robotlink = _veclinks.at((*itrobotlink)->GetIndex());
+					robotlink = links_vector_.at((*itrobotlink)->GetIndex());
 				}
 
 				// have to use link/link collision since link/body checks attached bodies
@@ -211,7 +211,7 @@ namespace OpenRAVE
 
 	bool KinBody::CheckLinkCollision(int ilinkindex, const Transform& tlinktrans, CollisionReportPtr report)
 	{
-		LinkPtr plink = _veclinks.at(ilinkindex);
+		LinkPtr plink = links_vector_.at(ilinkindex);
 		CollisionCheckerBasePtr pchecker = GetEnv()->GetCollisionChecker();
 		bool bAllLinkCollisions = !!(pchecker->GetCollisionOptions()&CO_AllLinkCollisions);
 		CollisionReportKeepSaver reportsaver(report);
@@ -268,7 +268,7 @@ namespace OpenRAVE
 
 	bool KinBody::CheckLinkCollision(int ilinkindex, CollisionReportPtr report)
 	{
-		LinkPtr plink = _veclinks.at(ilinkindex);
+		LinkPtr plink = links_vector_.at(ilinkindex);
 		CollisionCheckerBasePtr pchecker = GetEnv()->GetCollisionChecker();
 		bool bAllLinkCollisions = !!(pchecker->GetCollisionOptions()&CO_AllLinkCollisions);
 		CollisionReportKeepSaver reportsaver(report);
@@ -329,7 +329,7 @@ namespace OpenRAVE
 			report->nKeepPrevious = 1; // have to keep the previous since aggregating results
 		}
 		bool bincollision = false;
-		LinkPtr plink = _veclinks.at(ilinkindex);
+		LinkPtr plink = links_vector_.at(ilinkindex);
 		if (plink->IsEnabled()) {
 			boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 			if (pchecker->CheckStandaloneSelfCollision(LinkConstPtr(plink), report)) {
@@ -379,7 +379,7 @@ namespace OpenRAVE
 			report->nKeepPrevious = 1; // have to keep the previous since aggregating results
 		}
 		bool bincollision = false;
-		LinkPtr plink = _veclinks.at(ilinkindex);
+		LinkPtr plink = links_vector_.at(ilinkindex);
 		if (plink->IsEnabled()) {
 			boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 			plink->SetTransform(tlinktrans);

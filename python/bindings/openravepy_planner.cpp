@@ -131,7 +131,7 @@ public:
 
         void SetMaxIterations(int nMaxIterations)
         {
-            _paramswrite->_nMaxIterations = nMaxIterations;
+            _paramswrite->max_iterations_num_ = nMaxIterations;
         }
         
         object CheckPathAllConstraints(object oq0, object oq1, object odq0, object odq1, dReal timeelapsed, IntervalType interval, uint32_t options=0xffff, bool filterreturn=false)
@@ -383,3 +383,9 @@ void init_openravepy_planner()
 }
 
 }
+#if _MSC_VER == 1900
+#define DEFINE_BOOST_GET_POINTER(PTR) template<> const volatile PTR* get_pointer(const volatile PTR* p) { return p; }
+namespace boost {
+	DEFINE_BOOST_GET_POINTER(openravepy::PyPlannerBase::PyPlannerParameters);
+}
+#endif

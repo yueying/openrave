@@ -128,6 +128,8 @@ typedef boost::shared_ptr<PyIkParameterization> PyIkParameterizationPtr;
 typedef boost::shared_ptr<PyXMLReadable> PyXMLReadablePtr;
 typedef boost::shared_ptr<PyCameraIntrinsics> PyCameraIntrinsicsPtr;
 
+
+
 inline uint64_t GetMicroTime()
 {
 #ifdef _WIN32
@@ -316,7 +318,7 @@ inline object toPyArrayRotation(const TransformMatrix& t)
     pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
     pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
     pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
-    return static_cast<numeric::array>(handle<>(pyvalues));
+    return object(handle<>(pyvalues));
 }
 
 inline object toPyArray3(const std::vector<RaveVector<float> >& v)
@@ -331,7 +333,7 @@ inline object toPyArray3(const std::vector<RaveVector<float> >& v)
             *pf++ = it->z;
         }
     }
-    return static_cast<numeric::array>(handle<>(pyvalues));
+    return object(handle<>(pyvalues));
 }
 
 inline object toPyArray3(const std::vector<RaveVector<double> >& v)
@@ -346,22 +348,22 @@ inline object toPyArray3(const std::vector<RaveVector<double> >& v)
             *pf++ = it->z;
         }
     }
-    return static_cast<numeric::array>(handle<>(pyvalues));
+    return object(handle<>(pyvalues));
 }
 
 inline object toPyVector2(Vector v)
 {
-    return numeric::array(boost::python::make_tuple(v.x,v.y));
+    return ArrayFunc::array(boost::python::make_tuple(v.x,v.y));
 }
 
 inline object toPyVector3(Vector v)
 {
-    return numeric::array(boost::python::make_tuple(v.x,v.y,v.z));
+    return ArrayFunc::array(boost::python::make_tuple(v.x,v.y,v.z));
 }
 
 inline object toPyVector4(Vector v)
 {
-    return numeric::array(boost::python::make_tuple(v.x,v.y,v.z,v.w));
+    return ArrayFunc::array(boost::python::make_tuple(v.x,v.y,v.z,v.w));
 }
 
 /// \brief converts dictionary of keyvalue pairs

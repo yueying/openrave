@@ -772,7 +772,7 @@ public:
         _setInitialManipulators.clear();
         _setInitialSensors.clear();
         if( !!probot ) {
-            FOREACH(itlink,probot->_veclinks) {
+            FOREACH(itlink,probot->links_vector_) {
                 _setInitialLinks.insert(*itlink);
             }
             FOREACH(itjoint,probot->_vecjoints) {
@@ -848,7 +848,7 @@ public:
                         (*itmanip)->_info._name = _prefix + (*itmanip)->_info._name;
                         (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
                         (*itmanip)->_info._sEffectorLinkName = _prefix + (*itmanip)->_info._sEffectorLinkName;
-                        FOREACH(itgrippername,(*itmanip)->_info._vGripperJointNames) {
+                        FOREACH(itgrippername,(*itmanip)->_info.gripper_joint_names_vector_) {
                             *itgrippername = _prefix + *itgrippername;
                         }
                     }
@@ -877,7 +877,7 @@ public:
         _setInitialLinks.clear();
         _setInitialJoints.clear();
         if( !!pbody ) {
-            FOREACH(itlink,pbody->_veclinks) {
+            FOREACH(itlink,pbody->links_vector_) {
                 _setInitialLinks.insert(*itlink);
             }
             FOREACH(itjoint,pbody->_vecjoints) {
@@ -956,7 +956,7 @@ public:
 
     void _AddPrefixForKinBody(KinBodyPtr pbody, const std::string& prefix)
     {
-        FOREACH(itlink,pbody->_veclinks) {
+        FOREACH(itlink,pbody->links_vector_) {
             if( _setInitialLinks.find(*itlink) == _setInitialLinks.end()) {
                 (*itlink)->_info._name = prefix + (*itlink)->_info._name;
             }
@@ -1407,8 +1407,8 @@ public:
 
         RAVELOG_INFO(str(boost::format("Loading non-kinematics node '%s'")%name));
         pkinbody->SetName(name);
-        plink->_index = (int) pkinbody->_veclinks.size();
-        pkinbody->_veclinks.push_back(plink);
+        plink->_index = (int) pkinbody->links_vector_.size();
+        pkinbody->links_vector_.push_back(plink);
         return pkinbody;
     }
 
@@ -1671,8 +1671,8 @@ public:
             plink->_info._mass = 1e-10;
             plink->_info._vinertiamoments = Vector(1e-7,1e-7,1e-7);
             plink->_info._bStatic = false;
-            plink->_index = (int) pkinbody->_veclinks.size();
-            pkinbody->_veclinks.push_back(plink);
+            plink->_index = (int) pkinbody->links_vector_.size();
+            pkinbody->links_vector_.push_back(plink);
         }
         else {
             RAVELOG_DEBUG(str(boost::format("found previously defined link '%s")%linkname));
@@ -1925,12 +1925,12 @@ public:
                     // create dummy child link
                     stringstream ss;
                     ss << plink->_info._name;
-                    ss <<"_dummy" << pkinbody->_veclinks.size();
+                    ss <<"_dummy" << pkinbody->links_vector_.size();
                     pchildlink.reset(new KinBody::Link(pkinbody));
                     pchildlink->_info._name = ss.str();
                     pchildlink->_info._bStatic = false;
-                    pchildlink->_index = (int)pkinbody->_veclinks.size();
-                    pkinbody->_veclinks.push_back(pchildlink);
+                    pchildlink->_index = (int)pkinbody->links_vector_.size();
+                    pkinbody->links_vector_.push_back(pchildlink);
                 }
 
                 std::vector<Vector> vAxes(vdomaxes.getCount());
@@ -3003,7 +3003,7 @@ public:
                             KinBody::JointPtr pjoint = result.first;
                             domJointRef pdomjoint = result.second;
                             if( !!pjoint && !!pdomjoint ) {
-                                manipinfo._vGripperJointNames.push_back(pjoint->GetName());
+                                manipinfo.gripper_joint_names_vector_.push_back(pjoint->GetName());
                                 daeTArray<daeElementRef> children;
                                 pmanipchild->getChildren(children);
                                 for (size_t i = 0; i < children.getCount(); i++) {
@@ -3029,7 +3029,7 @@ public:
                             InterfaceTypePtr pinterfacetype = _ExtractInterfaceType(pmanipchild);
                             if( !!pinterfacetype ) {
                                 if( pinterfacetype->type.size() == 0 || pinterfacetype->type == "iksolver" ) {
-                                    manipinfo._sIkSolverXMLId = pinterfacetype->name;
+                                    manipinfo.ik_solver_xml_id_ = pinterfacetype->name;
                                 }
                                 else {
                                     RAVELOG_WARN("invalid interface_type\n");

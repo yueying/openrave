@@ -37,7 +37,8 @@ namespace OpenRAVE
 		class OPENRAVE_API ManipulatorInfo
 		{
 		public:
-			ManipulatorInfo() : _vdirection(0, 0, 1) {
+			ManipulatorInfo() : _vdirection(0, 0, 1)
+			{
 			}
 			virtual ~ManipulatorInfo() {
 			}
@@ -47,8 +48,8 @@ namespace OpenRAVE
 			Transform _tLocalTool;
 			std::vector<dReal> _vChuckingDirection; //!< the normal direction to move joints for the hand to grasp something
 			Vector _vdirection;
-			std::string _sIkSolverXMLId; //!< xml id of the IkSolver interface to attach
-			std::vector<std::string> _vGripperJointNames;         //!< names of the gripper joints
+			std::string ik_solver_xml_id_; //!< xml id of the IkSolver interface to attach
+			std::vector<std::string> gripper_joint_names_vector_;         //!< names of the gripper joints
 		};
 		typedef boost::shared_ptr<ManipulatorInfo> ManipulatorInfoPtr;
 		typedef boost::shared_ptr<ManipulatorInfo const> ManipulatorInfoConstPtr;
@@ -66,7 +67,8 @@ namespace OpenRAVE
 			virtual ~Manipulator();
 
 			/// \brief return a serializable info holding everything to initialize a manipulator
-			inline const ManipulatorInfo& GetInfo() const {
+			inline const ManipulatorInfo& GetInfo() const 
+			{
 				return _info;
 			}
 
@@ -79,23 +81,28 @@ namespace OpenRAVE
 			/// \brief return the linear/angular velocity of the manipulator coordinate system
 			virtual std::pair<Vector, Vector> GetVelocity() const;
 
-			virtual Transform GetEndEffectorTransform() const {
+			virtual Transform GetEndEffectorTransform() const 
+			{
 				return GetTransform();
 			}
 
-			virtual const std::string& GetName() const {
+			virtual const std::string& GetName() const 
+			{
 				return _info._name;
 			}
 
 			/// \brief get robot that manipulator belongs to.
 			///
 			/// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
-			inline RobotBasePtr GetRobot(bool trylock = false) const {
-				if (trylock) {
-					return __probot.lock();
+			inline RobotBasePtr GetRobot(bool trylock = false) const 
+			{
+				if (trylock) 
+				{
+					return robot_.lock();
 				}
-				else {
-					return RobotBasePtr(__probot);
+				else 
+				{
+					return RobotBasePtr(robot_);
 				}
 			}
 
@@ -110,23 +117,27 @@ namespace OpenRAVE
 			virtual IkSolverBasePtr GetIkSolver() const;
 
 			/// \brief the base used for the iksolver
-			virtual LinkPtr GetBase() const {
-				return __pBase;
+			virtual LinkPtr GetBase() const 
+			{
+				return base_link_;
 			}
 
 			/// \brief the end effector link (used to define workspace distance)
-			virtual LinkPtr GetEndEffector() const {
-				return __pEffector;
+			virtual LinkPtr GetEndEffector() const 
+			{
+				return effector_link_;
 			}
 
 			/// \brief Release all bodies grabbed by the end effector of this manipualtor
-			virtual void ReleaseAllGrabbed() {
-				RobotBasePtr probot(__probot);
-				probot->ReleaseAllGrabbedWithLink(__pEffector);
+			virtual void ReleaseAllGrabbed()
+			{
+				RobotBasePtr probot(robot_);
+				probot->ReleaseAllGrabbedWithLink(effector_link_);
 			}
 
 			/// \brief Return transform with respect to end effector defining the grasp coordinate system
-			virtual Transform GetLocalToolTransform() const {
+			virtual Transform GetLocalToolTransform() const
+			{
 				return _info._tLocalTool;
 			}
 
@@ -404,8 +415,8 @@ namespace OpenRAVE
 
 			ManipulatorInfo _info; //!< user-set information
 		private:
-			RobotBaseWeakPtr __probot;
-			LinkPtr __pBase, __pEffector; //!< contains weak links to robot
+			RobotBaseWeakPtr robot_;
+			LinkPtr base_link_, effector_link_; //!< contains weak links to robot
 			std::vector<int> __vgripperdofindices, __varmdofindices;
 			ConfigurationSpecification __armspec; //!< reflects __varmdofindices
 			mutable IkSolverBasePtr __pIkSolver;

@@ -236,8 +236,8 @@ protected:
                 pchildlink->_info._t = tflipyz*tpivot*tflipyz.inverse();
                 pchildlink->_info._bStatic = false;
                 pchildlink->_info._bIsEnabled = true;
-                pchildlink->_index = pbody->_veclinks.size();
-                pbody->_veclinks.push_back(pchildlink);
+                pchildlink->_index = pbody->links_vector_.size();
+                pbody->links_vector_.push_back(pchildlink);
                 RAVELOG_VERBOSE_FORMAT("level=%d adding child xlink %s", level%pchildlink->_info._name);
             }
 
@@ -334,8 +334,8 @@ protected:
                 plink->_info._name = _prefix+node->mName;
                 plink->_info._bStatic = false;
                 plink->_info._bIsEnabled = true;
-                plink->_index = pbody->_veclinks.size();
-                pbody->_veclinks.push_back(plink);
+                plink->_index = pbody->links_vector_.size();
+                pbody->links_vector_.push_back(plink);
                 RAVELOG_VERBOSE_FORMAT("level=%d adding xlink %s", level%plink->_info._name);
             }
 

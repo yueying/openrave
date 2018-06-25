@@ -506,7 +506,7 @@ public:
         object shape = rays.attr("shape");
         int num = extract<int>(shape[0]);
         if( num == 0 ) {
-            return boost::python::make_tuple(numeric::array(boost::python::list()).astype("i4"),numeric::array(boost::python::list()));
+            return boost::python::make_tuple(ArrayFunc::array(boost::python::list(), ArrayFunc::dtype::get_builtin<uint32_t>()), ArrayFunc::array(boost::python::list()));
         }
         if( extract<int>(shape[1]) != 6 ) {
             throw openrave_exception(_("rays object needs to be a Nx6 vector\n"));
@@ -550,7 +550,7 @@ public:
             }
         }
 
-        return boost::python::make_tuple(static_cast<numeric::array>(handle<>(pycollision)),static_cast<numeric::array>(handle<>(pypos)));
+        return boost::python::make_tuple(object(handle<>(pycollision)), object(handle<>(pypos)));
     }
 
     bool CheckCollision(boost::shared_ptr<PyRay> pyray)

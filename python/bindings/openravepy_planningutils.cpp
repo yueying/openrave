@@ -528,3 +528,15 @@ void InitPlanningUtils()
 }
 
 } // end namespace openravepy
+
+#if _MSC_VER == 1900
+#define DEFINE_BOOST_GET_POINTER(PTR) template<> const volatile PTR* get_pointer(const volatile PTR* p) { return p; }
+namespace boost {
+	DEFINE_BOOST_GET_POINTER(openravepy::planningutils::PyManipulatorIKGoalSampler);
+	DEFINE_BOOST_GET_POINTER(openravepy::planningutils::PyActiveDOFTrajectorySmoother);
+	DEFINE_BOOST_GET_POINTER(openravepy::planningutils::PyActiveDOFTrajectoryRetimer);
+	DEFINE_BOOST_GET_POINTER(openravepy::planningutils::PyAffineTrajectoryRetimer);
+	DEFINE_BOOST_GET_POINTER(openravepy::planningutils::PyDynamicsCollisionConstraint);
+	DEFINE_BOOST_GET_POINTER(openravepy::planningutils::PyDHParameter);
+}
+#endif
