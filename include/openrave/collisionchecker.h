@@ -22,7 +22,8 @@
 #ifndef OPENRAVE_COLLISIONCHECKER_H
 #define OPENRAVE_COLLISIONCHECKER_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /// options for collision checker
 enum CollisionOptions

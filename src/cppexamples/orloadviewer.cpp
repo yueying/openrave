@@ -69,9 +69,9 @@ int main(int argc, char ** argv)
     RaveInitialize(true); // start openrave core
     EnvironmentBasePtr penv = RaveCreateEnvironment(); // create the main environment
     RaveSetDebugLevel(Level_Debug);
-
+	viewername = "qtosg";
     boost::thread thviewer(boost::bind(SetViewer,penv,viewername));
-    penv->Load(scenefilename); // load the scene
+    //penv->Load(scenefilename); // load the scene
     thviewer.join(); // wait for the viewer thread to exit
     penv->Destroy(); // destroy
     return 0;

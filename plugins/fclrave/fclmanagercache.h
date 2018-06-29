@@ -42,8 +42,8 @@ namespace fclrave {
 //    return count;
 //}
 
-typedef boost::shared_ptr<fcl::BroadPhaseCollisionManager> BroadPhaseCollisionManagerPtr;
-typedef boost::weak_ptr<fcl::BroadPhaseCollisionManager> BroadPhaseCollisionManagerWeakPtr;
+typedef boost::shared_ptr<fcl::BroadPhaseCollisionManager<double>> BroadPhaseCollisionManagerPtr;
+typedef boost::weak_ptr<fcl::BroadPhaseCollisionManager<double>> BroadPhaseCollisionManagerWeakPtr;
 
 struct EnvironmentState
 {
@@ -150,7 +150,7 @@ public:
             uint64_t linkmask = 0;
             vcolobjs.clear(); // reset any existing collision objects
             vcolobjs.resize((*itbody)->GetLinks().size(),CollisionObjectPtr());
-            FOREACH(itlink, (*itbody)->GetLinks()) {
+            FOREACHC(itlink, (*itbody)->GetLinks()) {
                 if( (*itlink)->IsEnabled() && (*itbody != pbody || !_bTrackActiveDOF || _vTrackingActiveLinks.at((*itlink)->GetIndex())) ) {
                     CollisionObjectPtr pcol = _fclspace.GetLinkBV(pinfo, (*itlink)->GetIndex());
                     vcolobjs[(*itlink)->GetIndex()] = pcol;
@@ -324,7 +324,7 @@ public:
                                 uint64_t linkmask = 0;
                                 for(size_t ilink = 0; ilink < probot->GetLinks().size(); ++ilink) {
                                     int isLinkActive = 0;
-                                    FOREACH(itindex, probot->GetActiveDOFIndices()) {
+                                    FOREACHC(itindex, probot->GetActiveDOFIndices()) {
                                         if( probot->DoesAffect(probot->GetJointFromDOFIndex(*itindex)->GetJointIndex(), ilink) ) {
                                             isLinkActive = 1;
                                             break;
@@ -523,7 +523,7 @@ public:
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
                                     //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s unregister cached obj %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecker()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get());
-                                    fcl::CollisionObject* ptestobj = itcache->second.vcolobjs.at(ilink).get();
+                                    fcl::CollisionObject<double>* ptestobj = itcache->second.vcolobjs.at(ilink).get();
                                     pmanager->unregisterObject(itcache->second.vcolobjs.at(ilink).get());
                                 }
 #ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
@@ -589,8 +589,8 @@ public:
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
                                     //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s unregister cached obj %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecke()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get());
-                                    fcl::CollisionObject* ptestobj = itcache->second.vcolobjs.at(ilink).get();
-                                    +pmanager->unregisterObject(itcache->second.vcolobjs.at(ilink).get());
+                                    fcl::CollisionObject<double>* ptestobj = itcache->second.vcolobjs.at(ilink).get();
+                                    pmanager->unregisterObject(itcache->second.vcolobjs.at(ilink).get());
                                 }
 #ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
                                 SaveCollisionObjectDebugInfos(pcolobj.get());
@@ -722,7 +722,7 @@ private:
         vcolobjs.resize(pbody->GetLinks().size(), CollisionObjectPtr());
         bool bsetUpdateStamp = false;
         linkmask = 0;
-        FOREACH(itlink, (pbody)->GetLinks()) {
+        FOREACHC(itlink, (pbody)->GetLinks()) {
             if( (*itlink)->IsEnabled() && (!bTrackActiveDOF || _vTrackingActiveLinks.at((*itlink)->GetIndex())) ) {
                 //pinfo->vlinks.at((*itlink)->GetIndex()).listRegisteredManagers.push_back(shared_from_this());
                 CollisionObjectPtr pcol = _fclspace.GetLinkBV(pinfo, (*itlink)->GetIndex());
@@ -747,7 +747,7 @@ private:
         _vTrackingActiveLinks.resize(probot->GetLinks().size());
         for(size_t i = 0; i < probot->GetLinks().size(); ++i) {
             int isLinkActive = 0;
-            FOREACH(itindex, probot->GetActiveDOFIndices()) {
+            FOREACHC(itindex, probot->GetActiveDOFIndices()) {
                 if( probot->DoesAffect(probot->GetJointFromDOFIndex(*itindex)->GetJointIndex(), i) ) {
                     isLinkActive = 1;
                     break;

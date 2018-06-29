@@ -2175,7 +2175,7 @@ BOOST_PYTHON_MODULE(openravepy_int)
 #endif
     import_array();
 #if BOOST_VERSION < 106500
-     ArrayFunc::array::set_module_and_type("numpy", "ndarray");
+	boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
 #endif
     int_from_number<int>();
     int_from_number<uint8_t>();

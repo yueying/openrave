@@ -62,7 +62,8 @@ using namespace boost::python;
 using namespace std;
 using namespace OpenRAVE;
 
-namespace openravepy {
+namespace openravepy 
+{
 
 struct DummyStruct {};
 

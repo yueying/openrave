@@ -52,51 +52,51 @@
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/consoleappender.h>
 
-namespace log4cxx 
+namespace log4cxx
 {
 
-class ColorLayout : public Layout 
-{
-public:
-    DECLARE_LOG4CXX_OBJECT(ColorLayout)
-    BEGIN_LOG4CXX_CAST_MAP()
-    LOG4CXX_CAST_ENTRY(ColorLayout)
-    LOG4CXX_CAST_ENTRY_CHAIN(Layout)
-    END_LOG4CXX_CAST_MAP()
+	class ColorLayout : public Layout
+	{
+	public:
+		DECLARE_LOG4CXX_OBJECT(ColorLayout)
+		BEGIN_LOG4CXX_CAST_MAP()
+			LOG4CXX_CAST_ENTRY(ColorLayout)
+			LOG4CXX_CAST_ENTRY_CHAIN(Layout)
+		END_LOG4CXX_CAST_MAP()
 
-    ColorLayout();
-    ColorLayout(const LayoutPtr& layout);
-    virtual ~ColorLayout();
+		ColorLayout();
+		ColorLayout(const LayoutPtr& layout);
+		virtual ~ColorLayout();
 
-    virtual void activateOptions(helpers::Pool& p) {
-        _layout->activateOptions(p);
-    }
-    virtual void setOption(const LogString& option, const LogString& value) {
-        _layout->setOption(option, value);
-    }
-    virtual bool ignoresThrowable() const {
-        return _layout->ignoresThrowable();
-    }
+		virtual void activateOptions(helpers::Pool& p) {
+			_layout->activateOptions(p);
+		}
+		virtual void setOption(const LogString& option, const LogString& value) {
+			_layout->setOption(option, value);
+		}
+		virtual bool ignoresThrowable() const {
+			return _layout->ignoresThrowable();
+		}
 
-    virtual void format(LogString& output, const spi::LoggingEventPtr& event, helpers::Pool& pool) const;
+		virtual void format(LogString& output, const spi::LoggingEventPtr& event, helpers::Pool& pool) const;
 
-protected:
-    virtual LogString _Colorize(const spi::LoggingEventPtr& event) const;
+	protected:
+		virtual LogString _Colorize(const spi::LoggingEventPtr& event) const;
 
-    LayoutPtr _layout;
-};
+		LayoutPtr _layout;
+	};
 
 }
 
 #endif
 
-namespace OpenRAVE 
+namespace OpenRAVE
 {
 
 #ifdef _WIN32
-const char s_filesep = '\\';
+	const char s_filesep = '\\';
 #else
-const char s_filesep = '/';
+	const char s_filesep = '/';
 #endif
 
 #if defined(USE_CRLIBM)
@@ -109,2609 +109,2616 @@ const char s_filesep = '/';
 #include LIBM_ACCURACY_RESULTS_H
 #endif
 
-// use round-nearest versions since it is the default
+	// use round-nearest versions since it is the default
 #ifdef LIBM_EXP_ACCURATE
-dReal RaveExp(dReal f) {
-    return exp(f);
-}
+	dReal RaveExp(dReal f) {
+		return exp(f);
+	}
 #else
-dReal RaveExp(dReal f) {
-    return exp_rn(f);
-}
+	dReal RaveExp(dReal f) {
+		return exp_rn(f);
+	}
 #endif
 #ifdef LIBM_LOG_ACCURATE
-dReal RaveLog(dReal f) {
-    return log(f);
-}
+	dReal RaveLog(dReal f) {
+		return log(f);
+	}
 #else
-dReal RaveLog(dReal f) {
-    return log_rn(f);
-}
+	dReal RaveLog(dReal f) {
+		return log_rn(f);
+	}
 #endif
 #ifdef LIBM_COS_ACCURATE
-dReal RaveCos(dReal f) {
-    return cos(f);
-}
+	dReal RaveCos(dReal f) {
+		return cos(f);
+	}
 #else
-dReal RaveCos(dReal f) {
-    return cos_rn(f);
-}
+	dReal RaveCos(dReal f) {
+		return cos_rn(f);
+	}
 #endif
 #ifdef LIBM_SIN_ACCURATE
-dReal RaveSin(dReal f) {
-    return sin(f);
-}
+	dReal RaveSin(dReal f) {
+		return sin(f);
+	}
 #else
-dReal RaveSin(dReal f) {
-    return sin_rn(f);
-}
+	dReal RaveSin(dReal f) {
+		return sin_rn(f);
+	}
 #endif
 #ifdef LIBM_TAN_ACCURATE
-dReal RaveTan(dReal f) {
-    return tan(f);
-}
+	dReal RaveTan(dReal f) {
+		return tan(f);
+	}
 #else
-dReal RaveTan(dReal f) {
-    return tan_rn(f);
-}
+	dReal RaveTan(dReal f) {
+		return tan_rn(f);
+	}
 #endif
 #ifdef LIBM_LOG2_ACCURATE
-dReal RaveLog2(dReal f) {
-    return log2(f);
-}
+	dReal RaveLog2(dReal f) {
+		return log2(f);
+	}
 #else
-dReal RaveLog2(dReal f) {
-    return log2_rn(f);
-}
+	dReal RaveLog2(dReal f) {
+		return log2_rn(f);
+	}
 #endif
 #ifdef LIBM_LOG10_ACCURATE
-dReal RaveLog10(dReal f) {
-    return log10(f);
-}
+	dReal RaveLog10(dReal f) {
+		return log10(f);
+	}
 #else
-dReal RaveLog10(dReal f) {
-    return log10_rn(f);
-}
+	dReal RaveLog10(dReal f) {
+		return log10_rn(f);
+	}
 #endif
 #ifdef LIBM_ACOS_ACCURATE
-dReal RaveAcos(dReal f) {
-    return acos(f);
-}
+	dReal RaveAcos(dReal f) {
+		return acos(f);
+	}
 #else
-dReal RaveAcos(dReal f) {
-    return acos_rn(f);
-}
+	dReal RaveAcos(dReal f) {
+		return acos_rn(f);
+	}
 #endif
 #ifdef LIBM_ASIN_ACCURATE
-dReal RaveAsin(dReal f) {
-    return asin(f);
-}
+	dReal RaveAsin(dReal f) {
+		return asin(f);
+	}
 #else
-dReal RaveAsin(dReal f) {
-    return asin_rn(f);
-}
+	dReal RaveAsin(dReal f) {
+		return asin_rn(f);
+	}
 #endif
 #ifdef LIBM_ATAN2_ACCURATE
-dReal RaveAtan2(dReal y, dReal x) {
-    return atan2(y,x);
-}
+	dReal RaveAtan2(dReal y, dReal x) {
+		return atan2(y, x);
+	}
 #else
-dReal RaveAtan2(dReal y, dReal x) // unfortunately no atan2 in crlibm...
-{
-    dReal absx, absy, val;
-    if ((x == 0)&&(y == 0)) {
-        return 0;
-    }
-    absy = y < 0 ? -y : y;
-    absx = x < 0 ? -x : x;
-    if (absy - absx == absy) {
-        // x negligible compared to y
-        return y < 0 ? -M_PI_2 : M_PI_2;
-    }
-    if (absx - absy == absx) {
-        // y negligible compared to x
-        val = 0.0;
-    }
-    else val = atan_rn(y/x);
-    if (x > 0) {
-        // first or fourth quadrant; already correct
-        return val;
-    }
-    if (y < 0) {
-        // third quadrant
-        return val - M_PI;
-    }
-    return val + M_PI;
-}
+	dReal RaveAtan2(dReal y, dReal x) // unfortunately no atan2 in crlibm...
+	{
+		dReal absx, absy, val;
+		if ((x == 0) && (y == 0)) {
+			return 0;
+		}
+		absy = y < 0 ? -y : y;
+		absx = x < 0 ? -x : x;
+		if (absy - absx == absy) {
+			// x negligible compared to y
+			return y < 0 ? -M_PI_2 : M_PI_2;
+		}
+		if (absx - absy == absx) {
+			// y negligible compared to x
+			val = 0.0;
+		}
+		else val = atan_rn(y / x);
+		if (x > 0) {
+			// first or fourth quadrant; already correct
+			return val;
+		}
+		if (y < 0) {
+			// third quadrant
+			return val - M_PI;
+		}
+		return val + M_PI;
+	}
 #endif
 #ifdef LIBM_POW_ACCURATE
-dReal RavePow(dReal x, dReal y) {
-    return pow(x,y);
-}
+	dReal RavePow(dReal x, dReal y) {
+		return pow(x, y);
+	}
 #else
-dReal RavePow(dReal x, dReal y) {
-    return pow_rn(x,y);
-}
+	dReal RavePow(dReal x, dReal y) {
+		return pow_rn(x, y);
+	}
 #endif
 #ifdef LIBM_SQRT_ACCURATE
-dReal RaveSqrt(dReal f) {
-    return sqrt(f);
-}
+	dReal RaveSqrt(dReal f) {
+		return sqrt(f);
+	}
 #else
-dReal RaveSqrt(dReal f) {
-    return sqrt(f);
-}
-//dReal RaveSqrt(dReal f) { return pow_rn(f,0.5); } // NOTE: this is really slow, is it really worth the precision?
+	dReal RaveSqrt(dReal f) {
+		return sqrt(f);
+	}
+	//dReal RaveSqrt(dReal f) { return pow_rn(f,0.5); } // NOTE: this is really slow, is it really worth the precision?
 #endif
-dReal RaveFabs(dReal f) {
-    return fabs(f);
-}
-dReal RaveCeil(dReal f) {
-    return ceil(f);
-}
+	dReal RaveFabs(dReal f) {
+		return fabs(f);
+	}
+	dReal RaveCeil(dReal f) {
+		return ceil(f);
+	}
 
 #else // use all standard libm
 
 #if OPENRAVE_PRECISION == 0 // floating-point
-dReal RaveExp(dReal f) {
-    return expf(f);
-}
-dReal RaveLog(dReal f) {
-    return logf(f);
-}
-dReal RaveCos(dReal f) {
-    return cosf(f);
-}
-dReal RaveSin(dReal f) {
-    return sinf(f);
-}
-dReal RaveTan(dReal f) {
-    return tanf(f);
-}
+	dReal RaveExp(dReal f) {
+		return expf(f);
+	}
+	dReal RaveLog(dReal f) {
+		return logf(f);
+	}
+	dReal RaveCos(dReal f) {
+		return cosf(f);
+	}
+	dReal RaveSin(dReal f) {
+		return sinf(f);
+	}
+	dReal RaveTan(dReal f) {
+		return tanf(f);
+	}
 #ifdef HAS_LOG2
-dReal RaveLog2(dReal f) {
-    return log2f(f);
-}
+	dReal RaveLog2(dReal f) {
+		return log2f(f);
+	}
 #else
-dReal RaveLog2(dReal f) {
-    return logf(f)/logf(2.0f);
-}
+	dReal RaveLog2(dReal f) {
+		return logf(f) / logf(2.0f);
+	}
 #endif
-dReal RaveLog10(dReal f) {
-    return log10f(f);
-}
-dReal RaveAcos(dReal f) {
-    return acosf(f);
-}
-dReal RaveAsin(dReal f) {
-    return asinf(f);
-}
-dReal RaveAtan2(dReal fy, dReal fx) {
-    return atan2f(fy,fx);
-}
-dReal RavePow(dReal fx, dReal fy) {
-    return powf(fx,fy);
-}
-dReal RaveSqrt(dReal f) {
-    return sqrtf(f);
-}
-dReal RaveFabs(dReal f) {
-    return fabsf(f);
-}
-dReal RaveCeil(dReal f) {
-    return ceilf(f);
-}
+	dReal RaveLog10(dReal f) {
+		return log10f(f);
+	}
+	dReal RaveAcos(dReal f) {
+		return acosf(f);
+	}
+	dReal RaveAsin(dReal f) {
+		return asinf(f);
+	}
+	dReal RaveAtan2(dReal fy, dReal fx) {
+		return atan2f(fy, fx);
+	}
+	dReal RavePow(dReal fx, dReal fy) {
+		return powf(fx, fy);
+	}
+	dReal RaveSqrt(dReal f) {
+		return sqrtf(f);
+	}
+	dReal RaveFabs(dReal f) {
+		return fabsf(f);
+	}
+	dReal RaveCeil(dReal f) {
+		return ceilf(f);
+	}
 #else
-dReal RaveExp(dReal f) {
-    return exp(f);
-}
-dReal RaveLog(dReal f) {
-    return log(f);
-}
-dReal RaveCos(dReal f) {
-    return cos(f);
-}
-dReal RaveSin(dReal f) {
-    return sin(f);
-}
-dReal RaveTan(dReal f) {
-    return tan(f);
-}
+	dReal RaveExp(dReal f) {
+		return exp(f);
+	}
+	dReal RaveLog(dReal f) {
+		return log(f);
+	}
+	dReal RaveCos(dReal f) {
+		return cos(f);
+	}
+	dReal RaveSin(dReal f) {
+		return sin(f);
+	}
+	dReal RaveTan(dReal f) {
+		return tan(f);
+	}
 #ifdef HAS_LOG2
-dReal RaveLog2(dReal f) {
-    return log2(f);
-}
+	dReal RaveLog2(dReal f) {
+		return log2(f);
+	}
 #else
-dReal RaveLog2(dReal f) {
-    return log(f)/log(2.0f);
-}
+	dReal RaveLog2(dReal f) {
+		return log(f) / log(2.0f);
+	}
 #endif
-dReal RaveLog10(dReal f) {
-    return log10(f);
-}
-dReal RaveAcos(dReal f) {
-    return acos(f);
-}
-dReal RaveAsin(dReal f) {
-    return asin(f);
-}
-dReal RaveAtan2(dReal fy, dReal fx) {
-    return atan2(fy,fx);
-}
-dReal RavePow(dReal fx, dReal fy) {
-    return pow(fx,fy);
-}
-dReal RaveSqrt(dReal f) {
-    return sqrt(f);
-}
-dReal RaveFabs(dReal f) {
-    return fabs(f);
-}
-dReal RaveCeil(dReal f) {
-    return ceil(f);
-}
-#endif
-
+	dReal RaveLog10(dReal f) {
+		return log10(f);
+	}
+	dReal RaveAcos(dReal f) {
+		return acos(f);
+	}
+	dReal RaveAsin(dReal f) {
+		return asin(f);
+	}
+	dReal RaveAtan2(dReal fy, dReal fx) {
+		return atan2(fy, fx);
+	}
+	dReal RavePow(dReal fx, dReal fy) {
+		return pow(fx, fy);
+	}
+	dReal RaveSqrt(dReal f) {
+		return sqrt(f);
+	}
+	dReal RaveFabs(dReal f) {
+		return fabs(f);
+	}
+	dReal RaveCeil(dReal f) {
+		return ceil(f);
+	}
 #endif
 
-static std::set<std::string> _gettextDomainsInitialized;
-static boost::once_flag once_rave_initialize_ = BOOST_ONCE_INIT;
+#endif
 
-/// there is only once global openrave state. It is created when openrave
-/// is first used, and destroyed when the program quits or RaveDestroy is called.
-class RaveGlobal : private boost::noncopyable, 
-	public boost::enable_shared_from_this<RaveGlobal>, 
-	public UserData
-{
-    typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
+	static std::set<std::string> _gettextDomainsInitialized;
+	static boost::once_flag once_rave_initialize_ = BOOST_ONCE_INIT;
 
-    RaveGlobal()
-    {
-        // is this really necessary? just makes bugs hard to reproduce...
-        //srand(GetMilliTime());
-        //RaveInitRandomGeneration(GetMilliTime());
-        debug_level_ = Level_Info;
-        _nGlobalEnvironmentId = 0;
-        data_access_options_ = 0;
-#ifdef USE_CRLIBM
-        _bcrlibmInit = false;
-#endif   
-        interface_names_map_[PT_Planner] = "planner";
-        interface_names_map_[PT_Robot] = "robot";
-        interface_names_map_[PT_SensorSystem] = "sensorsystem";
-        interface_names_map_[PT_Controller] = "controller";
-        interface_names_map_[PT_Module] = "module";
-        interface_names_map_[PT_IkSolver] = "iksolver";
-        interface_names_map_[PT_KinBody] = "kinbody";
-        interface_names_map_[PT_PhysicsEngine] = "physicsengine";
-        interface_names_map_[PT_Sensor] = "sensor";
-        interface_names_map_[PT_CollisionChecker] = "collisionchecker";
-        interface_names_map_[PT_Trajectory] = "trajectory";
-        interface_names_map_[PT_Viewer] = "viewer";
-        interface_names_map_[PT_SpaceSampler] = "spacesampler";
-        BOOST_ASSERT(interface_names_map_.size()==PT_NumberOfInterfaces);
-
-        ik_parameterization_map_[IKP_Transform6D] = "Transform6D";
-        ik_parameterization_map_[IKP_Rotation3D] = "Rotation3D";
-        ik_parameterization_map_[IKP_Translation3D] = "Translation3D";
-        ik_parameterization_map_[IKP_Direction3D] = "Direction3D";
-        ik_parameterization_map_[IKP_Ray4D] = "Ray4D";
-        ik_parameterization_map_[IKP_Lookat3D] = "Lookat3D";
-        ik_parameterization_map_[IKP_TranslationDirection5D] = "TranslationDirection5D";
-        ik_parameterization_map_[IKP_TranslationXY2D] = "TranslationXY2D";
-        ik_parameterization_map_[IKP_TranslationXYOrientation3D] = "TranslationXYOrientation3D";
-        ik_parameterization_map_[IKP_TranslationLocalGlobal6D] = "TranslationLocalGlobal6D";
-        ik_parameterization_map_[IKP_TranslationXAxisAngle4D] = "TranslationXAxisAngle4D";
-        ik_parameterization_map_[IKP_TranslationYAxisAngle4D] = "TranslationYAxisAngle4D";
-        ik_parameterization_map_[IKP_TranslationZAxisAngle4D] = "TranslationZAxisAngle4D";
-        ik_parameterization_map_[IKP_TranslationXAxisAngleZNorm4D] = "TranslationXAxisAngleZNorm4D";
-        ik_parameterization_map_[IKP_TranslationYAxisAngleXNorm4D] = "TranslationYAxisAngleXNorm4D";
-        ik_parameterization_map_[IKP_TranslationZAxisAngleYNorm4D] = "TranslationZAxisAngleYNorm4D";
-        BOOST_ASSERT(ik_parameterization_map_.size()==IKP_NumberOfParameterizations);
-        FOREACH(it,ik_parameterization_map_) 
-		{
-            std::string name = it->second;
-            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-            ik_parameterization_lower_map_[it->first] = name;
-        }
-    }
-public:
-    virtual ~RaveGlobal() 
+	/// there is only once global openrave state. It is created when openrave
+	/// is first used, and destroyed when the program quits or RaveDestroy is called.
+	class RaveGlobal : private boost::noncopyable,
+		public boost::enable_shared_from_this<RaveGlobal>,
+		public UserData
 	{
-        Destroy();
-    }
+		typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
 
-    static boost::shared_ptr<RaveGlobal>& instance()
-    {
-        boost::call_once(create,once_rave_initialize_);
-        return global_state_;
-    }
-
-    int Initialize(bool is_load_all_plugins, int level)
-    {
-        if( IsInitialized() ) 
+		RaveGlobal()
 		{
-            return 0;     // already initialized
-        }
+			// is this really necessary? just makes bugs hard to reproduce...
+			//srand(GetMilliTime());
+			//RaveInitRandomGeneration(GetMilliTime());
+			debug_level_ = Level_Info;
+			global_environment_id_ = 0;
+			data_access_options_ = 0;
+#ifdef USE_CRLIBM
+			_bcrlibmInit = false;
+#endif   
+			interface_names_map_[PT_Planner] = "planner";
+			interface_names_map_[PT_Robot] = "robot";
+			interface_names_map_[PT_SensorSystem] = "sensorsystem";
+			interface_names_map_[PT_Controller] = "controller";
+			interface_names_map_[PT_Module] = "module";
+			interface_names_map_[PT_IkSolver] = "iksolver";
+			interface_names_map_[PT_KinBody] = "kinbody";
+			interface_names_map_[PT_PhysicsEngine] = "physicsengine";
+			interface_names_map_[PT_Sensor] = "sensor";
+			interface_names_map_[PT_CollisionChecker] = "collisionchecker";
+			interface_names_map_[PT_Trajectory] = "trajectory";
+			interface_names_map_[PT_Viewer] = "viewer";
+			interface_names_map_[PT_SpaceSampler] = "spacesampler";
+			BOOST_ASSERT(interface_names_map_.size() == PT_NumberOfInterfaces);
 
-        InitializeLogging(level);
+			ik_parameterization_map_[IKP_Transform6D] = "Transform6D";
+			ik_parameterization_map_[IKP_Rotation3D] = "Rotation3D";
+			ik_parameterization_map_[IKP_Translation3D] = "Translation3D";
+			ik_parameterization_map_[IKP_Direction3D] = "Direction3D";
+			ik_parameterization_map_[IKP_Ray4D] = "Ray4D";
+			ik_parameterization_map_[IKP_Lookat3D] = "Lookat3D";
+			ik_parameterization_map_[IKP_TranslationDirection5D] = "TranslationDirection5D";
+			ik_parameterization_map_[IKP_TranslationXY2D] = "TranslationXY2D";
+			ik_parameterization_map_[IKP_TranslationXYOrientation3D] = "TranslationXYOrientation3D";
+			ik_parameterization_map_[IKP_TranslationLocalGlobal6D] = "TranslationLocalGlobal6D";
+			ik_parameterization_map_[IKP_TranslationXAxisAngle4D] = "TranslationXAxisAngle4D";
+			ik_parameterization_map_[IKP_TranslationYAxisAngle4D] = "TranslationYAxisAngle4D";
+			ik_parameterization_map_[IKP_TranslationZAxisAngle4D] = "TranslationZAxisAngle4D";
+			ik_parameterization_map_[IKP_TranslationXAxisAngleZNorm4D] = "TranslationXAxisAngleZNorm4D";
+			ik_parameterization_map_[IKP_TranslationYAxisAngleXNorm4D] = "TranslationYAxisAngleXNorm4D";
+			ik_parameterization_map_[IKP_TranslationZAxisAngleYNorm4D] = "TranslationZAxisAngleYNorm4D";
+			BOOST_ASSERT(ik_parameterization_map_.size() == IKP_NumberOfParameterizations);
+			for (auto it : ik_parameterization_map_)
+			{
+				std::string name = it.second;
+				std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+				ik_parameterization_lower_map_[it.first] = name;
+			}
+		}
+	public:
+		virtual ~RaveGlobal()
+		{
+			Destroy();
+		}
+
+		static boost::shared_ptr<RaveGlobal>& instance()
+		{
+			boost::call_once(create, once_rave_initialize_);
+			return global_state_;
+		}
+
+		int Initialize(bool is_load_all_plugins, int level)
+		{
+			if (IsInitialized())
+			{
+				return 0;     // already initialized
+			}
+
+			InitializeLogging(level);
 
 #ifdef USE_CRLIBM
-        if( !_bcrlibmInit ) 
-		{
-            _crlibm_fpu_state = crlibm_init();
-            _bcrlibmInit = true;
-        }
+			if (!_bcrlibmInit)
+			{
+				_crlibm_fpu_state = crlibm_init();
+				_bcrlibmInit = true;
+			}
 #endif
-        try 
-		{
-            // TODO: eventually we should remove this call to set global locale for the process
-            // and imbue each stringstream with the correct locale.
+			try
+			{
+				// TODO: eventually we should remove this call to set global locale for the process
+				// and imbue each stringstream with the correct locale.
 
-            // set to the classic locale so that number serialization/hashing works correctly
-            // std::locale::global(std::locale::classic());
-            std::locale::global(std::locale(std::locale(""), std::locale::classic(), std::locale::numeric));
-        }
-        catch(const std::runtime_error& e) 
-		{
-            RAVELOG_WARN("failed to set to C locale: %s\n",e.what());
-        }
+				// set to the classic locale so that number serialization/hashing works correctly
+				// std::locale::global(std::locale::classic());
+				std::locale::global(std::locale(std::locale(""), std::locale::classic(), std::locale::numeric));
+			}
+			catch (const std::runtime_error& e)
+			{
+				RAVELOG_WARN("failed to set to C locale: %s\n", e.what());
+			}
 
-        database_.reset(new RaveDatabase());
-        if( !database_->Init(is_load_all_plugins) ) 
-		{
-            RAVELOG_FATAL("failed to create the openrave plugin database\n");
-        }
+			database_.reset(new RaveDatabase());
+			if (!database_->Init(is_load_all_plugins))
+			{
+				RAVELOG_FATAL("failed to create the openrave plugin database\n");
+			}
 
-        char* phomedir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
-        if( phomedir == NULL ) 
-		{
+			char* phomedir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
+			if (phomedir == NULL)
+			{
 #ifndef _WIN32
-            _homedirectory = std::string(getenv("HOME"))+ std::string("/.openrave"); // getenv not thread-safe?
+				_homedirectory = std::string(getenv("HOME")) + std::string("/.openrave"); // getenv not thread-safe?
 #else
-            _homedirectory = std::string(getenv("HOMEDRIVE"))+ std::string(getenv("HOMEPATH"))+ std::string("\\.openrave"); // getenv not thread-safe?
+				_homedirectory = std::string(getenv("HOMEDRIVE")) + std::string(getenv("HOMEPATH")) + std::string("\\.openrave"); // getenv not thread-safe?
 #endif
-        }
-        else {
-            _homedirectory = phomedir;
-        }
+			}
+			else {
+				_homedirectory = phomedir;
+			}
 #ifndef _WIN32
-        mkdir(_homedirectory.c_str(),S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_IRWXU);
+			mkdir(_homedirectory.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_IRWXU);
 #else
-        CreateDirectory(_homedirectory.c_str(),NULL);
+			CreateDirectory(_homedirectory.c_str(), NULL);
 #endif
 
 #ifdef _WIN32
-        const char* delim = ";";
+			const char* delim = ";";
 #else
-        const char* delim = ":";
+			const char* delim = ":";
 #endif
-        _vdbdirectories.clear();
-        char* pOPENRAVE_PLUGINS = getenv("OPENRAVE_DATABASE"); // getenv not thread-safe?
-        if( pOPENRAVE_PLUGINS != NULL ) {
-            utils::TokenizeString(pOPENRAVE_PLUGINS, delim, _vdbdirectories);
-        }
-        _vdbdirectories.push_back(_homedirectory);
+			_vdbdirectories.clear();
+			char* pOPENRAVE_PLUGINS = getenv("OPENRAVE_DATABASE"); // getenv not thread-safe?
+			if (pOPENRAVE_PLUGINS != NULL) {
+				utils::TokenizeString(pOPENRAVE_PLUGINS, delim, _vdbdirectories);
+			}
+			_vdbdirectories.push_back(_homedirectory);
 
-        _defaultviewertype.clear();
-        const char* pOPENRAVE_DEFAULT_VIEWER = std::getenv("OPENRAVE_DEFAULT_VIEWER");
-        if( !!pOPENRAVE_DEFAULT_VIEWER && strlen(pOPENRAVE_DEFAULT_VIEWER) > 0 ) {
-            _defaultviewertype = std::string(pOPENRAVE_DEFAULT_VIEWER);
-        }
+			default_viewer_type_.clear();
+			const char* pOPENRAVE_DEFAULT_VIEWER = std::getenv("OPENRAVE_DEFAULT_VIEWER");
+			if (!!pOPENRAVE_DEFAULT_VIEWER && strlen(pOPENRAVE_DEFAULT_VIEWER) > 0) {
+				default_viewer_type_ = std::string(pOPENRAVE_DEFAULT_VIEWER);
+			}
 
-        _UpdateDataDirs();
-        return 0;
-    }
+			_UpdateDataDirs();
+			return 0;
+		}
 
-    void Destroy()
-    {
-        if( !!database_ ) {
-            // notify all plugins that about to destroy
-            database_->OnRavePreDestroy();
-        }
+		void Destroy()
+		{
+			if (!!database_) {
+				// notify all plugins that about to destroy
+				database_->OnRavePreDestroy();
+			}
 
-        // don't use any log statements since global instance might be null
-        // environments have to be destroyed carefully since their destructors can be called, which will attempt to unregister the environment
-        std::map<int, EnvironmentBase*> mapenvironments;
-        {
-            boost::mutex::scoped_lock lock(_mutexinternal);
-            mapenvironments = _mapenvironments;
-        }
-        FOREACH(itenv,mapenvironments) {
-            // equire a shared pointer to prevent environment from getting deleted during Destroy loop
-            EnvironmentBasePtr penv = itenv->second->shared_from_this();
-            penv->Destroy();
-        }
-        mapenvironments.clear();
-        _mapenvironments.clear();
-        _pdefaultsampler.reset();
-        _mapreaders.clear();
+			// don't use any log statements since global instance might be null
+			// environments have to be destroyed carefully since their destructors can be called, which will attempt to unregister the environment
+			std::map<int, EnvironmentBase*> mapenvironments;
+			{
+				boost::mutex::scoped_lock lock(_mutexinternal);
+				mapenvironments = _mapenvironments;
+			}
+			FOREACH(itenv, mapenvironments) {
+				// equire a shared pointer to prevent environment from getting deleted during Destroy loop
+				EnvironmentBasePtr penv = itenv->second->shared_from_this();
+				penv->Destroy();
+			}
+			mapenvironments.clear();
+			_mapenvironments.clear();
+			_pdefaultsampler.reset();
+			_mapreaders.clear();
 
-        // process the callbacks
-        std::list<boost::function<void()> > listDestroyCallbacks;
-        {
-            boost::mutex::scoped_lock lock(_mutexinternal);
-            listDestroyCallbacks.swap(_listDestroyCallbacks);
-        }
-        FOREACH(itcallback, listDestroyCallbacks) {
-            (*itcallback)();
-        }
-        listDestroyCallbacks.clear();
+			// process the callbacks
+			std::list<boost::function<void()> > listDestroyCallbacks;
+			{
+				boost::mutex::scoped_lock lock(_mutexinternal);
+				listDestroyCallbacks.swap(_listDestroyCallbacks);
+			}
+			FOREACH(itcallback, listDestroyCallbacks) {
+				(*itcallback)();
+			}
+			listDestroyCallbacks.clear();
 
-        if( !!database_ ) {
-            // force destroy in case some one is holding a pointer to it
-            database_->Destroy();
-            database_.reset();
-        }
+			if (!!database_) {
+				// force destroy in case some one is holding a pointer to it
+				database_->Destroy();
+				database_.reset();
+			}
 #ifdef USE_CRLIBM
 
 #ifdef HAS_FENV_H
-        feclearexcept(-1); // clear any cached exceptions
+			feclearexcept(-1); // clear any cached exceptions
 #endif
-        if( _bcrlibmInit ) {
-            crlibm_exit(_crlibm_fpu_state);
-            _bcrlibmInit = false;
-        }
+			if (_bcrlibmInit) {
+				crlibm_exit(_crlibm_fpu_state);
+				_bcrlibmInit = false;
+			}
 #endif
 
 #if OPENRAVE_LOG4CXX
-        _logger = 0;
+			_logger = 0;
 #endif
-    }
+		}
 
-    void AddCallbackForDestroy(const boost::function<void()>& fn)
-    {
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        _listDestroyCallbacks.push_back(fn);
-    }
+		void AddCallbackForDestroy(const boost::function<void()>& fn)
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			_listDestroyCallbacks.push_back(fn);
+		}
 
-    std::string GetHomeDirectory()
-    {
-        return _homedirectory;
-    }
+		std::string GetHomeDirectory()
+		{
+			return _homedirectory;
+		}
 
-    std::string FindDatabaseFile(const std::string& filename, bool bRead)
-    {
-        FOREACH(itdirectory,_vdbdirectories) {
+		std::string FindDatabaseFile(const std::string& filename, bool bRead)
+		{
+			FOREACH(itdirectory, _vdbdirectories) {
 #ifdef HAVE_BOOST_FILESYSTEM
-            std::string fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itdirectory)/filename).string();
+				std::string fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itdirectory) / filename).string();
 #else
-            std::string fullfilename = *itdirectory;
-            fullfilename += s_filesep;
-            fullfilename += filename;
+				std::string fullfilename = *itdirectory;
+				fullfilename += s_filesep;
+				fullfilename += filename;
 #endif
-            if( bRead ) {
-                if( !!ifstream(fullfilename.c_str()) ) {
-                    return fullfilename;
-                }
-            }
-            else {
-                return fullfilename;
-            }
-        }
-        return "";
-    }
+				if (bRead) {
+					if (!!ifstream(fullfilename.c_str())) {
+						return fullfilename;
+					}
+				}
+				else {
+					return fullfilename;
+				}
+			}
+			return "";
+		}
 
 #if OPENRAVE_LOG4CXX
-    log4cxx::LoggerPtr GetLogger()
-    {
-        return _logger;
-    }
+		log4cxx::LoggerPtr GetLogger()
+		{
+			return _logger;
+		}
 
-    void SetDebugLevel(int level)
-    {
-        if (_logger != NULL) {
-            log4cxx::LevelPtr levelptr = log4cxx::Level::getInfo();
-            switch(level&Level_OutputMask) {
-            case Level_Fatal: levelptr = log4cxx::Level::getFatal(); break;
-            case Level_Error: levelptr = log4cxx::Level::getError(); break;
-            case Level_Warn: levelptr = log4cxx::Level::getWarn(); break;
-            case Level_Info: levelptr = log4cxx::Level::getInfo(); break;
-            case Level_Debug: levelptr = log4cxx::Level::getDebug(); break;
-            case Level_Verbose: levelptr = log4cxx::Level::getTrace(); break;
-            }
-            _logger->setLevel(levelptr);
-        }
-        debug_level_ = level;
-    }
+		void SetDebugLevel(int level)
+		{
+			if (_logger != NULL) {
+				log4cxx::LevelPtr levelptr = log4cxx::Level::getInfo();
+				switch (level&Level_OutputMask) {
+				case Level_Fatal: levelptr = log4cxx::Level::getFatal(); break;
+				case Level_Error: levelptr = log4cxx::Level::getError(); break;
+				case Level_Warn: levelptr = log4cxx::Level::getWarn(); break;
+				case Level_Info: levelptr = log4cxx::Level::getInfo(); break;
+				case Level_Debug: levelptr = log4cxx::Level::getDebug(); break;
+				case Level_Verbose: levelptr = log4cxx::Level::getTrace(); break;
+				}
+				_logger->setLevel(levelptr);
+			}
+			debug_level_ = level;
+		}
 
-    int GetDebugLevel()
-    {
-        int level = debug_level_;
-        if (_logger != NULL) {
-            if (_logger->isEnabledFor(log4cxx::Level::getTrace())) {
-                level = Level_Verbose;
-            }
-            else if (_logger->isEnabledFor(log4cxx::Level::getDebug())) {
-                level = Level_Debug;
-            }
-            else if (_logger->isEnabledFor(log4cxx::Level::getInfo())) {
-                level = Level_Info;
-            }
-            else if (_logger->isEnabledFor(log4cxx::Level::getWarn())) {
-                level = Level_Warn;
-            }
-            else if (_logger->isEnabledFor(log4cxx::Level::getError())) {
-                level = Level_Error;
-            }
-            else {
-                level = Level_Fatal;
-            }
-        }
-        return level | (debug_level_ & ~Level_OutputMask);
-    }
+		int GetDebugLevel()
+		{
+			int level = debug_level_;
+			if (_logger != NULL) {
+				if (_logger->isEnabledFor(log4cxx::Level::getTrace())) {
+					level = Level_Verbose;
+				}
+				else if (_logger->isEnabledFor(log4cxx::Level::getDebug())) {
+					level = Level_Debug;
+				}
+				else if (_logger->isEnabledFor(log4cxx::Level::getInfo())) {
+					level = Level_Info;
+				}
+				else if (_logger->isEnabledFor(log4cxx::Level::getWarn())) {
+					level = Level_Warn;
+				}
+				else if (_logger->isEnabledFor(log4cxx::Level::getError())) {
+					level = Level_Error;
+				}
+				else {
+					level = Level_Fatal;
+				}
+			}
+			return level | (debug_level_ & ~Level_OutputMask);
+		}
 
 #else
-    void SetDebugLevel(int level)
-    {
-        debug_level_ = level;
-    }
+		void SetDebugLevel(int level)
+		{
+			debug_level_ = level;
+		}
 
-    int GetDebugLevel()
-    {
-        return debug_level_;
-    }
+		int GetDebugLevel()
+		{
+			return debug_level_;
+		}
 #endif
 
-    class XMLReaderFunctionData : public UserData
-    {
-public:
-        XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, boost::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
-        {
-            boost::mutex::scoped_lock lock(global->_mutexinternal);
-            _oldfn = global->_mapreaders[_type][_xmltag];
-            global->_mapreaders[_type][_xmltag] = fn;
-        }
-        virtual ~XMLReaderFunctionData()
-        {
-            boost::shared_ptr<RaveGlobal> global = _global.lock();
-            if( !!global ) {
-                boost::mutex::scoped_lock lock(global->_mutexinternal);
-                global->_mapreaders[_type][_xmltag] = _oldfn;
-            }
-        }
-protected:
-        CreateXMLReaderFn _oldfn;
-        boost::weak_ptr<RaveGlobal> _global;
-        InterfaceType _type;
-        std::string _xmltag;
-    };
+		class XMLReaderFunctionData : public UserData
+		{
+		public:
+			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, boost::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
+			{
+				boost::mutex::scoped_lock lock(global->_mutexinternal);
+				_oldfn = global->_mapreaders[_type][_xmltag];
+				global->_mapreaders[_type][_xmltag] = fn;
+			}
+			virtual ~XMLReaderFunctionData()
+			{
+				boost::shared_ptr<RaveGlobal> global = _global.lock();
+				if (!!global) {
+					boost::mutex::scoped_lock lock(global->_mutexinternal);
+					global->_mapreaders[_type][_xmltag] = _oldfn;
+				}
+			}
+		protected:
+			CreateXMLReaderFn _oldfn;
+			boost::weak_ptr<RaveGlobal> _global;
+			InterfaceType _type;
+			std::string _xmltag;
+		};
 
-    UserDataPtr RegisterXMLReader(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn)
-    {
-        return UserDataPtr(new XMLReaderFunctionData(type,xmltag,fn,shared_from_this()));
-    }
+		UserDataPtr RegisterXMLReader(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn)
+		{
+			return UserDataPtr(new XMLReaderFunctionData(type, xmltag, fn, shared_from_this()));
+		}
 
-    const BaseXMLReaderPtr CallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts)
-    {
-        READERSMAP::iterator it = _mapreaders[type].find(xmltag);
-        if( it == _mapreaders[type].end() ) {
-            //throw openrave_exception(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
-            return BaseXMLReaderPtr();
-        }
-        return it->second(pinterface,atts);
-    }
+		const BaseXMLReaderPtr CallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts)
+		{
+			READERSMAP::iterator it = _mapreaders[type].find(xmltag);
+			if (it == _mapreaders[type].end()) {
+				//throw openrave_exception(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
+				return BaseXMLReaderPtr();
+			}
+			return it->second(pinterface, atts);
+		}
 
-    boost::shared_ptr<RaveDatabase> GetDatabase() const {
-        return database_;
-    }
-    const std::map<InterfaceType,std::string>& GetInterfaceNamesMap() const {
-        return interface_names_map_;
-    }
-    const std::map<IkParameterizationType,std::string>& GetIkParameterizationMap(int alllowercase=0) {
-        if( alllowercase ) {
-            return ik_parameterization_lower_map_;
-        }
-        return ik_parameterization_map_;
-    }
+		boost::shared_ptr<RaveDatabase> GetDatabase() const {
+			return database_;
+		}
+		const std::map<InterfaceType, std::string>& GetInterfaceNamesMap() const {
+			return interface_names_map_;
+		}
+		const std::map<IkParameterizationType, std::string>& GetIkParameterizationMap(int alllowercase = 0) {
+			if (alllowercase) {
+				return ik_parameterization_lower_map_;
+			}
+			return ik_parameterization_map_;
+		}
 
-    const std::string& GetInterfaceName(InterfaceType type)
-    {
-        std::map<InterfaceType,std::string>::const_iterator it = interface_names_map_.find(type);
-        if( it == interface_names_map_.end() ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("Invalid type %d specified"), type, ORE_Failed);
-        }
-        return it->second;
-    }
+		const std::string& GetInterfaceName(InterfaceType type)
+		{
+			std::map<InterfaceType, std::string>::const_iterator it = interface_names_map_.find(type);
+			if (it == interface_names_map_.end()) {
+				throw OPENRAVE_EXCEPTION_FORMAT(_("Invalid type %d specified"), type, ORE_Failed);
+			}
+			return it->second;
+		}
 
-    // have to take in pointer instead of shared_ptr since method will be called in EnvironmentBase constructor
-    int RegisterEnvironment(EnvironmentBase* penv)
-    {
-        BOOST_ASSERT(!!database_);
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        _mapenvironments[++_nGlobalEnvironmentId] = penv;
-        return _nGlobalEnvironmentId;
-    }
+		// have to take in pointer instead of shared_ptr since method will be called in EnvironmentBase constructor
+		int RegisterEnvironment(EnvironmentBase* penv)
+		{
+			BOOST_ASSERT(!!database_);
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			_mapenvironments[++global_environment_id_] = penv;
+			return global_environment_id_;
+		}
 
-    void UnregisterEnvironment(EnvironmentBase* penv)
-    {
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        FOREACH(it, _mapenvironments) {
-            if( it->second == penv ) {
-                _mapenvironments.erase(it);
-                break;
-            }
-        }
-    }
+		void UnregisterEnvironment(EnvironmentBase* penv)
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			FOREACH(it, _mapenvironments) {
+				if (it->second == penv) {
+					_mapenvironments.erase(it);
+					break;
+				}
+			}
+		}
 
-    int GetEnvironmentId(EnvironmentBaseConstPtr penv)
-    {
-        return !!penv ? penv->GetId() : 0;
-//        boost::mutex::scoped_lock lock(_mutexinternal);
-//        FOREACH(it,_mapenvironments) {
-//            if( it->second == penv.get() ) {
-//                return it->first;
-//            }
-//        }
-//        return 0;
-    }
+		int GetEnvironmentId(EnvironmentBaseConstPtr penv)
+		{
+			return !!penv ? penv->GetId() : 0;
+			//        boost::mutex::scoped_lock lock(_mutexinternal);
+			//        FOREACH(it,_mapenvironments) {
+			//            if( it->second == penv.get() ) {
+			//                return it->first;
+			//            }
+			//        }
+			//        return 0;
+		}
 
-    EnvironmentBasePtr GetEnvironment(int id)
-    {
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        std::map<int, EnvironmentBase*>::iterator it = _mapenvironments.find(id);
-        if( it == _mapenvironments.end() ) {
-            return EnvironmentBasePtr();
-        }
-        return it->second->shared_from_this();
-    }
+		EnvironmentBasePtr GetEnvironment(int id)
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			std::map<int, EnvironmentBase*>::iterator it = _mapenvironments.find(id);
+			if (it == _mapenvironments.end()) {
+				return EnvironmentBasePtr();
+			}
+			return it->second->shared_from_this();
+		}
 
-    void GetEnvironments(std::list<EnvironmentBasePtr>& listenvironments)
-    {
-        listenvironments.clear();
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        FOREACH(it,_mapenvironments) {
-            EnvironmentBasePtr penv = it->second->shared_from_this();
-            if( !!penv ) {
-                listenvironments.push_back(penv);
-            }
-        }
-    }
+		void GetEnvironments(std::list<EnvironmentBasePtr>& listenvironments)
+		{
+			listenvironments.clear();
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			FOREACH(it, _mapenvironments) {
+				EnvironmentBasePtr penv = it->second->shared_from_this();
+				if (!!penv) {
+					listenvironments.push_back(penv);
+				}
+			}
+		}
 
-    SpaceSamplerBasePtr GetDefaultSampler()
-    {
-        if( !_pdefaultsampler ) {
-            boost::mutex::scoped_lock lock(_mutexinternal);
-            BOOST_ASSERT( _mapenvironments.size() > 0 );
-            _pdefaultsampler = GetDatabase()->CreateSpaceSampler(_mapenvironments.begin()->second->shared_from_this(),"MT19937");
-        }
-        return _pdefaultsampler;
-    }
+		SpaceSamplerBasePtr GetDefaultSampler()
+		{
+			if (!_pdefaultsampler) {
+				boost::mutex::scoped_lock lock(_mutexinternal);
+				BOOST_ASSERT(_mapenvironments.size() > 0);
+				_pdefaultsampler = GetDatabase()->CreateSpaceSampler(_mapenvironments.begin()->second->shared_from_this(), "MT19937");
+			}
+			return _pdefaultsampler;
+		}
 
-    std::string FindLocalFile(const std::string& _filename, const std::string& curdir)
-    {
+		std::string FindLocalFile(const std::string& _filename, const std::string& curdir)
+		{
 #ifndef HAVE_BOOST_FILESYSTEM
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("need to compile with boost::filesystem"),ORE_Assert);
+			throw OPENRAVE_EXCEPTION_FORMAT0(_("need to compile with boost::filesystem"), ORE_Assert);
 #else
-        if( _filename.size() == 0 ) 
-		{
-            return std::string();
-        }
-
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        boost::filesystem::path fullfilename;
-        boost::filesystem::path filename(_filename);
-
-        if( filename.is_complete() )
-		{
-            fullfilename = filename;
-        }
-        else if( curdir.size() > 0 ) 
-		{
-            fullfilename = boost::filesystem::absolute(boost::filesystem::path(curdir)) / filename;
-        }
-        else 
-		{
-            fullfilename = boost::filesystem::current_path() / filename;
-        }
-
-        if( boost::filesystem::exists(fullfilename) ) 
-		{
-            if( !_ValidateFilename(fullfilename,boost::filesystem::path()) ) 
+			if (_filename.size() == 0)
 			{
-                RAVELOG_WARN(str(boost::format("acess denied to file %s\n")%fullfilename));
-                return std::string();
-            }
-            return fullfilename.string();
-        }
+				return std::string();
+			}
 
-        // try the openrave directories
-        for(auto itdir: data_dirs_vector_) 
-		{
-            fullfilename = itdir / filename;
-            if( _ValidateFilename(fullfilename,boost::filesystem::path()) ) 
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			boost::filesystem::path fullfilename;
+			boost::filesystem::path filename(_filename);
+
+			if (filename.is_complete())
 			{
-                return fullfilename.string();
-            }
-        }
-
-        RAVELOG_WARN(str(boost::format("could not find file %s\n")%filename));
-        return std::string();
-#endif
-    }
-
-    bool InvertFileLookup(std::string& newfilename, const std::string& filename)
-    {
-#ifndef HAVE_BOOST_FILESYSTEM
-        RAVELOG_WARN("need to compile with boost::filesystem\n");
-#else
-        // check if filename is within data_dirs_vector_
-        boost::filesystem::path fullfilename = boost::filesystem::absolute(filename);
-        _CustomNormalizePath(fullfilename);
-        FOREACHC(itpath,data_dirs_vector_) {
-            std::list<boost::filesystem::path> listfilenameparts;
-            boost::filesystem::path testfilename = fullfilename.parent_path();
-            while( testfilename >= *itpath ) {
-                if( testfilename == *itpath ) {
-                    boost::filesystem::path relpath;
-                    FOREACH(itpart,listfilenameparts) {
-                        relpath /= *itpart;
-                    }
-                    relpath /= fullfilename.filename();
-                    newfilename=relpath.string();
-                    return true;
-                }
-                listfilenameparts.push_front(testfilename.filename());
-                testfilename = testfilename.parent_path();
-            }
-        }
-#endif
-        return false;
-    }
-
-    void SetDataAccess(int options) 
-	{
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        data_access_options_ = options;
-    }
-    int GetDataAccess() 
-	{
-        boost::mutex::scoped_lock lock(_mutexinternal);
-        return data_access_options_;
-    }
-    std::string GetDefaultViewerType() {
-        if( _defaultviewertype.size() > 0 ) {
-            return _defaultviewertype;
-        }
-
-        // get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
-        boost::shared_ptr<RaveDatabase> pdatabase = database_;
-        if( !!pdatabase ) {
-            if( pdatabase->HasInterface(PT_Viewer, "qtosg") ) {
-                return std::string("qtosg");
-            }
-
-            if( pdatabase->HasInterface(PT_Viewer, "qtcoin") ) {
-                return std::string("qtcoin");
-            }
-
-            // search for the first viewer found
-            std::map<InterfaceType, std::vector<std::string> > interfacenames;
-            pdatabase->GetLoadedInterfaces(interfacenames);
-            if( interfacenames.find(PT_Viewer) != interfacenames.end() ) {
-                if( interfacenames[PT_Viewer].size() > 0 ) {
-                    return interfacenames[PT_Viewer].at(0);
-                }
-            }
-        }
-
-        return std::string();
-    }
-
-protected:
-    static void create()//Singleton Pattern
-    {
-        if( !global_state_ ) 
-		{
-            global_state_.reset(new RaveGlobal());
-        }
-    }
-
-    bool IsInitialized() const 
-	{
-        return !!database_;
-    }
-
-    void _UpdateDataDirs()
-    {
-        _vdatadirs.resize(0);
-
-        bool bExists=false;
-#ifdef _WIN32
-        const char* delim = ";";
-#else
-        const char* delim = ":";
-#endif
-        char* pOPENRAVE_DATA = getenv("OPENRAVE_DATA"); // getenv not thread-safe?
-        if( pOPENRAVE_DATA != NULL ) {
-            utils::TokenizeString(pOPENRAVE_DATA, delim, _vdatadirs);
-        }
-        string installdir = OPENRAVE_DATA_INSTALL_DIR;
-#ifdef HAVE_BOOST_FILESYSTEM
-        if( !boost::filesystem::is_directory(boost::filesystem::path(installdir)) ) {
-#ifdef _WIN32
-            HKEY hkey;
-            if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\OpenRAVE\\" OPENRAVE_VERSION_STRING), 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-                DWORD dwType = REG_SZ;
-                CHAR szInstallRoot[4096];     // dont' take chances, it is windows
-                DWORD dwSize = sizeof(szInstallRoot);
-                RegQueryValueEx(hkey, TEXT("InstallRoot"), NULL, &dwType, (PBYTE)szInstallRoot, &dwSize);
-                RegCloseKey(hkey);
-                installdir.assign(szInstallRoot);
-                installdir += str(boost::format("%cshare%copenrave-%d.%d")%s_filesep%s_filesep%OPENRAVE_VERSION_MAJOR%OPENRAVE_VERSION_MINOR);
-                RAVELOG_VERBOSE(str(boost::format("window registry data dir '%s'")%installdir));
-            }
-            else
-#endif
-            {
-                RAVELOG_WARN(str(boost::format("%s doesn't exist")%installdir));
-            }
-        }
-
-        boost::filesystem::path datafilename = boost::filesystem::absolute(boost::filesystem::path(installdir));
-        FOREACH(itname, _vdatadirs) {
-            if( datafilename == boost::filesystem::absolute(boost::filesystem::path(*itname)) ) {
-                bExists = true;
-                break;
-            }
-        }
-#else
-        string datafilename=installdir;
-        FOREACH(itname, _vdatadirs) {
-            if( datafilename == installdir ) {
-                bExists = true;
-                break;
-            }
-        }
-#endif
-        if( !bExists ) {
-            _vdatadirs.push_back(installdir);
-        }
-        FOREACHC(itdir,_vdatadirs) {
-            RAVELOG_VERBOSE(str(boost::format("data dir: %s")%*itdir));
-        }
-
-#ifdef HAVE_BOOST_FILESYSTEM
-        data_dirs_vector_.resize(0);
-        FOREACHC(itfilename,_vdatadirs) {
-            boost::filesystem::path fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itfilename));
-            _CustomNormalizePath(fullfilename);
-            if( fullfilename.filename() == "." ) {
-                // fullfilename ends in '/', so remove it
-                fullfilename = fullfilename.parent_path();
-            }
-            data_dirs_vector_.push_back(fullfilename);
-        }
-#endif
-    }
-
-#ifdef HAVE_BOOST_FILESYSTEM
-
-    void _CustomNormalizePath(boost::filesystem::path& p)
-    {
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-        p.normalize();
-#else
-        boost::filesystem::path result;
-        for(boost::filesystem::path::iterator it=p.begin(); it!=p.end(); ++it)
-        {
-            if(*it == "..") {
-                // /a/b/.. is not necessarily /a if b is a symbolic link
-                if(boost::filesystem::is_symlink(result) ) {
-                    result /= *it;
-                }
-                // /a/b/../.. is not /a/b/.. under most circumstances
-                // We can end up with ..s in our result because of symbolic links
-                else if(result.filename() == "..") {
-                    result /= *it;
-                }
-                // Otherwise it should be safe to resolve the parent
-                else {
-                    result = result.parent_path();
-                }
-            }
-            else if(*it == ".") {
-                // Ignore
-            }
-            else {
-                // Just cat other path entries
-                result /= *it;
-            }
-        }
-        p = result;
-#endif
-    }
-
-    bool _ValidateFilename(const boost::filesystem::path& filename, const boost::filesystem::path& curdir)
-    {
-        if( !boost::filesystem::exists(filename) ) 
-		{
-            return false;
-        }
-
-        if( data_access_options_ & 1 ) 
-		{
-            // check if filename is within data_dirs_vector_
-            boost::filesystem::path fullfilename = boost::filesystem::absolute(filename,curdir.empty()
-				? boost::filesystem::current_path() : curdir);
-            _CustomNormalizePath(fullfilename);
-            bool is_found = false;
-            FOREACHC(itpath,data_dirs_vector_)
+				fullfilename = filename;
+			}
+			else if (curdir.size() > 0)
 			{
-                boost::filesystem::path testfilename = fullfilename.parent_path();
-                while( testfilename >= *itpath )
+				fullfilename = boost::filesystem::absolute(boost::filesystem::path(curdir)) / filename;
+			}
+			else
+			{
+				fullfilename = boost::filesystem::current_path() / filename;
+			}
+
+			if (boost::filesystem::exists(fullfilename))
+			{
+				if (!_ValidateFilename(fullfilename, boost::filesystem::path()))
 				{
-                    if( testfilename == *itpath ) 
+					RAVELOG_WARN(str(boost::format("acess denied to file %s\n") % fullfilename));
+					return std::string();
+				}
+				return fullfilename.string();
+			}
+
+			// try the openrave directories
+			for (auto itdir : data_dirs_vector_)
+			{
+				fullfilename = itdir / filename;
+				if (_ValidateFilename(fullfilename, boost::filesystem::path()))
+				{
+					return fullfilename.string();
+				}
+			}
+
+			RAVELOG_WARN(str(boost::format("could not find file %s\n") % filename));
+			return std::string();
+#endif
+		}
+
+		bool InvertFileLookup(std::string& newfilename, const std::string& filename)
+		{
+#ifndef HAVE_BOOST_FILESYSTEM
+			RAVELOG_WARN("need to compile with boost::filesystem\n");
+#else
+			// check if filename is within data_dirs_vector_
+			boost::filesystem::path fullfilename = boost::filesystem::absolute(filename);
+			_CustomNormalizePath(fullfilename);
+			FOREACHC(itpath, data_dirs_vector_) {
+				std::list<boost::filesystem::path> listfilenameparts;
+				boost::filesystem::path testfilename = fullfilename.parent_path();
+				while (testfilename >= *itpath) {
+					if (testfilename == *itpath) {
+						boost::filesystem::path relpath;
+						FOREACH(itpart, listfilenameparts) {
+							relpath /= *itpart;
+						}
+						relpath /= fullfilename.filename();
+						newfilename = relpath.string();
+						return true;
+					}
+					listfilenameparts.push_front(testfilename.filename());
+					testfilename = testfilename.parent_path();
+				}
+			}
+#endif
+			return false;
+		}
+
+		void SetDataAccess(int options)
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			data_access_options_ = options;
+		}
+		int GetDataAccess()
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			return data_access_options_;
+		}
+		std::string GetDefaultViewerType()
+		{
+			if (default_viewer_type_.size() > 0)
+			{
+				return default_viewer_type_;
+			}
+
+			// get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
+			boost::shared_ptr<RaveDatabase> pdatabase = database_;
+			if (!!pdatabase) 
+			{
+				if (pdatabase->HasInterface(PT_Viewer, "qtosg"))
+				{
+					return std::string("qtosg");
+				}
+
+				if (pdatabase->HasInterface(PT_Viewer, "qtcoin"))
+				{
+					return std::string("qtcoin");
+				}
+
+				// search for the first viewer found
+				std::map<InterfaceType, std::vector<std::string> > interfacenames;
+				pdatabase->GetLoadedInterfaces(interfacenames);
+				if (interfacenames.find(PT_Viewer) != interfacenames.end()) 
+				{
+					if (interfacenames[PT_Viewer].size() > 0) 
 					{
-                        is_found = true;
-                        break;
-                    }
-                    testfilename = testfilename.parent_path();
-                }
-                if( is_found ) 
-				{
-                    break;
-                }
-            }
-            if( !is_found ) 
+						return interfacenames[PT_Viewer].at(0);
+					}
+				}
+			}
+
+			return std::string();
+		}
+
+	protected:
+		static void create()//Singleton Pattern
+		{
+			if (!global_state_)
 			{
-                return false;
-            }
-        }
-        return true;
-    }
+				global_state_.reset(new RaveGlobal());
+			}
+		}
 
-#endif
+		bool IsInitialized() const
+		{
+			return !!database_;
+		}
 
-    void InitializeLogging(int level) 
-	{
-#if OPENRAVE_LOG4CXX
-        _logger = log4cxx::Logger::getLogger("openrave");
+		void _UpdateDataDirs()
+		{
+			_vdatadirs.resize(0);
 
-        // if root appenders have not been configured, configure a default console appender
-        log4cxx::LoggerPtr root(log4cxx::Logger::getRootLogger());
-        if (root->getAllAppenders().size() == 0) {
-            log4cxx::LayoutPtr consolePatternLayout(new log4cxx::PatternLayout(LOG4CXX_STR("%d %c [%p] [%F:%L %M] %m%n")));
-            log4cxx::LayoutPtr colorLayout(new log4cxx::ColorLayout(consolePatternLayout));
-            log4cxx::AppenderPtr consoleAppender(new log4cxx::ConsoleAppender(colorLayout));
-            root->setLevel(log4cxx::Level::getTrace());
-            root->addAppender(consoleAppender);
-        }
-#endif
-        SetDebugLevel(level);
-    }
-
-private:
-    static boost::shared_ptr<RaveGlobal> global_state_;
-    // state that is always present
-
-    // state that is initialized/destroyed
-    boost::shared_ptr<RaveDatabase> database_;
-    int debug_level_;
-    boost::mutex _mutexinternal;
-    std::map<InterfaceType, READERSMAP > _mapreaders;
-    std::map<InterfaceType,string> interface_names_map_;
-    std::map<IkParameterizationType,string> ik_parameterization_map_, ik_parameterization_lower_map_;
-    std::map<int, EnvironmentBase*> _mapenvironments;
-    std::list<boost::function<void()> > _listDestroyCallbacks;
-    std::string _homedirectory;
-    std::string _defaultviewertype; //<! the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
-    std::vector<std::string> _vdbdirectories;
-    int _nGlobalEnvironmentId;
-    SpaceSamplerBasePtr _pdefaultsampler;
-#ifdef USE_CRLIBM
-    long long _crlibm_fpu_state;
-	bool _bcrlibmInit; //<! true if crlibm is initialized
-#endif
-	
-    int data_access_options_;//!<1 means can access 
-
-    std::vector<string> _vdatadirs;
-#ifdef HAVE_BOOST_FILESYSTEM
-    std::vector<boost::filesystem::path> data_dirs_vector_; //<! \brief returns absolute filenames of the data
-#endif
-
-#if OPENRAVE_LOG4CXX
-    log4cxx::LoggerPtr _logger;
-#endif
-
-    friend void RaveInitializeFromState(UserDataPtr);
-    friend UserDataPtr RaveGlobalState();
-};
-
-#if OPENRAVE_LOG4CXX
-log4cxx::LevelPtr RaveGetVerboseLogLevel()
-{
-    static log4cxx::LevelPtr level(new log4cxx::Level(log4cxx::Level::TRACE_INT, LOG4CXX_STR("VERBOSE"), 7));
-    return level;
-}
-
-log4cxx::LoggerPtr RaveGetLogger()
-{
-    return RaveGlobal::instance()->GetLogger();
-}
-#endif
-
-boost::shared_ptr<RaveGlobal> RaveGlobal::global_state_;
-
-void RaveSetDebugLevel(int level)
-{
-    RaveGlobal::instance()->SetDebugLevel(level);
-}
-
-int RaveGetDebugLevel()
-{
-    return RaveGlobal::instance()->GetDebugLevel();
-}
-
-const std::map<InterfaceType,std::string>& RaveGetInterfaceNamesMap()
-{
-    return RaveGlobal::instance()->GetInterfaceNamesMap();
-}
-
-const std::map<IkParameterizationType,std::string>& RaveGetIkParameterizationMap(int alllowercase)
-{
-    return IkParameterization::GetIkParameterizationMap(alllowercase);
-}
-
-IkParameterizationType RaveGetIkTypeFromUniqueId(int uniqueid)
-{
-    return IkParameterization::GetIkTypeFromUniqueId(uniqueid);
-}
-
-const std::string& RaveGetInterfaceName(InterfaceType type)
-{
-    return RaveGlobal::instance()->GetInterfaceName(type);
-}
-
-std::string RaveGetHomeDirectory()
-{
-    return RaveGlobal::instance()->GetHomeDirectory();
-}
-
-std::string RaveFindDatabaseFile(const std::string& filename, bool bRead)
-{
-    return RaveGlobal::instance()->FindDatabaseFile(filename,bRead);
-}
-
-int RaveInitialize(bool is_load_all_plugins, int level)
-{
-    return RaveGlobal::instance()->Initialize(is_load_all_plugins,level);
-}
-
-void RaveInitializeFromState(UserDataPtr globalstate)
-{
-    RaveGlobal::global_state_ = boost::dynamic_pointer_cast<RaveGlobal>(globalstate);
-}
-
-UserDataPtr RaveGlobalState()
-{
-    // only return valid pointer if initialized!
-    boost::shared_ptr<RaveGlobal> state = RaveGlobal::global_state_;
-    if( !!state && state->IsInitialized() ) {
-        return state;
-    }
-    return UserDataPtr();
-}
-
-void RaveDestroy()
-{
-    RaveGlobal::instance()->Destroy();
-}
-
-void RaveAddCallbackForDestroy(const boost::function<void()>& fn)
-{
-    RaveGlobal::instance()->AddCallbackForDestroy(fn);
-}
-
-int RaveGetEnvironmentId(EnvironmentBaseConstPtr penv)
-{
-    return RaveGlobal::instance()->GetEnvironmentId(penv);
-}
-
-EnvironmentBasePtr RaveGetEnvironment(int id)
-{
-    return RaveGlobal::instance()->GetEnvironment(id);
-}
-
-void RaveGetEnvironments(std::list<EnvironmentBasePtr>& listenvironments)
-{
-    RaveGlobal::instance()->GetEnvironments(listenvironments);
-}
-
-void RaveGetPluginInfo(std::list< std::pair<std::string, PLUGININFO> >& plugins)
-{
-    RaveGlobal::instance()->GetDatabase()->GetPluginInfo(plugins);
-}
-
-void RaveGetLoadedInterfaces(std::map<InterfaceType, std::vector<std::string> >& interfacenames)
-{
-    RaveGlobal::instance()->GetDatabase()->GetLoadedInterfaces(interfacenames);
-}
-
-void RaveReloadPlugins()
-{
-    RaveGlobal::instance()->GetDatabase()->ReloadPlugins();
-}
-
-bool RaveLoadPlugin(const std::string& libraryname)
-{
-    return RaveGlobal::instance()->GetDatabase()->LoadPlugin(libraryname);
-}
-
-bool RaveHasInterface(InterfaceType type, const std::string& interfacename)
-{
-    return RaveGlobal::instance()->GetDatabase()->HasInterface(type,interfacename);
-}
-
-InterfaceBasePtr RaveCreateInterface(EnvironmentBasePtr penv, InterfaceType type,const std::string& interfacename)
-{
-    return RaveGlobal::instance()->GetDatabase()->Create(penv, type,interfacename);
-}
-
-RobotBasePtr RaveCreateRobot(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateRobot(penv,name);
-}
-
-PlannerBasePtr RaveCreatePlanner(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreatePlanner(penv, name);
-}
-
-SensorSystemBasePtr RaveCreateSensorSystem(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateSensorSystem(penv, name);
-}
-
-ControllerBasePtr RaveCreateController(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateController(penv, name);
-}
-
-MultiControllerBasePtr RaveCreateMultiController(EnvironmentBasePtr env, const std::string& rawname)
-{
-    std::string name;
-    if( rawname == "" ) {
-        name = "genericmulticontroller";
-    }
-    else {
-        name = rawname;
-        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    }
-    // TODO remove hack once MultiController is a registered interface
-    ControllerBasePtr pcontroller = RaveGlobal::instance()->GetDatabase()->CreateController(env, name);
-    if( name == "genericmulticontroller" ) {
-        return boost::static_pointer_cast<MultiControllerBase>(pcontroller);
-    }
-    // don't support anything else
-    return MultiControllerBasePtr();
-}
-
-ModuleBasePtr RaveCreateModule(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateModule(penv, name);
-}
-
-ModuleBasePtr RaveCreateProblem(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateModule(penv, name);
-}
-
-ModuleBasePtr RaveCreateProblemInstance(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateModule(penv, name);
-}
-
-IkSolverBasePtr RaveCreateIkSolver(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateIkSolver(penv, name);
-}
-
-PhysicsEngineBasePtr RaveCreatePhysicsEngine(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreatePhysicsEngine(penv, name);
-}
-
-SensorBasePtr RaveCreateSensor(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateSensor(penv, name);
-}
-
-CollisionCheckerBasePtr RaveCreateCollisionChecker(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateCollisionChecker(penv, name);
-}
-
-ViewerBasePtr RaveCreateViewer(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateViewer(penv, name);
-}
-
-KinBodyPtr RaveCreateKinBody(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateKinBody(penv, name);
-}
-
-TrajectoryBasePtr RaveCreateTrajectory(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateTrajectory(penv, name);
-}
-
-TrajectoryBasePtr RaveCreateTrajectory(EnvironmentBasePtr penv, int dof)
-{
-    return RaveCreateTrajectory(penv,"");
-}
-
-SpaceSamplerBasePtr RaveCreateSpaceSampler(EnvironmentBasePtr penv, const std::string& name)
-{
-    return RaveGlobal::instance()->GetDatabase()->CreateSpaceSampler(penv, name);
-}
-
-UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name,
-	const char* interfacehash, const char* envhash,
-	const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
-{
-    return RaveGlobal::instance()->GetDatabase()->RegisterInterface(type, name, interfacehash,envhash,createfn);
-}
-
-UserDataPtr RaveRegisterXMLReader(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn)
-{
-    return RaveGlobal::instance()->RegisterXMLReader(type,xmltag,fn);
-}
-
-BaseXMLReaderPtr RaveCallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts)
-{
-    return RaveGlobal::instance()->CallXMLReader(type,xmltag,pinterface,atts);
-}
-
-std::string RaveFindLocalFile(const std::string& filename, const std::string& curdir)
-{
-    return RaveGlobal::instance()->FindLocalFile(filename,curdir);
-}
-
-bool RaveInvertFileLookup(std::string& newfilename, const std::string& filename)
-{
-    return RaveGlobal::instance()->InvertFileLookup(newfilename,filename);
-}
-
-void RaveSetDataAccess(int options)
-{
-    RaveGlobal::instance()->SetDataAccess(options);
-}
-
-int RaveGetDataAccess()
-{
-    return RaveGlobal::instance()->GetDataAccess();
-}
-
-std::string RaveGetDefaultViewerType()
-{
-    return RaveGlobal::instance()->GetDefaultViewerType();
-}
-
-const char *RaveGetLocalizedTextForDomain(const std::string& domainname, const char *msgid)
-{
-#ifndef _WIN32
-    if (_gettextDomainsInitialized.find(domainname) == _gettextDomainsInitialized.end())
-    {
-        bindtextdomain(domainname.c_str(), OPENRAVE_LOCALE_INSTALL_DIR);
-        _gettextDomainsInitialized.insert(domainname);
-    }
-    return dgettext(domainname.c_str(), msgid);
+			bool bExists = false;
+#ifdef _WIN32
+			const char* delim = ";";
 #else
-    return msgid;
+			const char* delim = ":";
 #endif
-}
+			char* pOPENRAVE_DATA = getenv("OPENRAVE_DATA"); // getenv not thread-safe?
+			if (pOPENRAVE_DATA != NULL) {
+				utils::TokenizeString(pOPENRAVE_DATA, delim, _vdatadirs);
+			}
+			string installdir = OPENRAVE_DATA_INSTALL_DIR;
+#ifdef HAVE_BOOST_FILESYSTEM
+			if (!boost::filesystem::is_directory(boost::filesystem::path(installdir))) {
+#ifdef _WIN32
+				HKEY hkey;
+				if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\OpenRAVE\\" OPENRAVE_VERSION_STRING), 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+					DWORD dwType = REG_SZ;
+					CHAR szInstallRoot[4096];     // dont' take chances, it is windows
+					DWORD dwSize = sizeof(szInstallRoot);
+					RegQueryValueEx(hkey, TEXT("InstallRoot"), NULL, &dwType, (PBYTE)szInstallRoot, &dwSize);
+					RegCloseKey(hkey);
+					installdir.assign(szInstallRoot);
+					installdir += str(boost::format("%cshare%copenrave-%d.%d") % s_filesep%s_filesep%OPENRAVE_VERSION_MAJOR%OPENRAVE_VERSION_MINOR);
+					RAVELOG_VERBOSE(str(boost::format("window registry data dir '%s'") % installdir));
+				}
+				else
+#endif
+				{
+					RAVELOG_WARN(str(boost::format("%s doesn't exist") % installdir));
+				}
+			}
 
-const std::map<IkParameterizationType,std::string>& IkParameterization::GetIkParameterizationMap(int alllowercase)
-{
-    return RaveGlobal::instance()->GetIkParameterizationMap(alllowercase);
-}
+			boost::filesystem::path datafilename = boost::filesystem::absolute(boost::filesystem::path(installdir));
+			FOREACH(itname, _vdatadirs) {
+				if (datafilename == boost::filesystem::absolute(boost::filesystem::path(*itname))) {
+					bExists = true;
+					break;
+				}
+			}
+#else
+			string datafilename = installdir;
+			FOREACH(itname, _vdatadirs) {
+				if (datafilename == installdir) {
+					bExists = true;
+					break;
+				}
+			}
+#endif
+			if (!bExists) {
+				_vdatadirs.push_back(installdir);
+			}
+			FOREACHC(itdir, _vdatadirs) {
+				RAVELOG_VERBOSE(str(boost::format("data dir: %s") % *itdir));
+			}
 
-IkParameterizationType IkParameterization::GetIkTypeFromUniqueId(int uniqueid)
-{
-    uniqueid &= IKP_UniqueIdMask;
-    FOREACHC(it, RaveGlobal::instance()->GetIkParameterizationMap()) {
-        if( (it->first & (IKP_UniqueIdMask&~IKP_VelocityDataBit)) == (uniqueid&(IKP_UniqueIdMask&~IKP_VelocityDataBit)) ) {
-            return static_cast<IkParameterizationType>(it->first|(uniqueid&IKP_VelocityDataBit));
-        }
-    }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("no ik exists of unique id 0x%x"),uniqueid,ORE_InvalidArguments);
-}
+#ifdef HAVE_BOOST_FILESYSTEM
+			data_dirs_vector_.resize(0);
+			FOREACHC(itfilename, _vdatadirs) {
+				boost::filesystem::path fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itfilename));
+				_CustomNormalizePath(fullfilename);
+				if (fullfilename.filename() == ".") {
+					// fullfilename ends in '/', so remove it
+					fullfilename = fullfilename.parent_path();
+				}
+				data_dirs_vector_.push_back(fullfilename);
+			}
+#endif
+		}
 
-ConfigurationSpecification IkParameterization::GetConfigurationSpecification(IkParameterizationType iktype, const std::string& interpolation, const std::string& robotname, const std::string& manipname)
-{
-    ConfigurationSpecification spec;
-    spec._vgroups.resize(1);
-    spec._vgroups[0].offset = 0;
-    spec._vgroups[0].dof = IkParameterization::GetNumberOfValues(iktype);
-    spec._vgroups[0].name = str(boost::format("ikparam_values %d")%iktype);
-    if( robotname.size() > 0 ) {
-        spec._vgroups[0].name += robotname;
-        spec._vgroups[0].name += " ";
-        if( manipname.size() > 0 ) {
-            spec._vgroups[0].name += manipname;
-        }
-    }
-    spec._vgroups[0].interpolation = interpolation;
+#ifdef HAVE_BOOST_FILESYSTEM
 
-    // remove any trailing whitespace from missing robot or manipulator names
-    boost::algorithm::trim(spec._vgroups[0].name);
-    return spec;
-}
+		void _CustomNormalizePath(boost::filesystem::path& p)
+		{
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+			p.normalize();
+#else
+			boost::filesystem::path result;
+			for (boost::filesystem::path::iterator it = p.begin(); it != p.end(); ++it)
+			{
+				if (*it == "..") {
+					// /a/b/.. is not necessarily /a if b is a symbolic link
+					if (boost::filesystem::is_symlink(result)) {
+						result /= *it;
+					}
+					// /a/b/../.. is not /a/b/.. under most circumstances
+					// We can end up with ..s in our result because of symbolic links
+					else if (result.filename() == "..") {
+						result /= *it;
+					}
+					// Otherwise it should be safe to resolve the parent
+					else {
+						result = result.parent_path();
+					}
+				}
+				else if (*it == ".") {
+					// Ignore
+				}
+				else {
+					// Just cat other path entries
+					result /= *it;
+				}
+			}
+			p = result;
+#endif
+		}
 
-std::ostream& operator<<(std::ostream& O, const IkParameterization &ikparam)
-{
-    int type = ikparam._type;
-    BOOST_ASSERT( !(type & IKP_CustomDataBit) );
-    if( ikparam._mapCustomData.size() > 0 ) {
-        type |= IKP_CustomDataBit;
-    }
-    O << type << " ";
-    switch(ikparam._type & ~IKP_VelocityDataBit) {
-    case IKP_Transform6D:
-        O << ikparam.GetTransform6D();
-        break;
-    case IKP_Rotation3D:
-        O << ikparam.GetRotation3D();
-        break;
-    case IKP_Translation3D: {
-        Vector v = ikparam.GetTranslation3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_Direction3D: {
-        Vector v = ikparam.GetDirection3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_Ray4D: {
-        RAY r = ikparam.GetRay4D();
-        O << r.dir.x << " " << r.dir.y << " " << r.dir.z << " " << r.pos.x << " " << r.pos.y << " " << r.pos.z << " ";
-        break;
-    }
-    case IKP_Lookat3D: {
-        Vector v = ikparam.GetLookat3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_TranslationDirection5D: {
-        RAY r = ikparam.GetTranslationDirection5D();
-        O << r.dir.x << " " << r.dir.y << " " << r.dir.z << " " << r.pos.x << " " << r.pos.y << " " << r.pos.z << " ";
-        break;
-    }
-    case IKP_TranslationXY2D: {
-        Vector v = ikparam.GetTranslationXY2D();
-        O << v.x << " " << v.y << " ";
-        break;
-    }
-    case IKP_TranslationXYOrientation3D: {
-        Vector v = ikparam.GetTranslationXYOrientation3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_TranslationLocalGlobal6D: {
-        std::pair<Vector,Vector> p = ikparam.GetTranslationLocalGlobal6D();
-        O << p.first.x << " " << p.first.y << " " << p.first.z << " " << p.second.x << " " << p.second.y << " " << p.second.z << " ";
-        break;
-    }
-    case IKP_TranslationXAxisAngle4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationXAxisAngle4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationYAxisAngle4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationYAxisAngle4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationZAxisAngle4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationZAxisAngle4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationXAxisAngleZNorm4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationXAxisAngleZNorm4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationYAxisAngleXNorm4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationYAxisAngleXNorm4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationZAxisAngleYNorm4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationZAxisAngleYNorm4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    default:
-        throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
-    }
-    if( ikparam._mapCustomData.size() > 0 ) {
-        O << ikparam._mapCustomData.size() << " ";
-        FOREACHC(it, ikparam._mapCustomData) {
-            O << it->first << " " << it->second.size() << " ";
-            FOREACHC(itvalue, it->second) {
-                O << *itvalue << " ";
-            }
-        }
-    }
-    return O;
-}
+		bool _ValidateFilename(const boost::filesystem::path& filename, const boost::filesystem::path& curdir)
+		{
+			if (!boost::filesystem::exists(filename))
+			{
+				return false;
+			}
 
-std::istream& operator>>(std::istream& I, IkParameterization& ikparam)
-{
-    int type=IKP_None;
-    I >> type;
-    ikparam._type = static_cast<IkParameterizationType>(type&~IKP_CustomDataBit);
-    switch(ikparam._type) {
-    case IKP_Transform6D: {
-        Transform t; I >> t;
-        ikparam.SetTransform6D(t);
-        break;
-    }
-    case IKP_Transform6DVelocity:
-        I >> ikparam._transform;
-        break;
-    case IKP_Rotation3D: { Vector v; I >> v; ikparam.SetRotation3D(v); break; }
-    case IKP_Rotation3DVelocity:
-        I >> ikparam._transform.rot;
-        break;
-    case IKP_Translation3D: {
-        Vector v;
-        I >> v.x >> v.y >> v.z;
-        ikparam.SetTranslation3D(v);
-        break;
-    }
-    case IKP_Lookat3DVelocity:
-    case IKP_Translation3DVelocity:
-    case IKP_TranslationXYOrientation3DVelocity:
-        I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
-        break;
-    case IKP_Direction3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetDirection3D(v); break; }
-    case IKP_Direction3DVelocity:
-        I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
-        break;
-    case IKP_Ray4D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetRay4D(r); break; }
-    case IKP_Ray4DVelocity:
-    case IKP_TranslationDirection5DVelocity:
-        I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
-        break;
-    case IKP_Lookat3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetLookat3D(v); break; }
-    case IKP_TranslationDirection5D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetTranslationDirection5D(r); break; }
-    case IKP_TranslationXY2D: { Vector v; I >> v.y >> v.y; ikparam.SetTranslationXY2D(v); break; }
-    case IKP_TranslationXY2DVelocity:
-        I >> ikparam._transform.trans.x >> ikparam._transform.trans.y;
-        break;
-    case IKP_TranslationXYOrientation3D: { Vector v; I >> v.y >> v.y >> v.z; ikparam.SetTranslationXYOrientation3D(v); break; }
-    case IKP_TranslationLocalGlobal6D: { Vector localtrans, trans; I >> localtrans.x >> localtrans.y >> localtrans.z >> trans.x >> trans.y >> trans.z; ikparam.SetTranslationLocalGlobal6D(localtrans,trans); break; }
-    case IKP_TranslationLocalGlobal6DVelocity:
-        I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
-        break;
-    case IKP_TranslationXAxisAngle4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationXAxisAngle4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationYAxisAngle4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationYAxisAngle4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationZAxisAngle4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationZAxisAngle4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationXAxisAngleZNorm4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationXAxisAngleZNorm4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationYAxisAngleXNorm4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationYAxisAngleXNorm4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationZAxisAngleYNorm4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationZAxisAngleYNorm4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationXAxisAngle4DVelocity:
-    case IKP_TranslationYAxisAngle4DVelocity:
-    case IKP_TranslationZAxisAngle4DVelocity:
-    case IKP_TranslationXAxisAngleZNorm4DVelocity:
-    case IKP_TranslationYAxisAngleXNorm4DVelocity:
-    case IKP_TranslationZAxisAngleYNorm4DVelocity:
-        I >> ikparam._transform.rot.x >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
-        break;
-    default:
-        throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
-    }
-    ikparam._mapCustomData.clear();
-    if( type & IKP_CustomDataBit ) {
-        size_t numcustom = 0, numvalues=0;
-        std::string name;
-        I >> numcustom;
-        if( !I ) {
-            return I;
-        }
-        for(size_t i = 0; i < numcustom; ++i) {
-            I >> name >> numvalues;
-            if( !I ) {
-                return I;
-            }
-            std::vector<dReal>& v = ikparam._mapCustomData[name];
-            v.resize(numvalues);
-            for(size_t j = 0; j < v.size(); ++j) {
-                I >> v[j];
-            }
-        }
-    }
-    return I;
-}
+			if (data_access_options_ & 1)
+			{
+				// check if filename is within data_dirs_vector_
+				boost::filesystem::path fullfilename = boost::filesystem::absolute(filename, curdir.empty()
+					? boost::filesystem::current_path() : curdir);
+				_CustomNormalizePath(fullfilename);
+				bool is_found = false;
+				FOREACHC(itpath, data_dirs_vector_)
+				{
+					boost::filesystem::path testfilename = fullfilename.parent_path();
+					while (testfilename >= *itpath)
+					{
+						if (testfilename == *itpath)
+						{
+							is_found = true;
+							break;
+						}
+						testfilename = testfilename.parent_path();
+					}
+					if (is_found)
+					{
+						break;
+					}
+				}
+				if (!is_found)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
 
-int RaveGetIndexFromAffineDOF(int affinedofs, DOFAffine _dof)
-{
-    int dof = static_cast<int>(_dof);
-    dof &= affinedofs;
-    int index = 0;
-    if( dof&DOF_X ) {
-        return index;
-    }
-    else if( affinedofs & DOF_X ) {
-        ++index;
-    }
-    if( dof&DOF_Y ) {
-        return index;
-    }
-    else if( affinedofs & DOF_Y ) {
-        ++index;
-    }
-    if( dof&DOF_Z ) {
-        return index;
-    }
-    else if( affinedofs & DOF_Z ) {
-        ++index;
-    }
-    if( dof&DOF_RotationAxis ) {
-        return index;
-    }
-    if( dof&DOF_Rotation3D ) {
-        return index;
-    }
-    if( dof&DOF_RotationQuat ) {
-        return index;
-    }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("unspecified dof 0x%x, 0x%x"),affinedofs%dof,ORE_InvalidArguments);
-}
+#endif
 
-DOFAffine RaveGetAffineDOFFromIndex(int affinedofs, int requestedindex)
-{
-    BOOST_ASSERT(requestedindex >= 0);
-    int index = 0;
-    if( index == requestedindex && (affinedofs&DOF_X) ) {
-        return DOF_X;
-    }
-    else if( affinedofs & DOF_X ) {
-        ++index;
-    }
-    if( index == requestedindex && (affinedofs&DOF_Y) ) {
-        return DOF_Y;
-    }
-    else if( affinedofs & DOF_Y ) {
-        ++index;
-    }
-    if( index == requestedindex  && (affinedofs&DOF_Z)) {
-        return DOF_Z;
-    }
-    else if( affinedofs & DOF_Z ) {
-        ++index;
-    }
-    if( index <= requestedindex && index+3 > requestedindex && (affinedofs&DOF_RotationAxis) ) {
-        return DOF_RotationAxis;
-    }
-    if( index <= requestedindex && index+3 > requestedindex && (affinedofs&DOF_Rotation3D) ) {
-        return DOF_Rotation3D;
-    }
-    if( index <= requestedindex && index+4 > requestedindex && (affinedofs&DOF_RotationQuat) ) {
-        return DOF_RotationQuat;
-    }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("requested index out of bounds %d (affinemask=0x%x)"),requestedindex%affinedofs, ORE_InvalidArguments);
-}
+		void InitializeLogging(int level)
+		{
+#if OPENRAVE_LOG4CXX
+			_logger = log4cxx::Logger::getLogger("openrave");
 
-int RaveGetAffineDOF(int affinedofs)
-{
-    if( affinedofs & DOF_RotationAxis ) {
-        BOOST_ASSERT( !(affinedofs & (DOF_Rotation3D|DOF_RotationQuat)) );
-    }
-    else if( affinedofs & DOF_Rotation3D ) {
-        BOOST_ASSERT( !(affinedofs & (DOF_RotationAxis|DOF_RotationQuat)) );
-    }
-    else if( affinedofs & DOF_RotationQuat ) {
-        BOOST_ASSERT( !(affinedofs & (DOF_Rotation3D|DOF_RotationAxis)) );
-    }
-    int dof = 0;
-    if( affinedofs & DOF_X ) {
-        dof++;
-    }
-    if( affinedofs & DOF_Y ) {
-        dof++;
-    }
-    if( affinedofs & DOF_Z ) {
-        dof++;
-    }
-    if( affinedofs & DOF_RotationAxis ) {
-        dof++;
-    }
-    else if( affinedofs & DOF_Rotation3D ) {
-        dof += 3;
-    }
-    else if( affinedofs & DOF_RotationQuat ) {
-        dof += 4;
-    }
-    return dof;
-}
+			// if root appenders have not been configured, configure a default console appender
+			log4cxx::LoggerPtr root(log4cxx::Logger::getRootLogger());
+			if (root->getAllAppenders().size() == 0) {
+				log4cxx::LayoutPtr consolePatternLayout(new log4cxx::PatternLayout(LOG4CXX_STR("%d %c [%p] [%F:%L %M] %m%n")));
+				log4cxx::LayoutPtr colorLayout(new log4cxx::ColorLayout(consolePatternLayout));
+				log4cxx::AppenderPtr consoleAppender(new log4cxx::ConsoleAppender(colorLayout));
+				root->setLevel(log4cxx::Level::getTrace());
+				root->addAppender(consoleAppender);
+			}
+#endif
+			SetDebugLevel(level);
+		}
 
-void RaveGetAffineDOFValuesFromTransform(std::vector<dReal>::iterator itvalues, const Transform& t, int affinedofs, const Vector& vActvAffineRotationAxis)
-{
-    if( affinedofs & DOF_X ) {
-        *itvalues++ = t.trans.x;
-    }
-    if( affinedofs & DOF_Y ) {
-        *itvalues++ = t.trans.y;
-    }
-    if( affinedofs & DOF_Z ) {
-        *itvalues++ = t.trans.z;
-    }
-    if( affinedofs & DOF_RotationAxis ) {
-        *itvalues++ = -normalizeAxisRotation(vActvAffineRotationAxis, t.rot).first;
-    }
-    else if( affinedofs & DOF_Rotation3D ) {
-        dReal fsin = RaveSqrt(t.rot.y * t.rot.y + t.rot.z * t.rot.z + t.rot.w * t.rot.w);
-        dReal fangle = 2 * atan2(fsin, t.rot.x);
-        if( fsin > 0 ) {
-            dReal normalizer = fangle / fsin;
-            *itvalues++ = normalizer * t.rot.y;
-            *itvalues++ = normalizer * t.rot.z;
-            *itvalues++ = normalizer * t.rot.w;
-        }
-        else {
-            *itvalues++ = 0;
-            *itvalues++ = 0;
-            *itvalues++ = 0;
-        }
-    }
-    else if( affinedofs & DOF_RotationQuat ) {
-        *itvalues++ = t.rot.x;
-        *itvalues++ = t.rot.y;
-        *itvalues++ = t.rot.z;
-        *itvalues++ = t.rot.w;
-    }
-}
+	private:
+		static boost::shared_ptr<RaveGlobal> global_state_;
+		// state that is always present
 
-void RaveGetAffineDOFValuesFromVelocity(std::vector<dReal>::iterator itvalues, const Vector& linearvel, const Vector& angularvel, const Vector& quatrotation, int affinedofs, const Vector& axis)
-{
-    if( affinedofs & DOF_X ) {
-        *itvalues++ = linearvel.x;
-    }
-    if( affinedofs & DOF_Y ) {
-        *itvalues++ = linearvel.y;
-    }
-    if( affinedofs & DOF_Z ) {
-        *itvalues++ = linearvel.z;
-    }
-    if( affinedofs & DOF_RotationAxis ) {
-        *itvalues++ = axis.dot3(angularvel);
-    }
-    else if( affinedofs & DOF_Rotation3D ) {
-        *itvalues++ = angularvel.x;
-        *itvalues++ = angularvel.y;
-        *itvalues++ = angularvel.z;
-    }
-    else if( affinedofs & DOF_RotationQuat ) {
-        Vector qdot = 0.5 * quatMultiply(Vector(0,angularvel.x,angularvel.y,angularvel.z), quatrotation);
-        *itvalues++ = qdot.x;
-        *itvalues++ = qdot.y;
-        *itvalues++ = qdot.z;
-        *itvalues++ = qdot.w;
-    }
-}
+		// state that is initialized/destroyed
+		boost::shared_ptr<RaveDatabase> database_;
+		int debug_level_;
+		boost::mutex _mutexinternal;
+		std::map<InterfaceType, READERSMAP > _mapreaders;
+		std::map<InterfaceType, string> interface_names_map_;
+		std::map<IkParameterizationType, string> ik_parameterization_map_, ik_parameterization_lower_map_;
+		std::map<int, EnvironmentBase*> _mapenvironments;
+		std::list<boost::function<void()> > _listDestroyCallbacks;
+		std::string _homedirectory;
+		std::string default_viewer_type_; //<! the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
+		std::vector<std::string> _vdbdirectories;
+		int global_environment_id_;
+		SpaceSamplerBasePtr _pdefaultsampler;
+#ifdef USE_CRLIBM
+		long long _crlibm_fpu_state;
+		bool _bcrlibmInit; //<! true if crlibm is initialized
+#endif
 
-void RaveGetTransformFromAffineDOFValues(Transform& t, std::vector<dReal>::const_iterator itvalues, int affinedofs, const Vector& vActvAffineRotationAxis, bool normalize)
-{
-    if( affinedofs & DOF_X ) {
-        t.trans.x = *itvalues++;
-    }
-    if( affinedofs & DOF_Y ) {
-        t.trans.y = *itvalues++;
-    }
-    if( affinedofs & DOF_Z ) {
-        t.trans.z = *itvalues++;
-    }
-    if( affinedofs & DOF_RotationAxis ) {
-        dReal angle = *itvalues++;
-        dReal fsin = RaveSin(angle*(dReal)0.5);
-        t.rot.x = RaveCos(angle*(dReal)0.5);
-        t.rot.y = vActvAffineRotationAxis.x * fsin;
-        t.rot.z = vActvAffineRotationAxis.y * fsin;
-        t.rot.w = vActvAffineRotationAxis.z * fsin;
-    }
-    else if( affinedofs & DOF_Rotation3D ) {
-        if( normalize ) {
-            dReal x = *itvalues++;
-            dReal y = *itvalues++;
-            dReal z = *itvalues++;
-            dReal fang = RaveSqrt(x*x + y*y + z*z);
-            if( fang > 0 ) {
-                dReal fnormalizer = sin((dReal)0.5 * fang) / fang;
-                t.rot.x = cos((dReal)0.5 * fang);
-                t.rot.y = fnormalizer * x;
-                t.rot.z = fnormalizer * y;
-                t.rot.w = fnormalizer * z;
-            }
-            else {
-                t.rot = Vector(1,0,0,0); // identity
-            }
-        }
-        else {
-            // normalization turned off, but affine dofs have only DOF_Rotation3D. In order to convert this to quaternion velocity
-            // will need current quaternion value (qrot), which is unknown, so assume identity
-            // qvel = [0,axisangle] * qrot * 0.5
-            t.rot[0] = 0;
-            t.rot[1] = 0.5 * *itvalues++;
-            t.rot[2] = 0.5 * *itvalues++;
-            t.rot[3] = 0.5 * *itvalues++;
-        }
-    }
-    else if( affinedofs & DOF_RotationQuat ) {
-        // have to normalize since user might not be aware of this particular parameterization of rotations
-        t.rot.x = *itvalues++;
-        t.rot.y = *itvalues++;
-        t.rot.z = *itvalues++;
-        t.rot.w = *itvalues++;
-        if( normalize ) {
-            t.rot.normalize4();
-        }
-    }
-}
+		int data_access_options_;//!<1 means can access 
 
-void RaveGetVelocityFromAffineDOFVelocities(Vector& linearvel, Vector& angularvel, std::vector<dReal>::const_iterator itvalues, int affinedofs, const Vector& axis, const Vector& quatrotation)
-{
-    if( affinedofs & DOF_X ) {
-        linearvel.x = *itvalues++;
-    }
-    if( affinedofs & DOF_Y ) {
-        linearvel.y = *itvalues++;
-    }
-    if( affinedofs & DOF_Z ) {
-        linearvel.z = *itvalues++;
-    }
-    if( affinedofs & DOF_RotationAxis ) {
-        dReal angle = *itvalues++;
-        angularvel = axis*angle;
-    }
-    else if( affinedofs & DOF_Rotation3D ) {
-        angularvel.x = *itvalues++;
-        angularvel.y = *itvalues++;
-        angularvel.z = *itvalues++;
-    }
-    else if( affinedofs & DOF_RotationQuat ) {
-        // have to normalize since user might not be aware of this particular parameterization of rotations
-        Vector q;
-        q.x = *itvalues++;
-        q.y = *itvalues++;
-        q.z = *itvalues++;
-        q.w = *itvalues++;
-        Vector angularvel2 = quatMultiply(q, quatInverse(quatrotation)); // qdot = 0.5 * angularvel * q
-        angularvel.x = angularvel2.y * 2;
-        angularvel.y = angularvel2.z * 2;
-        angularvel.z = angularvel2.w * 2;
-    }
-}
+		std::vector<string> _vdatadirs;
+#ifdef HAVE_BOOST_FILESYSTEM
+		std::vector<boost::filesystem::path> data_dirs_vector_; //<! \brief returns absolute filenames of the data
+#endif
 
-void CollisionReport::Reset(int coloptions)
-{
-    options = coloptions;
-    if( !(nKeepPrevious & 1) ) {
-        minDistance = 1e20f;
-        numWithinTol = 0;
-        contacts.resize(0);
-        vLinkColliding.resize(0);
-        plink1.reset();
-        plink2.reset();
-    }
-}
+#if OPENRAVE_LOG4CXX
+		log4cxx::LoggerPtr _logger;
+#endif
 
-std::string CollisionReport::__str__() const
-{
-    stringstream s;
-    if( vLinkColliding.size() > 0 ) {
-        s << "pairs=" << vLinkColliding.size();
-        int index = 0;
-        FOREACHC(itlinkpair, vLinkColliding) {
-            s << ", [" << index << "](";
-            if( !!itlinkpair->first ) {
-                s << itlinkpair->first->GetParent()->GetName() << ":" << itlinkpair->first->GetName();
-            }
-            s << ")x(";
-            if( !!itlinkpair->second ) {
-                s << itlinkpair->second->GetParent()->GetName() << ":" << itlinkpair->second->GetName();
-            }
-            s << ") ";
-            ++index;
-        }
-    }
-    else {
-        s << "(";
-        if( !!plink1 ) {
-            s << plink1->GetParent()->GetName() << ":" << plink1->GetName();
-        }
-        s << ")x(";
-        if( !!plink2 ) {
-            s << plink2->GetParent()->GetName() << ":" << plink2->GetName();
-        }
-        s << ")";
-    }
-    s << ", contacts="<<contacts.size();
-    if( minDistance < 1e10 ) {
-        s << ", mindist="<<minDistance;
-    }
-    return s.str();
-}
+		friend void RaveInitializeFromState(UserDataPtr);
+		friend UserDataPtr RaveGlobalState();
+	};
 
-bool PhysicsEngineBase::GetLinkForceTorque(KinBody::LinkConstPtr plink, Vector& force, Vector& torque)
-{
-    force = Vector(0,0,0);
-    torque = Vector(0,0,0);
-    //Loop over all joints in the parent body
-    FOREACHC(itjoint,plink->GetParent()->GetJoints()) {
-        //if this joint's parent or child body is the current body
-        bool bParentLink=(*itjoint)->GetHierarchyParentLink() == plink;
-        bool bChildLink=(*itjoint)->GetHierarchyChildLink() == plink;
-        if( bParentLink || bChildLink ) {
-            Vector f;
-            Vector T;
-            GetJointForceTorque(*itjoint, f,T);
-            if( bParentLink ) {
-                Vector r = (*itjoint)->GetAnchor()-plink->GetGlobalCOM();
-                force += f;
-                torque += T;
-                //Re-add moment due to equivalent load at body COM
-                torque += r.cross(f);
-            }
-            else {
-                //Equal but opposite sign
-                Vector r = (*itjoint)->GetAnchor()-plink->GetGlobalCOM();
-                force -= f;
-                torque -= T;
-                torque -= r.cross(f);
-            }
-        }
-    }
-    FOREACHC(itjoint,plink->GetParent()->GetPassiveJoints()) {
-        bool bParentLink=(*itjoint)->GetHierarchyParentLink() == plink;
-        bool bChildLink=(*itjoint)->GetHierarchyChildLink() == plink;
-        if( bParentLink || bChildLink ) {
-            Vector f;
-            Vector T;
-            GetJointForceTorque(*itjoint, f,T);
-
-            if( bParentLink ) {
-                Vector r = (*itjoint)->GetAnchor()-plink->GetGlobalCOM();
-                force += f;
-                torque += T;
-                //Re-add moment due to equivalent load at body COM
-                torque += r.cross(f);
-            }
-            else {
-                //Equal but opposite sign
-                Vector r = (*itjoint)->GetAnchor()-plink->GetGlobalCOM();
-                force -= f;
-                torque -= T;
-                torque -= r.cross(f);
-            }
-        }
-    }
-    return true;
-}
-
-void TriMesh::ApplyTransform(const Transform& t)
-{
-    FOREACH(it, vertices) {
-        *it = t * *it;
-    }
-}
-
-void TriMesh::ApplyTransform(const TransformMatrix& t)
-{
-    FOREACH(it, vertices) {
-        *it = t * *it;
-    }
-}
-
-void TriMesh::Append(const TriMesh& mesh)
-{
-    int offset = (int)vertices.size();
-    vertices.insert(vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
-    if( indices.capacity() < indices.size()+mesh.indices.size() ) {
-        indices.reserve(indices.size()+mesh.indices.size());
-    }
-    FOREACHC(it, mesh.indices) {
-        indices.push_back(*it+offset);
-    }
-}
-
-void TriMesh::Append(const TriMesh& mesh, const Transform& trans)
-{
-    int offset = (int)vertices.size();
-    vertices.resize(vertices.size() + mesh.vertices.size());
-    for(size_t i = 0; i < mesh.vertices.size(); ++i) {
-        vertices[i+offset] = trans * mesh.vertices[i];
-    }
-    if( indices.capacity() < indices.size()+mesh.indices.size() ) {
-        indices.reserve(indices.size()+mesh.indices.size());
-    }
-    FOREACHC(it, mesh.indices) {
-        indices.push_back(*it+offset);
-    }
-}
-
-AABB TriMesh::ComputeAABB() const
-{
-    AABB ab;
-    if( vertices.size() == 0 ) {
-        return ab;
-    }
-    Vector vmin, vmax;
-    vmin = vmax = vertices.at(0);
-    FOREACHC(itv, vertices) {
-        Vector v = *itv;
-        if( vmin.x > v.x ) {
-            vmin.x = v.x;
-        }
-        if( vmin.y > v.y ) {
-            vmin.y = v.y;
-        }
-        if( vmin.z > v.z ) {
-            vmin.z = v.z;
-        }
-        if( vmax.x < v.x ) {
-            vmax.x = v.x;
-        }
-        if( vmax.y < v.y ) {
-            vmax.y = v.y;
-        }
-        if( vmax.z < v.z ) {
-            vmax.z = v.z;
-        }
-    }
-
-    ab.extents = (dReal)0.5*(vmax-vmin);
-    ab.pos = (dReal)0.5*(vmax+vmin);
-    return ab;
-}
-
-void TriMesh::serialize(std::ostream& o, int options) const
-{
-    o << vertices.size() << " ";
-    FOREACHC(it,vertices) {
-        SerializeRound3(o, *it);
-    }
-    o << indices.size() << " ";
-    FOREACHC(it,indices) {
-        o << *it << " ";
-    }
-}
-
-void Grabbed::ProcessCollidingLinks(const std::set<int>& setRobotLinksToIgnore)
-{
-    _setRobotLinksToIgnore = setRobotLinksToIgnore;
-    _listNonCollidingLinks.clear();
-    _mapLinkIsNonColliding.clear();
-    KinBodyPtr pgrabbedbody(_pgrabbedbody);
-    KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
-    EnvironmentBasePtr penv = pbody->GetEnv();
-    CollisionCheckerBasePtr pchecker = pbody->GetSelfCollisionChecker();
-    if( !pchecker ) {
-        pchecker = penv->GetCollisionChecker();
-    }
-    CollisionOptionsStateSaver colsaver(pchecker,0); // have to reset the collision options
-    {
-        // have to enable all the links in order to compute accurate _mapLinkIsNonColliding info
-        KinBody::KinBodyStateSaver grabbedbodysaver(pgrabbedbody, KinBody::Save_LinkEnable);
-        pgrabbedbody->Enable(true);
-        KinBody::KinBodyStateSaver robotsaver(pbody, KinBody::Save_LinkEnable);
-        pbody->Enable(true);
-
-        //uint64_t starttime = utils::GetMicroTime();
-
-        // check collision with all links to see which are valid
-        int numchecked = 0;
-        FOREACHC(itlink, pbody->GetLinks()) {
-            int noncolliding = 0;
-            if( find(_vattachedlinks.begin(),_vattachedlinks.end(), *itlink) == _vattachedlinks.end() ) {
-                if( setRobotLinksToIgnore.find((*itlink)->GetIndex()) == setRobotLinksToIgnore.end() ) {
-                    ++numchecked;
-                    //uint64_t localstarttime = utils::GetMicroTime();
-                    if( !pchecker->CheckCollision(KinBody::LinkConstPtr(*itlink), pgrabbedbody) ) {
-                        noncolliding = 1;
-                    }
-                    //RAVELOG_DEBUG_FORMAT("check %s col %s %s %fs", pchecker->GetXMLId()%(*itlink)->GetName()%pgrabbedbody->GetName()%(1e-6*(utils::GetMicroTime()-localstarttime)));
-                }
-            }
-            _mapLinkIsNonColliding[*itlink] = noncolliding;
-        }
-
-        //uint64_t starttime1 = utils::GetMicroTime();
-
-        std::vector<KinBody::LinkPtr > vbodyattachedlinks;
-        FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-            boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
-            bool bsamelink = find(_vattachedlinks.begin(),_vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
-            KinBodyPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
-            if( bsamelink ) {
-                pothergrabbedbody->GetLinks().at(0)->GetRigidlyAttachedLinks(vbodyattachedlinks);
-            }
-            if( pothergrabbedbody != pgrabbedbody ) {
-                KinBody::KinBodyStateSaver othergrabbedbodysaver(pothergrabbedbody, KinBody::Save_LinkEnable);
-                pothergrabbedbody->Enable(true);
-                FOREACHC(itlink, pothergrabbedbody->GetLinks()) {
-                    int noncolliding = 0;
-                    if( bsamelink && find(vbodyattachedlinks.begin(),vbodyattachedlinks.end(), *itlink) != vbodyattachedlinks.end() ) {
-                    }
-                    else if( !pchecker->CheckCollision(KinBody::LinkConstPtr(*itlink), pgrabbedbody) ) {
-                        noncolliding = 1;
-                    }
-                    _mapLinkIsNonColliding[*itlink] = noncolliding;
-                }
-            }
-        }
-
-        //uint64_t starttime2 = utils::GetMicroTime();
-        //RAVELOG_DEBUG_FORMAT("env=%d, process links %d %fs %fs", probot->GetEnv()->GetId()%numchecked%(1e-6*(starttime1-starttime))%(1e-6*(starttime2-starttime)));
-    }
-
-    if( pgrabbedbody->IsEnabled() ) {
-        FOREACH(itnoncolliding, _mapLinkIsNonColliding) {
-            if( itnoncolliding->second && itnoncolliding->first->IsEnabled() ) {
-                //RAVELOG_VERBOSE(str(boost::format("non-colliding link %s for grabbed body %s")%(*itlink)->GetName()%pgrabbedbody->GetName()));
-                _listNonCollidingLinks.push_back(itnoncolliding->first);
-            }
-        }
-    }
-}
-
-void Grabbed::AddMoreIgnoreLinks(const std::set<int>& setRobotLinksToIgnore)
-{
-    KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
-    FOREACHC(itignoreindex, setRobotLinksToIgnore) {
-        _setRobotLinksToIgnore.insert(*itignoreindex);
-        KinBody::LinkPtr plink = pbody->GetLinks().at(*itignoreindex);
-        _mapLinkIsNonColliding[plink] = 0;
-        _listNonCollidingLinks.remove(plink);
-    }
-}
-
-/// return -1 for unknown, 0 for no, 1 for yes
-int Grabbed::WasLinkNonColliding(KinBody::LinkConstPtr plink) const
-{
-    std::map<KinBody::LinkConstPtr, int>::const_iterator it = _mapLinkIsNonColliding.find(plink);
-    if( it != _mapLinkIsNonColliding.end() ) {
-        return it->second;
-    }
-    return -1;
-}
-
-void Grabbed::UpdateCollidingLinks()
-{
-    KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
-    if( !pbody ) {
-        return;
-    }
-    EnvironmentBasePtr penv = pbody->GetEnv();
-    KinBodyConstPtr pgrabbedbody(_pgrabbedbody);
-    if( !pgrabbedbody || !pgrabbedbody->IsEnabled() ) {
-        _listNonCollidingLinks.clear();
-        return;
-    }
-
-    CollisionOptionsStateSaverPtr colsaver;
-    CollisionCheckerBasePtr pchecker = pbody->GetSelfCollisionChecker();
-    if( !pchecker ) {
-        pchecker = penv->GetCollisionChecker();
-    }
-
-    std::map<KinBody::LinkConstPtr, int>::iterator itnoncolliding;
-    std::vector<KinBody::LinkPtr > vbodyattachedlinks;
-    FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-        boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
-        bool bsamelink = find(_vattachedlinks.begin(),_vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
-        KinBodyPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
-        if( !!pothergrabbedbody && pothergrabbedbody != pgrabbedbody && pothergrabbedbody->GetLinks().size() > 0 ) {
-            if( bsamelink ) {
-                pothergrabbedbody->GetLinks().at(0)->GetRigidlyAttachedLinks(vbodyattachedlinks);
-            }
-            KinBody::KinBodyStateSaverPtr othergrabbedbodysaver;
-            FOREACHC(itgrabbedlink, pothergrabbedbody->GetLinks()) {
-                itnoncolliding = _mapLinkIsNonColliding.find(*itgrabbedlink);
-                if( itnoncolliding == _mapLinkIsNonColliding.end() ) {
-                    if( bsamelink && find(vbodyattachedlinks.begin(),vbodyattachedlinks.end(), *itgrabbedlink) != vbodyattachedlinks.end() ) {
-                        _mapLinkIsNonColliding[*itgrabbedlink] = 0;
-                    }
-                    else {
-                        // new body?
-                        if( !colsaver ) {
-                            // have to reset the collision options
-                            colsaver.reset(new CollisionOptionsStateSaver(pchecker,0));
-                        }
-                        if( !othergrabbedbodysaver ) {
-                            othergrabbedbodysaver.reset(new KinBody::KinBodyStateSaver(pothergrabbedbody, KinBody::Save_LinkEnable));
-                            pothergrabbedbody->Enable(true);
-                        }
-                        _mapLinkIsNonColliding[*itgrabbedlink] = !pchecker->CheckCollision(KinBody::LinkConstPtr(*itgrabbedlink), pgrabbedbody);
-                    }
-                }
-            }
-        }
-    }
-
-    std::set<KinBodyConstPtr> _setgrabbed;
-    FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-        boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
-        KinBodyConstPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
-        if( !!pothergrabbedbody ) {
-            _setgrabbed.insert(pothergrabbedbody);
-        }
-    }
-
-    _listNonCollidingLinks.clear();
-    itnoncolliding = _mapLinkIsNonColliding.begin();
-    while( itnoncolliding != _mapLinkIsNonColliding.end() ) {
-        KinBodyPtr noncollidingparent = itnoncolliding->first->GetParent(true);
-        if( !noncollidingparent ) {
-            _mapLinkIsNonColliding.erase(itnoncolliding++);
-            continue;
-        }
-        if( noncollidingparent != pbody ) {
-            // check if body is currently being grabbed
-            if( _setgrabbed.find(noncollidingparent) == _setgrabbed.end() ) {
-                _mapLinkIsNonColliding.erase(itnoncolliding++);
-                continue;
-            }
-        }
-
-        if( itnoncolliding->second && itnoncolliding->first->IsEnabled() ) {
-            _listNonCollidingLinks.push_back(itnoncolliding->first);
-        }
-        ++itnoncolliding;
-    }
-}
-
-std::ostream& operator<<(std::ostream& O, const TriMesh& trimesh)
-{
-    trimesh.serialize(O,0);
-    return O;
-}
-
-std::istream& operator>>(std::istream& I, TriMesh& trimesh)
-{
-    trimesh.vertices.resize(0);
-    trimesh.indices.resize(0);
-    size_t s=0;
-    I >> s;
-    if( !I ) {
-        return I;
-    }
-    trimesh.vertices.resize(s);
-    FOREACH(it,trimesh.vertices) {
-        I >> it->x >> it->y >> it->z;
-    }
-    I >> s;
-    if( !I ) {
-        return I;
-    }
-    trimesh.indices.resize(s);
-    FOREACH(it,trimesh.indices) {
-        I >> *it;
-    }
-    return I;
-}
-
-
-// Dummy Reader
-DummyXMLReader::DummyXMLReader(const std::string& fieldname, const std::string& pparentname, boost::shared_ptr<std::ostream> osrecord) : _fieldname(fieldname), _osrecord(osrecord)
-{
-    _parentname = pparentname;
-    _parentname += ":";
-    _parentname += _fieldname;
-}
-
-BaseXMLReader::ProcessElement DummyXMLReader::startElement(const std::string& name, const AttributesList &atts)
-{
-    if( !!_pcurreader ) {
-        if( _pcurreader->startElement(name, atts) == PE_Support ) {
-            return PE_Support;
-        }
-        return PE_Ignore;
-    }
-
-    if( !!_osrecord ) {
-        *_osrecord << "<" << name << " ";
-        FOREACHC(itatt, atts) {
-            *_osrecord << itatt->first << "=\"" << itatt->second << "\" ";
-        }
-        *_osrecord << ">" << endl;
-    }
-
-    // create a new parser
-    _pcurreader.reset(new DummyXMLReader(name, _parentname,_osrecord));
-    return PE_Support;
-}
-
-bool DummyXMLReader::endElement(const std::string& name)
-{
-    if( !!_pcurreader ) {
-        if( _pcurreader->endElement(name) ) {
-            _pcurreader.reset();
-            if( !!_osrecord ) {
-                *_osrecord << "</" << name << ">" << endl;
-            }
-        }
-        return false;
-    }
-
-    if( name == _fieldname ) {
-        return true;
-    }
-    RAVELOG_ERROR(str(boost::format("invalid xml tag %s\n")%name));
-    return false;
-}
-
-void DummyXMLReader::characters(const std::string& ch)
-{
-    if( !_pcurreader ) {
-        if( !!_osrecord ) {
-            *_osrecord << ch;
-        }
-    }
-    else {
-        _pcurreader->characters(ch);
-    }
-}
-
-EnvironmentBase::EnvironmentBase()
-{
-    if( !RaveGlobalState() ) 
+#if OPENRAVE_LOG4CXX
+	log4cxx::LevelPtr RaveGetVerboseLogLevel()
 	{
-        RAVELOG_WARN("OpenRAVE global state not initialized!\
+		static log4cxx::LevelPtr level(new log4cxx::Level(log4cxx::Level::TRACE_INT, LOG4CXX_STR("VERBOSE"), 7));
+		return level;
+	}
+
+	log4cxx::LoggerPtr RaveGetLogger()
+	{
+		return RaveGlobal::instance()->GetLogger();
+	}
+#endif
+
+	boost::shared_ptr<RaveGlobal> RaveGlobal::global_state_;
+
+	void RaveSetDebugLevel(int level)
+	{
+		RaveGlobal::instance()->SetDebugLevel(level);
+	}
+
+	int RaveGetDebugLevel()
+	{
+		return RaveGlobal::instance()->GetDebugLevel();
+	}
+
+	const std::map<InterfaceType, std::string>& RaveGetInterfaceNamesMap()
+	{
+		return RaveGlobal::instance()->GetInterfaceNamesMap();
+	}
+
+	const std::map<IkParameterizationType, std::string>& RaveGetIkParameterizationMap(int alllowercase)
+	{
+		return IkParameterization::GetIkParameterizationMap(alllowercase);
+	}
+
+	IkParameterizationType RaveGetIkTypeFromUniqueId(int uniqueid)
+	{
+		return IkParameterization::GetIkTypeFromUniqueId(uniqueid);
+	}
+
+	const std::string& RaveGetInterfaceName(InterfaceType type)
+	{
+		return RaveGlobal::instance()->GetInterfaceName(type);
+	}
+
+	std::string RaveGetHomeDirectory()
+	{
+		return RaveGlobal::instance()->GetHomeDirectory();
+	}
+
+	std::string RaveFindDatabaseFile(const std::string& filename, bool bRead)
+	{
+		return RaveGlobal::instance()->FindDatabaseFile(filename, bRead);
+	}
+
+	int RaveInitialize(bool is_load_all_plugins, int level)
+	{
+		return RaveGlobal::instance()->Initialize(is_load_all_plugins, level);
+	}
+
+	void RaveInitializeFromState(UserDataPtr globalstate)
+	{
+		RaveGlobal::global_state_ = boost::dynamic_pointer_cast<RaveGlobal>(globalstate);
+	}
+
+	UserDataPtr RaveGlobalState()
+	{
+		// only return valid pointer if initialized!
+		boost::shared_ptr<RaveGlobal> state = RaveGlobal::global_state_;
+		if (!!state && state->IsInitialized()) {
+			return state;
+		}
+		return UserDataPtr();
+	}
+
+	void RaveDestroy()
+	{
+		RaveGlobal::instance()->Destroy();
+	}
+
+	void RaveAddCallbackForDestroy(const boost::function<void()>& fn)
+	{
+		RaveGlobal::instance()->AddCallbackForDestroy(fn);
+	}
+
+	int RaveGetEnvironmentId(EnvironmentBaseConstPtr penv)
+	{
+		return RaveGlobal::instance()->GetEnvironmentId(penv);
+	}
+
+	EnvironmentBasePtr RaveGetEnvironment(int id)
+	{
+		return RaveGlobal::instance()->GetEnvironment(id);
+	}
+
+	void RaveGetEnvironments(std::list<EnvironmentBasePtr>& listenvironments)
+	{
+		RaveGlobal::instance()->GetEnvironments(listenvironments);
+	}
+
+	void RaveGetPluginInfo(std::list< std::pair<std::string, PLUGININFO> >& plugins)
+	{
+		RaveGlobal::instance()->GetDatabase()->GetPluginInfo(plugins);
+	}
+
+	void RaveGetLoadedInterfaces(std::map<InterfaceType, std::vector<std::string> >& interfacenames)
+	{
+		RaveGlobal::instance()->GetDatabase()->GetLoadedInterfaces(interfacenames);
+	}
+
+	void RaveReloadPlugins()
+	{
+		RaveGlobal::instance()->GetDatabase()->ReloadPlugins();
+	}
+
+	bool RaveLoadPlugin(const std::string& libraryname)
+	{
+		return RaveGlobal::instance()->GetDatabase()->LoadPlugin(libraryname);
+	}
+
+	bool RaveHasInterface(InterfaceType type, const std::string& interfacename)
+	{
+		return RaveGlobal::instance()->GetDatabase()->HasInterface(type, interfacename);
+	}
+
+	InterfaceBasePtr RaveCreateInterface(EnvironmentBasePtr penv, InterfaceType type, const std::string& interfacename)
+	{
+		return RaveGlobal::instance()->GetDatabase()->Create(penv, type, interfacename);
+	}
+
+	RobotBasePtr RaveCreateRobot(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateRobot(penv, name);
+	}
+
+	PlannerBasePtr RaveCreatePlanner(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreatePlanner(penv, name);
+	}
+
+	SensorSystemBasePtr RaveCreateSensorSystem(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateSensorSystem(penv, name);
+	}
+
+	ControllerBasePtr RaveCreateController(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateController(penv, name);
+	}
+
+	MultiControllerBasePtr RaveCreateMultiController(EnvironmentBasePtr env, const std::string& rawname)
+	{
+		std::string name;
+		if (rawname == "") {
+			name = "genericmulticontroller";
+		}
+		else {
+			name = rawname;
+			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+		}
+		// TODO remove hack once MultiController is a registered interface
+		ControllerBasePtr pcontroller = RaveGlobal::instance()->GetDatabase()->CreateController(env, name);
+		if (name == "genericmulticontroller") {
+			return boost::static_pointer_cast<MultiControllerBase>(pcontroller);
+		}
+		// don't support anything else
+		return MultiControllerBasePtr();
+	}
+
+	ModuleBasePtr RaveCreateModule(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateModule(penv, name);
+	}
+
+	ModuleBasePtr RaveCreateProblem(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateModule(penv, name);
+	}
+
+	ModuleBasePtr RaveCreateProblemInstance(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateModule(penv, name);
+	}
+
+	IkSolverBasePtr RaveCreateIkSolver(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateIkSolver(penv, name);
+	}
+
+	PhysicsEngineBasePtr RaveCreatePhysicsEngine(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreatePhysicsEngine(penv, name);
+	}
+
+	SensorBasePtr RaveCreateSensor(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateSensor(penv, name);
+	}
+
+	CollisionCheckerBasePtr RaveCreateCollisionChecker(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateCollisionChecker(penv, name);
+	}
+
+	ViewerBasePtr RaveCreateViewer(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateViewer(penv, name);
+	}
+
+	KinBodyPtr RaveCreateKinBody(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateKinBody(penv, name);
+	}
+
+	TrajectoryBasePtr RaveCreateTrajectory(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateTrajectory(penv, name);
+	}
+
+	TrajectoryBasePtr RaveCreateTrajectory(EnvironmentBasePtr penv, int dof)
+	{
+		return RaveCreateTrajectory(penv, "");
+	}
+
+	SpaceSamplerBasePtr RaveCreateSpaceSampler(EnvironmentBasePtr penv, const std::string& name)
+	{
+		return RaveGlobal::instance()->GetDatabase()->CreateSpaceSampler(penv, name);
+	}
+
+	UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name,
+		const char* interfacehash, const char* envhash,
+		const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
+	{
+		return RaveGlobal::instance()->GetDatabase()->RegisterInterface(type, name, interfacehash, envhash, createfn);
+	}
+
+	UserDataPtr RaveRegisterXMLReader(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn)
+	{
+		return RaveGlobal::instance()->RegisterXMLReader(type, xmltag, fn);
+	}
+
+	BaseXMLReaderPtr RaveCallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts)
+	{
+		return RaveGlobal::instance()->CallXMLReader(type, xmltag, pinterface, atts);
+	}
+
+	std::string RaveFindLocalFile(const std::string& filename, const std::string& curdir)
+	{
+		return RaveGlobal::instance()->FindLocalFile(filename, curdir);
+	}
+
+	bool RaveInvertFileLookup(std::string& newfilename, const std::string& filename)
+	{
+		return RaveGlobal::instance()->InvertFileLookup(newfilename, filename);
+	}
+
+	void RaveSetDataAccess(int options)
+	{
+		RaveGlobal::instance()->SetDataAccess(options);
+	}
+
+	int RaveGetDataAccess()
+	{
+		return RaveGlobal::instance()->GetDataAccess();
+	}
+
+	std::string RaveGetDefaultViewerType()
+	{
+		return RaveGlobal::instance()->GetDefaultViewerType();
+	}
+
+	const char *RaveGetLocalizedTextForDomain(const std::string& domainname, const char *msgid)
+	{
+#ifndef _WIN32
+		if (_gettextDomainsInitialized.find(domainname) == _gettextDomainsInitialized.end())
+		{
+			bindtextdomain(domainname.c_str(), OPENRAVE_LOCALE_INSTALL_DIR);
+			_gettextDomainsInitialized.insert(domainname);
+		}
+		return dgettext(domainname.c_str(), msgid);
+#else
+		return msgid;
+#endif
+	}
+
+	const std::map<IkParameterizationType, std::string>& IkParameterization::GetIkParameterizationMap(int alllowercase)
+	{
+		return RaveGlobal::instance()->GetIkParameterizationMap(alllowercase);
+	}
+
+	IkParameterizationType IkParameterization::GetIkTypeFromUniqueId(int uniqueid)
+	{
+		uniqueid &= IKP_UniqueIdMask;
+		FOREACHC(it, RaveGlobal::instance()->GetIkParameterizationMap()) {
+			if ((it->first & (IKP_UniqueIdMask&~IKP_VelocityDataBit)) == (uniqueid&(IKP_UniqueIdMask&~IKP_VelocityDataBit))) {
+				return static_cast<IkParameterizationType>(it->first | (uniqueid&IKP_VelocityDataBit));
+			}
+		}
+		throw OPENRAVE_EXCEPTION_FORMAT(_("no ik exists of unique id 0x%x"), uniqueid, ORE_InvalidArguments);
+	}
+
+	ConfigurationSpecification IkParameterization::GetConfigurationSpecification(IkParameterizationType iktype, const std::string& interpolation, const std::string& robotname, const std::string& manipname)
+	{
+		ConfigurationSpecification spec;
+		spec._vgroups.resize(1);
+		spec._vgroups[0].offset = 0;
+		spec._vgroups[0].dof = IkParameterization::GetNumberOfValues(iktype);
+		spec._vgroups[0].name = str(boost::format("ikparam_values %d") % iktype);
+		if (robotname.size() > 0) {
+			spec._vgroups[0].name += robotname;
+			spec._vgroups[0].name += " ";
+			if (manipname.size() > 0) {
+				spec._vgroups[0].name += manipname;
+			}
+		}
+		spec._vgroups[0].interpolation = interpolation;
+
+		// remove any trailing whitespace from missing robot or manipulator names
+		boost::algorithm::trim(spec._vgroups[0].name);
+		return spec;
+	}
+
+	std::ostream& operator<<(std::ostream& O, const IkParameterization &ikparam)
+	{
+		int type = ikparam._type;
+		BOOST_ASSERT(!(type & IKP_CustomDataBit));
+		if (ikparam._mapCustomData.size() > 0) {
+			type |= IKP_CustomDataBit;
+		}
+		O << type << " ";
+		switch (ikparam._type & ~IKP_VelocityDataBit) {
+		case IKP_Transform6D:
+			O << ikparam.GetTransform6D();
+			break;
+		case IKP_Rotation3D:
+			O << ikparam.GetRotation3D();
+			break;
+		case IKP_Translation3D: {
+			Vector v = ikparam.GetTranslation3D();
+			O << v.x << " " << v.y << " " << v.z << " ";
+			break;
+		}
+		case IKP_Direction3D: {
+			Vector v = ikparam.GetDirection3D();
+			O << v.x << " " << v.y << " " << v.z << " ";
+			break;
+		}
+		case IKP_Ray4D: {
+			RAY r = ikparam.GetRay4D();
+			O << r.dir.x << " " << r.dir.y << " " << r.dir.z << " " << r.pos.x << " " << r.pos.y << " " << r.pos.z << " ";
+			break;
+		}
+		case IKP_Lookat3D: {
+			Vector v = ikparam.GetLookat3D();
+			O << v.x << " " << v.y << " " << v.z << " ";
+			break;
+		}
+		case IKP_TranslationDirection5D: {
+			RAY r = ikparam.GetTranslationDirection5D();
+			O << r.dir.x << " " << r.dir.y << " " << r.dir.z << " " << r.pos.x << " " << r.pos.y << " " << r.pos.z << " ";
+			break;
+		}
+		case IKP_TranslationXY2D: {
+			Vector v = ikparam.GetTranslationXY2D();
+			O << v.x << " " << v.y << " ";
+			break;
+		}
+		case IKP_TranslationXYOrientation3D: {
+			Vector v = ikparam.GetTranslationXYOrientation3D();
+			O << v.x << " " << v.y << " " << v.z << " ";
+			break;
+		}
+		case IKP_TranslationLocalGlobal6D: {
+			std::pair<Vector, Vector> p = ikparam.GetTranslationLocalGlobal6D();
+			O << p.first.x << " " << p.first.y << " " << p.first.z << " " << p.second.x << " " << p.second.y << " " << p.second.z << " ";
+			break;
+		}
+		case IKP_TranslationXAxisAngle4D: {
+			std::pair<Vector, dReal> p = ikparam.GetTranslationXAxisAngle4D();
+			O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
+			break;
+		}
+		case IKP_TranslationYAxisAngle4D: {
+			std::pair<Vector, dReal> p = ikparam.GetTranslationYAxisAngle4D();
+			O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
+			break;
+		}
+		case IKP_TranslationZAxisAngle4D: {
+			std::pair<Vector, dReal> p = ikparam.GetTranslationZAxisAngle4D();
+			O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
+			break;
+		}
+		case IKP_TranslationXAxisAngleZNorm4D: {
+			std::pair<Vector, dReal> p = ikparam.GetTranslationXAxisAngleZNorm4D();
+			O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
+			break;
+		}
+		case IKP_TranslationYAxisAngleXNorm4D: {
+			std::pair<Vector, dReal> p = ikparam.GetTranslationYAxisAngleXNorm4D();
+			O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
+			break;
+		}
+		case IKP_TranslationZAxisAngleYNorm4D: {
+			std::pair<Vector, dReal> p = ikparam.GetTranslationZAxisAngleYNorm4D();
+			O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
+			break;
+		}
+		default:
+			throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
+		}
+		if (ikparam._mapCustomData.size() > 0) {
+			O << ikparam._mapCustomData.size() << " ";
+			FOREACHC(it, ikparam._mapCustomData) {
+				O << it->first << " " << it->second.size() << " ";
+				FOREACHC(itvalue, it->second) {
+					O << *itvalue << " ";
+				}
+			}
+		}
+		return O;
+	}
+
+	std::istream& operator >> (std::istream& I, IkParameterization& ikparam)
+	{
+		int type = IKP_None;
+		I >> type;
+		ikparam._type = static_cast<IkParameterizationType>(type&~IKP_CustomDataBit);
+		switch (ikparam._type) {
+		case IKP_Transform6D: {
+			Transform t; I >> t;
+			ikparam.SetTransform6D(t);
+			break;
+		}
+		case IKP_Transform6DVelocity:
+			I >> ikparam._transform;
+			break;
+		case IKP_Rotation3D: { Vector v; I >> v; ikparam.SetRotation3D(v); break; }
+		case IKP_Rotation3DVelocity:
+			I >> ikparam._transform.rot;
+			break;
+		case IKP_Translation3D: {
+			Vector v;
+			I >> v.x >> v.y >> v.z;
+			ikparam.SetTranslation3D(v);
+			break;
+		}
+		case IKP_Lookat3DVelocity:
+		case IKP_Translation3DVelocity:
+		case IKP_TranslationXYOrientation3DVelocity:
+			I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
+			break;
+		case IKP_Direction3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetDirection3D(v); break; }
+		case IKP_Direction3DVelocity:
+			I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
+			break;
+		case IKP_Ray4D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetRay4D(r); break; }
+		case IKP_Ray4DVelocity:
+		case IKP_TranslationDirection5DVelocity:
+			I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
+			break;
+		case IKP_Lookat3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetLookat3D(v); break; }
+		case IKP_TranslationDirection5D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetTranslationDirection5D(r); break; }
+		case IKP_TranslationXY2D: { Vector v; I >> v.y >> v.y; ikparam.SetTranslationXY2D(v); break; }
+		case IKP_TranslationXY2DVelocity:
+			I >> ikparam._transform.trans.x >> ikparam._transform.trans.y;
+			break;
+		case IKP_TranslationXYOrientation3D: { Vector v; I >> v.y >> v.y >> v.z; ikparam.SetTranslationXYOrientation3D(v); break; }
+		case IKP_TranslationLocalGlobal6D: { Vector localtrans, trans; I >> localtrans.x >> localtrans.y >> localtrans.z >> trans.x >> trans.y >> trans.z; ikparam.SetTranslationLocalGlobal6D(localtrans, trans); break; }
+		case IKP_TranslationLocalGlobal6DVelocity:
+			I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
+			break;
+		case IKP_TranslationXAxisAngle4D: {
+			Vector trans; dReal angle = 0;
+			I >> angle >> trans.x >> trans.y >> trans.z;
+			ikparam.SetTranslationXAxisAngle4D(trans, angle);
+			break;
+		}
+		case IKP_TranslationYAxisAngle4D: {
+			Vector trans; dReal angle = 0;
+			I >> angle >> trans.x >> trans.y >> trans.z;
+			ikparam.SetTranslationYAxisAngle4D(trans, angle);
+			break;
+		}
+		case IKP_TranslationZAxisAngle4D: {
+			Vector trans; dReal angle = 0;
+			I >> angle >> trans.x >> trans.y >> trans.z;
+			ikparam.SetTranslationZAxisAngle4D(trans, angle);
+			break;
+		}
+		case IKP_TranslationXAxisAngleZNorm4D: {
+			Vector trans; dReal angle = 0;
+			I >> angle >> trans.x >> trans.y >> trans.z;
+			ikparam.SetTranslationXAxisAngleZNorm4D(trans, angle);
+			break;
+		}
+		case IKP_TranslationYAxisAngleXNorm4D: {
+			Vector trans; dReal angle = 0;
+			I >> angle >> trans.x >> trans.y >> trans.z;
+			ikparam.SetTranslationYAxisAngleXNorm4D(trans, angle);
+			break;
+		}
+		case IKP_TranslationZAxisAngleYNorm4D: {
+			Vector trans; dReal angle = 0;
+			I >> angle >> trans.x >> trans.y >> trans.z;
+			ikparam.SetTranslationZAxisAngleYNorm4D(trans, angle);
+			break;
+		}
+		case IKP_TranslationXAxisAngle4DVelocity:
+		case IKP_TranslationYAxisAngle4DVelocity:
+		case IKP_TranslationZAxisAngle4DVelocity:
+		case IKP_TranslationXAxisAngleZNorm4DVelocity:
+		case IKP_TranslationYAxisAngleXNorm4DVelocity:
+		case IKP_TranslationZAxisAngleYNorm4DVelocity:
+			I >> ikparam._transform.rot.x >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
+			break;
+		default:
+			throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
+		}
+		ikparam._mapCustomData.clear();
+		if (type & IKP_CustomDataBit) {
+			size_t numcustom = 0, numvalues = 0;
+			std::string name;
+			I >> numcustom;
+			if (!I) {
+				return I;
+			}
+			for (size_t i = 0; i < numcustom; ++i) {
+				I >> name >> numvalues;
+				if (!I) {
+					return I;
+				}
+				std::vector<dReal>& v = ikparam._mapCustomData[name];
+				v.resize(numvalues);
+				for (size_t j = 0; j < v.size(); ++j) {
+					I >> v[j];
+				}
+			}
+		}
+		return I;
+	}
+
+	int RaveGetIndexFromAffineDOF(int affinedofs, DOFAffine _dof)
+	{
+		int dof = static_cast<int>(_dof);
+		dof &= affinedofs;
+		int index = 0;
+		if (dof&DOF_X) {
+			return index;
+		}
+		else if (affinedofs & DOF_X) {
+			++index;
+		}
+		if (dof&DOF_Y) {
+			return index;
+		}
+		else if (affinedofs & DOF_Y) {
+			++index;
+		}
+		if (dof&DOF_Z) {
+			return index;
+		}
+		else if (affinedofs & DOF_Z) {
+			++index;
+		}
+		if (dof&DOF_RotationAxis) {
+			return index;
+		}
+		if (dof&DOF_Rotation3D) {
+			return index;
+		}
+		if (dof&DOF_RotationQuat) {
+			return index;
+		}
+		throw OPENRAVE_EXCEPTION_FORMAT(_("unspecified dof 0x%x, 0x%x"), affinedofs%dof, ORE_InvalidArguments);
+	}
+
+	DOFAffine RaveGetAffineDOFFromIndex(int affinedofs, int requestedindex)
+	{
+		BOOST_ASSERT(requestedindex >= 0);
+		int index = 0;
+		if (index == requestedindex && (affinedofs&DOF_X)) {
+			return DOF_X;
+		}
+		else if (affinedofs & DOF_X) {
+			++index;
+		}
+		if (index == requestedindex && (affinedofs&DOF_Y)) {
+			return DOF_Y;
+		}
+		else if (affinedofs & DOF_Y) {
+			++index;
+		}
+		if (index == requestedindex && (affinedofs&DOF_Z)) {
+			return DOF_Z;
+		}
+		else if (affinedofs & DOF_Z) {
+			++index;
+		}
+		if (index <= requestedindex && index + 3 > requestedindex && (affinedofs&DOF_RotationAxis)) {
+			return DOF_RotationAxis;
+		}
+		if (index <= requestedindex && index + 3 > requestedindex && (affinedofs&DOF_Rotation3D)) {
+			return DOF_Rotation3D;
+		}
+		if (index <= requestedindex && index + 4 > requestedindex && (affinedofs&DOF_RotationQuat)) {
+			return DOF_RotationQuat;
+		}
+		throw OPENRAVE_EXCEPTION_FORMAT(_("requested index out of bounds %d (affinemask=0x%x)"), requestedindex%affinedofs, ORE_InvalidArguments);
+	}
+
+	int RaveGetAffineDOF(int affinedofs)
+	{
+		if (affinedofs & DOF_RotationAxis) {
+			BOOST_ASSERT(!(affinedofs & (DOF_Rotation3D | DOF_RotationQuat)));
+		}
+		else if (affinedofs & DOF_Rotation3D) {
+			BOOST_ASSERT(!(affinedofs & (DOF_RotationAxis | DOF_RotationQuat)));
+		}
+		else if (affinedofs & DOF_RotationQuat) {
+			BOOST_ASSERT(!(affinedofs & (DOF_Rotation3D | DOF_RotationAxis)));
+		}
+		int dof = 0;
+		if (affinedofs & DOF_X) {
+			dof++;
+		}
+		if (affinedofs & DOF_Y) {
+			dof++;
+		}
+		if (affinedofs & DOF_Z) {
+			dof++;
+		}
+		if (affinedofs & DOF_RotationAxis) {
+			dof++;
+		}
+		else if (affinedofs & DOF_Rotation3D) {
+			dof += 3;
+		}
+		else if (affinedofs & DOF_RotationQuat) {
+			dof += 4;
+		}
+		return dof;
+	}
+
+	void RaveGetAffineDOFValuesFromTransform(std::vector<dReal>::iterator itvalues, const Transform& t, int affinedofs, const Vector& vActvAffineRotationAxis)
+	{
+		if (affinedofs & DOF_X) {
+			*itvalues++ = t.trans.x;
+		}
+		if (affinedofs & DOF_Y) {
+			*itvalues++ = t.trans.y;
+		}
+		if (affinedofs & DOF_Z) {
+			*itvalues++ = t.trans.z;
+		}
+		if (affinedofs & DOF_RotationAxis) {
+			*itvalues++ = -normalizeAxisRotation(vActvAffineRotationAxis, t.rot).first;
+		}
+		else if (affinedofs & DOF_Rotation3D) {
+			dReal fsin = RaveSqrt(t.rot.y * t.rot.y + t.rot.z * t.rot.z + t.rot.w * t.rot.w);
+			dReal fangle = 2 * atan2(fsin, t.rot.x);
+			if (fsin > 0) {
+				dReal normalizer = fangle / fsin;
+				*itvalues++ = normalizer * t.rot.y;
+				*itvalues++ = normalizer * t.rot.z;
+				*itvalues++ = normalizer * t.rot.w;
+			}
+			else {
+				*itvalues++ = 0;
+				*itvalues++ = 0;
+				*itvalues++ = 0;
+			}
+		}
+		else if (affinedofs & DOF_RotationQuat) {
+			*itvalues++ = t.rot.x;
+			*itvalues++ = t.rot.y;
+			*itvalues++ = t.rot.z;
+			*itvalues++ = t.rot.w;
+		}
+	}
+
+	void RaveGetAffineDOFValuesFromVelocity(std::vector<dReal>::iterator itvalues, const Vector& linearvel, const Vector& angularvel, const Vector& quatrotation, int affinedofs, const Vector& axis)
+	{
+		if (affinedofs & DOF_X) {
+			*itvalues++ = linearvel.x;
+		}
+		if (affinedofs & DOF_Y) {
+			*itvalues++ = linearvel.y;
+		}
+		if (affinedofs & DOF_Z) {
+			*itvalues++ = linearvel.z;
+		}
+		if (affinedofs & DOF_RotationAxis) {
+			*itvalues++ = axis.dot3(angularvel);
+		}
+		else if (affinedofs & DOF_Rotation3D) {
+			*itvalues++ = angularvel.x;
+			*itvalues++ = angularvel.y;
+			*itvalues++ = angularvel.z;
+		}
+		else if (affinedofs & DOF_RotationQuat) {
+			Vector qdot = 0.5 * quatMultiply(Vector(0, angularvel.x, angularvel.y, angularvel.z), quatrotation);
+			*itvalues++ = qdot.x;
+			*itvalues++ = qdot.y;
+			*itvalues++ = qdot.z;
+			*itvalues++ = qdot.w;
+		}
+	}
+
+	void RaveGetTransformFromAffineDOFValues(Transform& t, std::vector<dReal>::const_iterator itvalues, int affinedofs, const Vector& vActvAffineRotationAxis, bool normalize)
+	{
+		if (affinedofs & DOF_X) {
+			t.trans.x = *itvalues++;
+		}
+		if (affinedofs & DOF_Y) {
+			t.trans.y = *itvalues++;
+		}
+		if (affinedofs & DOF_Z) {
+			t.trans.z = *itvalues++;
+		}
+		if (affinedofs & DOF_RotationAxis) {
+			dReal angle = *itvalues++;
+			dReal fsin = RaveSin(angle*(dReal)0.5);
+			t.rot.x = RaveCos(angle*(dReal)0.5);
+			t.rot.y = vActvAffineRotationAxis.x * fsin;
+			t.rot.z = vActvAffineRotationAxis.y * fsin;
+			t.rot.w = vActvAffineRotationAxis.z * fsin;
+		}
+		else if (affinedofs & DOF_Rotation3D) {
+			if (normalize) {
+				dReal x = *itvalues++;
+				dReal y = *itvalues++;
+				dReal z = *itvalues++;
+				dReal fang = RaveSqrt(x*x + y*y + z*z);
+				if (fang > 0) {
+					dReal fnormalizer = sin((dReal)0.5 * fang) / fang;
+					t.rot.x = cos((dReal)0.5 * fang);
+					t.rot.y = fnormalizer * x;
+					t.rot.z = fnormalizer * y;
+					t.rot.w = fnormalizer * z;
+				}
+				else {
+					t.rot = Vector(1, 0, 0, 0); // identity
+				}
+			}
+			else {
+				// normalization turned off, but affine dofs have only DOF_Rotation3D. In order to convert this to quaternion velocity
+				// will need current quaternion value (qrot), which is unknown, so assume identity
+				// qvel = [0,axisangle] * qrot * 0.5
+				t.rot[0] = 0;
+				t.rot[1] = 0.5 * *itvalues++;
+				t.rot[2] = 0.5 * *itvalues++;
+				t.rot[3] = 0.5 * *itvalues++;
+			}
+		}
+		else if (affinedofs & DOF_RotationQuat) {
+			// have to normalize since user might not be aware of this particular parameterization of rotations
+			t.rot.x = *itvalues++;
+			t.rot.y = *itvalues++;
+			t.rot.z = *itvalues++;
+			t.rot.w = *itvalues++;
+			if (normalize) {
+				t.rot.normalize4();
+			}
+		}
+	}
+
+	void RaveGetVelocityFromAffineDOFVelocities(Vector& linearvel, Vector& angularvel, std::vector<dReal>::const_iterator itvalues, int affinedofs, const Vector& axis, const Vector& quatrotation)
+	{
+		if (affinedofs & DOF_X) {
+			linearvel.x = *itvalues++;
+		}
+		if (affinedofs & DOF_Y) {
+			linearvel.y = *itvalues++;
+		}
+		if (affinedofs & DOF_Z) {
+			linearvel.z = *itvalues++;
+		}
+		if (affinedofs & DOF_RotationAxis) {
+			dReal angle = *itvalues++;
+			angularvel = axis*angle;
+		}
+		else if (affinedofs & DOF_Rotation3D) {
+			angularvel.x = *itvalues++;
+			angularvel.y = *itvalues++;
+			angularvel.z = *itvalues++;
+		}
+		else if (affinedofs & DOF_RotationQuat) {
+			// have to normalize since user might not be aware of this particular parameterization of rotations
+			Vector q;
+			q.x = *itvalues++;
+			q.y = *itvalues++;
+			q.z = *itvalues++;
+			q.w = *itvalues++;
+			Vector angularvel2 = quatMultiply(q, quatInverse(quatrotation)); // qdot = 0.5 * angularvel * q
+			angularvel.x = angularvel2.y * 2;
+			angularvel.y = angularvel2.z * 2;
+			angularvel.z = angularvel2.w * 2;
+		}
+	}
+
+	void CollisionReport::Reset(int coloptions)
+	{
+		options = coloptions;
+		if (!(nKeepPrevious & 1)) {
+			minDistance = 1e20f;
+			numWithinTol = 0;
+			contacts.resize(0);
+			vLinkColliding.resize(0);
+			plink1.reset();
+			plink2.reset();
+		}
+	}
+
+	std::string CollisionReport::__str__() const
+	{
+		stringstream s;
+		if (vLinkColliding.size() > 0) {
+			s << "pairs=" << vLinkColliding.size();
+			int index = 0;
+			FOREACHC(itlinkpair, vLinkColliding) {
+				s << ", [" << index << "](";
+				if (!!itlinkpair->first) {
+					s << itlinkpair->first->GetParent()->GetName() << ":" << itlinkpair->first->GetName();
+				}
+				s << ")x(";
+				if (!!itlinkpair->second) {
+					s << itlinkpair->second->GetParent()->GetName() << ":" << itlinkpair->second->GetName();
+				}
+				s << ") ";
+				++index;
+			}
+		}
+		else {
+			s << "(";
+			if (!!plink1) {
+				s << plink1->GetParent()->GetName() << ":" << plink1->GetName();
+			}
+			s << ")x(";
+			if (!!plink2) {
+				s << plink2->GetParent()->GetName() << ":" << plink2->GetName();
+			}
+			s << ")";
+		}
+		s << ", contacts=" << contacts.size();
+		if (minDistance < 1e10) {
+			s << ", mindist=" << minDistance;
+		}
+		return s.str();
+	}
+
+	bool PhysicsEngineBase::GetLinkForceTorque(KinBody::LinkConstPtr plink, Vector& force, Vector& torque)
+	{
+		force = Vector(0, 0, 0);
+		torque = Vector(0, 0, 0);
+		//Loop over all joints in the parent body
+		FOREACHC(itjoint, plink->GetParent()->GetJoints()) {
+			//if this joint's parent or child body is the current body
+			bool bParentLink = (*itjoint)->GetHierarchyParentLink() == plink;
+			bool bChildLink = (*itjoint)->GetHierarchyChildLink() == plink;
+			if (bParentLink || bChildLink) {
+				Vector f;
+				Vector T;
+				GetJointForceTorque(*itjoint, f, T);
+				if (bParentLink) {
+					Vector r = (*itjoint)->GetAnchor() - plink->GetGlobalCOM();
+					force += f;
+					torque += T;
+					//Re-add moment due to equivalent load at body COM
+					torque += r.cross(f);
+				}
+				else {
+					//Equal but opposite sign
+					Vector r = (*itjoint)->GetAnchor() - plink->GetGlobalCOM();
+					force -= f;
+					torque -= T;
+					torque -= r.cross(f);
+				}
+			}
+		}
+		FOREACHC(itjoint, plink->GetParent()->GetPassiveJoints()) {
+			bool bParentLink = (*itjoint)->GetHierarchyParentLink() == plink;
+			bool bChildLink = (*itjoint)->GetHierarchyChildLink() == plink;
+			if (bParentLink || bChildLink) {
+				Vector f;
+				Vector T;
+				GetJointForceTorque(*itjoint, f, T);
+
+				if (bParentLink) {
+					Vector r = (*itjoint)->GetAnchor() - plink->GetGlobalCOM();
+					force += f;
+					torque += T;
+					//Re-add moment due to equivalent load at body COM
+					torque += r.cross(f);
+				}
+				else {
+					//Equal but opposite sign
+					Vector r = (*itjoint)->GetAnchor() - plink->GetGlobalCOM();
+					force -= f;
+					torque -= T;
+					torque -= r.cross(f);
+				}
+			}
+		}
+		return true;
+	}
+
+	void TriMesh::ApplyTransform(const Transform& t)
+	{
+		FOREACH(it, vertices) {
+			*it = t * *it;
+		}
+	}
+
+	void TriMesh::ApplyTransform(const TransformMatrix& t)
+	{
+		FOREACH(it, vertices) {
+			*it = t * *it;
+		}
+	}
+
+	void TriMesh::Append(const TriMesh& mesh)
+	{
+		int offset = (int)vertices.size();
+		vertices.insert(vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+		if (indices.capacity() < indices.size() + mesh.indices.size()) {
+			indices.reserve(indices.size() + mesh.indices.size());
+		}
+		FOREACHC(it, mesh.indices) {
+			indices.push_back(*it + offset);
+		}
+	}
+
+	void TriMesh::Append(const TriMesh& mesh, const Transform& trans)
+	{
+		int offset = (int)vertices.size();
+		vertices.resize(vertices.size() + mesh.vertices.size());
+		for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+			vertices[i + offset] = trans * mesh.vertices[i];
+		}
+		if (indices.capacity() < indices.size() + mesh.indices.size()) {
+			indices.reserve(indices.size() + mesh.indices.size());
+		}
+		FOREACHC(it, mesh.indices) {
+			indices.push_back(*it + offset);
+		}
+	}
+
+	AABB TriMesh::ComputeAABB() const
+	{
+		AABB ab;
+		if (vertices.size() == 0) {
+			return ab;
+		}
+		Vector vmin, vmax;
+		vmin = vmax = vertices.at(0);
+		FOREACHC(itv, vertices) {
+			Vector v = *itv;
+			if (vmin.x > v.x) {
+				vmin.x = v.x;
+			}
+			if (vmin.y > v.y) {
+				vmin.y = v.y;
+			}
+			if (vmin.z > v.z) {
+				vmin.z = v.z;
+			}
+			if (vmax.x < v.x) {
+				vmax.x = v.x;
+			}
+			if (vmax.y < v.y) {
+				vmax.y = v.y;
+			}
+			if (vmax.z < v.z) {
+				vmax.z = v.z;
+			}
+		}
+
+		ab.extents = (dReal)0.5*(vmax - vmin);
+		ab.pos = (dReal)0.5*(vmax + vmin);
+		return ab;
+	}
+
+	void TriMesh::serialize(std::ostream& o, int options) const
+	{
+		o << vertices.size() << " ";
+		FOREACHC(it, vertices) {
+			SerializeRound3(o, *it);
+		}
+		o << indices.size() << " ";
+		FOREACHC(it, indices) {
+			o << *it << " ";
+		}
+	}
+
+	void Grabbed::ProcessCollidingLinks(const std::set<int>& setRobotLinksToIgnore)
+	{
+		_setRobotLinksToIgnore = setRobotLinksToIgnore;
+		_listNonCollidingLinks.clear();
+		_mapLinkIsNonColliding.clear();
+		KinBodyPtr pgrabbedbody(_pgrabbedbody);
+		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
+		EnvironmentBasePtr penv = pbody->GetEnv();
+		CollisionCheckerBasePtr pchecker = pbody->GetSelfCollisionChecker();
+		if (!pchecker) {
+			pchecker = penv->GetCollisionChecker();
+		}
+		CollisionOptionsStateSaver colsaver(pchecker, 0); // have to reset the collision options
+		{
+			// have to enable all the links in order to compute accurate _mapLinkIsNonColliding info
+			KinBody::KinBodyStateSaver grabbedbodysaver(pgrabbedbody, KinBody::Save_LinkEnable);
+			pgrabbedbody->Enable(true);
+			KinBody::KinBodyStateSaver robotsaver(pbody, KinBody::Save_LinkEnable);
+			pbody->Enable(true);
+
+			//uint64_t starttime = utils::GetMicroTime();
+
+			// check collision with all links to see which are valid
+			int numchecked = 0;
+			FOREACHC(itlink, pbody->GetLinks()) {
+				int noncolliding = 0;
+				if (find(_vattachedlinks.begin(), _vattachedlinks.end(), *itlink) == _vattachedlinks.end()) {
+					if (setRobotLinksToIgnore.find((*itlink)->GetIndex()) == setRobotLinksToIgnore.end()) {
+						++numchecked;
+						//uint64_t localstarttime = utils::GetMicroTime();
+						if (!pchecker->CheckCollision(KinBody::LinkConstPtr(*itlink), pgrabbedbody)) {
+							noncolliding = 1;
+						}
+						//RAVELOG_DEBUG_FORMAT("check %s col %s %s %fs", pchecker->GetXMLId()%(*itlink)->GetName()%pgrabbedbody->GetName()%(1e-6*(utils::GetMicroTime()-localstarttime)));
+					}
+				}
+				_mapLinkIsNonColliding[*itlink] = noncolliding;
+			}
+
+			//uint64_t starttime1 = utils::GetMicroTime();
+
+			std::vector<KinBody::LinkPtr > vbodyattachedlinks;
+			FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
+				boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+				bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
+				KinBodyPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
+				if (bsamelink) {
+					pothergrabbedbody->GetLinks().at(0)->GetRigidlyAttachedLinks(vbodyattachedlinks);
+				}
+				if (pothergrabbedbody != pgrabbedbody) {
+					KinBody::KinBodyStateSaver othergrabbedbodysaver(pothergrabbedbody, KinBody::Save_LinkEnable);
+					pothergrabbedbody->Enable(true);
+					FOREACHC(itlink, pothergrabbedbody->GetLinks()) {
+						int noncolliding = 0;
+						if (bsamelink && find(vbodyattachedlinks.begin(), vbodyattachedlinks.end(), *itlink) != vbodyattachedlinks.end()) {
+						}
+						else if (!pchecker->CheckCollision(KinBody::LinkConstPtr(*itlink), pgrabbedbody)) {
+							noncolliding = 1;
+						}
+						_mapLinkIsNonColliding[*itlink] = noncolliding;
+					}
+				}
+			}
+
+			//uint64_t starttime2 = utils::GetMicroTime();
+			//RAVELOG_DEBUG_FORMAT("env=%d, process links %d %fs %fs", probot->GetEnv()->GetId()%numchecked%(1e-6*(starttime1-starttime))%(1e-6*(starttime2-starttime)));
+		}
+
+		if (pgrabbedbody->IsEnabled()) {
+			FOREACH(itnoncolliding, _mapLinkIsNonColliding) {
+				if (itnoncolliding->second && itnoncolliding->first->IsEnabled()) {
+					//RAVELOG_VERBOSE(str(boost::format("non-colliding link %s for grabbed body %s")%(*itlink)->GetName()%pgrabbedbody->GetName()));
+					_listNonCollidingLinks.push_back(itnoncolliding->first);
+				}
+			}
+		}
+	}
+
+	void Grabbed::AddMoreIgnoreLinks(const std::set<int>& setRobotLinksToIgnore)
+	{
+		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
+		FOREACHC(itignoreindex, setRobotLinksToIgnore) {
+			_setRobotLinksToIgnore.insert(*itignoreindex);
+			KinBody::LinkPtr plink = pbody->GetLinks().at(*itignoreindex);
+			_mapLinkIsNonColliding[plink] = 0;
+			_listNonCollidingLinks.remove(plink);
+		}
+	}
+
+	/// return -1 for unknown, 0 for no, 1 for yes
+	int Grabbed::WasLinkNonColliding(KinBody::LinkConstPtr plink) const
+	{
+		std::map<KinBody::LinkConstPtr, int>::const_iterator it = _mapLinkIsNonColliding.find(plink);
+		if (it != _mapLinkIsNonColliding.end()) {
+			return it->second;
+		}
+		return -1;
+	}
+
+	void Grabbed::UpdateCollidingLinks()
+	{
+		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
+		if (!pbody) {
+			return;
+		}
+		EnvironmentBasePtr penv = pbody->GetEnv();
+		KinBodyConstPtr pgrabbedbody(_pgrabbedbody);
+		if (!pgrabbedbody || !pgrabbedbody->IsEnabled()) {
+			_listNonCollidingLinks.clear();
+			return;
+		}
+
+		CollisionOptionsStateSaverPtr colsaver;
+		CollisionCheckerBasePtr pchecker = pbody->GetSelfCollisionChecker();
+		if (!pchecker) {
+			pchecker = penv->GetCollisionChecker();
+		}
+
+		std::map<KinBody::LinkConstPtr, int>::iterator itnoncolliding;
+		std::vector<KinBody::LinkPtr > vbodyattachedlinks;
+		FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
+			boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
+			KinBodyPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
+			if (!!pothergrabbedbody && pothergrabbedbody != pgrabbedbody && pothergrabbedbody->GetLinks().size() > 0) {
+				if (bsamelink) {
+					pothergrabbedbody->GetLinks().at(0)->GetRigidlyAttachedLinks(vbodyattachedlinks);
+				}
+				KinBody::KinBodyStateSaverPtr othergrabbedbodysaver;
+				FOREACHC(itgrabbedlink, pothergrabbedbody->GetLinks()) {
+					itnoncolliding = _mapLinkIsNonColliding.find(*itgrabbedlink);
+					if (itnoncolliding == _mapLinkIsNonColliding.end()) {
+						if (bsamelink && find(vbodyattachedlinks.begin(), vbodyattachedlinks.end(), *itgrabbedlink) != vbodyattachedlinks.end()) {
+							_mapLinkIsNonColliding[*itgrabbedlink] = 0;
+						}
+						else {
+							// new body?
+							if (!colsaver) {
+								// have to reset the collision options
+								colsaver.reset(new CollisionOptionsStateSaver(pchecker, 0));
+							}
+							if (!othergrabbedbodysaver) {
+								othergrabbedbodysaver.reset(new KinBody::KinBodyStateSaver(pothergrabbedbody, KinBody::Save_LinkEnable));
+								pothergrabbedbody->Enable(true);
+							}
+							_mapLinkIsNonColliding[*itgrabbedlink] = !pchecker->CheckCollision(KinBody::LinkConstPtr(*itgrabbedlink), pgrabbedbody);
+						}
+					}
+				}
+			}
+		}
+
+		std::set<KinBodyConstPtr> _setgrabbed;
+		FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
+			boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			KinBodyConstPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
+			if (!!pothergrabbedbody) {
+				_setgrabbed.insert(pothergrabbedbody);
+			}
+		}
+
+		_listNonCollidingLinks.clear();
+		itnoncolliding = _mapLinkIsNonColliding.begin();
+		while (itnoncolliding != _mapLinkIsNonColliding.end()) {
+			KinBodyPtr noncollidingparent = itnoncolliding->first->GetParent(true);
+			if (!noncollidingparent) {
+				_mapLinkIsNonColliding.erase(itnoncolliding++);
+				continue;
+			}
+			if (noncollidingparent != pbody) {
+				// check if body is currently being grabbed
+				if (_setgrabbed.find(noncollidingparent) == _setgrabbed.end()) {
+					_mapLinkIsNonColliding.erase(itnoncolliding++);
+					continue;
+				}
+			}
+
+			if (itnoncolliding->second && itnoncolliding->first->IsEnabled()) {
+				_listNonCollidingLinks.push_back(itnoncolliding->first);
+			}
+			++itnoncolliding;
+		}
+	}
+
+	std::ostream& operator<<(std::ostream& O, const TriMesh& trimesh)
+	{
+		trimesh.serialize(O, 0);
+		return O;
+	}
+
+	std::istream& operator >> (std::istream& I, TriMesh& trimesh)
+	{
+		trimesh.vertices.resize(0);
+		trimesh.indices.resize(0);
+		size_t s = 0;
+		I >> s;
+		if (!I) {
+			return I;
+		}
+		trimesh.vertices.resize(s);
+		FOREACH(it, trimesh.vertices) {
+			I >> it->x >> it->y >> it->z;
+		}
+		I >> s;
+		if (!I) {
+			return I;
+		}
+		trimesh.indices.resize(s);
+		FOREACH(it, trimesh.indices) {
+			I >> *it;
+		}
+		return I;
+	}
+
+
+	// Dummy Reader
+	DummyXMLReader::DummyXMLReader(const std::string& fieldname, const std::string& pparentname, boost::shared_ptr<std::ostream> osrecord) : _fieldname(fieldname), _osrecord(osrecord)
+	{
+		_parentname = pparentname;
+		_parentname += ":";
+		_parentname += _fieldname;
+	}
+
+	BaseXMLReader::ProcessElement DummyXMLReader::startElement(const std::string& name, const AttributesList &atts)
+	{
+		if (!!_pcurreader) {
+			if (_pcurreader->startElement(name, atts) == PE_Support) {
+				return PE_Support;
+			}
+			return PE_Ignore;
+		}
+
+		if (!!_osrecord) {
+			*_osrecord << "<" << name << " ";
+			FOREACHC(itatt, atts) {
+				*_osrecord << itatt->first << "=\"" << itatt->second << "\" ";
+			}
+			*_osrecord << ">" << endl;
+		}
+
+		// create a new parser
+		_pcurreader.reset(new DummyXMLReader(name, _parentname, _osrecord));
+		return PE_Support;
+	}
+
+	bool DummyXMLReader::endElement(const std::string& name)
+	{
+		if (!!_pcurreader) {
+			if (_pcurreader->endElement(name)) {
+				_pcurreader.reset();
+				if (!!_osrecord) {
+					*_osrecord << "</" << name << ">" << endl;
+				}
+			}
+			return false;
+		}
+
+		if (name == _fieldname) {
+			return true;
+		}
+		RAVELOG_ERROR(str(boost::format("invalid xml tag %s\n") % name));
+		return false;
+	}
+
+	void DummyXMLReader::characters(const std::string& ch)
+	{
+		if (!_pcurreader) {
+			if (!!_osrecord) {
+				*_osrecord << ch;
+			}
+		}
+		else {
+			_pcurreader->characters(ch);
+		}
+	}
+
+	EnvironmentBase::EnvironmentBase()
+	{
+		if (!RaveGlobalState())
+		{
+			RAVELOG_WARN("OpenRAVE global state not initialized!\
 			Need to call RaveInitialize before any OpenRAVE services can be used.\
 			For now, initializing with default parameters.\n");
-        RaveInitialize(true);
-    }
-    __nUniqueId = RaveGlobal::instance()->RegisterEnvironment(this);
-}
+			RaveInitialize(true);
+		}
+		__nUniqueId = RaveGlobal::instance()->RegisterEnvironment(this);
+	}
 
-EnvironmentBase::~EnvironmentBase()
-{
-    RaveGlobal::instance()->UnregisterEnvironment(this);
-}
+	EnvironmentBase::~EnvironmentBase()
+	{
+		RaveGlobal::instance()->UnregisterEnvironment(this);
+	}
 
 
-bool SensorBase::SensorData::serialize(std::ostream& O) const
-{
-    RAVELOG_WARN("SensorData XML serialization not implemented\n");
-    return true;
-}
+	bool SensorBase::SensorData::serialize(std::ostream& O) const
+	{
+		RAVELOG_WARN("SensorData XML serialization not implemented\n");
+		return true;
+	}
 
-bool SensorBase::LaserSensorData::serialize(std::ostream& O) const
-{
-    RAVELOG_WARN("LaserSensorData XML serialization not implemented\n");
-    return true;
-}
+	bool SensorBase::LaserSensorData::serialize(std::ostream& O) const
+	{
+		RAVELOG_WARN("LaserSensorData XML serialization not implemented\n");
+		return true;
+	}
 
-bool SensorBase::CameraSensorData::serialize(std::ostream& O) const
-{
-    RAVELOG_WARN("CameraSensorData XML serialization not implemented\n");
-    return true;
-}
+	bool SensorBase::CameraSensorData::serialize(std::ostream& O) const
+	{
+		RAVELOG_WARN("CameraSensorData XML serialization not implemented\n");
+		return true;
+	}
 
-void SensorBase::SensorGeometry::Serialize(BaseXMLWriterPtr writer, int options) const
-{
-    AttributesList atts;
-    if( hardware_id.size() > 0 ) {
-        writer->AddChild("hardware_id",atts)->SetCharData(hardware_id);
-    }
-}
+	void SensorBase::SensorGeometry::Serialize(BaseXMLWriterPtr writer, int options) const
+	{
+		AttributesList atts;
+		if (hardware_id.size() > 0) {
+			writer->AddChild("hardware_id", atts)->SetCharData(hardware_id);
+		}
+	}
 
-void SensorBase::CameraGeomData::Serialize(BaseXMLWriterPtr writer, int options) const
-{
-    SensorGeometry::Serialize(writer, options);
-    AttributesList atts;
-    stringstream ss; ss << std::setprecision(std::numeric_limits<dReal>::digits10+1);
-    ss << KK.fx << " 0 " << KK.cx << " 0 " << KK.fy << " " << KK.cy;
-    writer->AddChild("intrinsic",atts)->SetCharData(ss.str());
-    ss.str("");
-    ss << KK.focal_length;
-    writer->AddChild("focal_length",atts)->SetCharData(ss.str());
-    if( KK.distortion_model.size() > 0 ) {
-        writer->AddChild("distortion_model",atts)->SetCharData(KK.distortion_model);
-        if( KK.distortion_coeffs.size() > 0 ) {
-            ss.str("");
-            FOREACHC(it, KK.distortion_coeffs) {
-                ss << *it << " ";
-            }
-            writer->AddChild("distortion_coeffs",atts)->SetCharData(ss.str());
-        }
-    }
-    ss.str("");
-    ss << width << " " << height; // _numchannels=3
-    writer->AddChild("image_dimensions",atts)->SetCharData(ss.str());
-    writer->AddChild("measurement_time",atts)->SetCharData(boost::lexical_cast<std::string>(measurement_time));
-    writer->AddChild("gain",atts)->SetCharData(boost::lexical_cast<std::string>(gain));
-    //writer->AddChild("format",atts)->SetCharData(_channelformat.size() > 0 ? _channelformat : std::string("uint8"));
-    if( sensor_reference.size() > 0 ) {
-        atts.push_back(std::make_pair("url", sensor_reference));
-        writer->AddChild("sensor_reference",atts);
-        atts.clear();
-    }
-    if( target_region.size() > 0 ) {
-        atts.push_back(std::make_pair("url", target_region));
-        writer->AddChild("target_region",atts);
-        atts.clear();
-    }
-}
+	void SensorBase::CameraGeomData::Serialize(BaseXMLWriterPtr writer, int options) const
+	{
+		SensorGeometry::Serialize(writer, options);
+		AttributesList atts;
+		stringstream ss; ss << std::setprecision(std::numeric_limits<dReal>::digits10 + 1);
+		ss << KK.fx << " 0 " << KK.cx << " 0 " << KK.fy << " " << KK.cy;
+		writer->AddChild("intrinsic", atts)->SetCharData(ss.str());
+		ss.str("");
+		ss << KK.focal_length;
+		writer->AddChild("focal_length", atts)->SetCharData(ss.str());
+		if (KK.distortion_model.size() > 0) {
+			writer->AddChild("distortion_model", atts)->SetCharData(KK.distortion_model);
+			if (KK.distortion_coeffs.size() > 0) {
+				ss.str("");
+				FOREACHC(it, KK.distortion_coeffs) {
+					ss << *it << " ";
+				}
+				writer->AddChild("distortion_coeffs", atts)->SetCharData(ss.str());
+			}
+		}
+		ss.str("");
+		ss << width << " " << height; // _numchannels=3
+		writer->AddChild("image_dimensions", atts)->SetCharData(ss.str());
+		writer->AddChild("measurement_time", atts)->SetCharData(boost::lexical_cast<std::string>(measurement_time));
+		writer->AddChild("gain", atts)->SetCharData(boost::lexical_cast<std::string>(gain));
+		//writer->AddChild("format",atts)->SetCharData(_channelformat.size() > 0 ? _channelformat : std::string("uint8"));
+		if (sensor_reference.size() > 0) {
+			atts.push_back(std::make_pair("url", sensor_reference));
+			writer->AddChild("sensor_reference", atts);
+			atts.clear();
+		}
+		if (target_region.size() > 0) {
+			atts.push_back(std::make_pair("url", target_region));
+			writer->AddChild("target_region", atts);
+			atts.clear();
+		}
+	}
 
-void SensorBase::Serialize(BaseXMLWriterPtr writer, int options) const
-{
-    RAVELOG_WARN(str(boost::format("sensor %s does not implement Serialize")%GetXMLId()));
-}
+	void SensorBase::Serialize(BaseXMLWriterPtr writer, int options) const
+	{
+		RAVELOG_WARN(str(boost::format("sensor %s does not implement Serialize") % GetXMLId()));
+	}
 
-class CustomSamplerCallbackData : public boost::enable_shared_from_this<CustomSamplerCallbackData>, public UserData
-{
-public:
-    CustomSamplerCallbackData(const SpaceSamplerBase::StatusCallbackFn& callbackfn, SpaceSamplerBasePtr sampler) : _callbackfn(callbackfn), _samplerweak(sampler) {
-    }
-    virtual ~CustomSamplerCallbackData() {
-        SpaceSamplerBasePtr sampler = _samplerweak.lock();
-        if( !!sampler ) {
-            sampler->__listRegisteredCallbacks.erase(_iterator);
-        }
-    }
+	class CustomSamplerCallbackData : public boost::enable_shared_from_this<CustomSamplerCallbackData>, public UserData
+	{
+	public:
+		CustomSamplerCallbackData(const SpaceSamplerBase::StatusCallbackFn& callbackfn, SpaceSamplerBasePtr sampler) : _callbackfn(callbackfn), _samplerweak(sampler) {
+		}
+		virtual ~CustomSamplerCallbackData() {
+			SpaceSamplerBasePtr sampler = _samplerweak.lock();
+			if (!!sampler) {
+				sampler->__listRegisteredCallbacks.erase(_iterator);
+			}
+		}
 
-    SpaceSamplerBase::StatusCallbackFn _callbackfn;
-    SpaceSamplerBaseWeakPtr _samplerweak;
-    std::list<UserDataWeakPtr>::iterator _iterator;
-};
+		SpaceSamplerBase::StatusCallbackFn _callbackfn;
+		SpaceSamplerBaseWeakPtr _samplerweak;
+		std::list<UserDataWeakPtr>::iterator _iterator;
+	};
 
-typedef boost::shared_ptr<CustomSamplerCallbackData> CustomSamplerCallbackDataPtr;
+	typedef boost::shared_ptr<CustomSamplerCallbackData> CustomSamplerCallbackDataPtr;
 
-UserDataPtr SpaceSamplerBase::RegisterStatusCallback(const StatusCallbackFn& callbackfn)
-{
-    CustomSamplerCallbackDataPtr pdata(new CustomSamplerCallbackData(callbackfn,shared_sampler()));
-    pdata->_iterator = __listRegisteredCallbacks.insert(__listRegisteredCallbacks.end(),pdata);
-    return pdata;
-}
+	UserDataPtr SpaceSamplerBase::RegisterStatusCallback(const StatusCallbackFn& callbackfn)
+	{
+		CustomSamplerCallbackDataPtr pdata(new CustomSamplerCallbackData(callbackfn, shared_sampler()));
+		pdata->_iterator = __listRegisteredCallbacks.insert(__listRegisteredCallbacks.end(), pdata);
+		return pdata;
+	}
 
-int SpaceSamplerBase::_CallStatusFunctions(int sampleiteration)
-{
-    int ret = 0;
-    FOREACHC(it,__listRegisteredCallbacks) {
-        CustomSamplerCallbackDataPtr pitdata = boost::dynamic_pointer_cast<CustomSamplerCallbackData>(it->lock());
-        if( !!pitdata) {
-            ret |= pitdata->_callbackfn(sampleiteration);
-        }
-    }
-    return ret;
-}
+	int SpaceSamplerBase::_CallStatusFunctions(int sampleiteration)
+	{
+		int ret = 0;
+		FOREACHC(it, __listRegisteredCallbacks) {
+			CustomSamplerCallbackDataPtr pitdata = boost::dynamic_pointer_cast<CustomSamplerCallbackData>(it->lock());
+			if (!!pitdata) {
+				ret |= pitdata->_callbackfn(sampleiteration);
+			}
+		}
+		return ret;
+	}
 
-CollisionOptionsStateSaver::CollisionOptionsStateSaver(CollisionCheckerBasePtr p, int newoptions, bool required)
-{
-    _oldoptions = p->GetCollisionOptions();
-    _p = p;
-    if( !_p->SetCollisionOptions(newoptions) ) {
-        if( required ) {
-            throw openrave_exception(str(boost::format(_("Failed to set collision options %d in checker %s\n"))%newoptions%_p->GetXMLId()));
-        }
-    }
-}
+	CollisionOptionsStateSaver::CollisionOptionsStateSaver(CollisionCheckerBasePtr p, int newoptions, bool required)
+	{
+		_oldoptions = p->GetCollisionOptions();
+		_p = p;
+		if (!_p->SetCollisionOptions(newoptions)) {
+			if (required) {
+				throw openrave_exception(str(boost::format(_("Failed to set collision options %d in checker %s\n")) % newoptions%_p->GetXMLId()));
+			}
+		}
+	}
 
-CollisionOptionsStateSaver::~CollisionOptionsStateSaver()
-{
-    _p->SetCollisionOptions(_oldoptions);
-}
+	CollisionOptionsStateSaver::~CollisionOptionsStateSaver()
+	{
+		_p->SetCollisionOptions(_oldoptions);
+	}
 
-void RaveInitRandomGeneration(uint32_t seed)
-{
-    RaveGlobal::instance()->GetDefaultSampler()->SetSeed(seed);
-}
+	void RaveInitRandomGeneration(uint32_t seed)
+	{
+		RaveGlobal::instance()->GetDefaultSampler()->SetSeed(seed);
+	}
 
-uint32_t RaveRandomInt()
-{
-    std::vector<uint32_t> sample;
-    RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample);
-    return sample.at(0);
-}
+	uint32_t RaveRandomInt()
+	{
+		std::vector<uint32_t> sample;
+		RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample);
+		return sample.at(0);
+	}
 
-float RaveRandomFloat(IntervalType interval)
-{
-    std::vector<dReal> sample;
-    RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample,1,interval);
-    return float(sample.at(0));
-}
+	float RaveRandomFloat(IntervalType interval)
+	{
+		std::vector<dReal> sample;
+		RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample, 1, interval);
+		return float(sample.at(0));
+	}
 
-double RaveRandomDouble(IntervalType interval)
-{
-    std::vector<dReal> sample;
-    RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample,1,interval);
-    return double(sample.at(0));
-}
+	double RaveRandomDouble(IntervalType interval)
+	{
+		std::vector<dReal> sample;
+		RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample, 1, interval);
+		return double(sample.at(0));
+	}
 
-namespace LocalXML {
+	namespace LocalXML {
 
-void RaveXMLErrorFunc(void *ctx, const char *msg, ...)
-{
-    va_list args;
+		void RaveXMLErrorFunc(void *ctx, const char *msg, ...)
+		{
+			va_list args;
 
-    va_start(args, msg);
-    RAVELOG_ERROR("XML Parse error: ");
-    vprintf(msg,args);
-    va_end(args);
-}
+			va_start(args, msg);
+			RAVELOG_ERROR("XML Parse error: ");
+			vprintf(msg, args);
+			va_end(args);
+		}
 
-struct XMLREADERDATA
-{
-    XMLREADERDATA(BaseXMLReader& reader, xmlParserCtxtPtr ctxt) : _reader(reader), _ctxt(ctxt) {
-    }
-    BaseXMLReader& _reader;
-    BaseXMLReaderPtr _pdummy;
-    xmlParserCtxtPtr _ctxt;
-};
+		struct XMLREADERDATA
+		{
+			XMLREADERDATA(BaseXMLReader& reader, xmlParserCtxtPtr ctxt) : _reader(reader), _ctxt(ctxt) {
+			}
+			BaseXMLReader& _reader;
+			BaseXMLReaderPtr _pdummy;
+			xmlParserCtxtPtr _ctxt;
+		};
 
-void DefaultStartElementSAXFunc(void *ctx, const xmlChar *name, const xmlChar **atts)
-{
-    AttributesList listatts;
-    if( atts != NULL ) {
-        for (int i = 0; (atts[i] != NULL); i+=2) {
-            listatts.push_back(make_pair(string((const char*)atts[i]),string((const char*)atts[i+1])));
-            std::transform(listatts.back().first.begin(), listatts.back().first.end(), listatts.back().first.begin(), ::tolower);
-        }
-    }
+		void DefaultStartElementSAXFunc(void *ctx, const xmlChar *name, const xmlChar **atts)
+		{
+			AttributesList listatts;
+			if (atts != NULL) {
+				for (int i = 0; (atts[i] != NULL); i += 2) {
+					listatts.push_back(make_pair(string((const char*)atts[i]), string((const char*)atts[i + 1])));
+					std::transform(listatts.back().first.begin(), listatts.back().first.end(), listatts.back().first.begin(), ::tolower);
+				}
+			}
 
-    XMLREADERDATA* pdata = (XMLREADERDATA*)ctx;
-    string s = (const char*)name;
-    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-    if( !!pdata->_pdummy ) {
-        RAVELOG_VERBOSE(str(boost::format("unknown field %s\n")%s));
-        pdata->_pdummy->startElement(s,listatts);
-    }
-    else {
-        BaseXMLReader::ProcessElement pestatus = pdata->_reader.startElement(s, listatts);
-        if( pestatus != BaseXMLReader::PE_Support ) {
-            // not handling, so create a temporary class to handle it
-            pdata->_pdummy.reset(new DummyXMLReader(s,"(libxml)"));
-        }
-    }
-}
+			XMLREADERDATA* pdata = (XMLREADERDATA*)ctx;
+			string s = (const char*)name;
+			std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+			if (!!pdata->_pdummy) {
+				RAVELOG_VERBOSE(str(boost::format("unknown field %s\n") % s));
+				pdata->_pdummy->startElement(s, listatts);
+			}
+			else {
+				BaseXMLReader::ProcessElement pestatus = pdata->_reader.startElement(s, listatts);
+				if (pestatus != BaseXMLReader::PE_Support) {
+					// not handling, so create a temporary class to handle it
+					pdata->_pdummy.reset(new DummyXMLReader(s, "(libxml)"));
+				}
+			}
+		}
 
-void DefaultEndElementSAXFunc(void *ctx, const xmlChar *name)
-{
-    XMLREADERDATA* pdata = (XMLREADERDATA*)ctx;
-    string s = (const char*)name;
-    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-    if( !!pdata->_pdummy ) {
-        if( pdata->_pdummy->endElement(s) ) {
-            pdata->_pdummy.reset();
-        }
-    }
-    else {
-        if( pdata->_reader.endElement(s) ) {
-            //RAVEPRINT(L"%s size read %d\n", name, data->_ctxt->input->consumed);
-            xmlStopParser(pdata->_ctxt);
-        }
-    }
-}
+		void DefaultEndElementSAXFunc(void *ctx, const xmlChar *name)
+		{
+			XMLREADERDATA* pdata = (XMLREADERDATA*)ctx;
+			string s = (const char*)name;
+			std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+			if (!!pdata->_pdummy) {
+				if (pdata->_pdummy->endElement(s)) {
+					pdata->_pdummy.reset();
+				}
+			}
+			else {
+				if (pdata->_reader.endElement(s)) {
+					//RAVEPRINT(L"%s size read %d\n", name, data->_ctxt->input->consumed);
+					xmlStopParser(pdata->_ctxt);
+				}
+			}
+		}
 
-void DefaultCharactersSAXFunc(void *ctx, const xmlChar *ch, int len)
-{
-    XMLREADERDATA* pdata = (XMLREADERDATA*)ctx;
-    if( !!pdata->_pdummy ) {
-        pdata->_pdummy->characters(string((const char*)ch, len));
-    }
-    else {
-        pdata->_reader.characters(string((const char*)ch, len));
-    }
-}
+		void DefaultCharactersSAXFunc(void *ctx, const xmlChar *ch, int len)
+		{
+			XMLREADERDATA* pdata = (XMLREADERDATA*)ctx;
+			if (!!pdata->_pdummy) {
+				pdata->_pdummy->characters(string((const char*)ch, len));
+			}
+			else {
+				pdata->_reader.characters(string((const char*)ch, len));
+			}
+		}
 
-bool xmlDetectSAX2(xmlParserCtxtPtr ctxt)
-{
-    if (ctxt == NULL) {
-        return false;
-    }
+		bool xmlDetectSAX2(xmlParserCtxtPtr ctxt)
+		{
+			if (ctxt == NULL) {
+				return false;
+			}
 #ifdef LIBXML_SAX1_ENABLED
-    if (ctxt->sax &&  ctxt->sax->initialized == XML_SAX2_MAGIC && (ctxt->sax->startElementNs != NULL || ctxt->sax->endElementNs != NULL)) {
-        ctxt->sax2 = 1;
-    }
+			if (ctxt->sax &&  ctxt->sax->initialized == XML_SAX2_MAGIC && (ctxt->sax->startElementNs != NULL || ctxt->sax->endElementNs != NULL)) {
+				ctxt->sax2 = 1;
+			}
 #else
-    ctxt->sax2 = 1;
+			ctxt->sax2 = 1;
 #endif
 
-    ctxt->str_xml = xmlDictLookup(ctxt->dict, BAD_CAST "xml", 3);
-    ctxt->str_xmlns = xmlDictLookup(ctxt->dict, BAD_CAST "xmlns", 5);
-    ctxt->str_xml_ns = xmlDictLookup(ctxt->dict, XML_XML_NAMESPACE, 36);
-    if ( ctxt->str_xml==NULL || ctxt->str_xmlns==NULL || ctxt->str_xml_ns == NULL) {
-        return false;
-    }
-    return true;
-}
+			ctxt->str_xml = xmlDictLookup(ctxt->dict, BAD_CAST "xml", 3);
+			ctxt->str_xmlns = xmlDictLookup(ctxt->dict, BAD_CAST "xmlns", 5);
+			ctxt->str_xml_ns = xmlDictLookup(ctxt->dict, XML_XML_NAMESPACE, 36);
+			if (ctxt->str_xml == NULL || ctxt->str_xmlns == NULL || ctxt->str_xml_ns == NULL) {
+				return false;
+			}
+			return true;
+		}
 
-bool ParseXMLData(BaseXMLReader& reader, const char* buffer, int size)
-{
-    static xmlSAXHandler s_DefaultSAXHandler = { 0};
-    if( size <= 0 ) {
-        size = strlen(buffer);
-    }
-    if( !s_DefaultSAXHandler.initialized ) {
-        // first time, so init
-        s_DefaultSAXHandler.startElement = DefaultStartElementSAXFunc;
-        s_DefaultSAXHandler.endElement = DefaultEndElementSAXFunc;
-        s_DefaultSAXHandler.characters = DefaultCharactersSAXFunc;
-        s_DefaultSAXHandler.error = RaveXMLErrorFunc;
-        s_DefaultSAXHandler.initialized = 1;
-    }
+		bool ParseXMLData(BaseXMLReader& reader, const char* buffer, int size)
+		{
+			static xmlSAXHandler s_DefaultSAXHandler = { 0 };
+			if (size <= 0) {
+				size = strlen(buffer);
+			}
+			if (!s_DefaultSAXHandler.initialized) {
+				// first time, so init
+				s_DefaultSAXHandler.startElement = DefaultStartElementSAXFunc;
+				s_DefaultSAXHandler.endElement = DefaultEndElementSAXFunc;
+				s_DefaultSAXHandler.characters = DefaultCharactersSAXFunc;
+				s_DefaultSAXHandler.error = RaveXMLErrorFunc;
+				s_DefaultSAXHandler.initialized = 1;
+			}
 
-    xmlSAXHandlerPtr sax = &s_DefaultSAXHandler;
-    int ret = 0;
-    xmlParserCtxtPtr ctxt;
+			xmlSAXHandlerPtr sax = &s_DefaultSAXHandler;
+			int ret = 0;
+			xmlParserCtxtPtr ctxt;
 
-    ctxt = xmlCreateMemoryParserCtxt(buffer, size);
-    if (ctxt == NULL) {
-        return false;
-    }
-    if (ctxt->sax != (xmlSAXHandlerPtr) &xmlDefaultSAXHandler) {
-        xmlFree(ctxt->sax);
-    }
-    ctxt->sax = sax;
-    xmlDetectSAX2(ctxt);
+			ctxt = xmlCreateMemoryParserCtxt(buffer, size);
+			if (ctxt == NULL) {
+				return false;
+			}
+			if (ctxt->sax != (xmlSAXHandlerPtr)&xmlDefaultSAXHandler) {
+				xmlFree(ctxt->sax);
+			}
+			ctxt->sax = sax;
+			xmlDetectSAX2(ctxt);
 
-    XMLREADERDATA readerdata(reader, ctxt);
-    ctxt->userData = &readerdata;
+			XMLREADERDATA readerdata(reader, ctxt);
+			ctxt->userData = &readerdata;
 
-    xmlParseDocument(ctxt);
+			xmlParseDocument(ctxt);
 
-    if (ctxt->wellFormed) {
-        ret = 0;
-    }
-    else {
-        if (ctxt->errNo != 0) {
-            ret = ctxt->errNo;
-        }
-        else {
-            ret = -1;
-        }
-    }
-    if (sax != NULL) {
-        ctxt->sax = NULL;
-    }
-    if (ctxt->myDoc != NULL) {
-        xmlFreeDoc(ctxt->myDoc);
-        ctxt->myDoc = NULL;
-    }
-    xmlFreeParserCtxt(ctxt);
+			if (ctxt->wellFormed) {
+				ret = 0;
+			}
+			else {
+				if (ctxt->errNo != 0) {
+					ret = ctxt->errNo;
+				}
+				else {
+					ret = -1;
+				}
+			}
+			if (sax != NULL) {
+				ctxt->sax = NULL;
+			}
+			if (ctxt->myDoc != NULL) {
+				xmlFreeDoc(ctxt->myDoc);
+				ctxt->myDoc = NULL;
+			}
+			xmlFreeParserCtxt(ctxt);
 
-    return ret==0;
-}
+			return ret == 0;
+		}
 
-}
+	}
 
 } // end namespace OpenRAVE
 
@@ -2735,58 +2742,63 @@ ColorLayout::~ColorLayout()
 
 void ColorLayout::format(LogString& output, const spi::LoggingEventPtr& event, helpers::Pool& pool) const
 {
-    _layout->format(output, event, pool);
+	_layout->format(output, event, pool);
 
-    // add color
-    output.reserve(output.size() + 32);
-    output.insert(0, _Colorize(event));
-    output.append(LOG4CXX_STR("\x1b[0m"));
+	// add color
+	output.reserve(output.size() + 32);
+	output.insert(0, _Colorize(event));
+	output.append(LOG4CXX_STR("\x1b[0m"));
 }
 
 LogString ColorLayout::_Colorize(const spi::LoggingEventPtr& event) const
 {
-    int bg = -1;
-    int fg = -1;
-    bool bold = false;
-    LogString csi;
+	int bg = -1;
+	int fg = -1;
+	bool bold = false;
+	LogString csi;
 
-    csi.reserve(32);
+	csi.reserve(32);
 
-    if (event->getLevel()->isGreaterOrEqual(Level::getFatal())) {
-        fg = OPENRAVECOLOR_FATALLEVEL;
-    } else if (event->getLevel()->isGreaterOrEqual(Level::getError())) {
-        fg = OPENRAVECOLOR_ERRORLEVEL;
-    } else if (event->getLevel()->isGreaterOrEqual(Level::getWarn())) {
-        fg = OPENRAVECOLOR_WARNLEVEL;
-    } else if (event->getLevel()->isGreaterOrEqual(Level::getInfo())) {
-    } else if (event->getLevel()->isGreaterOrEqual(Level::getDebug())) {
-        fg = OPENRAVECOLOR_DEBUGLEVEL;
-    } else {
-        fg = OPENRAVECOLOR_VERBOSELEVEL;
-    }
+	if (event->getLevel()->isGreaterOrEqual(Level::getFatal())) {
+		fg = OPENRAVECOLOR_FATALLEVEL;
+	}
+	else if (event->getLevel()->isGreaterOrEqual(Level::getError())) {
+		fg = OPENRAVECOLOR_ERRORLEVEL;
+	}
+	else if (event->getLevel()->isGreaterOrEqual(Level::getWarn())) {
+		fg = OPENRAVECOLOR_WARNLEVEL;
+	}
+	else if (event->getLevel()->isGreaterOrEqual(Level::getInfo())) {
+	}
+	else if (event->getLevel()->isGreaterOrEqual(Level::getDebug())) {
+		fg = OPENRAVECOLOR_DEBUGLEVEL;
+	}
+	else {
+		fg = OPENRAVECOLOR_VERBOSELEVEL;
+	}
 
-    csi += LOG4CXX_STR("\x1b[0");
+	csi += LOG4CXX_STR("\x1b[0");
 
-    if (bg >= 0) {
-        csi += LOG4CXX_STR(';');
-        csi += LOG4CXX_STR('4');
-        csi += LOG4CXX_STR('0') + bg;
-    }
+	if (bg >= 0) {
+		csi += LOG4CXX_STR(';');
+		csi += LOG4CXX_STR('4');
+		csi += LOG4CXX_STR('0') + bg;
+	}
 
-    if (fg >= 0) {
-        csi += LOG4CXX_STR(';');
-        csi += LOG4CXX_STR('3');
-        csi += LOG4CXX_STR('0') + fg;
-    }
+	if (fg >= 0) {
+		csi += LOG4CXX_STR(';');
+		csi += LOG4CXX_STR('3');
+		csi += LOG4CXX_STR('0') + fg;
+	}
 
-    if (bold) {
-        csi += LOG4CXX_STR(';');
-        csi += LOG4CXX_STR('1');
-    }
+	if (bold) {
+		csi += LOG4CXX_STR(';');
+		csi += LOG4CXX_STR('1');
+	}
 
-    csi += LOG4CXX_STR('m');
+	csi += LOG4CXX_STR('m');
 
-    return csi;
+	return csi;
 }
 
 #endif

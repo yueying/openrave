@@ -44,7 +44,7 @@ struct hash<fclrave::CollisionPair>
 
 namespace fclrave {
 
-typedef std::unordered_map<CollisionPair, fcl::Vec3f> NarrowCollisionCache;
+typedef std::unordered_map<CollisionPair, fcl::Vector3d> NarrowCollisionCache;
 #endif // NARROW_COLLISION_CACHING
 
 typedef FCLSpace::KinBodyInfoConstPtr KinBodyInfoConstPtr;
@@ -93,8 +93,8 @@ public:
         }
 
         boost::shared_ptr<FCLCollisionChecker> _pchecker;
-        fcl::CollisionRequest _request;
-        fcl::CollisionResult _result;
+        fcl::CollisionRequest<double> _request;
+        fcl::CollisionResult<double> _result;
         CollisionReportPtr _report;
         std::vector<KinBodyConstPtr> const& _vbodyexcluded;
         std::vector<LinkConstPtr> const& _vlinkexcluded;
@@ -120,7 +120,7 @@ public:
         // TODO : Should we put a more reasonable arbitrary value ?
         _numMaxContacts = std::numeric_limits<int>::max();
         _nGetEnvManagerCacheClearCount = 100000;
-        __description = ":Interface Author: Kenji Maillard\n\nFlexible Collision Library collision checker";
+        description_ = ":Interface Author: Kenji Maillard\n\nFlexible Collision Library collision checker";
 
         SETUP_STATISTICS(_statistics, _userdatakey, GetEnv()->GetId());
 
@@ -264,45 +264,52 @@ public:
     BroadPhaseCollisionManagerPtr _CreateManagerFromBroadphaseAlgorithm(std::string const &algorithm)
     {
         if(algorithm == "Naive") {
-            return boost::make_shared<fcl::NaiveCollisionManager>();
+            return boost::make_shared<fcl::NaiveCollisionManager<double>>();
         } else if(algorithm == "SaP") {
-            return boost::make_shared<fcl::SaPCollisionManager>();
+            return boost::make_shared<fcl::SaPCollisionManager<double>>();
         } else if(algorithm == "SSaP") {
-            return boost::make_shared<fcl::SSaPCollisionManager>();
+            return boost::make_shared<fcl::SSaPCollisionManager<double>>();
         } else if(algorithm == "SpatialHashing") {
             throw OPENRAVE_EXCEPTION_FORMAT0("No spatial data provided, spatial hashing needs to be set up  with SetSpatialHashingBroadPhaseAlgorithm", OpenRAVE::ORE_InvalidArguments);
         } else if(algorithm == "IntervalTree") {
-            return boost::make_shared<fcl::IntervalTreeCollisionManager>();
+            return boost::make_shared<fcl::IntervalTreeCollisionManager<double>>();
         } else if(algorithm == "DynamicAABBTree") {
-            return boost::make_shared<fcl::DynamicAABBTreeCollisionManager>();
+            return boost::make_shared<fcl::DynamicAABBTreeCollisionManager<double>>();
         } else if(algorithm == "DynamicAABBTree1") {
-            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager> pmanager = boost::make_shared<fcl::DynamicAABBTreeCollisionManager>();
+            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager<double>> pmanager 
+				= boost::make_shared<fcl::DynamicAABBTreeCollisionManager<double>>();
             pmanager->tree_init_level = 1;
             return pmanager;
         } else if(algorithm == "DynamicAABBTree2") {
-            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager> pmanager = boost::make_shared<fcl::DynamicAABBTreeCollisionManager>();
+            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager<double>> pmanager
+				= boost::make_shared<fcl::DynamicAABBTreeCollisionManager<double>>();
             pmanager->tree_init_level = 2;
             return pmanager;
         } else if(algorithm == "DynamicAABBTree3") {
-            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager> pmanager = boost::make_shared<fcl::DynamicAABBTreeCollisionManager>();
+            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager<double>> pmanager 
+				= boost::make_shared<fcl::DynamicAABBTreeCollisionManager<double>>();
             pmanager->tree_init_level = 3;
             return pmanager;
         } else if(algorithm == "DynamicAABBTree_Array") {
-            return boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array>();
+            return boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array<double>>();
         } else if(algorithm == "DynamicAABBTree1_Array") {
-            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager_Array> pmanager = boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array>();
+            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager_Array<double>> pmanager
+				= boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array<double>>();
             pmanager->tree_init_level = 1;
             return pmanager;
         } else if(algorithm == "DynamicAABBTree2_Array") {
-            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager_Array> pmanager = boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array>();
+            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager_Array<double>> pmanager
+				= boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array<double>>();
             pmanager->tree_init_level = 2;
             return pmanager;
         } else if(algorithm == "DynamicAABBTree3_Array") {
-            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager_Array> pmanager = boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array>();
+            boost::shared_ptr<fcl::DynamicAABBTreeCollisionManager_Array<double>> pmanager
+				= boost::make_shared<fcl::DynamicAABBTreeCollisionManager_Array<double>>();
             pmanager->tree_init_level = 3;
             return pmanager;
         } else {
-            throw OPENRAVE_EXCEPTION_FORMAT("Unknown broad-phase algorithm '%s'.", algorithm, OpenRAVE::ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT("Unknown broad-phase algorithm '%s'.",
+				algorithm, OpenRAVE::ORE_InvalidArguments);
         }
     }
 
@@ -642,7 +649,7 @@ public:
         _fclPointsCache.resize(num_points);
         for (size_t ipoint = 0; ipoint < num_points; ++ipoint) {
             Vector v = trimesh.vertices[ipoint];
-            _fclPointsCache[ipoint] = fcl::Vec3f(v.x, v.y, v.z);
+            _fclPointsCache[ipoint] = fcl::Vector3d(v.x, v.y, v.z);
         }
 
         _fclTrianglesCache.resize(num_triangles);
@@ -654,7 +661,7 @@ public:
         FCLSpace::KinBodyInfo::LinkInfo objUserData;
 
         CollisionGeometryPtr ctrigeom = _fclspace->GetMeshFactory()(_fclPointsCache, _fclTrianglesCache);
-        fcl::CollisionObject ctriobj(ctrigeom);
+        fcl::CollisionObject<double> ctriobj(ctrigeom);
         //ctriobj.computeAABB(); // necessary?
         ctriobj.setUserData(&objUserData);
 #ifdef FCLRAVE_CHECKPARENTLESS
@@ -695,10 +702,11 @@ public:
             ADD_TIMING(_statistics);
             query.bselfCollision = true;
 #ifdef FCLRAVE_CHECKPARENTLESS
-            boost::shared_ptr<void> onexit((void*) 0, boost::bind(&FCLCollisionChecker::_PrintCollisionManagerInstanceSelf, this, boost::ref(*pbody)));
+            boost::shared_ptr<void> onexit((void*) 0, boost::bind(&FCLCollisionChecker::_PrintCollisionManagerInstanceSelf,
+				this, boost::ref(*pbody)));
 #endif            
             KinBodyInfoPtr pinfo = _fclspace->GetInfo(pbody);
-            FOREACH(itset, nonadjacent) {
+            FOREACHC(itset, nonadjacent) {
                 size_t index1 = *itset&0xffff, index2 = *itset>>16;
                 // We don't need to check if the links are enabled since we got adjacency information with AO_Enabled
                 LinkInfoPtr pLINK1 = pinfo->vlinks[index1], pLINK2 = pinfo->vlinks[index2];
@@ -747,7 +755,7 @@ public:
             ADD_TIMING(_statistics);
             query.bselfCollision = true;
             KinBodyInfoPtr pinfo = _fclspace->GetInfo(pbody);
-            FOREACH(itset, nonadjacent) {
+            FOREACHC(itset, nonadjacent) {
                 int index1 = *itset&0xffff, index2 = *itset>>16;
                 if( plink->GetIndex() == index1 || plink->GetIndex() == index2 ) {
                     LinkInfoPtr pLINK1 = pinfo->vlinks[index1], pLINK2 = pinfo->vlinks[index2];
@@ -771,12 +779,12 @@ private:
         return boost::dynamic_pointer_cast<FCLCollisionChecker>(shared_from_this());
     }
 
-    static bool CheckNarrowPhaseCollision(fcl::CollisionObject *o1, fcl::CollisionObject *o2, void *data) {
+    static bool CheckNarrowPhaseCollision(fcl::CollisionObject<double> *o1, fcl::CollisionObject<double> *o2, void *data) {
         CollisionCallbackData* pcb = static_cast<CollisionCallbackData *>(data);
         return pcb->_pchecker->CheckNarrowPhaseCollision(o1, o2, pcb);
     }
 
-    bool CheckNarrowPhaseCollision(fcl::CollisionObject *o1, fcl::CollisionObject *o2, CollisionCallbackData* pcb)
+    bool CheckNarrowPhaseCollision(fcl::CollisionObject<double> *o1, fcl::CollisionObject<double> *o2, CollisionCallbackData* pcb)
     {
         if( pcb->_bStopChecking ) {
             return true;     // don't test anymore
@@ -880,12 +888,12 @@ private:
     }
 
 
-    static bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject *o1, fcl::CollisionObject *o2, void *data) {
+    static bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject<double> *o1, fcl::CollisionObject<double> *o2, void *data) {
         CollisionCallbackData* pcb = static_cast<CollisionCallbackData *>(data);
         return pcb->_pchecker->CheckNarrowPhaseGeomCollision(o1, o2, pcb);
     }
 
-    bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject *o1, fcl::CollisionObject *o2, CollisionCallbackData* pcb)
+    bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject<double> *o1, fcl::CollisionObject<double> *o2, CollisionCallbackData* pcb)
     {
         if( pcb->_bStopChecking ) {
             return true; // don't test anymore
@@ -900,11 +908,11 @@ private:
             pcb->_request.cached_gjk_guess = it->second;
         } else {
             // Is there anything more intelligent we could do there with the collision objects AABB ?
-            pcb->_request.cached_gjk_guess = fcl::Vec3f(1,0,0);
+            pcb->_request.cached_gjk_guess = fcl::Vector3d(1,0,0);
         }
 #endif
 
-        size_t numContacts = fcl::collide(o1, o2, pcb->_request, pcb->_result);
+        size_t numContacts = fcl::collide<double>(o1, o2, pcb->_request, pcb->_result);
 
 #ifdef NARROW_COLLISION_CACHING
         mCollisionCachedGuesses[collpair] = pcb->_result.cached_gjk_guess;
@@ -936,7 +944,7 @@ private:
                 if( _options & (OpenRAVE::CO_Contacts | OpenRAVE::CO_AllGeometryContacts) ) {
                     _reportcache.contacts.resize(numContacts);
                     for(size_t i = 0; i < numContacts; ++i) {
-                        fcl::Contact const &c = pcb->_result.getContact(i);
+                        fcl::Contact<double> const &c = pcb->_result.getContact(i);
                         _reportcache.contacts[i] = CollisionReport::CONTACT(ConvertVectorFromFCL(c.pos), ConvertVectorFromFCL(c.normal), c.penetration_depth);
                     }
                 }
@@ -945,7 +953,7 @@ private:
                 if( pcb->_bHasCallbacks ) {
                     OpenRAVE::CollisionAction action = OpenRAVE::CA_DefaultAction;
                     CollisionReportPtr preport(&_reportcache, OpenRAVE::utils::null_deleter());
-                    FOREACH(callback, pcb->GetCallbacks()) {
+                    FOREACHC(callback, pcb->GetCallbacks()) {
                         action = (*callback)(preport, false);
                         if( action == OpenRAVE::CA_Ignore ) {
                             return false;
@@ -966,7 +974,8 @@ private:
                     // We maintain vLinkColliding ordered
                     LinkPair linkPair = MakeLinkPair(plink1, plink2);
                     typedef std::vector< std::pair< LinkConstPtr, LinkConstPtr > >::iterator PairIterator;
-                    PairIterator end = pcb->_report->vLinkColliding.end(), first = std::lower_bound(pcb->_report->vLinkColliding.begin(), end, linkPair);
+                    PairIterator end = pcb->_report->vLinkColliding.end(), first 
+						= std::lower_bound(pcb->_report->vLinkColliding.begin(), end, linkPair);
                     if( first == end || *first != linkPair ) {
                         pcb->_report->vLinkColliding.insert(first, linkPair);
                     }
@@ -987,7 +996,7 @@ private:
         return false; // keep checking collision
     }
 
-    static bool CheckNarrowPhaseDistance(fcl::CollisionObject *o1, fcl::CollisionObject *o2, void *data)
+    static bool CheckNarrowPhaseDistance(fcl::CollisionObject<double> *o1, fcl::CollisionObject<double> *o2, void *data)
     {
         // TODO
         return false;
@@ -1013,7 +1022,7 @@ private:
         }
     }
 
-    std::pair<FCLSpace::KinBodyInfo::LinkInfo*, LinkConstPtr> GetCollisionLink(const fcl::CollisionObject &collObj)
+    std::pair<FCLSpace::KinBodyInfo::LinkInfo*, LinkConstPtr> GetCollisionLink(const fcl::CollisionObject<double> &collObj)
     {
         FCLSpace::KinBodyInfo::LinkInfo* link_raw = static_cast<FCLSpace::KinBodyInfo::LinkInfo *>(collObj.getUserData());
         if( !!link_raw ) {
@@ -1162,7 +1171,7 @@ private:
     // In order to reduce allocations during collision checking
 
     CollisionReport _reportcache;
-    std::vector<fcl::Vec3f> _fclPointsCache;
+    std::vector<fcl::Vector3d> _fclPointsCache;
     std::vector<fcl::Triangle> _fclTrianglesCache;
 
     bool _bIsSelfCollisionChecker; // Currently not used

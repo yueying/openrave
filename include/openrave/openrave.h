@@ -1080,20 +1080,25 @@ public:
     static const IkParameterizationType Type_TranslationLocalGlobal6D RAVE_DEPRECATED = IKP_TranslationLocalGlobal6D;
     static const IkParameterizationType Type_NumberOfParameterizations RAVE_DEPRECATED = IKP_NumberOfParameterizations;
 
-    IkParameterization() : _type(IKP_None) {
+    IkParameterization() : _type(IKP_None) 
+	{
     }
     /// \brief sets a 6D transform parameterization
-    IkParameterization(const Transform &t) {
+    IkParameterization(const Transform &t)
+	{
         SetTransform6D(t);
     }
     /// \brief sets a ray parameterization
-    IkParameterization(const RAY &r) {
+    IkParameterization(const RAY &r) 
+	{
         SetRay4D(r);
     }
     /// \brief set a custom parameterization using a transform as the source of the data. Not all types are supported with this method.
-    IkParameterization(const Transform &t, IkParameterizationType type) {
+    IkParameterization(const Transform &t, IkParameterizationType type) 
+	{
         _type=type;
-        switch(_type) {
+        switch(_type) 
+		{
         case IKP_Transform6D: SetTransform6D(t); break;
         case IKP_Rotation3D: SetRotation3D(t.rot); break;
         case IKP_Translation3D: SetTranslation3D(t.trans); break;

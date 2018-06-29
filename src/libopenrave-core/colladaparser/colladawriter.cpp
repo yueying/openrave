@@ -297,7 +297,8 @@ private:
         daeElementRef _elt;
     };
 
-    ColladaWriter(EnvironmentBaseConstPtr penv, const AttributesList& atts) : _dom(NULL), _penv(penv)
+    ColladaWriter(EnvironmentBaseConstPtr penv, const AttributesList& atts) 
+		: _dom(NULL), _penv(penv)
     {
         _doc = NULL;
         //_globalunit = 1.0;
@@ -309,20 +310,24 @@ private:
         _bReuseSimilar = false;
         _listExternalRefExports.clear();
         _listIgnoreExternalURIs.clear();
-        FOREACHC(itatt,atts) {
-            if( itatt->first == "externalref" ) {
-                if( itatt->second == "*" ) {
+        FOREACHC(itatt,atts)
+		{
+            if( itatt->first == "externalref" )
+			{
+                if( itatt->second == "*" ) 
+				{
                     _bExternalRefAllBodies = true;
                 }
-                else {
-                    stringstream ss(itatt->second);
-                    std::list<string> newelts((istream_iterator<string>(ss)), istream_iterator<string>());
+                else 
+				{
+                    std::stringstream ss(itatt->second);
+                    std::list<std::string> newelts((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
                     _listExternalRefExports.splice(_listExternalRefExports.end(),newelts);
                 }
             }
             else if( itatt->first == "ignoreexternaluri" ) {
-                stringstream ss(itatt->second);
-                std::list<string> newelts((istream_iterator<string>(ss)), istream_iterator<string>());
+				std::stringstream ss(itatt->second);
+                std::list<std::string> newelts((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
                 _listIgnoreExternalURIs.splice(_listIgnoreExternalURIs.end(),newelts);
             }
             else if( itatt->first == "forcewrite" ) {
@@ -330,15 +335,15 @@ private:
                     _bForceWriteAll = true;
                 }
                 else {
-                    stringstream ss(itatt->second);
-                    std::list<string> newelts((istream_iterator<string>(ss)), istream_iterator<string>());
+					std::stringstream ss(itatt->second);
+                    std::list<std::string> newelts((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
                     _setForceWriteOptions.insert(newelts.begin(),newelts.end());
                 }
             }
             else if( itatt->first == "skipwrite" ) {
-                stringstream ss(itatt->second);
-                std::list<string> newelts((istream_iterator<string>(ss)), istream_iterator<string>());
-                _setSkipWriteOptions.insert(newelts.begin(),newelts.end());
+				std::stringstream ss(itatt->second);
+                std::list<std::string> newelts((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
+                skip_write_options_set_.insert(newelts.begin(),newelts.end());
             }
             else if( itatt->first == "openravescheme" ) {
                 _vForceResolveOpenRAVEScheme = itatt->second;
@@ -377,7 +382,7 @@ private:
     }
 
     /// \param docname the top level document?
-    virtual void Init(const string& docname, const std::string& keywords=std::string())
+    virtual void Init(const std::string& docname, const std::string& keywords=std::string())
     {
         daeInt error = _dae->getDatabase()->insertDocument(docname.c_str(), &_doc );     // also creates a collada root
         BOOST_ASSERT( error == DAE_OK && !!_doc );
@@ -417,11 +422,13 @@ private:
         }
 
         _globalscene = _dom->getScene();
-        if( !_globalscene ) {
+        if( !_globalscene ) 
+		{
             _globalscene = daeSafeCast<domCOLLADA::domScene>( _dom->add( COLLADA_ELEMENT_SCENE ) );
         }
 
-        if( IsWrite("visual") ) {
+        if( IsWrite("visual") )
+		{
             _visualScenesLib = daeSafeCast<domLibrary_visual_scenes>(_dom->add(COLLADA_ELEMENT_LIBRARY_VISUAL_SCENES));
             _visualScenesLib->setId("vscenes");
         }
@@ -2436,7 +2443,7 @@ private:
 
     virtual bool IsWrite(const std::string& type)
     {
-        return _setSkipWriteOptions.find(type) == _setSkipWriteOptions.end();
+        return skip_write_options_set_.find(type) == skip_write_options_set_.end();
     }
 
     virtual bool IsForceWrite(const std::string& type)
@@ -2467,7 +2474,7 @@ private:
     std::list<std::string> _listExternalRefExports; //<! body names to try to export externally
     std::list<std::string> _listIgnoreExternalURIs; //<! don't use these URIs for external indexing
     std::set<std::string> _setForceWriteOptions;
-    std::set<std::string> _setSkipWriteOptions;
+    std::set<std::string> skip_write_options_set_;
 
     std::map<int, int> _mapBodyIds; //<! map from body environment id to unique collada ids
     bool _bExternalRefAllBodies; //<! if true, attempts to externally write all bodies

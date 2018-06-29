@@ -514,13 +514,16 @@ void QtOSGViewer::_CreateMenus()
 
 void QtOSGViewer::LoadEnvironment()
 {
-    QString s = QFileDialog::getOpenFileName( _posgWidget, "Load Environment", QString(), "Env Files (*.xml);;COLLADA Files (*.dae|*.zae)");
-    if( s.length() == 0 ) {
+    QString s = QFileDialog::getOpenFileName( _posgWidget,
+		"Load Environment", QString(), "Env Files (*.xml);;COLLADA Files (*.dae *.zae)");
+    if( s.length() == 0 ) 
+	{
         return;
     }
 
     _Reset();
-    try {
+    try 
+	{
         EnvironmentMutex::scoped_lock lockenv(GetEnv()->GetMutex());
         GetEnv()->Reset();
 

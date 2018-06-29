@@ -437,50 +437,64 @@ namespace OpenRAVE
 		typedef boost::shared_ptr<Plugin const> PluginConstPtr;
 		friend class Plugin;
 
-		RaveDatabase() : _bShutdown(false)
+		RaveDatabase() : is_shutdown_(false)
 		{
 		}
-		virtual ~RaveDatabase() {
+		virtual ~RaveDatabase() 
+		{
 			Destroy();
 		}
 
-		RobotBasePtr CreateRobot(EnvironmentBasePtr penv, const std::string& name) {
+		RobotBasePtr CreateRobot(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<RobotBase>(Create(penv, PT_Robot, name));
 		}
-		KinBodyPtr CreateKinBody(EnvironmentBasePtr penv, const std::string& name) {
+		KinBodyPtr CreateKinBody(EnvironmentBasePtr penv, const std::string& name) 
+		{
 			return RaveInterfaceCast<KinBody>(Create(penv, PT_KinBody, name));
 		}
-		PlannerBasePtr CreatePlanner(EnvironmentBasePtr penv, const std::string& name) {
+		PlannerBasePtr CreatePlanner(EnvironmentBasePtr penv, const std::string& name) 
+		{
 			return RaveInterfaceCast<PlannerBase>(Create(penv, PT_Planner, name));
 		}
-		SensorSystemBasePtr CreateSensorSystem(EnvironmentBasePtr penv, const std::string& name) {
+		SensorSystemBasePtr CreateSensorSystem(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<SensorSystemBase>(Create(penv, PT_SensorSystem, name));
 		}
-		ControllerBasePtr CreateController(EnvironmentBasePtr penv, const std::string& name) {
+		ControllerBasePtr CreateController(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<ControllerBase>(Create(penv, PT_Controller, name));
 		}
-		ModuleBasePtr CreateModule(EnvironmentBasePtr penv, const std::string& name) {
+		ModuleBasePtr CreateModule(EnvironmentBasePtr penv, const std::string& name) 
+		{
 			return RaveInterfaceCast<ModuleBase>(Create(penv, PT_Module, name));
 		}
-		IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr penv, const std::string& name) {
+		IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<IkSolverBase>(Create(penv, PT_IkSolver, name));
 		}
-		PhysicsEngineBasePtr CreatePhysicsEngine(EnvironmentBasePtr penv, const std::string& name) {
+		PhysicsEngineBasePtr CreatePhysicsEngine(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<PhysicsEngineBase>(Create(penv, PT_PhysicsEngine, name));
 		}
-		SensorBasePtr CreateSensor(EnvironmentBasePtr penv, const std::string& name) {
+		SensorBasePtr CreateSensor(EnvironmentBasePtr penv, const std::string& name) 
+		{
 			return RaveInterfaceCast<SensorBase>(Create(penv, PT_Sensor, name));
 		}
-		CollisionCheckerBasePtr CreateCollisionChecker(EnvironmentBasePtr penv, const std::string& name) {
+		CollisionCheckerBasePtr CreateCollisionChecker(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<CollisionCheckerBase>(Create(penv, PT_CollisionChecker, name));
 		}
-		ViewerBasePtr CreateViewer(EnvironmentBasePtr penv, const std::string& name) {
+		ViewerBasePtr CreateViewer(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<ViewerBase>(Create(penv, PT_Viewer, name));
 		}
-		TrajectoryBasePtr CreateTrajectory(EnvironmentBasePtr penv, const std::string& name) {
+		TrajectoryBasePtr CreateTrajectory(EnvironmentBasePtr penv, const std::string& name)
+		{
 			return RaveInterfaceCast<TrajectoryBase>(Create(penv, PT_Trajectory, name));
 		}
-		SpaceSamplerBasePtr CreateSpaceSampler(EnvironmentBasePtr penv, const std::string& name) {
+		SpaceSamplerBasePtr CreateSpaceSampler(EnvironmentBasePtr penv, const std::string& name) 
+		{
 			return RaveInterfaceCast<SpaceSamplerBase>(Create(penv, PT_SpaceSampler, name));
 		}
 
@@ -574,11 +588,12 @@ namespace OpenRAVE
 		{
 			RAVELOG_DEBUG("plugin database shutting down...\n");
 			{
-				boost::mutex::scoped_lock lock(_mutexPluginLoader);
-				_bShutdown = true;
-				_condLoaderHasWork.notify_all();
+				boost::mutex::scoped_lock lock(plugin_loader_mutex_);
+				is_shutdown_ = true;
+				loader_has_work_cond_.notify_all();
 			}
-			if (!!plugin_loader_thread_) {
+			if (!!plugin_loader_thread_) 
+			{
 				plugin_loader_thread_->join();
 				plugin_loader_thread_.reset();
 			}
@@ -1183,44 +1198,51 @@ namespace OpenRAVE
 
 		void _AddToLoader(PluginPtr p)
 		{
-			boost::mutex::scoped_lock lock(_mutexPluginLoader);
-			_listPluginsToLoad.push_back(p);
-			_condLoaderHasWork.notify_all();
+			boost::mutex::scoped_lock lock(plugin_loader_mutex_);
+			plugins_to_load_list_.push_back(p);
+			loader_has_work_cond_.notify_all();
 		}
 
 		void _PluginLoaderThread()
 		{
-			while (!_bShutdown) {
-				std::list<PluginPtr> listPluginsToLoad;
+			while (!is_shutdown_) 
+			{
+				std::list<PluginPtr> plugins_to_load_list;
 				{
-					boost::mutex::scoped_lock lock(_mutexPluginLoader);
-					if (_listPluginsToLoad.empty()) {
-						_condLoaderHasWork.wait(lock);
-						if (_bShutdown) {
+					boost::mutex::scoped_lock lock(plugin_loader_mutex_);
+					if (plugins_to_load_list_.empty()) 
+					{
+						loader_has_work_cond_.wait(lock);
+						if (is_shutdown_) 
+						{
 							break;
 						}
 					}
-					listPluginsToLoad.swap(_listPluginsToLoad);
+					plugins_to_load_list.swap(plugins_to_load_list_);
 				}
-				FOREACH(itplugin, listPluginsToLoad) {
-					if (_bShutdown) {
+				for(auto itplugin: plugins_to_load_list) 
+				{
+					if (is_shutdown_) 
+					{
 						break;
 					}
-					boost::mutex::scoped_lock lockplugin((*itplugin)->_mutex);
-					if (_bShutdown) {
+					boost::mutex::scoped_lock lockplugin(itplugin->_mutex);
+					if (is_shutdown_)
+					{
 						break;
 					}
-					(*itplugin)->plibrary = _SysLoadLibrary((*itplugin)->ppluginname, false);
-					if ((*itplugin)->plibrary == NULL) {
+					itplugin->plibrary = _SysLoadLibrary(itplugin->ppluginname, false);
+					if (itplugin->plibrary == NULL) 
+					{
 						// for some reason cannot load the library, so shut it down
-						(*itplugin)->_bShutdown = true;
+						itplugin->_bShutdown = true;
 					}
-					(*itplugin)->_cond.notify_all();
+					itplugin->_cond.notify_all();
 				}
 			}
 		}
 
-		list<PluginPtr> plugins_list_;
+		std::list<PluginPtr> plugins_list_;
 		mutable boost::mutex _mutex;     //<! changing plugin database
 		std::list<void*> _listDestroyLibraryQueue;
 		std::list< boost::weak_ptr<RegisteredInterface> > registered_interfaces_list_;
@@ -1228,11 +1250,11 @@ namespace OpenRAVE
 
 		/// \name plugin loading
 		//@{
-		mutable boost::mutex _mutexPluginLoader;     //<! specifically for loading shared objects
-		boost::condition _condLoaderHasWork;
-		std::list<PluginPtr> _listPluginsToLoad;
+		mutable boost::mutex plugin_loader_mutex_;     //<! specifically for loading shared objects
+		boost::condition loader_has_work_cond_;
+		std::list<PluginPtr> plugins_to_load_list_;
 		boost::shared_ptr<boost::thread> plugin_loader_thread_;
-		bool _bShutdown;
+		bool is_shutdown_;
 		//@}
 	};
 

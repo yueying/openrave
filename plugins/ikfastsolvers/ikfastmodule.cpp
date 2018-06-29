@@ -642,17 +642,17 @@ public:
 
                 // create a temporary file and store COLLADA kinematics representation
                 AttributesList atts;
-                atts.push_back(make_pair(string("skipwrite"), string("visual readable sensors physics")));
-                atts.push_back(make_pair(string("target"), probot->GetName()));
+                atts.push_back(make_pair(std::string("skipwrite"), std::string("readable sensors physics")));
+                atts.push_back(make_pair(std::string("target"), probot->GetName()));
                 std::string tempfilename = RaveGetHomeDirectory() + str(boost::format("/testikfastrobot%d.dae")%(RaveRandomInt()%1000));
                 // file not found, so create
                 RAVELOG_INFO(str(boost::format("Generating inverse kinematics %s for manip %s:%s, hash=%s, saving intermediate data to %s, will take several minutes...\n")%ik_type_str%probot->GetName()%pmanip->GetName()%pmanip->GetInverseKinematicsStructureHash(iktype)%tempfilename));
                 GetEnv()->Save(tempfilename,EnvironmentBase::SO_Body,atts);
                 std::string cmdgen = str(boost::format("openrave.py --database inversekinematics --usecached --robot=\"%s\" --manipname=%s --iktype=%s")%tempfilename%pmanip->GetName()%ik_type_str);
                 // use raw system call, popen causes weird crash in the inversekinematics compiler
-                int generateexit = system(cmdgen.c_str());
-                //FILE* pipe = MYPOPEN(cmdgen.c_str(), "r");
-                //int generateexit = MYPCLOSE(pipe);
+                //int generateexit = system(cmdgen.c_str());
+                FILE* pipe = MYPOPEN(cmdgen.c_str(), "r");
+                int generateexit = MYPCLOSE(pipe);
                 if( generateexit != 0 ) {
                     usleep(100000);
                     RAVELOG_DEBUG("failed to close pipe\n");

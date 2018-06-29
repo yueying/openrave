@@ -31,7 +31,8 @@ public:
     template <typename T>
     inline static std::string getSid(T t)
     {
-        if( !t->getSid() ) {
+        if( !t->getSid() )
+		{
             return "(None)";
         }
         return t->getSid();
@@ -39,7 +40,8 @@ public:
     template <typename T>
     inline static std::string getElementId(T t)
     {
-        if( !t->getId() ) {
+        if( !t->getId() ) 
+		{
             return "(None)";
         }
         return t->getId();
@@ -48,20 +50,27 @@ public:
     class daeOpenRAVEURIResolver : public daeURIResolver
     {
 public:
-        daeOpenRAVEURIResolver(DAE& dae, const std::string& scheme, ColladaReader* preader) : daeURIResolver(dae), _scheme(scheme), _preader(preader) {
+        daeOpenRAVEURIResolver(DAE& dae, const std::string& scheme, ColladaReader* preader)
+			: daeURIResolver(dae), _scheme(scheme), _preader(preader)
+		{
         }
 
-        ~daeOpenRAVEURIResolver() {
+        ~daeOpenRAVEURIResolver() 
+		{
         }
 
 public:
-        virtual daeElement* resolveElement(const daeURI& uri) {
-            string docuri = cdom::assembleUri(uri.scheme(), uri.authority(), uri.path(), "", "");
+        virtual daeElement* resolveElement(const daeURI& uri)
+		{
+            std::string docuri = cdom::assembleUri(uri.scheme(), uri.authority(), uri.path(), "", "");
             daeDocument* doc = dae->getDatabase()->getDocument(docuri.c_str(), true);
-            if( !doc ) {
-                if( uri.scheme() == _scheme ) {
+            if( !doc ) 
+			{
+                if( uri.scheme() == _scheme ) 
+				{
                     std::string uriNativePath = cdom::uriToFilePath(uri.path());
-                    if( uriNativePath.size() == 0 ) {
+                    if( uriNativePath.size() == 0 ) 
+					{
                         return NULL;
                     }
                     // remove first slash because we need relative file
@@ -222,28 +231,36 @@ public:
         std::list<JointAxisBinding> listAxisBindings;
         std::list<InstanceLinkBinding> listInstanceLinkBindings;
 
-        bool AddAxisInfo(const domInstance_kinematics_model_Array& arr, domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info)
+        bool AddAxisInfo(const domInstance_kinematics_model_Array& arr, 
+			domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info)
         {
-            if( !kinematics_axis_info ) {
+            if( !kinematics_axis_info ) 
+			{
                 return false;
             }
-            for(size_t ik = 0; ik < arr.getCount(); ++ik) {
+            for(size_t ik = 0; ik < arr.getCount(); ++ik) 
+			{
                 daeElement* pelt = daeSidRef(kinematics_axis_info->getAxis(), arr[ik]->getUrl().getElement()).resolve().elt;
-                if( !!pelt ) {
+                if( !!pelt ) 
+				{
                     // look for the correct placement
                     bool bfound = false;
-                    FOREACH(itbinding,listAxisBindings) {
-                        if( ColladaReader::CompareElementsSidToId(itbinding->pkinematicaxis,pelt) > 0 ) {
+                    FOREACH(itbinding,listAxisBindings) 
+					{
+                        if( ColladaReader::CompareElementsSidToId(itbinding->pkinematicaxis,pelt) > 0 )
+						{
                             RAVELOG_DEBUG(str(boost::format("find binding for axis: %s\n")%kinematics_axis_info->getAxis()));
                             itbinding->kinematics_axis_info = kinematics_axis_info;
-                            if( !!motion_axis_info ) {
+                            if( !!motion_axis_info ) 
+							{
                                 itbinding->motion_axis_info = motion_axis_info;
                             }
                             bfound = true;
                             break;
                         }
                     }
-                    if( !bfound ) {
+                    if( !bfound ) 
+					{
                         RAVELOG_WARN_FORMAT("could not find binding for axis=%s, sid=%s, listAxisBindings.size()=%d", kinematics_axis_info->getAxis()%pelt->getAttribute("sid")%listAxisBindings.size());
                         return false;
                     }
@@ -453,7 +470,8 @@ public:
     {
         uint64_t starttime = utils::GetNanoPerformanceTime();
         domCOLLADA::domSceneRef allscene = _dom->getScene();
-        if( !allscene ) {
+        if( !allscene )
+		{
             return false;
         }
 
@@ -544,11 +562,14 @@ public:
         }
 
         // process grabbed objects
-        for(size_t iscene = 0; iscene < allscene->getInstance_physics_scene_array().getCount(); ++iscene) {
+        for(size_t iscene = 0; iscene < allscene->getInstance_physics_scene_array().getCount(); ++iscene)
+		{
             domInstance_with_extraRef piscene = allscene->getInstance_physics_scene_array()[iscene];
-            for(size_t ie = 0; ie < piscene->getExtra_array().getCount(); ++ie) {
+            for(size_t ie = 0; ie < piscene->getExtra_array().getCount(); ++ie) 
+			{
                 domExtraRef pextra = piscene->getExtra_array()[ie];
-                if( !pextra->getType() ) {
+                if( !pextra->getType() ) 
+				{
                     continue;
                 }
                 std::string extra_type = pextra->getType();
@@ -1286,19 +1307,24 @@ public:
         return true;
     }
 
-    bool ExtractKinematicsModel(KinBodyPtr& pkinbody, domInstance_kinematics_modelRef ikm, KinematicsSceneBindings& bindings, std::list<daeElementRef>& listInstanceScope)
+    bool ExtractKinematicsModel(KinBodyPtr& pkinbody, domInstance_kinematics_modelRef ikm,
+		KinematicsSceneBindings& bindings, std::list<daeElementRef>& listInstanceScope)
     {
-        if( !ikm ) {
+        if( !ikm ) 
+		{
             return false;
         }
         RAVELOG_DEBUG(str(boost::format("instance kinematics model sid %s\n")%getSid(ikm)));
         domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model> (ikm->getUrl().getElement().cast());
-        if (!kmodel) {
+        if (!kmodel)
+		{
             RAVELOG_WARN(str(boost::format("%s does not reference valid kinematics\n")%getSid(ikm)));
             return false;
         }
-        FOREACH(it, bindings.listInstanceModelBindings) {
-            if( it->_ikmodel == ikm && _CompareScopeElements(it->_listInstanceScopeKModel, listInstanceScope) > 0) {
+        FOREACH(it, bindings.listInstanceModelBindings)
+		{
+            if( it->_ikmodel == ikm && _CompareScopeElements(it->_listInstanceScopeKModel, listInstanceScope) > 0)
+			{
                 it->_kmodel = kmodel;
                 break;
             }
@@ -1643,18 +1669,24 @@ public:
     }
 
     ///  \brief Extract Link info and add it to an existing body
-    KinBody::LinkPtr ExtractLink(KinBodyPtr pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const Transform& tParentLink, const std::vector<domJointRef>& vdomjoints, KinematicsSceneBindings& bindings)
+    KinBody::LinkPtr ExtractLink(KinBodyPtr pkinbody, const domLinkRef pdomlink,
+		const domNodeRef pdomnode, const Transform& tParentLink, 
+		const std::vector<domJointRef>& vdomjoints, KinematicsSceneBindings& bindings)
     {
         //  Set link name with the name of the COLLADA's Link
         std::string linkname;
-        if( !!pdomlink ) {
+        if( !!pdomlink ) 
+		{
             linkname = _ExtractLinkName(pdomlink);
-            if( linkname.size() == 0 ) {
+            if( linkname.size() == 0 ) 
+			{
                 RAVELOG_WARN("<link> has no name or id, falling back to <node>!\n");
             }
         }
-        if( linkname.size() == 0 ) {
-            if( !!pdomnode ) {
+        if( linkname.size() == 0 ) 
+		{
+            if( !!pdomnode ) 
+			{
                 if (!!pdomnode->getName()) {
                     linkname = _ConvertToOpenRAVEName(pdomnode->getName());
                 }

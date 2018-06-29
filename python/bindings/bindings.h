@@ -90,7 +90,8 @@ namespace ArrayFunc = boost::python::numpy;
 #define IS_PYTHONOBJECT_NONE(o) (!!(o))
 #endif
 
-namespace openravepy {
+namespace openravepy 
+{
 
 	using namespace boost::python;
 

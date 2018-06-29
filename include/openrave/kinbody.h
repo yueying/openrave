@@ -135,14 +135,16 @@ namespace OpenRAVE
 		{
 		public:
 			GeometryInfo();
-			virtual ~GeometryInfo() {
+			virtual ~GeometryInfo() 
+			{
 			}
 
 			/// triangulates the geometry object and initializes collisionmesh. GeomTrimesh types must already be triangulated
 			/// \param fTessellation to control how fine the triangles need to be. 1.0f is the default value
 			bool InitCollisionMesh(float fTessellation = 1);
 
-			inline dReal GetSphereRadius() const {
+			inline dReal GetSphereRadius() const 
+			{
 				return _vGeomData.x;
 			}
 			inline dReal GetCylinderRadius() const {
