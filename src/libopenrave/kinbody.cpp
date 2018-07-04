@@ -242,7 +242,7 @@ namespace OpenRAVE
 		_environmentid = 0;
 		_nNonAdjacentLinkCache = 0x80000000;
 		_nUpdateStampId = 0;
-		_bAreAllJoints1DOFAndNonCircular = false;
+		is_all_joints_1dof_and_non_circular_ = false;
 	}
 
 	KinBody::~KinBody()
@@ -993,19 +993,24 @@ namespace OpenRAVE
 		_UpdateGrabbedBodies();
 	}
 
-	void KinBody::SubtractDOFValues(std::vector<dReal>& q1, const std::vector<dReal>& q2, const std::vector<int>& dofindices) const
+	void KinBody::SubtractDOFValues(std::vector<dReal>& q1, const std::vector<dReal>& q2, 
+		const std::vector<int>& dofindices) const
 	{
 		OPENRAVE_ASSERT_OP(q1.size(), == , q2.size());
-		if (_bAreAllJoints1DOFAndNonCircular) {
-			for (size_t i = 0; i < q1.size(); ++i) {
+		if (is_all_joints_1dof_and_non_circular_) 
+		{
+			for (size_t i = 0; i < q1.size(); ++i) 
+			{
 				q1[i] -= q2[i];
 			}
 			return;
 		}
 
-		if (dofindices.size() == 0) {
+		if (dofindices.size() == 0) 
+		{
 			OPENRAVE_ASSERT_OP((int)q1.size(), == , GetDOF());
-			FOREACHC(itjoint, _vecjoints) {
+			FOREACHC(itjoint, _vecjoints) 
+			{
 				int dof = (*itjoint)->GetDOFIndex();
 				for (int i = 0; i < (*itjoint)->GetDOF(); ++i) {
 					if ((*itjoint)->IsCircular(i)) {
@@ -4311,10 +4316,10 @@ namespace OpenRAVE
 			}
 		}
 
-		_bAreAllJoints1DOFAndNonCircular = true;
+		is_all_joints_1dof_and_non_circular_ = true;
 		for (size_t ijoint = 0; ijoint < _vecjoints.size(); ++ijoint) {
 			if (_vecjoints[ijoint]->GetDOF() != 1 || _vecjoints[ijoint]->IsCircular()) {
-				_bAreAllJoints1DOFAndNonCircular = false;
+				is_all_joints_1dof_and_non_circular_ = false;
 				break;
 			}
 		}

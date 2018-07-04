@@ -13,6 +13,8 @@
 // limitations under the License.
 #include <openraveplugindefs.h>
 
+#undef OPENRAVE_HAS_LAPACK
+
 #ifdef OPENRAVE_HAS_LAPACK
 // for jacobians
 #include <boost/numeric/ublas/vector.hpp>

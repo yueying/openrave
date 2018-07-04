@@ -73,7 +73,8 @@ public:
                 {
                     RobotBase::RobotStateSaver saver(probot); // add a state saver so robot is not moved permenantly
                     probot->SetDOFValues(q);
-                    if( penv->CheckCollision(RobotBaseConstPtr(probot)) ) {
+                    if( penv->CheckCollision(RobotBaseConstPtr(probot)) ) 
+					{
                         continue; // robot in collision at final point, so reject
                     }
                 }
@@ -84,7 +85,8 @@ public:
                 // setting through the robot is also possible: probot->SetMotion(traj);
             }
             // unlock the environment and wait for the robot to finish
-            while(!probot->GetController()->IsDone() && IsOk()) {
+            while(!probot->GetController()->IsDone() && IsOk()) 
+			{
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));
             }
         }

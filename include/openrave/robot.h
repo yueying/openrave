@@ -46,7 +46,7 @@ namespace OpenRAVE
 			std::string _name;
 			std::string _sBaseLinkName, _sEffectorLinkName; //!< name of the base and effector links of the robot used to determine the chain
 			Transform _tLocalTool;
-			std::vector<dReal> _vChuckingDirection; //!< the normal direction to move joints for the hand to grasp something
+			std::vector<dReal> chucking_direction_vector_; //!< the normal direction to move joints for the hand to grasp something
 			Vector _vdirection;
 			std::string ik_solver_xml_id_; //!< xml id of the IkSolver interface to attach
 			std::vector<std::string> gripper_joint_names_vector_;         //!< names of the gripper joints
@@ -158,14 +158,14 @@ namespace OpenRAVE
 
 			/// \brief Gripper indices of the joints that the  manipulator controls.
 			virtual const std::vector<int>& GetGripperIndices() const {
-				return __vgripperdofindices;
+				return gripper_dof_indices_vector_;
 			}
 
 			/// \brief Return the indices of the DOFs of the manipulator, which are used for inverse kinematics.
 			///
 			/// Usually the DOF indices of the chain from pBase to pEndEffector
 			virtual const std::vector<int>& GetArmIndices() const {
-				return __varmdofindices;
+				return arm_dof_indices_vector_;
 			}
 
 			/// \brief returns the number of DOF for the arm indices. Equivalent to GetArmIndices().size()
@@ -176,7 +176,7 @@ namespace OpenRAVE
 
 			/// \deprecated 14/05/06
 			inline const std::vector<dReal>& GetClosingDirection() const RAVE_DEPRECATED {
-				return _info._vChuckingDirection;
+				return _info.chucking_direction_vector_;
 			}
 
 			/// \deprecated 14/05/06
@@ -185,7 +185,7 @@ namespace OpenRAVE
 			}
 
 			virtual const std::vector<dReal>& GetChuckingDirection() const {
-				return _info._vChuckingDirection;
+				return _info.chucking_direction_vector_;
 			}
 
 			/// \brief sets the normal gripper direction to move joints to close/chuck the hand
@@ -417,9 +417,9 @@ namespace OpenRAVE
 		private:
 			RobotBaseWeakPtr robot_;
 			LinkPtr base_link_, effector_link_; //!< contains weak links to robot
-			std::vector<int> __vgripperdofindices, __varmdofindices;
-			ConfigurationSpecification __armspec; //!< reflects __varmdofindices
-			mutable IkSolverBasePtr __pIkSolver;
+			std::vector<int> gripper_dof_indices_vector_, arm_dof_indices_vector_;
+			ConfigurationSpecification __armspec; //!< reflects arm_dof_indices_vector_
+			mutable IkSolverBasePtr ik_solver_;
 			mutable std::string __hashstructure, __hashkinematicsstructure;
 			mutable std::map<IkParameterizationType, std::string> __maphashikstructure;
 
@@ -671,7 +671,7 @@ namespace OpenRAVE
 		 */
 		virtual void SetActiveDOFs(const std::vector<int>& dofindices, int affine, const Vector& rotationaxis);
 		virtual int GetActiveDOF() const {
-			return _nActiveDOF >= 0 ? _nActiveDOF : GetDOF();
+			return active_dof_num_ >= 0 ? active_dof_num_ : GetDOF();
 		}
 		virtual int GetAffineDOF() const {
 			return _nAffineDOFs;
@@ -963,14 +963,15 @@ namespace OpenRAVE
 		virtual void _PostprocessChangedParameters(uint32_t parameters);
 
 		virtual void _UpdateAttachedSensors();
-		std::vector<ManipulatorPtr> _vecManipulators; //!< \see GetManipulators
+
+		std::vector<ManipulatorPtr> manipulators_vector_; //!< \see GetManipulators
 		ManipulatorPtr _pManipActive;
 
 		std::vector<AttachedSensorPtr> _vecSensors; //!< \see GetAttachedSensors
 
-		std::vector<int> _vActiveDOFIndices, _vAllDOFIndices;
+		std::vector<int> active_dof_indices_vector_, _vAllDOFIndices;
 		Vector vActvAffineRotationAxis;
-		int _nActiveDOF; //!< Active degrees of freedom; if -1, use robot dofs
+		int active_dof_num_; //!< Active degrees of freedom; if -1, use robot dofs
 		int _nAffineDOFs; //!< dofs describe what affine transformations are allowed
 
 		Vector _vTranslationLowerLimits, _vTranslationUpperLimits, _vTranslationMaxVels, _vTranslationResolutions, _vTranslationWeights;

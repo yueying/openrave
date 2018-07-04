@@ -22,7 +22,8 @@
 #ifndef OPENRAVE_CONTROLLER_H
 #define OPENRAVE_CONTROLLER_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /** \brief <b>[interface]</b> Abstract base class to encapsulate a local controller. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_controller.
     \ingroup interfaces
@@ -34,7 +35,8 @@ public:
     virtual ~ControllerBase();
 
     /// \brief return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
+    static inline InterfaceType GetInterfaceTypeStatic() 
+	{
         return PT_Controller;
     }
 

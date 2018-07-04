@@ -110,7 +110,7 @@ public:
             manipinfo._sBaseLinkName = probot->GetLinks().at(0)->GetName();
             manipinfo._tLocalTool = itmanip->second;
             manipinfo._vdirection=Vector(1,0,0);
-            probot->_vecManipulators.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(probot,manipinfo)));
+            probot->manipulators_vector_.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(probot,manipinfo)));
         }
     }
 

@@ -42,7 +42,7 @@ namespace openravepy
 				_sBaseLinkName = ConvertStringToUnicode(info._sBaseLinkName);
 				_sEffectorLinkName = ConvertStringToUnicode(info._sEffectorLinkName);
 				_tLocalTool = ReturnTransform(info._tLocalTool);
-				_vChuckingDirection = toPyArray(info._vChuckingDirection);
+				_vChuckingDirection = toPyArray(info.chucking_direction_vector_);
 				_vdirection = toPyVector3(info._vdirection);
 				_sIkSolverXMLId = info.ik_solver_xml_id_;
 				boost::python::list vGripperJointNames;
@@ -59,7 +59,7 @@ namespace openravepy
 				pinfo->_sBaseLinkName = boost::python::extract<std::string>(_sBaseLinkName);
 				pinfo->_sEffectorLinkName = boost::python::extract<std::string>(_sEffectorLinkName);
 				pinfo->_tLocalTool = ExtractTransform(_tLocalTool);
-				pinfo->_vChuckingDirection = ExtractArray<dReal>(_vChuckingDirection);
+				pinfo->chucking_direction_vector_ = ExtractArray<dReal>(_vChuckingDirection);
 				pinfo->_vdirection = ExtractVector3(_vdirection);
 				pinfo->ik_solver_xml_id_ = _sIkSolverXMLId;
 				pinfo->gripper_joint_names_vector_ = ExtractArray<std::string>(_vGripperJointNames);

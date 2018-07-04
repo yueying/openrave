@@ -27,9 +27,11 @@ void RegisterConveyorReaders(std::list< UserDataPtr >& listRegisteredReaders);
 
 static std::list< UserDataPtr >* s_listRegisteredReaders = NULL; //<! have to make it a pointer in order to prevent static object destruction from taking precedence
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, 
+	const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
 {
-    if( !s_listRegisteredReaders ) {
+    if( !s_listRegisteredReaders ) 
+	{
         s_listRegisteredReaders = new list< UserDataPtr >();
         RegisterCollisionMapRobotReaders(*s_listRegisteredReaders);
         RegisterConveyorReaders(*s_listRegisteredReaders);

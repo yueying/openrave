@@ -1685,7 +1685,9 @@ namespace OpenRAVE
 		/// \param[inout] values1 the result is stored back in this
 		/// \param[in] values2
 		/// \param dofindices the dof indices to compute the subtraction for. If empty, will compute for all the dofs
-		virtual void SubtractDOFValues(std::vector<dReal>& values1, const std::vector<dReal>& values2, const std::vector<int>& dofindices = std::vector<int>()) const;
+		virtual void SubtractDOFValues(std::vector<dReal>& values1, 
+			const std::vector<dReal>& values2, 
+			const std::vector<int>& dofindices = std::vector<int>()) const;
 
 		/// \brief Adds a torque to every joint.
 		///
@@ -2388,7 +2390,7 @@ namespace OpenRAVE
 		ManageDataPtr _pManageData;
 		uint32_t _nHierarchyComputed; //!< true if the joint heirarchy and other cached information is computed
 		bool _bMakeJoinedLinksAdjacent; //!< if true, then automatically add adjacent links to the adjacency list so that their self-collisions are ignored.
-		bool _bAreAllJoints1DOFAndNonCircular; //!< if true, then all controllable joints  of the robot are guaranteed to be either revolute or prismatic and non-circular. This allows certain functions that do operations on the joint values (like SubtractActiveDOFValues) to be optimized without calling Joint functions.
+		bool is_all_joints_1dof_and_non_circular_; //!< if true, then all controllable joints  of the robot are guaranteed to be either revolute or prismatic and non-circular. This allows certain functions that do operations on the joint values (like SubtractActiveDOFValues) to be optimized without calling Joint functions.
 	private:
 		mutable std::string __hashkinematics;
 		mutable std::vector<dReal> _vTempJoints;

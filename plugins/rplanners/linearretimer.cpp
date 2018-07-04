@@ -20,18 +20,24 @@ namespace rplanners {
 class LinearTrajectoryRetimer : public TrajectoryRetimer
 {
 public:
-    LinearTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryRetimer(penv,sinput)
+    LinearTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput)
+		: TrajectoryRetimer(penv,sinput)
     {
-        description_ = ":Interface Author: Rosen Diankov\n\nLinear trajectory re-timing without modifying any of the points. Overwrites the velocities and timestamps.";
+        description_ = ":Interface Author: Rosen Diankov\n\n \
+        Linear trajectory re-timing without modifying any of the points.\
+        Overwrites the velocities and timestamps.";
     }
 
 protected:
-    virtual bool _SupportInterpolation() {
-        if( _parameters->_interpolation.size() == 0 ) {
+    virtual bool _SupportInterpolation() 
+	{
+        if( _parameters->_interpolation.size() == 0 ) 
+		{
             _parameters->_interpolation = "linear";
             return true;
         }
-        else {
+        else 
+		{
             return _parameters->_interpolation == "linear";
         }
     }
@@ -42,17 +48,25 @@ protected:
         return TrajectoryRetimer::_InitPlan();
     }
 
-    dReal _ComputeMinimumTimeJointValues(GroupInfoConstPtr info, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity)
+    dReal _ComputeMinimumTimeJointValues(GroupInfoConstPtr info, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::const_iterator itdata, 
+		bool bUseEndVelocity)
     {
         dReal bestmintime = 0;
-        if( info->orgveloffset >= 0 ) {
-            for(int i = 0; i < info->gpos.dof; ++i) {
+        if( info->orgveloffset >= 0 ) 
+		{
+            for(int i = 0; i < info->gpos.dof; ++i) 
+			{
                 dReal mintime = RaveFabs(*(itorgdiff+info->orgposoffset+i) / *(itorgdiff+info->orgveloffset+i));
                 bestmintime = max(bestmintime,mintime);
             }
         }
-        else {
-            for(int i = 0; i < info->gpos.dof; ++i) {
+        else 
+		{
+            for(int i = 0; i < info->gpos.dof; ++i)
+			{
                 dReal mintime = RaveFabs(*(itorgdiff+info->orgposoffset+i)*_vimaxvel.at(info->orgposoffset+i));
                 bestmintime = max(bestmintime,mintime);
             }
@@ -60,7 +74,10 @@ protected:
         return bestmintime;
     }
 
-    void _ComputeVelocitiesJointValues(GroupInfoConstPtr info, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata)
+    void _ComputeVelocitiesJointValues(GroupInfoConstPtr info, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata)
     {
         if( *(itdata+_timeoffset) > 0 ) {
             dReal invdeltatime = 1.0 / *(itdata+_timeoffset);
@@ -76,7 +93,10 @@ protected:
         }
     }
 
-    dReal _ComputeMinimumTimeAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity)
+    dReal _ComputeMinimumTimeAffine(GroupInfoConstPtr info, int affinedofs, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity)
     {
         dReal bestmintime = 0;
         const boost::array<DOFAffine,4> testdofs={{DOF_X,DOF_Y,DOF_Z,DOF_RotationAxis}};
@@ -115,7 +135,11 @@ protected:
         return bestmintime;
     }
 
-    void _ComputeVelocitiesAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata)
+    void _ComputeVelocitiesAffine(GroupInfoConstPtr info,
+		int affinedofs, 
+		std::vector<dReal>::const_iterator itorgdiff,
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata)
     {
         if( *(itdata+_timeoffset) > 0 ) {
             dReal invdeltatime = 1.0 / *(itdata+_timeoffset);
@@ -144,13 +168,19 @@ protected:
         }
     }
 
-    dReal _ComputeMinimumTimeIk(GroupInfoConstPtr info, IkParameterizationType iktype, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity)
+    dReal _ComputeMinimumTimeIk(GroupInfoConstPtr info, IkParameterizationType iktype, 
+		std::vector<dReal>::const_iterator itorgdiff,
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::const_iterator itdata, 
+		bool bUseEndVelocity)
     {
         IkParameterization ikparamprev, ikparam;
         ikparamprev.Set(itdataprev+info->gpos.offset,iktype);
         ikparam.Set(itdata+info->gpos.offset,iktype);
-        switch(iktype) {
-        case IKP_Transform6D: {
+        switch(iktype)
+		{
+        case IKP_Transform6D: 
+		{
             dReal quatmintime = 2.0*RaveAcos(min(dReal(1),RaveFabs(ikparamprev.GetTransform6D().rot.dot(ikparam.GetTransform6D().rot))))*_vimaxvel.at(info->orgposoffset+0);
             dReal transmintime = RaveSqrt((ikparamprev.GetTransform6D().trans-ikparam.GetTransform6D().trans).lengthsqr3())*_vimaxvel.at(info->orgposoffset+4);
             return max(quatmintime,transmintime);

@@ -154,7 +154,12 @@ public:
     class InstanceModelBinding
     {
 public:
-        InstanceModelBinding(domInstance_nodeRef inode, domNodeRef node, domInstance_kinematics_modelRef ikmodel, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>(), const std::string& idsuffix=std::string()) : _inode(inode), _node(node), _ikmodel(ikmodel), _idsuffix(idsuffix) {
+        InstanceModelBinding(domInstance_nodeRef inode, domNodeRef node, 
+			domInstance_kinematics_modelRef ikmodel,
+			const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>(), 
+			const std::string& idsuffix=std::string()) 
+			: _inode(inode), _node(node), _ikmodel(ikmodel), _idsuffix(idsuffix) 
+		{
             _listInstanceScopeKModel = listInstanceScope;
         }
         domInstance_nodeRef _inode; //<! optional instance node that the visual node could have come from
@@ -170,7 +175,13 @@ public:
     class JointAxisBinding
     {
 public:
-        JointAxisBinding(const boost::function<domNodeRef(daeElementRef)>& instantiatenodefn, daeElementRef pvisualtrans, domAxis_constraintRef pkinematicaxis, dReal jointvalue, domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>()) : pvisualtrans(pvisualtrans), pkinematicaxis(pkinematicaxis), jointvalue(jointvalue), kinematics_axis_info(kinematics_axis_info), motion_axis_info(motion_axis_info),_iaxis(0) {
+        JointAxisBinding(const boost::function<domNodeRef(daeElementRef)>& instantiatenodefn, 
+			daeElementRef pvisualtrans, domAxis_constraintRef pkinematicaxis, dReal jointvalue,
+			domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info,
+			const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>())
+			: pvisualtrans(pvisualtrans), pkinematicaxis(pkinematicaxis), jointvalue(jointvalue), 
+			kinematics_axis_info(kinematics_axis_info), motion_axis_info(motion_axis_info),_iaxis(0) 
+		{
             _listInstanceScopeAxis = listInstanceScope;
             BOOST_ASSERT( !!pkinematicaxis );
             if( !!pvisualtrans ) {
@@ -191,7 +202,8 @@ public:
                 }
 
                 if (!visualnode) {
-                    RAVELOG_WARN(str(boost::format("couldn't find parent node of element id %s, sid %s\n")%pkinematicaxis->getID()%getSid(pkinematicaxis)));
+                    RAVELOG_WARN(str(boost::format("couldn't find parent node of element id %s, sid %s\n")
+						%pkinematicaxis->getID()%getSid(pkinematicaxis)));
                 }
             }
         }
@@ -802,7 +814,7 @@ public:
             FOREACH(itjoint,probot->_vPassiveJoints) {
                 _setInitialJoints.insert(*itjoint);
             }
-            FOREACH(itmanip,probot->_vecManipulators) {
+            FOREACH(itmanip,probot->manipulators_vector_) {
                 _setInitialManipulators.insert(*itmanip);
             }
             FOREACH(itsensor,probot->_vecSensors) {
@@ -864,7 +876,7 @@ public:
         if( bSuccess ) {
             if( _prefix.size() > 0 ) {
                 _AddPrefixForKinBody(probot,_prefix);
-                FOREACH(itmanip,probot->_vecManipulators) {
+                FOREACH(itmanip,probot->manipulators_vector_) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
                         (*itmanip)->_info._name = _prefix + (*itmanip)->_info._name;
                         (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
@@ -3050,7 +3062,7 @@ public:
                                                 RAVELOG_WARN(str(boost::format("gripper joint %s axis %s cannot extract chucking_direction\n")%children[i]->getAttribute("axis")%pmanipchild->getAttribute("joint")));
                                             }
                                         }
-                                        manipinfo._vChuckingDirection.push_back((dReal)chucking_direction);
+                                        manipinfo.chucking_direction_vector_.push_back((dReal)chucking_direction);
                                     }
                                 }
                                 continue;

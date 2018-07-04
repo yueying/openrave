@@ -2523,7 +2523,7 @@ public:
         }
 
         if( xmlname == "manipulator" ) {
-            _probot->_vecManipulators.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(_probot,_manipinfo)));
+            _probot->manipulators_vector_.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(_probot,_manipinfo)));
             return true;
         }
         else if( xmlname == "effector" ) {
@@ -2633,8 +2633,8 @@ public:
             }
         }
         else if( xmlname == "closingdirection" || xmlname == "closingdir" || xmlname == "chuckingdirection" ) {
-            _manipinfo._vChuckingDirection = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
-            FOREACH(it, _manipinfo._vChuckingDirection) {
+            _manipinfo.chucking_direction_vector_ = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            FOREACH(it, _manipinfo.chucking_direction_vector_) {
                 if( *it > 0 ) {
                     *it = 1;
                 }

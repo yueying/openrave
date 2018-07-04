@@ -22,7 +22,8 @@
 #ifndef  OPENRAVE_ENVIRONMENTBASE_H
 #define  OPENRAVE_ENVIRONMENTBASE_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 typedef boost::recursive_try_mutex EnvironmentMutex;
 
@@ -45,12 +46,14 @@ public:
     virtual void Reset()=0;
 
     /// \brief set user data
-    virtual void SetUserData(UserDataPtr data) {
-        __pUserData = data;
+    virtual void SetUserData(UserDataPtr data)
+	{
+        user_data_ = data;
     }
     /// \brief return the user custom data
-    virtual UserDataPtr GetUserData() const {
-        return __pUserData;
+    virtual UserDataPtr GetUserData() const 
+	{
+        return user_data_;
     }
 
     /// \brief Returns the OpenRAVE global state, used for initializing plugins
@@ -700,7 +703,7 @@ protected:
     }
 
 private:
-    UserDataPtr __pUserData;         //!< \see GetUserData
+    UserDataPtr user_data_;         //!< \see GetUserData
     int __nUniqueId;         //!< \see RaveGetEnvironmentId
 };
 

@@ -41,42 +41,52 @@ class Environment : public EnvironmentBase
     class GraphHandleMulti : public GraphHandle
     {
 public:
-        GraphHandleMulti() {
+        GraphHandleMulti() 
+		{
         }
-        virtual ~GraphHandleMulti() {
+        virtual ~GraphHandleMulti()
+		{
         }
         void SetTransform(const RaveTransform<float>& t)
         {
-            FOREACH(it,listhandles) {
+            FOREACH(it,listhandles) 
+			{
                 (*it)->SetTransform(t);
             }
         }
 
         void SetShow(bool bshow)
         {
-            FOREACH(it,listhandles) {
+            FOREACH(it,listhandles) 
+			{
                 (*it)->SetShow(bshow);
             }
         }
 
-        void Add(OpenRAVE::GraphHandlePtr phandle) {
-            if( !!phandle) {
+        void Add(OpenRAVE::GraphHandlePtr phandle) 
+		{
+            if( !!phandle) 
+			{
                 listhandles.push_back(phandle);
             }
         }
 
-        list<OpenRAVE::GraphHandlePtr> listhandles;
+        std::list<OpenRAVE::GraphHandlePtr> listhandles;
     };
     typedef boost::shared_ptr<GraphHandleMulti> GraphHandleMultiPtr;
 
     class CollisionCallbackData : public UserData
     {
 public:
-        CollisionCallbackData(const CollisionCallbackFn& callback, boost::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
+        CollisionCallbackData(const CollisionCallbackFn& callback, boost::shared_ptr<Environment> penv)
+			: _callback(callback), _pweakenv(penv)
+		{
         }
-        virtual ~CollisionCallbackData() {
+        virtual ~CollisionCallbackData()
+		{
             boost::shared_ptr<Environment> penv = _pweakenv.lock();
-            if( !!penv ) {
+            if( !!penv ) 
+			{
                 boost::timed_mutex::scoped_lock lock(penv->interfaces_mutex_);
                 penv->_listRegisteredCollisionCallbacks.erase(_iterator);
             }
@@ -93,7 +103,8 @@ protected:
     class BodyCallbackData : public UserData
     {
 public:
-        BodyCallbackData(const BodyCallbackFn& callback, boost::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
+        BodyCallbackData(const BodyCallbackFn& callback, boost::shared_ptr<Environment> penv)
+			: _callback(callback), _pweakenv(penv) {
         }
         virtual ~BodyCallbackData() {
             boost::shared_ptr<Environment> penv = _pweakenv.lock();
@@ -2634,7 +2645,8 @@ protected:
                     int64_t sleeptime = current_simulation_time_-passedtime;
                     //Hardcoded tolerance for now
                     const int tol=2;
-                    if( _bRealTime ) {
+                    if( _bRealTime ) 
+					{
                         if(( sleeptime > deltasimtime/tol) &&( sleeptime > 1000) ) {
                             lockenv.reset();
                             // sleep for less time since sleep isn't accurate at all and we have a 7ms buffer
@@ -2659,7 +2671,8 @@ protected:
                 }
             }
 
-            if( utils::GetMicroTime()-last_slept_time > 20000 ) {     // 100000 freezes the environment
+            if( utils::GetMicroTime()-last_slept_time > 20000 ) 
+			{     // 100000 freezes the environment
                 lockenv.reset();
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));
                 is_need_sleep = false;
