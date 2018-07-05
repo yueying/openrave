@@ -229,7 +229,8 @@ public:
     }
 
     /// \deprecated (11/10/04) see \ref planningutils::RetimeActiveDOFTrajectory and planningutils::RetimeAffineTrajectory
-    virtual bool CalcTrajTiming(RobotBasePtr probot, int interp,  bool autocalc, bool activedof, dReal fmaxvelmult=1) RAVE_DEPRECATED;
+    virtual bool CalcTrajTiming(RobotBasePtr probot, int interp, 
+		bool autocalc, bool activedof, dReal fmaxvelmult=1) RAVE_DEPRECATED;
 
     /// \deprecated (11/10/04)
     virtual void Clear() RAVE_DEPRECATED

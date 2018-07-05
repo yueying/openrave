@@ -127,7 +127,7 @@ public:
             params->_goalfn = boost::bind(&MoveUnsync::Eval,pgoalfn,_1);
             params->max_iterations_num_ = 5000;
             robot->GetActiveDOFValues(params->vinitialconfig);
-            params->_fStepLength = 0.04f;
+            params->step_length_ = 0.04f;
 
             if( pgoalfn->Eval(params->vinitialconfig) <= pgoalfn->GetGoalThresh() ) {
                 // already done

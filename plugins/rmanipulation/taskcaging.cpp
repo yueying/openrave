@@ -942,7 +942,7 @@ private:
         params->_checkpathconstraintsfn = boost::bind(&GraspConstraint::Constraint,graspfn,_1,_2,_3,_4);
         params->_distmetricfn = boost::bind(&GraspConstraint::Dist6D,graspfn,_1,_2);
 
-        params->_fStepLength = fStep;
+        params->step_length_ = fStep;
         params->_fExploreProb = fExploreProb;
         params->max_iterations_num_ = params->_nExpectedDataSize*5;
 

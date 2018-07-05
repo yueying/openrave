@@ -263,9 +263,14 @@ private:
         CheckPathVelocityConstraintFn _checkpathvelocityconstraintsfn;
 
         /// \brief wrapper function calling _checkpathvelocityconstraintsfn with some default args. Returns true if function doesn't exist.
-        inline int CheckPathAllConstraints(const std::vector<dReal>& q0, const std::vector<dReal>& q1, const std::vector<dReal>& dq0, const std::vector<dReal>& dq1, dReal elapsedtime, IntervalType interval, int options=0xffff, ConstraintFilterReturnPtr filterreturn=ConstraintFilterReturnPtr()) const
+        inline int CheckPathAllConstraints(const std::vector<dReal>& q0, 
+			const std::vector<dReal>& q1, const std::vector<dReal>& dq0, 
+			const std::vector<dReal>& dq1, 
+			dReal elapsedtime, IntervalType interval, 
+			int options=0xffff, ConstraintFilterReturnPtr filterreturn=ConstraintFilterReturnPtr()) const
         {
-            if( !_checkpathvelocityconstraintsfn ) {
+            if( !_checkpathvelocityconstraintsfn ) 
+			{
                 return true;
             }
             return _checkpathvelocityconstraintsfn(q0, q1, dq0, dq1, elapsedtime, interval, options, filterreturn);
@@ -384,7 +389,7 @@ private:
             It represents the maximum distance between neighbors when adding new configuraitons.
             If 0 or less, planner chooses best step length.
          */
-        dReal _fStepLength;
+        dReal step_length_;
 
         /// \brief maximum number of iterations before the planner gives up. If 0 or less, planner chooses best iterations.
         int max_iterations_num_;
@@ -471,7 +476,7 @@ protected:
         std::stringstream _ss;         //!< holds the data read by characters
         boost::shared_ptr<std::stringstream> _sslocal;
         /// all the top-level XML parameter tags (lower case) that are handled by this parameter structure, should be registered in the constructor
-        std::vector<std::string> _vXMLParameters;
+        std::vector<std::string> xml_parameters_vector_;
         //@}
 
 private:

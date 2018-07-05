@@ -525,7 +525,7 @@ public:
 
             int numShortcuts = 0;
             if( !!parameters->_setstatevaluesfn || !!parameters->_setstatefn ) {
-                numShortcuts = _Shortcut(parabolicpath, parameters->max_iterations_num_, this, parameters->_fStepLength*0.99);
+                numShortcuts = _Shortcut(parabolicpath, parameters->max_iterations_num_, this, parameters->step_length_*0.99);
                 if( numShortcuts < 0 ) {
                     return PS_Interrupted;
                 }
@@ -577,7 +577,7 @@ public:
             RampOptimizer::RampND& remRampND = _cacheRemRampND;
             remRampND.Initialize(_parameters->GetDOF());
             std::vector<RampOptimizer::RampND>& tempRampNDVect = _cacheRampNDVect;
-            dReal fTrimEdgesTime = parameters->_fStepLength*2; // we ignore collisions duration [0, fTrimEdgesTime] and [fTrimEdgesTime, duration]
+            dReal fTrimEdgesTime = parameters->step_length_*2; // we ignore collisions duration [0, fTrimEdgesTime] and [fTrimEdgesTime, duration]
             dReal fExpextedDuration = 0; // for consistency checking
             dReal durationDiscrepancyThresh = 0.01; // for consistency checking
 

@@ -19,24 +19,36 @@
 #include <openrave/plannerparameters.h>
 #include <openrave/xmlreaders.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE
+{
 
-WorkspaceTrajectoryParameters::WorkspaceTrajectoryParameters(EnvironmentBasePtr penv) : maxdeviationangle(0.15*PI), maintaintiming(false), greedysearch(true), ignorefirstcollision(0), ignorefirstcollisionee(0), ignorelastcollisionee(0), minimumcompletetime(0), _penv(penv), _bProcessing(false) {
-    _vXMLParameters.push_back("maxdeviationangle");
-    _vXMLParameters.push_back("maintaintiming");
-    _vXMLParameters.push_back("greedysearch");
-    _vXMLParameters.push_back("ignorefirstcollision");
-    _vXMLParameters.push_back("ignorefirstcollisionee");
-    _vXMLParameters.push_back("ignorelastcollisionee");
-    _vXMLParameters.push_back("minimumcompletetime");
-    _vXMLParameters.push_back("workspacetraj"); // back-compat
-    _vXMLParameters.push_back("workspacetrajectory");
+WorkspaceTrajectoryParameters::WorkspaceTrajectoryParameters(EnvironmentBasePtr penv) 
+	: maxdeviationangle(0.15*PI),
+	maintaintiming(false), 
+	greedysearch(true), 
+	ignorefirstcollision(0), 
+	ignorefirstcollisionee(0), 
+	ignorelastcollisionee(0), 
+	minimumcompletetime(0), 
+	_penv(penv), 
+	_bProcessing(false)
+{
+    xml_parameters_vector_.push_back("maxdeviationangle");
+    xml_parameters_vector_.push_back("maintaintiming");
+    xml_parameters_vector_.push_back("greedysearch");
+    xml_parameters_vector_.push_back("ignorefirstcollision");
+    xml_parameters_vector_.push_back("ignorefirstcollisionee");
+    xml_parameters_vector_.push_back("ignorelastcollisionee");
+    xml_parameters_vector_.push_back("minimumcompletetime");
+    xml_parameters_vector_.push_back("workspacetraj"); // back-compat
+    xml_parameters_vector_.push_back("workspacetrajectory");
 }
 
 // save the extra data to XML
 bool WorkspaceTrajectoryParameters::serialize(std::ostream& O, int options) const
 {
-    if( !PlannerParameters::serialize(O, options&~1) ) {
+    if( !PlannerParameters::serialize(O, options&~1) ) 
+	{
         return false;
     }
     O << "<maxdeviationangle>" << maxdeviationangle << "</maxdeviationangle>" << std::endl;

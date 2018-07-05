@@ -216,7 +216,12 @@ typedef boost::shared_ptr<ActiveDOFTrajectoryRetimer> ActiveDOFTrajectoryRetimer
     \param plannerparameters XML string to be appended to PlannerBase::PlannerParameters::_sExtraParameters passed in to the planner.
     \return PlannerStatus of the status of the retiming planner
  */
-OPENRAVE_API PlannerStatus RetimeAffineTrajectory(TrajectoryBasePtr traj, const std::vector<dReal>&maxvelocities, const std::vector<dReal>&maxaccelerations, bool hastimestamps=false, const std::string& plannername="", const std::string& plannerparameters="");
+OPENRAVE_API PlannerStatus RetimeAffineTrajectory(TrajectoryBasePtr traj, 
+	const std::vector<dReal>&maxvelocities, 
+	const std::vector<dReal>&maxaccelerations, 
+	bool hastimestamps=false,
+	const std::string& plannername="", 
+	const std::string& plannerparameters="");
 
 /** \brief Retimer planner the trajectory points consisting of affine transformation values while avoiding collisions. <b>[multi-thread safe]</b>
 

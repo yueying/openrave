@@ -52,8 +52,8 @@ public:
         if( _parameters->max_iterations_num_ <= 0 ) {
             _parameters->max_iterations_num_ = 100;
         }
-        if( _parameters->_fStepLength <= 0 ) {
-            _parameters->_fStepLength = 0.04;
+        if( _parameters->step_length_ <= 0 ) {
+            _parameters->step_length_ = 0.04;
         }
         _puniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
         if( !!_puniformsampler ) {
@@ -286,7 +286,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters->_fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters->step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             dReal fstartdistdelta=0, fenddistdelta=0;
             dReal fcurdist = 0;
@@ -346,7 +346,7 @@ protected:
             }
 
             dReal fnewsegmentdist = parameters->_distmetricfn(vstartvalues, vendvalues);
-            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->_fStepLength ) {
+            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -391,7 +391,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters->_fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters->step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             uint32_t ioptdof = _puniformsampler->SampleSequenceOneUInt32()%uint32_t(numdof); // dof to optimize
 
@@ -493,7 +493,7 @@ protected:
             vpathvalues.at(numnodes+1).second = fdist;
             fnewsegmentdist += fdist;
 
-            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->_fStepLength ) {
+            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -568,7 +568,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters->_fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters->step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             uint32_t ioptgroup = _puniformsampler->SampleSequenceOneUInt32()%uint32_t(2); // group to optimize
 
@@ -691,7 +691,7 @@ protected:
             vpathvalues.at(numnodes+1).second = fdist;
             fnewsegmentdist += fdist;
 
-            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->_fStepLength ) {
+            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -888,7 +888,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters._fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters.step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             uint32_t ioptgroup = _puniformsampler->SampleSequenceOneUInt32()%uint32_t(2); // group to optimize
             int iOtherOptGroup = (ioptgroup+1)%2;

@@ -49,8 +49,8 @@ public:
         if( _parameters->max_iterations_num_ <= 0 ) {
             _parameters->max_iterations_num_ = 100;
         }
-        if( _parameters->_fStepLength <= 0 ) {
-            _parameters->_fStepLength = 0.04;
+        if( _parameters->step_length_ <= 0 ) {
+            _parameters->step_length_ = 0.04;
         }
         _linearretimer->InitPlan(RobotBasePtr(), _parameters);
         _puniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
@@ -182,7 +182,7 @@ protected:
             nrejected++;
 
             dReal expectedtotaldistance = parameters->_distmetricfn(itstartnode->first, itendnode->first);
-            if( expectedtotaldistance > totaldistance-0.1*parameters->_fStepLength ) {
+            if( expectedtotaldistance > totaldistance-0.1*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -220,7 +220,7 @@ protected:
             ++itdist;
             BOOST_ASSERT(itdist==_vtempdists.end());
 
-            if( newtotaldistance > totaldistance-0.1*parameters->_fStepLength ) {
+            if( newtotaldistance > totaldistance-0.1*parameters->step_length_ ) {
                 // new path is not that good, so reject
                 nrejected++;
                 continue;

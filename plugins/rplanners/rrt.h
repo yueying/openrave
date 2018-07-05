@@ -68,7 +68,7 @@ Uses the Rapidly-Exploring Random Trees Algorithm.\n\
         _vecInitialNodes.resize(0);
         _sampleConfig.resize(params->GetDOF());
         // TODO perhaps distmetricfn should take into number of revolutions of circular joints
-        _treeForward.Init(shared_planner(), params->GetDOF(), params->_distmetricfn, params->_fStepLength, params->_distmetricfn(params->_vConfigLowerLimit, params->_vConfigUpperLimit));
+        _treeForward.Init(shared_planner(), params->GetDOF(), params->_distmetricfn, params->step_length_, params->_distmetricfn(params->_vConfigLowerLimit, params->_vConfigUpperLimit));
         std::vector<dReal> vinitialconfig(params->GetDOF());
         for(size_t index = 0; index < params->vinitialconfig.size(); index += params->GetDOF()) {
             std::copy(params->vinitialconfig.begin()+index,params->vinitialconfig.begin()+index+params->GetDOF(),vinitialconfig.begin());
@@ -309,7 +309,7 @@ Some python code to display data::\n\
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         // TODO perhaps distmetricfn should take into number of revolutions of circular joints
-        _treeBackward.Init(shared_planner(), _parameters->GetDOF(), _parameters->_distmetricfn, _parameters->_fStepLength, _parameters->_distmetricfn(_parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit));
+        _treeBackward.Init(shared_planner(), _parameters->GetDOF(), _parameters->_distmetricfn, _parameters->step_length_, _parameters->_distmetricfn(_parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit));
 
         //read in all goals
         if( (_parameters->vgoalconfig.size() % _parameters->GetDOF()) != 0 ) {
@@ -351,7 +351,7 @@ Some python code to display data::\n\
         if( _vgoalpaths.capacity() < _parameters->_minimumgoalpaths ) {
             _vgoalpaths.reserve(_parameters->_minimumgoalpaths);
         }
-        RAVELOG_DEBUG_FORMAT("env=%d BiRRT Planner Initialized, initial=%d, goal=%d, step=%f", GetEnv()->GetId()%_vecInitialNodes.size()%_treeBackward.GetNumNodes()%_parameters->_fStepLength);
+        RAVELOG_DEBUG_FORMAT("env=%d BiRRT Planner Initialized, initial=%d, goal=%d, step=%f", GetEnv()->GetId()%_vecInitialNodes.size()%_treeBackward.GetNumNodes()%_parameters->step_length_);
         return true;
     }
 
@@ -774,7 +774,7 @@ public:
 
             if( et == ET_Connected ) {
                 FOREACH(itgoal, _vecGoals) {
-                    if( _parameters->_distmetricfn(*itgoal, _treeForward.GetVectorConfig(lastnode)) < 2*_parameters->_fStepLength ) {
+                    if( _parameters->_distmetricfn(*itgoal, _treeForward.GetVectorConfig(lastnode)) < 2*_parameters->step_length_ ) {
                         SimpleNode* pforward = (SimpleNode*)lastnode;
                         while(1) {
                             if(!pforward->rrtparent) {
@@ -959,7 +959,7 @@ public:
                 int inode = RaveRandomInt()%_treeForward.GetNumNodes();
                 NodeBase* pnode = _treeForward.GetNodeFromIndex(inode);
 
-                if( !_parameters->_sampleneighfn(vSampleConfig, _treeForward.GetVectorConfig(pnode), _parameters->_fStepLength) ) {
+                if( !_parameters->_sampleneighfn(vSampleConfig, _treeForward.GetVectorConfig(pnode), _parameters->step_length_) ) {
                     continue;
                 }
                 if( GetParameters()->CheckPathAllConstraints(_treeForward.GetVectorConfig(pnode), vSampleConfig, std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart) == 0 ) {

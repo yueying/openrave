@@ -104,7 +104,7 @@ void PlannerBase::PlannerParameters::StateSaver::_Restore()
     BOOST_ASSERT(ret==0);
 }
 
-PlannerBase::PlannerParameters::PlannerParameters() : XMLReadable("plannerparameters"), _fStepLength(0.04f), max_iterations_num_(0), _nMaxPlanningTime(0), _sPostProcessingPlanner(s_linearsmoother), _nRandomGeneratorSeed(0)
+PlannerBase::PlannerParameters::PlannerParameters() : XMLReadable("plannerparameters"), step_length_(0.04f), max_iterations_num_(0), _nMaxPlanningTime(0), _sPostProcessingPlanner(s_linearsmoother), _nRandomGeneratorSeed(0)
 {
     _diffstatefn = SubtractStates;
     _neighstatefn = AddStates;
@@ -114,22 +114,22 @@ PlannerBase::PlannerParameters::PlannerParameters() : XMLReadable("plannerparame
     //_sPostProcessingParameters ="<_nmaxiterations>100</_nmaxiterations><_postprocessing planner=\"lineartrajectoryretimer\"></_postprocessing>";
     // should not verify initial path since coming from RRT. actually the linear smoother sometimes introduces small collisions due to the discrete nature of the collision checking, so also want to ignore those
     _sPostProcessingParameters ="<_nmaxiterations>20</_nmaxiterations><_postprocessing planner=\"parabolicsmoother\"><_nmaxiterations>100</_nmaxiterations><verifyinitialpath>0</verifyinitialpath></_postprocessing>";
-    _vXMLParameters.reserve(20);
-    _vXMLParameters.push_back("configuration");
-    _vXMLParameters.push_back("_vinitialconfig");
-    _vXMLParameters.push_back("_vinitialconfigvelocities");
-    _vXMLParameters.push_back("_vgoalconfigvelocities");
-    _vXMLParameters.push_back("_vgoalconfig");
-    _vXMLParameters.push_back("_vconfiglowerlimit");
-    _vXMLParameters.push_back("_vconfigupperlimit");
-    _vXMLParameters.push_back("_vconfigvelocitylimit");
-    _vXMLParameters.push_back("_vconfigaccelerationlimit");
-    _vXMLParameters.push_back("_vconfigresolution");
-    _vXMLParameters.push_back("_nmaxiterations");
-    _vXMLParameters.push_back("_nmaxplanningtime");
-    _vXMLParameters.push_back("_fsteplength");
-    _vXMLParameters.push_back("_postprocessing");
-    _vXMLParameters.push_back("_nrandomgeneratorseed");
+    xml_parameters_vector_.reserve(20);
+    xml_parameters_vector_.push_back("configuration");
+    xml_parameters_vector_.push_back("_vinitialconfig");
+    xml_parameters_vector_.push_back("_vinitialconfigvelocities");
+    xml_parameters_vector_.push_back("_vgoalconfigvelocities");
+    xml_parameters_vector_.push_back("_vgoalconfig");
+    xml_parameters_vector_.push_back("_vconfiglowerlimit");
+    xml_parameters_vector_.push_back("_vconfigupperlimit");
+    xml_parameters_vector_.push_back("_vconfigvelocitylimit");
+    xml_parameters_vector_.push_back("_vconfigaccelerationlimit");
+    xml_parameters_vector_.push_back("_vconfigresolution");
+    xml_parameters_vector_.push_back("_nmaxiterations");
+    xml_parameters_vector_.push_back("_nmaxplanningtime");
+    xml_parameters_vector_.push_back("_fsteplength");
+    xml_parameters_vector_.push_back("_postprocessing");
+    xml_parameters_vector_.push_back("_nrandomgeneratorseed");
 }
 
 PlannerBase::PlannerParameters::~PlannerParameters()
@@ -175,7 +175,7 @@ PlannerBase::PlannerParameters& PlannerBase::PlannerParameters::operator=(const 
     _sExtraParameters.resize(0);
     max_iterations_num_ = 0;
     _nMaxPlanningTime = 0;
-    _fStepLength = 0.04f;
+    step_length_ = 0.04f;
     _nRandomGeneratorSeed = 0;
     _plannerparametersdepth = 0;
 
@@ -256,7 +256,7 @@ bool PlannerBase::PlannerParameters::serialize(std::ostream& O, int options) con
 
     O << "<_nmaxiterations>" << max_iterations_num_ << "</_nmaxiterations>" << endl;
     O << "<_nmaxplanningtime>" << _nMaxPlanningTime << "</_nmaxplanningtime>" << endl;
-    O << "<_fsteplength>" << _fStepLength << "</_fsteplength>" << endl;
+    O << "<_fsteplength>" << step_length_ << "</_fsteplength>" << endl;
     O << "<_nrandomgeneratorseed>" << _nRandomGeneratorSeed << "</_nrandomgeneratorseed>" << endl;
     O << "<_postprocessing planner=\"" << _sPostProcessingPlanner << "\">" << _sPostProcessingParameters << "</_postprocessing>" << endl;
     if( !(options & 1) ) {
@@ -296,7 +296,7 @@ BaseXMLReader::ProcessElement PlannerBase::PlannerParameters::startElement(const
         return PE_Support;
     }
 
-    if( find(_vXMLParameters.begin(),_vXMLParameters.end(),name) == _vXMLParameters.end() ) {
+    if( find(xml_parameters_vector_.begin(),xml_parameters_vector_.end(),name) == xml_parameters_vector_.end() ) {
         _sslocal.reset(new std::stringstream());
         *_sslocal << "<" << name << " ";
         FOREACHC(itatt, atts) {
@@ -377,7 +377,7 @@ bool PlannerBase::PlannerParameters::endElement(const std::string& name)
             _ss >> _nMaxPlanningTime;
         }
         else if( name == "_fsteplength") {
-            _ss >> _fStepLength;
+            _ss >> step_length_;
         }
         else if( name == "_nrandomgeneratorseed") {
             _ss >> _nRandomGeneratorSeed;
@@ -789,7 +789,7 @@ void PlannerBase::PlannerParameters::Validate() const
         OPENRAVE_ASSERT_OP(_vConfigAccelerationLimit.size(),==,(size_t)GetDOF());
     }
     OPENRAVE_ASSERT_OP(_vConfigResolution.size(),==,(size_t)GetDOF());
-    OPENRAVE_ASSERT_OP(_fStepLength,>=,0); // == 0 is valid for auto-steps
+    OPENRAVE_ASSERT_OP(step_length_,>=,0); // == 0 is valid for auto-steps
     OPENRAVE_ASSERT_OP(max_iterations_num_,>=,0); // == 0 is valid for auto-iterations
 
     // check all stateless functions, which means ie anything but configuration samplers

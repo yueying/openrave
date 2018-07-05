@@ -1664,7 +1664,7 @@ protected:
         _robot->SetActiveDOFs(activejoints);
         params->SetRobotActiveJoints(_robot);
         if( fRRTStepLength > 0 ) {
-            params->_fStepLength = fRRTStepLength;
+            params->step_length_ = fRRTStepLength;
         }
         //params->_sPathOptimizationPlanner = ""; // no smoothing
 

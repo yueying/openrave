@@ -493,7 +493,7 @@ bool IterativeMergeRampsFixedTime(const std::list<ParabolicRamp::ParabolicRampND
         std::list<dReal> desireddurations;
         desireddurations.resize(0);
         FOREACHC(itramp, ramps) {
-            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->_fStepLength));
+            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->step_length_));
         }
         return IterativeFixRamps(ramps,desireddurations,params);
     }
@@ -721,8 +721,8 @@ bool FurtherMergeRamps(const std::list<ParabolicRamp::ParabolicRampND>&origramps
             if(!resmerge) {
                 break;
             }
-            dReal t0 = ComputeStepSizeCeiling(resramp0.endTime,params->_fStepLength);
-            dReal t1 = ComputeStepSizeCeiling(resramp1.endTime,params->_fStepLength);
+            dReal t0 = ComputeStepSizeCeiling(resramp0.endTime,params->step_length_);
+            dReal t1 = ComputeStepSizeCeiling(resramp1.endTime,params->step_length_);
             if(t1+t0-resramp0.endTime-resramp1.endTime+ComputeRampsDuration(ramps)>upperbound*origrampsduration) {
                 break;
             }
@@ -777,7 +777,7 @@ bool IterativeMergeRamps(const std::list<ParabolicRamp::ParabolicRampND>&origram
 
     dReal hi = maxcoef;
     dReal lo = 1;
-    while ((hi-lo)*durationbeforemerge > params->_fStepLength) {
+    while ((hi-lo)*durationbeforemerge > params->step_length_) {
         testcoef = (hi+lo)/2;
         //printf("Coef = %f\n",testcoef);
         bool canscale2 = ScaleRampsTime(origramps,ramps,testcoef,true,params);
@@ -1146,7 +1146,7 @@ bool FixRampsEnds(std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<
             return false;
         }
         dReal tmpduration = ComputeRampsDuration(tmpramps0);
-        bool canscale = ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->_fStepLength*2)/tmpduration,false,params);
+        bool canscale = ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->step_length_*2)/tmpduration,false,params);
         if(!canscale) {
             RAVELOG_WARN("Could not round up to controller timestep\n");
             return false;
@@ -1180,7 +1180,7 @@ bool FixRampsEnds(std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<
             return false;
         }
         dReal tmpduration = mergewaypoints::ComputeRampsDuration(tmpramps0);
-        bool canscale = mergewaypoints::ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->_fStepLength*2)/tmpduration,false,params);
+        bool canscale = mergewaypoints::ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->step_length_*2)/tmpduration,false,params);
         if(!canscale) {
             RAVELOG_WARN("Could not round up to controller timestep\n");
             return false;
@@ -1208,7 +1208,7 @@ bool FixRampsEnds(std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<
         std::list<dReal> desireddurations;
         desireddurations.resize(0);
         FOREACHC(itramp, resramps) {
-            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->_fStepLength));
+            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->step_length_));
         }
         //PrintRamps(resramps,params,false);
         bool res2 = IterativeFixRamps(resramps,desireddurations,params);
@@ -1334,13 +1334,13 @@ void PrintRamps(const std::list<ParabolicRamp::ParabolicRampND>&ramps,Constraint
         if(itramp->modified) {
             m = "M";
         }
-        dReal ratio = itramp->endTime/params->_fStepLength;
+        dReal ratio = itramp->endTime/params->step_length_;
         RAVELOG_DEBUG_FORMAT("Ramp %d: |%s|%f|%f; ",itx%m%itramp->endTime%ratio);
         if(checkcontrollertimestep) {
-            if(!IsMultipleOfStepSize(itramp->endTime,params->_fStepLength)) {
+            if(!IsMultipleOfStepSize(itramp->endTime,params->step_length_)) {
                 RAVELOG_WARN("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
                 dReal T = itramp->endTime;
-                dReal step = params->_fStepLength;
+                dReal step = params->step_length_;
                 dReal ratio = T/step;
                 dReal ceilratio = RaveCeil(ratio);
                 RAVELOG_WARN_FORMAT("Ratio= %d, CeilRatio= %d\n",ratio%ceilratio);

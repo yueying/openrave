@@ -126,11 +126,11 @@ public:
     class RAStarParameters : public PlannerBase::PlannerParameters {
 public:
         RAStarParameters() : fRadius(0.1f), fDistThresh(0.03f), fGoalCoeff(1), nMaxChildren(5), nMaxSampleTries(10), _bProcessingRA(false) {
-            _vXMLParameters.push_back("radius");
-            _vXMLParameters.push_back("distthresh");
-            _vXMLParameters.push_back("goalcoeff");
-            _vXMLParameters.push_back("maxchildren");
-            _vXMLParameters.push_back("maxsampletries");
+            xml_parameters_vector_.push_back("radius");
+            xml_parameters_vector_.push_back("distthresh");
+            xml_parameters_vector_.push_back("goalcoeff");
+            xml_parameters_vector_.push_back("maxchildren");
+            xml_parameters_vector_.push_back("maxsampletries");
         }
 
         dReal fRadius;              //<! _pDistMetric thresh is the radius that children must be within parents

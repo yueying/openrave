@@ -239,26 +239,31 @@ public:
 #endif
         BOOST_ASSERT(!!_parameters && !!ptraj);
 
-        if( ptraj->GetNumWaypoints() < 2 ) {
+        if( ptraj->GetNumWaypoints() < 2 )
+		{
             return PS_Failed;
         }
 
         // should always set the seed since smoother can be called with different trajectories even though InitPlan was only called once
-        if( !!_uniformsampler ) {
+        if( !!_uniformsampler )
+		{
             _uniformsampler->SetSeed(_parameters->_nRandomGeneratorSeed);
         }
 
-        if( IS_DEBUGLEVEL(Level_Verbose) ) {
+        if( IS_DEBUGLEVEL(Level_Verbose) )
+		{
             // store the trajectory
             uint32_t randnum;
-            if( !!_logginguniformsampler ) {
+            if( !!_logginguniformsampler )
+			{
                 randnum = _logginguniformsampler->SampleSequenceOneUInt32();
             }
-            else {
+            else
+			{
                 randnum = RaveRandomInt();
             }
-            string filename = str(boost::format("%s/parabolicsmoother%d.parameters.xml")%RaveGetHomeDirectory()%(randnum%1000));
-            ofstream f(filename.c_str());
+            std::string filename = str(boost::format("%s/parabolicsmoother%d.parameters.xml")%RaveGetHomeDirectory()%(randnum%1000));
+			std::ofstream f(filename.c_str());
             f << std::setprecision(std::numeric_limits<dReal>::digits10+1);     /// have to do this or otherwise precision gets lost
             f << *_parameters;
             RAVELOG_VERBOSE_FORMAT("env=%d, saved parabolic parameters to %s", GetEnv()->GetId()%filename);
@@ -269,26 +274,30 @@ public:
         std::vector<KinBody::KinBodyStateSaverPtr> vstatesavers;
         std::vector<KinBodyPtr> vusedbodies;
         _parameters->_configurationspecification.ExtractUsedBodies(GetEnv(), vusedbodies);
-        if( vusedbodies.size() == 0 ) {
+        if( vusedbodies.size() == 0 ) 
+		{
             RAVELOG_WARN("there are no used bodies in this configuration\n");
         }
 
         std::stringstream ssinitial;
 
-
         std::vector<uint8_t> venablestates;
-        FOREACH(itbody, vusedbodies) {
+        FOREACH(itbody, vusedbodies) 
+		{
             KinBody::KinBodyStateSaverPtr statesaver;
-            if( (*itbody)->IsRobot() ) {
+            if( (*itbody)->IsRobot() ) 
+			{
                 ssinitial << (*itbody)->GetName() << " enablestates=[";
                 (*itbody)->GetLinkEnableStates(venablestates);
-                FOREACH(it, venablestates) {
+                FOREACH(it, venablestates) 
+				{
                     ssinitial << (int)*it << ", ";
                 }
                 ssinitial << "]; ";
                 statesaver.reset(new RobotBase::RobotStateSaver(RaveInterfaceCast<RobotBase>(*itbody), KinBody::Save_LinkTransformation|KinBody::Save_LinkEnable|KinBody::Save_ActiveDOF|KinBody::Save_ActiveManipulator|KinBody::Save_LinkVelocities));
             }
-            else {
+            else 
+			{
                 statesaver.reset(new KinBody::KinBodyStateSaver(*itbody, KinBody::Save_LinkTransformation|KinBody::Save_LinkEnable|KinBody::Save_ActiveDOF|KinBody::Save_ActiveManipulator|KinBody::Save_LinkVelocities));
             }
             vstatesavers.push_back(statesaver);
@@ -387,13 +396,17 @@ public:
             }
             dynamicpath.ramps.resize(iramp);
         }
-        else {
-            if( itcompatposgroup->interpolation.size() == 0 || itcompatposgroup->interpolation == "linear" ) {
+        else 
+		{
+            if( itcompatposgroup->interpolation.size() == 0 
+				|| itcompatposgroup->interpolation == "linear" ) 
+			{
                 bRampIsPerfectlyModeled = true;
             }
-            RAVELOG_VERBOSE_FORMAT("initial numwaypoints before removing collinear ones = %d", ptraj->GetNumWaypoints());
+            RAVELOG_VERBOSE_FORMAT("initial numwaypoints before removing collinear ones = %d", 
+				ptraj->GetNumWaypoints());
             // linear ramp or unknown
-            vector<ParabolicRamp::Vector> &path=_cachepath; path.resize(0);
+            std::vector<ParabolicRamp::Vector> &path=_cachepath; path.resize(0);
             if( path.capacity() < ptraj->GetNumWaypoints() ) {
                 path.reserve(ptraj->GetNumWaypoints());
             }
@@ -466,13 +479,13 @@ public:
                 dummyDur1 += itramp->endTime;
             }
             if( !!parameters->_setstatevaluesfn || !!parameters->_setstatefn ) {
-                // no idea what a good mintimestep is... _parameters->_fStepLength*0.5?
-                //numshortcuts = dynamicpath.Shortcut(parameters->_nMaxIterations,_feasibilitychecker,this, parameters->_fStepLength*0.99);
+                // no idea what a good mintimestep is... _parameters->step_length_*0.5?
+                //numshortcuts = dynamicpath.Shortcut(parameters->_nMaxIterations,_feasibilitychecker,this, parameters->step_length_*0.99);
                 if (!_usingNewHeuristics) {
-                    numshortcuts = _Shortcut(dynamicpath, parameters->max_iterations_num_,this, parameters->_fStepLength*0.99);
+                    numshortcuts = _Shortcut(dynamicpath, parameters->max_iterations_num_,this, parameters->step_length_*0.99);
                 }
                 else {
-                    numshortcuts = _Shortcut2(dynamicpath, parameters->max_iterations_num_,this, parameters->_fStepLength*0.99);
+                    numshortcuts = _Shortcut2(dynamicpath, parameters->max_iterations_num_,this, parameters->step_length_*0.99);
                 }
                 if( numshortcuts < 0 ) {
                     return PS_Interrupted;
@@ -527,7 +540,7 @@ public:
             ParabolicRamp::Vector vconfig;
             std::vector<ParabolicRamp::ParabolicRampND>& temprampsnd=_cacheoutramps;
             ParabolicRamp::ParabolicRampND rampndtrimmed;
-            dReal fTrimEdgesTime = parameters->_fStepLength*2; // 2 controller timesteps is enough?
+            dReal fTrimEdgesTime = parameters->step_length_*2; // 2 controller timesteps is enough?
             dReal fExpectedDuration = 0;
             for(size_t irampindex = 0; irampindex < dynamicpath.ramps.size(); ++irampindex) {
                 const ParabolicRamp::ParabolicRampND& rampnd = dynamicpath.ramps[irampindex];
@@ -769,7 +782,8 @@ public:
         return _ProcessPostPlanners(RobotBasePtr(),ptraj);
     }
 
-    virtual int ConfigFeasible(const ParabolicRamp::Vector& a, const ParabolicRamp::Vector& da, int options)
+    virtual int ConfigFeasible(const ParabolicRamp::Vector& a,
+		const ParabolicRamp::Vector& da, int options)
     {
         if( _bUsePerturbation ) {
             options |= CFO_CheckWithPerturbation;
