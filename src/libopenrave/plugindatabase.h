@@ -340,7 +340,7 @@ namespace OpenRAVE
 
 				try {
 					if (!Load_CreateInterfaceGlobal()) {
-						throw openrave_exception(str(boost::format(_("%s: can't load CreateInterface function\n")) % ppluginname), ORE_InvalidPlugin);
+						throw OpenRAVEException(str(boost::format(_("%s: can't load CreateInterface function\n")) % ppluginname), ORE_InvalidPlugin);
 					}
 					InterfaceBasePtr pinterface;
 					if (pfnCreateNew != NULL) {
@@ -351,7 +351,7 @@ namespace OpenRAVE
 					}
 					return pinterface;
 				}
-				catch (const openrave_exception& ex) {
+				catch (const OpenRAVEException& ex) {
 					RAVELOG_ERROR(str(boost::format("Create Interface: openrave exception , plugin %s: %s\n") % ppluginname%ex.what()));
 					if (ex.GetCode() == ORE_InvalidPlugin) {
 						RAVELOG_DEBUG(str(boost::format("shared object %s is not a valid openrave plugin\n") % ppluginname));
@@ -405,7 +405,7 @@ namespace OpenRAVE
 							return;
 						}
 						if (_bShutdown) {
-							throw openrave_exception(_("library is shutting down"), ORE_InvalidPlugin);
+							throw OpenRAVEException(_("library is shutting down"), ORE_InvalidPlugin);
 						}
 						_cond.wait(lock);
 					} while (1);
@@ -931,12 +931,12 @@ namespace OpenRAVE
 			BOOST_ASSERT(name.size() > 0);
 			if (strcmp(envhash, OPENRAVE_ENVIRONMENT_HASH)) 
 			{
-				throw openrave_exception(str(boost::format(_("environment invalid hash %s!=%s\n"))
+				throw OpenRAVEException(str(boost::format(_("environment invalid hash %s!=%s\n"))
 					% envhash%OPENRAVE_ENVIRONMENT_HASH), ORE_InvalidInterfaceHash);
 			}
 			if (strcmp(interfacehash, RaveGetInterfaceHash(type))) 
 			{
-				throw openrave_exception(str(boost::format(_("interface %s invalid hash %s!=%s\n"))
+				throw OpenRAVEException(str(boost::format(_("interface %s invalid hash %s!=%s\n"))
 					% RaveGetInterfaceName(type) % interfacehash%RaveGetInterfaceHash(type)), ORE_InvalidInterfaceHash);
 			}
 			boost::mutex::scoped_lock lock(_mutex);
@@ -1158,7 +1158,7 @@ namespace OpenRAVE
 			if (psym != NULL) {
 				// check for errors if something valid is returned since we'll be executing it
 				if (errorstring != NULL) {
-					throw openrave_exception(errorstring, ORE_InvalidPlugin);
+					throw OpenRAVEException(errorstring, ORE_InvalidPlugin);
 				}
 			}
 			return psym;

@@ -686,7 +686,7 @@ namespace OpenRAVE
 		{
 			READERSMAP::iterator it = _mapreaders[type].find(xmltag);
 			if (it == _mapreaders[type].end()) {
-				//throw openrave_exception(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
+				//throw OpenRAVEException(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
 				return BaseXMLReaderPtr();
 			}
 			return it->second(pinterface, atts);
@@ -2527,7 +2527,7 @@ namespace OpenRAVE
 		_p = p;
 		if (!_p->SetCollisionOptions(newoptions)) {
 			if (required) {
-				throw openrave_exception(str(boost::format(_("Failed to set collision options %d in checker %s\n")) % newoptions%_p->GetXMLId()));
+				throw OpenRAVEException(str(boost::format(_("Failed to set collision options %d in checker %s\n")) % newoptions%_p->GetXMLId()));
 			}
 		}
 	}

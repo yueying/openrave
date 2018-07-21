@@ -93,7 +93,7 @@ public:
 
     /// \brief samples the real next value on the sequence, only valid for 1 DOF sequences.
     ///
-    /// \throw openrave_exception throw if could not be sampled
+    /// \throw OpenRAVEException throw if could not be sampled
     virtual dReal SampleSequenceOneReal(IntervalType interval=IT_Closed)
     {
         OPENRAVE_ASSERT_OP_FORMAT0(GetDOF(),==,1,"sample can only be 1 dof", ORE_InvalidState);
@@ -114,7 +114,7 @@ public:
 
     /// \brief samples the unsigned integer next value on the sequence, only valid for 1 DOF sequences.
     ///
-    /// \throw openrave_exception throw if could not be sampled
+    /// \throw OpenRAVEException throw if could not be sampled
     virtual uint32_t SampleSequenceOneUInt32()
     {
         OPENRAVE_ASSERT_OP_FORMAT0(GetDOF(),==,1,"sample can only be 1 dof", ORE_InvalidState);

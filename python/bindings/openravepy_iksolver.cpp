@@ -103,7 +103,7 @@ protected:
 
         PyGILState_Release(gstate);
         if( errmsg.size() > 0 ) {
-            throw openrave_exception(errmsg,ORE_Assert);
+            throw OpenRAVEException(errmsg,ORE_Assert);
         }
         return ikfr;
     }
@@ -140,7 +140,7 @@ public:
         }
         IkParameterization ikparam;
         if( !ExtractIkParameterization(oparam,ikparam) ) {
-            throw openrave_exception(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
         }
         _pIkSolver->Solve(ikparam, q0, filteroptions, preturn);
         return pyreturn;
@@ -152,7 +152,7 @@ public:
         std::vector<IkReturnPtr> vikreturns;
         IkParameterization ikparam;
         if( !ExtractIkParameterization(oparam,ikparam) ) {
-            throw openrave_exception(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
         }
         _pIkSolver->SolveAll(ikparam, filteroptions, vikreturns);
         FOREACH(itikreturn,vikreturns) {
@@ -174,7 +174,7 @@ public:
         }
         IkParameterization ikparam;
         if( !ExtractIkParameterization(oparam,ikparam) ) {
-            throw openrave_exception(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
         }
         _pIkSolver->Solve(ikparam, q0, vFreeParameters,filteroptions, preturn);
         return pyreturn;
@@ -186,7 +186,7 @@ public:
         std::vector<IkReturnPtr> vikreturns;
         IkParameterization ikparam;
         if( !ExtractIkParameterization(oparam,ikparam) ) {
-            throw openrave_exception(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
         }
         vector<dReal> vFreeParameters;
         if( !IS_PYTHONOBJECT_NONE(oFreeParameters) ) {
@@ -205,7 +205,7 @@ public:
         IkReturnPtr preturn(&pyreturn->_ret, utils::null_deleter());
         IkParameterization ikparam;
         if( !ExtractIkParameterization(oparam,ikparam) ) {
-            throw openrave_exception(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("first argument to IkSolver.Solve needs to be IkParameterization"),ORE_InvalidArguments);
         }
         _pIkSolver->CallFilters(ikparam, preturn);
         return pyreturn;

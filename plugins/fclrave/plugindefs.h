@@ -89,7 +89,7 @@ using OpenRAVE::InterfaceBase;
 using OpenRAVE::InterfaceBasePtr;
 using OpenRAVE::InterfaceBaseConstPtr;
 using OpenRAVE::PLUGININFO;
-using OpenRAVE::openrave_exception;
+using OpenRAVE::OpenRAVEException;
 using OpenRAVE::EnvironmentMutex;
 using OpenRAVE::RaveFabs;
 using OpenRAVE::ControllerBase;

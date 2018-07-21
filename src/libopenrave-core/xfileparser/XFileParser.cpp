@@ -69,7 +69,7 @@
 //#include "../include/export.hpp"
 #endif
 
-#define DeadlyImportError openrave_exception
+#define DeadlyImportError OpenRAVEException
 
 #ifndef ASSIMP_BUILD_NO_X_IMPORTER
 

@@ -247,7 +247,7 @@ public:
         Several default options are:
         - 'target' - the target body name of the options, if relevant
         - 'password' - the password/key to encrypt the data with, collada supports this through zae zip archives
-        \throw openrave_exception Throw if failed to save anything
+        \throw OpenRAVEException Throw if failed to save anything
      */
     virtual void Save(const std::string& filename, SelectionOptions options=SO_Everything, const AttributesList& atts = AttributesList()) = 0;
 
@@ -270,7 +270,7 @@ public:
         Several default options are:
         - 'target' - the target body name of the options, if relevant
         - 'password' - the password/key to encrypt the data with, collada supports this through zae zip archives
-        \throw openrave_exception Throw if failed to save anything
+        \throw OpenRAVEException Throw if failed to save anything
      */
     virtual void WriteToMemory(const std::string& filetype, std::vector<char>& output, SelectionOptions options=SO_Everything, const AttributesList& atts = AttributesList()) = 0;
 
@@ -392,7 +392,7 @@ public:
         \param[in] pinterface the pointer to an initialized interface
         \param[in] bAnonymous if true and there exists a body/robot with the same name, will make body's name unique
         \param[in] cmdargs The command-line arguments for the module.
-        \throw openrave_exception Throw if interface is invalid or already added
+        \throw OpenRAVEException Throw if interface is invalid or already added
      */
     virtual void Add(InterfaceBasePtr pinterface, bool bAnonymous=false, const std::string& cmdargs="") = 0;
 
@@ -424,7 +424,7 @@ public:
     ///
     /// The sensors come from the currently loaded robots and the explicitly added sensors
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void GetSensors(std::vector<SensorBasePtr>& sensors, uint64_t timeout=0) const = 0;
 
     /// \brief Removes a currently loaded interface from the environment. <b>[multi-thread safe]</b>
@@ -460,14 +460,14 @@ public:
     /// A separate **interface mutex** is locked for reading the bodies.
     /// \param[out] bodies filled with all the bodies
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void GetBodies(std::vector<KinBodyPtr>& bodies, uint64_t timeout=0) const = 0;
 
     /// \brief Fill an array with all robots loaded in the environment. <b>[multi-thread safe]</b>
     ///
     /// A separate **interface mutex** is locked for reading the bodies.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void GetRobots(std::vector<RobotBasePtr>& robots, uint64_t timeout=0) const = 0;
 
     /// \brief Retrieve published bodies, completes even if environment is locked. <b>[multi-thread safe]</b>
@@ -475,7 +475,7 @@ public:
     /// A separate **interface mutex** is locked for reading the modules.
     /// Note that the pbody pointer might become invalid as soon as GetPublishedBodies returns.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void GetPublishedBodies(std::vector<KinBody::BodyState>& vbodies, uint64_t timeout=0) = 0;
 
     /// \brief Retrieve published body of specified name, completes even if environment is locked. <b>[multi-thread safe]</b>
@@ -483,7 +483,7 @@ public:
     /// A separate **interface mutex** is locked for reading the modules.
     /// Note that the pbody pointer might become invalid as soon as GetPublishedBody returns.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     /// \return true if name matches to a published body
     virtual bool GetPublishedBody(const std::string& name, KinBody::BodyState& bodystate, uint64_t timeout=0) = 0;
 
@@ -492,7 +492,7 @@ public:
     /// A separate **interface mutex** is locked for reading the modules.
     /// Note that the pbody pointer might become invalid as soon as GetPublishedBodyJointValues returns.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     /// \return true if name matches to a published body
     virtual bool GetPublishedBodyJointValues(const std::string& name, std::vector<dReal> &jointValues, uint64_t timeout=0) = 0;
 
@@ -502,7 +502,7 @@ public:
     /// Note that the pbody pointer might become invalid as soon as GetPublishedBody returns.
     /// \param prefix the prefix to match to the target names.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void GetPublishedBodyTransformsMatchingPrefix(const std::string& prefix, std::vector<std::pair<std::string, Transform> >& nameTransfPairs, uint64_t timeout = 0) = 0;
 
     /// \brief Updates the published bodies that viewers and other programs listening in on the environment see.
@@ -511,7 +511,7 @@ public:
     /// reflecting the status of the planner.
     /// Assumes that the physics are locked.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void UpdatePublishedBodies(uint64_t timeout=0) = 0;
 
     /// Get the corresponding body from its unique network id
@@ -521,7 +521,7 @@ public:
     ///
     /// \param[out] trimesh - The output triangle mesh
     /// \param[in] body body the triangulate
-    /// \throw openrave_exception Throw if failed to add anything
+    /// \throw OpenRAVEException Throw if failed to add anything
     virtual void Triangulate(TriMesh& trimesh, KinBodyConstPtr pbody) = 0;
 
     /// \brief General triangulation of the whole scene. <b>[multi-thread safe]</b>
@@ -529,7 +529,7 @@ public:
     /// \param[out] trimesh - The output triangle mesh. The new triangles are appended to the existing triangles!
     /// \param[in] options - Controlls what to triangulate.
     /// \param[in] selectname - name of the body used in options
-    /// \throw openrave_exception Throw if failed to add anything
+    /// \throw OpenRAVEException Throw if failed to add anything
     virtual void TriangulateScene(TriMesh& trimesh, SelectionOptions options, const std::string& selectname) = 0;
     //@}
 
@@ -546,7 +546,7 @@ public:
     /// A separate **interface mutex** is locked for reading the modules.
     /// If the environment is locked, the modules are guaranteed to stay loaded in the environment.
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
-    /// \throw openrave_exception with ORE_Timeout error code
+    /// \throw OpenRAVEException with ORE_Timeout error code
     virtual void GetModules(std::list<ModuleBasePtr>& listModules, uint64_t timeout=0) const = 0;
 
     /// \deprecated (12/01/30)

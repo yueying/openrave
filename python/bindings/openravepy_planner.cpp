@@ -260,11 +260,11 @@ public:
     object RegisterPlanCallback(object fncallback)
     {
         if( !fncallback ) {
-            throw openrave_exception(_("callback not specified"));
+            throw OpenRAVEException(_("callback not specified"));
         }
         UserDataPtr p = _pplanner->RegisterPlanCallback(boost::bind(&PyPlannerBase::_PlanCallback,fncallback,_pyenv,_1));
         if( !p ) {
-            throw openrave_exception(_("no registration callback returned"));
+            throw OpenRAVEException(_("no registration callback returned"));
         }
         return toPyUserData(p);
     }

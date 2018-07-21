@@ -71,7 +71,7 @@ public:
     {
         vector<dReal> values = ExtractArray<dReal>(o);
         if( values.size() == 0 ) {
-            throw openrave_exception(_("no values specified"));
+            throw OpenRAVEException(_("no values specified"));
         }
         return _pcontroller->SetDesired(values);
     }

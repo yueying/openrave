@@ -1139,7 +1139,7 @@ public:
             return boost::python::make_tuple( ArrayFunc::array(boost::python::list(), ArrayFunc::dtype::get_builtin<uint32_t>()), ArrayFunc::array(boost::python::list()));
         }
         if( extract<int>(shape[1]) != 6 ) {
-            throw openrave_exception(_("rays object needs to be a Nx6 vector\n"));
+            throw OpenRAVEException(_("rays object needs to be a Nx6 vector\n"));
         }
         CollisionReport report;
         CollisionReportPtr preport(&report,null_deleter());
@@ -1148,7 +1148,7 @@ public:
         AutoPyArrayObjectDereferencer pyderef(pPyRays);
 
         if( !PyArray_ISFLOAT(pPyRays) ) {
-            throw openrave_exception(_("rays has to be a float array\n"));
+            throw OpenRAVEException(_("rays has to be a float array\n"));
         }
 
         bool isFloat = PyArray_ITEMSIZE(pPyRays) == sizeof(float); // or double
@@ -1457,11 +1457,11 @@ public:
     object RegisterBodyCallback(object fncallback)
     {
         if( !fncallback ) {
-            throw openrave_exception(_("callback not specified"));
+            throw OpenRAVEException(_("callback not specified"));
         }
         UserDataPtr p = _penv->RegisterBodyCallback(boost::bind(&PyEnvironmentBase::_BodyCallback,shared_from_this(),fncallback,_1,_2));
         if( !p ) {
-            throw openrave_exception(_("registration handle is NULL"));
+            throw OpenRAVEException(_("registration handle is NULL"));
         }
         return openravepy::GetUserData(p);
     }
@@ -1469,11 +1469,11 @@ public:
     object RegisterCollisionCallback(object fncallback)
     {
         if( !fncallback ) {
-            throw openrave_exception(_("callback not specified"));
+            throw OpenRAVEException(_("callback not specified"));
         }
         UserDataPtr p = _penv->RegisterCollisionCallback(boost::bind(&PyEnvironmentBase::_CollisionCallback,shared_from_this(),fncallback,_1,_2));
         if( !p ) {
-            throw openrave_exception(_("registration handle is NULL"));
+            throw OpenRAVEException(_("registration handle is NULL"));
         }
         return openravepy::GetUserData(p);
     }
@@ -1655,7 +1655,7 @@ public:
                 return num*(dim/3);
             }
             default:
-                throw openrave_exception(_("points have bad dimension"));
+                throw OpenRAVEException(_("points have bad dimension"));
             }
         }
         // assume it is a regular 1D list
@@ -1709,10 +1709,10 @@ public:
         size_t numpoints = _getGraphPoints(opoints,vpoints);
         size_t numcolors = _getGraphColors(ocolors,vcolors);
         if( numpoints <= 0 ) {
-            throw openrave_exception(_("points cannot be empty"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("points cannot be empty"),ORE_InvalidArguments);
         }
         if(( numcolors > 1) &&( numpoints != numcolors) ) {
-            throw openrave_exception(boost::str(boost::format(_("number of points (%d) need to match number of colors (%d)"))%numpoints%numcolors));
+            throw OpenRAVEException(boost::str(boost::format(_("number of points (%d) need to match number of colors (%d)"))%numpoints%numcolors));
         }
         return make_pair(numpoints,numcolors);
     }
@@ -2140,15 +2140,15 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetPublishedBodies_overloads, GetPublishe
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetPublishedBodyJointValues_overloads, GetPublishedBodyJointValues, 1, 2)
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetPublishedBodyTransformsMatchingPrefix_overloads, GetPublishedBodyTransformsMatchingPrefix, 1, 2)
 
-object get_openrave_exception_unicode(openrave_exception* p)
+object get_openrave_exception_unicode(OpenRAVEException* p)
 {
     std::string s = p->message();
     return ConvertStringToUnicode(s);
 }
 
-std::string get_openrave_exception_repr(openrave_exception* p)
+std::string get_openrave_exception_repr(OpenRAVEException* p)
 {
-    return boost::str(boost::format("<openrave_exception('%s',ErrorCode.%s)>")%p->message()%GetErrorCodeString(p->GetCode()));
+    return boost::str(boost::format("<OpenRAVEException('%s',ErrorCode.%s)>")%p->message()%GetErrorCodeString(p->GetCode()));
 }
 
 object get_std_runtime_error_unicode(std::runtime_error* p)
@@ -2184,16 +2184,16 @@ BOOST_PYTHON_MODULE(openravepy_int)
     init_python_bindings();
 
     typedef return_value_policy< copy_const_reference > return_copy_const_ref;
-    class_< openrave_exception >( "_openrave_exception_", DOXY_CLASS(openrave_exception) )
+    class_< OpenRAVEException >( "_openrave_exception_", DOXY_CLASS(OpenRAVEException) )
     .def( init<const std::string&>() )
-    .def( init<const openrave_exception&>() )
-    .def( "message", &openrave_exception::message, return_copy_const_ref() )
-    .def("GetCode", &openrave_exception::GetCode )
-    .def( "__str__", &openrave_exception::message, return_copy_const_ref() )
+    .def( init<const OpenRAVEException&>() )
+    .def( "message", &OpenRAVEException::message, return_copy_const_ref() )
+    .def("GetCode", &OpenRAVEException::GetCode )
+    .def( "__str__", &OpenRAVEException::message, return_copy_const_ref() )
     .def( "__unicode__", get_openrave_exception_unicode)
     .def( "__repr__", get_openrave_exception_repr)
     ;
-    exception_translator<openrave_exception>();
+    exception_translator<OpenRAVEException>();
     class_< std::runtime_error >( "_std_runtime_error_", no_init)
     .def( init<const std::string&>() )
     .def( init<const std::runtime_error&>() )

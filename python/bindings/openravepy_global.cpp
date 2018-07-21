@@ -240,10 +240,10 @@ public:
         PyObject *pPyVertices = vertices.ptr();
         if (PyArray_Check(pPyVertices)) {
             if (PyArray_NDIM(pPyVertices) != 2) {
-                throw openrave_exception(_("vertices must be a 2D array"), ORE_InvalidArguments);
+                throw OpenRAVEException(_("vertices must be a 2D array"), ORE_InvalidArguments);
             }
             if (!PyArray_ISFLOAT(pPyVertices)) {
-                throw openrave_exception(_("vertices must be in float"), ORE_InvalidArguments);
+                throw OpenRAVEException(_("vertices must be in float"), ORE_InvalidArguments);
             }
             PyArrayObject* pPyVerticesContiguous = PyArray_GETCONTIGUOUS(reinterpret_cast<PyArrayObject*>(pPyVertices));
             AutoPyArrayObjectDereferencer pydecref(pPyVerticesContiguous);
@@ -269,7 +269,7 @@ public:
                     mesh.vertices[i].z = static_cast<dReal>(vdata[j + 2]);
                 }
             } else {
-                throw openrave_exception(_("Unsupported vertices type"), ORE_InvalidArguments);
+                throw OpenRAVEException(_("Unsupported vertices type"), ORE_InvalidArguments);
             }
 
         } else {
@@ -286,7 +286,7 @@ public:
         PyObject *pPyIndices = indices.ptr();
         if (PyArray_Check(pPyIndices)) {
             if (PyArray_NDIM(pPyIndices) != 2 || PyArray_DIM(pPyIndices, 1) != 3 || !PyArray_ISINTEGER(pPyIndices)) {
-                throw openrave_exception(_("indices must be a Nx3 int array"), ORE_InvalidArguments);
+                throw OpenRAVEException(_("indices must be a Nx3 int array"), ORE_InvalidArguments);
             }
             PyArrayObject* pPyIndiciesContiguous = PyArray_GETCONTIGUOUS(reinterpret_cast<PyArrayObject*>(pPyIndices));
             AutoPyArrayObjectDereferencer pydecref(pPyIndiciesContiguous);
@@ -322,7 +322,7 @@ public:
                     mesh.indices[i] = static_cast<int32_t>(idata[i]);
                 }
             } else {
-                throw openrave_exception(_("Unsupported indices type"), ORE_InvalidArguments);
+                throw OpenRAVEException(_("Unsupported indices type"), ORE_InvalidArguments);
             }
 
         } else {
@@ -867,7 +867,7 @@ PyInterfaceBasePtr pyRaveClone(PyInterfaceBasePtr pyreference, int cloningoption
     case PT_Viewer: return toPyViewer(RaveInterfaceCast<ViewerBase>(pclone), pyenv);
     case PT_SpaceSampler: return toPySpaceSampler(RaveInterfaceCast<SpaceSamplerBase>(pclone), pyenv);
     }
-    throw openrave_exception(_("invalid interface type"),ORE_InvalidArguments);
+    throw OpenRAVEException(_("invalid interface type"),ORE_InvalidArguments);
 }
 
 object quatFromAxisAngle1(object oaxis)

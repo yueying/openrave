@@ -583,7 +583,7 @@ namespace OpenRAVE
 			/// \brief returns a const reference to the vector of geometries for a particular group
 			///
 			/// \param name The name of the geometry group.
-			/// \throw openrave_exception If the group does not exist, throws an exception.
+			/// \throw OpenRAVEException If the group does not exist, throws an exception.
 			virtual const std::vector<KinBody::GeometryInfoPtr>& GetGeometriesFromGroup(const std::string& name) const;
 
 			/// \brief stores geometries for later retrieval
@@ -1153,7 +1153,7 @@ namespace OpenRAVE
 
 				If the mimic joint uses the values of other mimic joints, then the dependent DOFs of that joint are also
 				copied over. Therefore, the dof indices returned can be more than the actual variables used in the equation.
-				\throw openrave_exception Throws an exception if the axis is not mimic.
+				\throw OpenRAVEException Throws an exception if the axis is not mimic.
 			 */
 			virtual void GetMimicDOFIndices(std::vector<int>& vmimicdofs, int axis = 0) const;
 
@@ -1174,7 +1174,7 @@ namespace OpenRAVE
 				\param[in] poseq Equation for joint's position. If it is empty, the mimic properties are turned off for this joint.
 				\param[in] veleq First-order partial derivatives of poseq with respect to all used DOFs. Only the variables used in poseq are allowed to be used. If poseq is not empty, this is required.
 				\param[in] acceleq Second-order partial derivatives of poseq with respect to all used DOFs. Only the variables used in poseq are allowed to be used. Optional.
-				\throw openrave_exception Throws an exception if the mimic equation is invalid in any way.
+				\throw OpenRAVEException Throws an exception if the mimic equation is invalid in any way.
 			 */
 			virtual void SetMimicEquations(int axis, const std::string& poseq, const std::string& veleq, const std::string& acceleq = "");
 			//@}
@@ -1415,7 +1415,7 @@ namespace OpenRAVE
 			/// \brief restore the state
 			///
 			/// \param body if set, will attempt to restore the stored state to the passed in body, otherwise will restore it for the original body.
-			/// \throw openrave_exception if the passed in body is not compatible with the saved state, will throw
+			/// \throw OpenRAVEException if the passed in body is not compatible with the saved state, will throw
 			virtual void Restore(std::shared_ptr<KinBody> body = std::shared_ptr<KinBody>());
 
 			/// \brief release the body state. _pbody will not get restored on destruction

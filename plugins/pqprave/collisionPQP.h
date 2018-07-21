@@ -334,7 +334,7 @@ public:
             report->Reset(_options);
         }
         _pactiverobot.reset();
-        throw openrave_exception("PQP collision checker does not support ray collision queries\n");
+        throw OpenRAVEException("PQP collision checker does not support ray collision queries\n");
     }
 
     virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr())
@@ -343,7 +343,7 @@ public:
             report->Reset(_options);
         }
         _SetActiveBody(pbody);
-        throw openrave_exception("PQP collision checker does not support ray collision queries\n");
+        throw OpenRAVEException("PQP collision checker does not support ray collision queries\n");
     }
 
     virtual bool CheckCollision(const RAY& ray, CollisionReportPtr report = CollisionReportPtr())
@@ -352,7 +352,7 @@ public:
             report->Reset(_options);
         }
         _pactiverobot.reset();
-        throw openrave_exception("PQP collision checker does not support ray collision queries\n");
+        throw OpenRAVEException("PQP collision checker does not support ray collision queries\n");
     }
 
     virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr())
@@ -631,7 +631,7 @@ private:
         // distance
         if(_benabledis) {
             if(!report) {
-                throw openrave_exception("CollisionCheckerPQP::DoPQP - ERROR: YOU MUST PASS IN A CollisionReport STRUCT TO MEASURE DISTANCE!\n");
+                throw OpenRAVEException("CollisionCheckerPQP::DoPQP - ERROR: YOU MUST PASS IN A CollisionReport STRUCT TO MEASURE DISTANCE!\n");
             }
             //don't do a tolerance check, some users wants distance all the time
             //PQP_Tolerance(&tolres,R1,T1,m1,R2,T2,m2,_preport->minDistance);

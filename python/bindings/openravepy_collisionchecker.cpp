@@ -514,7 +514,7 @@ public:
             return boost::python::make_tuple(ArrayFunc::array(boost::python::list(), ArrayFunc::dtype::get_builtin<uint32_t>()), ArrayFunc::array(boost::python::list()));
         }
         if( extract<int>(shape[1]) != 6 ) {
-            throw openrave_exception(_("rays object needs to be a Nx6 vector\n"));
+            throw OpenRAVEException(_("rays object needs to be a Nx6 vector\n"));
         }
         CollisionReport report;
         CollisionReportPtr preport(&report,null_deleter());
@@ -574,7 +574,7 @@ public:
     {
         TriMesh trimesh;
         if( !ExtractTriMesh(otrimesh,trimesh) ) {
-            throw openrave_exception(_("bad trimesh"));
+            throw OpenRAVEException(_("bad trimesh"));
         }
         KinBodyConstPtr pbody(openravepy::GetKinBody(pybody));
         bool bCollision = _pCollisionChecker->CheckCollision(trimesh, pbody, openravepy::GetCollisionReport(pReport));

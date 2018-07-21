@@ -53,7 +53,7 @@ OPENRAVE_API int JitterCurrentConfiguration(PlannerBase::PlannerParametersConstP
     \param parameters the planner parameters passed to the planner that returned the trajectory. If not initialized, will attempt to create a new PlannerParameters structure from trajectory->GetConfigurationSpecification()
     \param trajectory trajectory of points to be checked
     \param samplingstep If == 0, then will only test the supports points in trajectory->GetPoints(). If > 0, then will sample the trajectory at this time interval and check that smoothness is satisfied along with segment constraints.
-    \throw openrave_exception If the trajectory is invalid, will throw ORE_InconsistentConstraints.
+    \throw OpenRAVEException If the trajectory is invalid, will throw ORE_InconsistentConstraints.
  */
 OPENRAVE_API void VerifyTrajectory(PlannerBase::PlannerParametersConstPtr parameters, TrajectoryBaseConstPtr trajectory, dReal samplingstep=0.002);
 
@@ -364,7 +364,7 @@ OPENRAVE_API TrajectoryBasePtr GetTrajectorySegment(TrajectoryBaseConstPtr traj,
 ///
 /// Each trajectory needs to have a 'deltatime' group for timestamps. The trajectories cannot share common configuration data because only one
 /// trajectories's data can be set at a time.
-/// \throw openrave_exception throws an exception if the trajectory data is incompatible and cannot be merged.
+/// \throw OpenRAVEException throws an exception if the trajectory data is incompatible and cannot be merged.
 OPENRAVE_API TrajectoryBasePtr MergeTrajectories(const std::list<TrajectoryBaseConstPtr>&listtrajectories);
 
 /** \brief represents the DH parameters for one joint

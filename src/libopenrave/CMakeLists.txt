@@ -5,7 +5,8 @@ set(openrave_lib_SOURCES configurationspecification.cpp controller.cpp
 	kinbodyjoint.cpp kinbodylink.cpp  libopenrave.cpp libopenrave.h 
 	math.cpp planner.cpp plannerparameters.cpp planningutils.cpp 
 	plugindatabase.h robot.cpp robotmanipulator.cpp sensorsystem.cpp 
-	trajectory.cpp utils.cpp xmlreaders.cpp ${rave_header_files})
+	trajectory.cpp utils.cpp xmlreaders.cpp ik_parameterization.cpp
+	numerical.cpp ${rave_header_files})
 
 FILE(GLOB include_file_list "../../include/openrave/*.h" 
 "../../include/openrave_c/*.h" 

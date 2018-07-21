@@ -92,7 +92,7 @@ namespace OpenRAVE
 	{
 		if (!preference) 
 		{
-			throw openrave_exception(_("invalid cloning reference"), ORE_InvalidArguments);
+			throw OpenRAVEException(_("invalid cloning reference"), ORE_InvalidArguments);
 		}
 		// cannot clone the user data since it can be environment dependent!
 		//user_data_map_ = preference->user_data_map_;
@@ -113,7 +113,7 @@ namespace OpenRAVE
 		sinput >> cmd;
 		if (!sinput) 
 		{
-			throw openrave_exception(_("invalid command"), ORE_InvalidArguments);
+			throw OpenRAVEException(_("invalid command"), ORE_InvalidArguments);
 		}
 		std::shared_ptr<InterfaceCommand> interfacecmd;
 		{
@@ -121,7 +121,7 @@ namespace OpenRAVE
 			CMDMAP::iterator it = commands_map_.find(cmd);
 			if (it == commands_map_.end()) 
 			{
-				throw openrave_exception(str(boost::format(_("failed to find command '%s' in interface %s\n")) 
+				throw OpenRAVEException(str(boost::format(_("failed to find command '%s' in interface %s\n")) 
 					% cmd.c_str() % GetXMLId()), ORE_CommandNotSupported);
 			}
 			interfacecmd = it->second;
@@ -152,11 +152,11 @@ namespace OpenRAVE
 		boost::unique_lock< boost::shared_mutex > lock(interface_mutex_);
 		if ((cmdname.size() == 0) || !utils::IsValidName(cmdname) || (_stricmp(cmdname.c_str(), "commands") == 0)) 
 		{
-			throw openrave_exception(str(boost::format(_("command '%s' invalid")) % cmdname), ORE_InvalidArguments);
+			throw OpenRAVEException(str(boost::format(_("command '%s' invalid")) % cmdname), ORE_InvalidArguments);
 		}
 		if (commands_map_.find(cmdname) != commands_map_.end()) 
 		{
-			throw openrave_exception(str(boost::format(_("command '%s' already registered")) % cmdname), ORE_InvalidArguments);
+			throw OpenRAVEException(str(boost::format(_("command '%s' already registered")) % cmdname), ORE_InvalidArguments);
 		}
 		commands_map_[cmdname] = std::shared_ptr<InterfaceCommand>(new InterfaceCommand(fncmd, strhelp));
 	}
@@ -251,10 +251,10 @@ namespace OpenRAVE
 	{
 		boost::unique_lock< boost::shared_mutex > lock(interface_mutex_);
 		if ((cmdname.size() == 0) || !utils::IsValidName(cmdname)) {
-			throw openrave_exception(str(boost::format(_("command '%s' invalid")) % cmdname), ORE_InvalidArguments);
+			throw OpenRAVEException(str(boost::format(_("command '%s' invalid")) % cmdname), ORE_InvalidArguments);
 		}
 		if (__mapJSONCommands.find(cmdname) != __mapJSONCommands.end()) {
-			throw openrave_exception(str(boost::format(_("command '%s' already registered")) % cmdname), ORE_InvalidArguments);
+			throw OpenRAVEException(str(boost::format(_("command '%s' already registered")) % cmdname), ORE_InvalidArguments);
 		}
 		__mapJSONCommands[cmdname] = std::shared_ptr<InterfaceJSONCommand>(new InterfaceJSONCommand(fncmd, strhelp));
 	}
@@ -276,7 +276,7 @@ namespace OpenRAVE
 			boost::shared_lock< boost::shared_mutex > lock(interface_mutex_);
 			JSONCMDMAP::iterator it = __mapJSONCommands.find(cmdname);
 			if (it == __mapJSONCommands.end()) {
-				throw openrave_exception(str(boost::format(_("failed to find JSON command '%s' in interface %s\n")) % cmdname.c_str() % GetXMLId()), ORE_CommandNotSupported);
+				throw OpenRAVEException(str(boost::format(_("failed to find JSON command '%s' in interface %s\n")) % cmdname.c_str() % GetXMLId()), ORE_CommandNotSupported);
 			}
 			interfacecmd = it->second;
 		}

@@ -566,7 +566,7 @@ public:
             }
             if(iktype == IKP_None) 
 			{
-                throw openrave_exception(str(boost::format(_("could not find iktype %s"))%ik_type_str));
+                throw OpenRAVEException(str(boost::format(_("could not find iktype %s"))%ik_type_str));
             }
         }
 
@@ -786,7 +786,7 @@ public:
             return _PerfTiming<double>(sout,lib->_ikdouble,num, maxtime);
         }
         else {
-            throw openrave_exception(_("bad real size"));
+            throw OpenRAVEException(_("bad real size"));
         }
         return true;
     }

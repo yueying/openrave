@@ -363,7 +363,7 @@ public:
     ///
     /// \param type \ref ConfigureCommand
     /// \param blocking If set to true, makes sure the configuration ends before this function returns.(might cause problems if environment is locked).
-    /// \throw openrave_exception if command doesn't succeed
+    /// \throw OpenRAVEException if command doesn't succeed
     virtual int Configure(ConfigureCommand command, bool blocking=false) = 0;
 
     /// \brief Simulate one step forward for sensors.

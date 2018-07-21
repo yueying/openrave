@@ -111,7 +111,7 @@ If SetDesired is called, only joint values will be set at every timestep leaving
     virtual bool SetDesired(const std::vector<dReal>& values, TransformConstPtr trans)
     {
         if( values.size() != _dofindices.size() ) {
-            throw openrave_exception(str(boost::format("wrong desired dimensions %d!=%d")%values.size()%_dofindices.size()),ORE_InvalidArguments);
+            throw OpenRAVEException(str(boost::format("wrong desired dimensions %d!=%d")%values.size()%_dofindices.size()),ORE_InvalidArguments);
         }
         _fCommandTime = 0;
         _ptraj.reset();
@@ -520,7 +520,7 @@ private:
             }
         }
         if( _bThrowExceptions ) {
-            throw openrave_exception(s,ORE_Assert);
+            throw OpenRAVEException(s,ORE_Assert);
         }
         else {
             RAVELOG_WARN(s);

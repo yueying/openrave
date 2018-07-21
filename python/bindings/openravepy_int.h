@@ -55,7 +55,7 @@
 #define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
 
 #define CHECK_POINTER(p) { \
-        if( !(p) ) { throw openrave_exception(boost::str(boost::format(_("[%s:%d]: invalid pointer"))%__PRETTY_FUNCTION__%__LINE__)); } \
+        if( !(p) ) { throw OpenRAVEException(boost::str(boost::format(_("[%s:%d]: invalid pointer"))%__PRETTY_FUNCTION__%__LINE__)); } \
 }
 
 using namespace boost::python;
@@ -260,7 +260,7 @@ inline RaveVector<T> ExtractVector34(const object& oraw,T fdefaultw)
     else if( n == 4 ) {
         return ExtractVector4Type<T>(oraw);
     }
-    throw openrave_exception(_("unexpected vector size"));
+    throw OpenRAVEException(_("unexpected vector size"));
 }
 
 template <typename T>

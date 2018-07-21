@@ -36,6 +36,15 @@
 
 namespace OpenRAVE {
 
+#if OPENRAVE_PRECISION // 1 if double precision
+	typedef double dReal;
+#define g_fEpsilon 1e-15
+#else
+	typedef float dReal;
+#define g_fEpsilon 2e-7f
+#endif
+
+
 /// Extra math routines that are useful to have but don't really belong anywhere.
 namespace mathextra {
 

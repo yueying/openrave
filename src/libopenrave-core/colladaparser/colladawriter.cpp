@@ -472,7 +472,7 @@ private:
     virtual void Save(const string& filename)
     {
         if(!_dae->writeTo(_doc->getDocumentURI()->getURI(), filename.c_str()) ) {
-            throw openrave_exception(str(boost::format(_("failed to save collada file to %s"))%filename));
+            throw OpenRAVEException(str(boost::format(_("failed to save collada file to %s"))%filename));
         }
     }
     
@@ -480,7 +480,7 @@ private:
     {
 #ifdef OPENRAVE_COLLADA_SUPPORT_WRITE_MEMORY
         if(!_dae->writeToMemory(_doc->getDocumentURI()->getURI(), output) ) {
-            throw openrave_exception(_("failed to save collada to memory"));
+            throw OpenRAVEException(_("failed to save collada to memory"));
         }
 #else
         throw OPENRAVE_EXCEPTION_FORMAT0("collada-dom does not support writeToMemory, make sure at least version 2.5.0 is installed", ORE_Assert);
@@ -2525,7 +2525,7 @@ void RaveWriteColladaFile(EnvironmentBasePtr penv, const string& filename, const
     }
 
     if( !writer.Write(scenename) ) {
-        throw openrave_exception(_("ColladaWriter::Write(EnvironmentBasePtr) failed"));
+        throw OpenRAVEException(_("ColladaWriter::Write(EnvironmentBasePtr) failed"));
     }
     writer.Save(filename);
 }
@@ -2543,7 +2543,7 @@ void RaveWriteColladaFile(KinBodyPtr pbody, const string& filename, const Attrib
 
     writer.Init("openrave_snapshot", keywords);
     if( !writer.Write(pbody) ) {
-        throw openrave_exception(_("ColladaWriter::Write(KinBodyPtr) failed"));
+        throw OpenRAVEException(_("ColladaWriter::Write(KinBodyPtr) failed"));
     }
     writer.Save(filename);
 }
@@ -2582,7 +2582,7 @@ void RaveWriteColladaFile(const std::list<KinBodyPtr>& listbodies, const std::st
             }
         }
         if( !writer.Write(listbodies, scenename) ) {
-            throw openrave_exception(_("ColladaWriter::Write(list<KinBodyPtr>) failed"));
+            throw OpenRAVEException(_("ColladaWriter::Write(list<KinBodyPtr>) failed"));
         }
         writer.Save(filename);
     }
@@ -2610,7 +2610,7 @@ void RaveWriteColladaMemory(EnvironmentBasePtr penv, std::vector<char>& output, 
     }
     
     if( !writer.Write(scenename) ) {
-        throw openrave_exception(_("ColladaWriter::Write(EnvironmentBasePtr) failed"));
+        throw OpenRAVEException(_("ColladaWriter::Write(EnvironmentBasePtr) failed"));
     }
     writer.Save(output);
 }
@@ -2628,7 +2628,7 @@ void RaveWriteColladaMemory(KinBodyPtr pbody, std::vector<char>& output, const A
 
     writer.Init("openrave_snapshot", keywords);
     if( !writer.Write(pbody) ) {
-        throw openrave_exception(_("ColladaWriter::Write(KinBodyPtr) failed"));
+        throw OpenRAVEException(_("ColladaWriter::Write(KinBodyPtr) failed"));
     }
     writer.Save(output);
 }
@@ -2655,7 +2655,7 @@ void RaveWriteColladaMemory(const std::list<KinBodyPtr>& listbodies, std::vector
             scenename = "scene";
         }
         if( !writer.Write(listbodies, scenename) ) {
-            throw openrave_exception(_("ColladaWriter::Write(list<KinBodyPtr>) failed"));
+            throw OpenRAVEException(_("ColladaWriter::Write(list<KinBodyPtr>) failed"));
         }
         writer.Save(output);
     }

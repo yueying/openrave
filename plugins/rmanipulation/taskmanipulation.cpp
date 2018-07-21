@@ -1059,7 +1059,7 @@ protected:
                     }
                     ss << endl;
                 }
-                throw openrave_exception(ss.str(),ORE_InconsistentConstraints);
+                throw OpenRAVEException(ss.str(),ORE_InconsistentConstraints);
             }
         }
 
