@@ -47,7 +47,7 @@ namespace OpenRAVE
 		int _properties;
 		boost::function<void()> _callback;
 	protected:
-		boost::weak_ptr<KinBody const> _pweakbody;
+		std::weak_ptr<KinBody const> _pweakbody;
 	};
 
 	class CallFunctionAtDestructor
@@ -65,7 +65,7 @@ namespace OpenRAVE
 		boost::function<void()> _fn;
 	};
 
-	typedef boost::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
+	typedef std::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
 
 	ElectricMotorActuatorInfo::ElectricMotorActuatorInfo()
 	{
@@ -128,7 +128,7 @@ namespace OpenRAVE
 		}
 	}
 
-	void KinBody::KinBodyStateSaver::Restore(boost::shared_ptr<KinBody> body)
+	void KinBody::KinBodyStateSaver::Restore(std::shared_ptr<KinBody> body)
 	{
 		_RestoreKinBody(!body ? _pbody : body);
 	}
@@ -143,7 +143,7 @@ namespace OpenRAVE
 		_bRestoreOnDestructor = restore;
 	}
 
-	void KinBody::KinBodyStateSaver::_RestoreKinBody(boost::shared_ptr<KinBody> pbody)
+	void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
 	{
 		if (!pbody) {
 			return;
@@ -161,7 +161,7 @@ namespace OpenRAVE
 			pbody->ReleaseAllGrabbed();
 			OPENRAVE_ASSERT_OP(pbody->_vGrabbedBodies.size(), == , 0);
 			FOREACH(itgrabbed, _vGrabbedBodies) {
-				GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+				GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
 				KinBodyPtr pbodygrab = pgrabbed->_pgrabbedbody.lock();
 				if (!!pbodygrab) {
 					if (pbody->GetEnv() == _pbody->GetEnv()) {
@@ -3554,7 +3554,7 @@ namespace OpenRAVE
 				}
 			}
 			// fill Mimic::_vmimicdofs, check that there are no circular dependencies between the mimic joints
-			std::map<Mimic::DOFFormat, boost::shared_ptr<Mimic> > mapmimic;
+			std::map<Mimic::DOFFormat, std::shared_ptr<Mimic> > mapmimic;
 			for (int ijoints = 0; ijoints < 2; ++ijoints) {
 				vector<JointPtr>& vjoints = ijoints ? _vPassiveJoints : _vecjoints;
 				int jointindex = 0;
@@ -3588,14 +3588,14 @@ namespace OpenRAVE
 			while (bchanged) {
 				bchanged = false;
 				FOREACH(itmimic, mapmimic) {
-					boost::shared_ptr<Mimic> mimic = itmimic->second;
+					std::shared_ptr<Mimic> mimic = itmimic->second;
 					Mimic::DOFHierarchy h;
 					h.dofformatindex = 0;
 					FOREACH(itdofformat, mimic->_vdofformat) {
 						if (mapmimic.find(*itdofformat) == mapmimic.end()) {
 							continue; // this is normal, just means that the parent is a regular dof
 						}
-						boost::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
+						std::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
 						FOREACH(itmimicdof, mimicparent->_vmimicdofs) {
 							if (mimicparent->_vdofformat[itmimicdof->dofformatindex] == itmimic->first) {
 								JointPtr pjoint = itmimic->first.GetJoint(shared_kinbody());
@@ -4335,7 +4335,7 @@ namespace OpenRAVE
 					listRegisteredCallbacks = _vlistRegisteredCallbacks.at(index); // copy since it can be changed
 				}
 				FOREACH(it, listRegisteredCallbacks) {
-					ChangeCallbackDataPtr pdata = boost::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
+					ChangeCallbackDataPtr pdata = std::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
 					if (!!pdata) {
 						pdata->_callback();
 					}
@@ -4360,7 +4360,7 @@ namespace OpenRAVE
 
 	void KinBody::GetAttached(std::set<KinBodyPtr>&setAttached) const
 	{
-		setAttached.insert(boost::const_pointer_cast<KinBody>(shared_kinbody_const()));
+		setAttached.insert(std::const_pointer_cast<KinBody>(shared_kinbody_const()));
 		FOREACHC(itbody, attached_bodies_list_) {
 			KinBodyPtr pattached = itbody->lock();
 			if (!!pattached && setAttached.insert(pattached).second) {
@@ -4552,7 +4552,7 @@ namespace OpenRAVE
 			}
 			~TransformsSaver() {
 				for (size_t i = 0; i < _pbody->links_vector_.size(); ++i) {
-					boost::static_pointer_cast<Link>(_pbody->links_vector_[i])->_info._t = vcurtrans.at(i);
+					std::static_pointer_cast<Link>(_pbody->links_vector_[i])->_info._t = vcurtrans.at(i);
 				}
 				for (size_t i = 0; i < _pbody->_vecjoints.size(); ++i) {
 					for (int j = 0; j < _pbody->_vecjoints[i]->GetDOF(); ++j) {
@@ -4574,7 +4574,7 @@ namespace OpenRAVE
 			CollisionCheckerBasePtr collisionchecker = !!_selfcollisionchecker ? _selfcollisionchecker : GetEnv()->GetCollisionChecker();
 			CollisionOptionsStateSaver colsaver(collisionchecker, 0); // have to reset the collision options
 			for (size_t i = 0; i < links_vector_.size(); ++i) {
-				boost::static_pointer_cast<Link>(links_vector_[i])->_info._t = _vInitialLinkTransformations.at(i);
+				std::static_pointer_cast<Link>(links_vector_[i])->_info._t = _vInitialLinkTransformations.at(i);
 			}
 			_nUpdateStampId++; // because transforms were modified
 			_vNonAdjacentLinks[0].resize(0);
@@ -4754,7 +4754,7 @@ namespace OpenRAVE
 		// clone the grabbed bodies, note that this can fail if the new cloned environment hasn't added the bodies yet (check out Environment::Clone)
 		_vGrabbedBodies.resize(0);
 		FOREACHC(itgrabbedref, r->_vGrabbedBodies) {
-			GrabbedConstPtr pgrabbedref = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbedref);
+			GrabbedConstPtr pgrabbedref = std::dynamic_pointer_cast<Grabbed const>(*itgrabbedref);
 
 			KinBodyPtr pbodyref(pgrabbedref->_pgrabbedbody);
 			KinBodyPtr pgrabbedbody;
@@ -4800,7 +4800,7 @@ namespace OpenRAVE
 			FOREACH(itlink, links_vector_) {
 				if ((*itlink)->IsEnabled()) {
 					FOREACH(itgrabbed, _vGrabbedBodies) {
-						GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+						GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
 						if (find(pgrabbed->GetRigidlyAttachedLinks().begin(), pgrabbed->GetRigidlyAttachedLinks().end(), *itlink) == pgrabbed->GetRigidlyAttachedLinks().end()) {
 							std::list<KinBody::LinkConstPtr>::iterator itnoncolliding = find(pgrabbed->_listNonCollidingLinks.begin(), pgrabbed->_listNonCollidingLinks.end(), *itlink);
 							if (itnoncolliding != pgrabbed->_listNonCollidingLinks.end()) {
@@ -4821,7 +4821,7 @@ namespace OpenRAVE
 				else {
 					// add since it is disabled?
 					FOREACH(itgrabbed, _vGrabbedBodies) {
-						GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+						GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
 						if (find(pgrabbed->GetRigidlyAttachedLinks().begin(), pgrabbed->GetRigidlyAttachedLinks().end(), *itlink) == pgrabbed->GetRigidlyAttachedLinks().end()) {
 							if (find(pgrabbed->_listNonCollidingLinks.begin(), pgrabbed->_listNonCollidingLinks.end(), *itlink) == pgrabbed->_listNonCollidingLinks.end()) {
 								if (pgrabbed->WasLinkNonColliding(*itlink) != 0) {
@@ -4857,7 +4857,7 @@ namespace OpenRAVE
 					listRegisteredCallbacks = _vlistRegisteredCallbacks.at(index); // copy since it can be changed
 				}
 				FOREACH(it, listRegisteredCallbacks) {
-					ChangeCallbackDataPtr pdata = boost::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
+					ChangeCallbackDataPtr pdata = std::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
 					if (!!pdata) {
 						pdata->_callback();
 					}

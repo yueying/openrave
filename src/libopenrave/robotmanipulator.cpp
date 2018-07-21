@@ -38,7 +38,7 @@ namespace OpenRAVE
 		}
 	}
 
-	RobotBase::Manipulator::Manipulator(RobotBasePtr probot, boost::shared_ptr<RobotBase::Manipulator const> r)
+	RobotBase::Manipulator::Manipulator(RobotBasePtr probot, std::shared_ptr<RobotBase::Manipulator const> r)
 	{
 		*this = *r.get();
 		robot_ = probot;
@@ -233,7 +233,7 @@ namespace OpenRAVE
 		{
 			localgoal = goal;
 		}
-		boost::shared_ptr< std::vector<dReal> > psolution(&solution, utils::null_deleter());
+		std::shared_ptr< std::vector<dReal> > psolution(&solution, utils::null_deleter());
 		return vFreeParameters.size() == 0 ?
 			pIkSolver->Solve(localgoal, solution, filteroptions, psolution) :
 			pIkSolver->Solve(localgoal, solution, vFreeParameters, filteroptions, psolution);
@@ -832,7 +832,7 @@ namespace OpenRAVE
 			FOREACHC(itlink, vattachedlinks) {
 				KinBody::LinkPtr plink = *itlink;
 				if (plink->IsEnabled()) {
-					boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
+					std::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 					FOREACHC(itindependentlink, vindependentinks) {
 						if (*itlink != *itindependentlink && (*itindependentlink)->IsEnabled()) {
 							if (pselfchecker->CheckCollision(*itlink, *itindependentlink, report)) {
@@ -923,7 +923,7 @@ namespace OpenRAVE
 			FOREACHC(itlink, vattachedlinks) {
 				KinBody::LinkPtr plink = *itlink;
 				if (plink->IsEnabled()) {
-					boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
+					std::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 					Transform tlinktrans = tdelta*plink->GetTransform();
 					plink->SetTransform(tlinktrans);
 
@@ -972,7 +972,7 @@ namespace OpenRAVE
 			for (size_t ijoint = 0; ijoint < probot->GetJoints().size(); ++ijoint) {
 				if (probot->DoesAffect(ijoint, ilink) && !probot->DoesAffect(ijoint, iattlink)) {
 					if (bIgnoreManipulatorLinks) {
-						boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(*itlink)); // gcc optimization bug when linksaver is on stack?
+						std::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(*itlink)); // gcc optimization bug when linksaver is on stack?
 						Transform tlinktrans = tdelta*(*itlink)->GetTransform();
 						(*itlink)->SetTransform(tlinktrans);
 
@@ -1257,7 +1257,7 @@ namespace OpenRAVE
 
 				// check if any grabbed bodies are attached to this link
 				FOREACHC(itgrabbed, probot->_vGrabbedBodies) {
-					GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+					GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 					if (pgrabbed->_plinkrobot == *itlink) {
 						if (vbodyexcluded.empty()) {
 							vbodyexcluded.push_back(KinBodyConstPtr(probot));

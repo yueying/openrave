@@ -716,7 +716,7 @@ PlannerStatus ActiveDOFTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, bool 
         return PS_HasSolution;
     }
 
-    TrajectoryTimingParametersPtr parameters = boost::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
+    TrajectoryTimingParametersPtr parameters = std::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
     if( parameters->_hastimestamps != hastimestamps ) {
         parameters->_hastimestamps = hastimestamps;
         if( !_planner->InitPlan(_robot,parameters) ) {
@@ -976,7 +976,7 @@ static PlannerStatus _PlanAffineTrajectory(TrajectoryBasePtr traj,
         }
     }
 
-    boost::shared_ptr<PlannerStateSaver> statesaver;
+    std::shared_ptr<PlannerStateSaver> statesaver;
     if( bsmooth ) 
 	{
         if( !listsetfunctions.empty() ) 
@@ -985,7 +985,7 @@ static PlannerStatus _PlanAffineTrajectory(TrajectoryBasePtr traj,
             params->_getstatefn = boost::bind(_GetAffineState,_1,params->GetDOF(), boost::ref(listgetfunctions));
             params->_distmetricfn = boost::bind(_ComputeAffineDistanceMetric,_1,_2,boost::ref(listdistfunctions));
             std::list<KinBodyPtr> listCheckCollisions; listCheckCollisions.push_back(robot);
-            boost::shared_ptr<DynamicsCollisionConstraint> pcollision(new DynamicsCollisionConstraint(params, listCheckCollisions, 0xffffffff&~CFO_CheckTimeBasedConstraints));
+            std::shared_ptr<DynamicsCollisionConstraint> pcollision(new DynamicsCollisionConstraint(params, listCheckCollisions, 0xffffffff&~CFO_CheckTimeBasedConstraints));
             params->_checkpathvelocityconstraintsfn = boost::bind(&DynamicsCollisionConstraint::Check,pcollision,_1, _2, _3, _4, _5, _6, _7, _8);
             statesaver.reset(new PlannerStateSaver(newspec.GetDOF(), params->_setstatevaluesfn, params->_getstatefn));
         }
@@ -1084,7 +1084,7 @@ PlannerStatus AffineTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, const st
         _parameters = parameters;
     }
     else {
-        parameters = boost::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
+        parameters = std::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
     }
 
 

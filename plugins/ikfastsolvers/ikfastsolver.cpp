@@ -36,7 +36,7 @@ public:
     };
 
 public:
-    IkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, boost::shared_ptr<ikfast::IkFastFunctions<IkReal> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold=1e-4) : IkSolverBase(penv), _ikfunctions(ikfunctions), _vFreeInc(vfreeinc), _ikthreshold(ikthreshold) {
+    IkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<IkReal> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold=1e-4) : IkSolverBase(penv), _ikfunctions(ikfunctions), _vFreeInc(vfreeinc), _ikthreshold(ikthreshold) {
         OPENRAVE_ASSERT_OP(ikfunctions->_GetIkRealSize(),==,sizeof(IkReal));
 
         _bEmptyTransform6D = false;
@@ -83,13 +83,13 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
     virtual ~IkFastSolver() {
     }
 
-    inline boost::shared_ptr<IkFastSolver<IkReal> > shared_solver() {
-        return boost::dynamic_pointer_cast<IkFastSolver<IkReal> >(shared_from_this());
+    inline std::shared_ptr<IkFastSolver<IkReal> > shared_solver() {
+        return std::dynamic_pointer_cast<IkFastSolver<IkReal> >(shared_from_this());
     }
-    inline boost::shared_ptr<IkFastSolver<IkReal> const> shared_solver_const() const {
-        return boost::dynamic_pointer_cast<IkFastSolver<IkReal> const>(shared_from_this());
+    inline std::shared_ptr<IkFastSolver<IkReal> const> shared_solver_const() const {
+        return std::dynamic_pointer_cast<IkFastSolver<IkReal> const>(shared_from_this());
     }
-    inline boost::weak_ptr<IkFastSolver<IkReal> > weak_solver() {
+    inline std::weak_ptr<IkFastSolver<IkReal> > weak_solver() {
         return shared_solver();
     }
 
@@ -580,7 +580,7 @@ protected:
     };
 
     virtual bool Solve(const IkParameterization& rawparam,
-		const std::vector<dReal>& q0, int filteroptions, boost::shared_ptr< std::vector<dReal> > result)
+		const std::vector<dReal>& q0, int filteroptions, std::shared_ptr< std::vector<dReal> > result)
     {
         std::vector<dReal> q0local = q0; // copy in case result points to q0
         if( !!result ) 
@@ -614,7 +614,7 @@ protected:
         return qSolutions.size()>0;
     }
 
-    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, const std::vector<dReal>& vFreeParameters, int filteroptions, boost::shared_ptr< std::vector<dReal> > result)
+    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, const std::vector<dReal>& vFreeParameters, int filteroptions, std::shared_ptr< std::vector<dReal> > result)
     {
         std::vector<dReal> q0local = q0; // copy in case result points to q0
         if( !!result ) {
@@ -771,7 +771,7 @@ protected:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         IkSolverBase::Clone(preference, cloningoptions);
-        boost::shared_ptr< IkFastSolver<IkReal> const > r = boost::dynamic_pointer_cast<IkFastSolver<IkReal> const>(preference);
+        std::shared_ptr< IkFastSolver<IkReal> const > r = std::dynamic_pointer_cast<IkFastSolver<IkReal> const>(preference);
 
         _pmanip.reset();
         _cblimits.reset();
@@ -1509,7 +1509,7 @@ protected:
         CollisionReport report;
         CollisionReportPtr ptempreport;
         if( !(filteroptions&IKFO_IgnoreSelfCollisions) || IS_DEBUGLEVEL(Level_Verbose) || paramnewglobal.GetType() == IKP_TranslationDirection5D ) { // 5D is necessary for tracking end effector collisions
-            ptempreport = boost::shared_ptr<CollisionReport>(&report,utils::null_deleter());
+            ptempreport = std::shared_ptr<CollisionReport>(&report,utils::null_deleter());
         }
         if( !(filteroptions&IKFO_IgnoreSelfCollisions) ) {
             // check for self collisions
@@ -1946,7 +1946,7 @@ protected:
         CollisionReport report;
         CollisionReportPtr ptempreport;
         if( IS_DEBUGLEVEL(Level_Verbose) ) {
-            ptempreport = boost::shared_ptr<CollisionReport>(&report,utils::null_deleter());
+            ptempreport = std::shared_ptr<CollisionReport>(&report,utils::null_deleter());
         }
         if( !(filteroptions&IKFO_IgnoreSelfCollisions) ) {
             stateCheck.SetSelfCollisionState();
@@ -2388,7 +2388,7 @@ protected:
     std::vector<KinBody::LinkPtr> _vindependentlinks; //<! independent links of the manipulator
     std::vector<KinBody::LinkPtr> _vIndependentLinksIncludingFreeJoints; //<! independent links of the ik chain without free joints
     std::vector<int> _vchildlinkindices; //<! indices of the links at _vchildlinks
-    boost::shared_ptr<ikfast::IkFastFunctions<IkReal> > _ikfunctions;
+    std::shared_ptr<ikfast::IkFastFunctions<IkReal> > _ikfunctions;
     std::vector<dReal> _vFreeInc;
     dReal _fFreeIncRevolute; //<! default increment for revolute joints
     dReal _fFreeIncPrismaticNum; //<! default number of segments to divide a free slider axis
@@ -2417,14 +2417,14 @@ protected:
 };
 
 #ifdef OPENRAVE_IKFAST_FLOAT32
-IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, boost::shared_ptr<ikfast::IkFastFunctions<float> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold)
+IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<float> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold)
 
 {
     return IkSolverBasePtr(new IkFastSolver<float>(penv,sinput,ikfunctions,vfreeinc,ikthreshold));
 }
 #endif
 
-IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, boost::shared_ptr<ikfast::IkFastFunctions<double> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold)
+IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<double> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold)
 {
     return IkSolverBasePtr(new IkFastSolver<double>(penv,sinput,ikfunctions,vfreeinc,ikthreshold));
 }

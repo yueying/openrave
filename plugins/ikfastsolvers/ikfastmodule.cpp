@@ -118,7 +118,7 @@ class IkFastModule : public ModuleBase
         return det;
     }
 
-    class IkLibrary : public boost::enable_shared_from_this<IkLibrary>
+    class IkLibrary : public std::enable_shared_from_this<IkLibrary>
     {
 public:
         template <typename T>
@@ -130,7 +130,7 @@ public:
             MyFunctions(const MyFunctions& r) {
                 *this = r;
             }
-            boost::shared_ptr<IkLibrary> _library;
+            std::shared_ptr<IkLibrary> _library;
         };
 
         IkLibrary() : plib(NULL) {
@@ -166,14 +166,14 @@ public:
             int realsize = GetIkRealSize();
 #ifdef OPENRAVE_IKFAST_FLOAT32
             if( realsize == 4 ) {
-                boost::shared_ptr<MyFunctions<float> > ikfunctions(new MyFunctions<float>());
+                std::shared_ptr<MyFunctions<float> > ikfunctions(new MyFunctions<float>());
                 _InitFunctions(ikfunctions);
                 _ikfloat=ikfunctions;
             }
             else
 #endif
             if( realsize == 8 ) {
-                boost::shared_ptr<MyFunctions<double> > ikfunctions(new MyFunctions<double>());
+                std::shared_ptr<MyFunctions<double> > ikfunctions(new MyFunctions<double>());
                 _InitFunctions(ikfunctions);
                 _ikdouble=ikfunctions;
             }
@@ -185,7 +185,7 @@ public:
         }
 
         template <typename T>
-        bool _InitFunctions(boost::shared_ptr<MyFunctions<T> > ikfunctions)
+        bool _InitFunctions(std::shared_ptr<MyFunctions<T> > ikfunctions)
         {
             LOAD_IKFUNCTION0(ComputeIk);
             LOAD_IKFUNCTION0(ComputeIk2);
@@ -211,13 +211,13 @@ public:
             std::stringstream ss;
 #ifdef OPENRAVE_IKFAST_FLOAT32
             if( !!_ikfloat ) {
-                boost::shared_ptr<MyFunctions<float> > newfunctions(new MyFunctions<float>(*_ikfloat));
+                std::shared_ptr<MyFunctions<float> > newfunctions(new MyFunctions<float>(*_ikfloat));
                 newfunctions->_library = shared_from_this();
                 return CreateIkFastSolver(penv,ss,newfunctions,vfreeinc,ikthreshold);
             }
 #endif
             if( !!_ikdouble ) {
-                boost::shared_ptr<MyFunctions<double> > newfunctions(new MyFunctions<double>(*_ikdouble));
+                std::shared_ptr<MyFunctions<double> > newfunctions(new MyFunctions<double>(*_ikdouble));
                 newfunctions->_library = shared_from_this();
                 return CreateIkFastSolver(penv,ss,newfunctions,vfreeinc,ikthreshold);
             }
@@ -264,9 +264,9 @@ public:
         }
 
 #ifdef OPENRAVE_IKFAST_FLOAT32
-        boost::shared_ptr<MyFunctions<float> > _ikfloat;
+        std::shared_ptr<MyFunctions<float> > _ikfloat;
 #endif
-        boost::shared_ptr<MyFunctions<double> > _ikdouble;
+        std::shared_ptr<MyFunctions<double> > _ikdouble;
 private:
         void* SysLoadLibrary(const char* lib)
         {
@@ -307,11 +307,11 @@ private:
         vector<string> _viknames;
     };
 
-    inline boost::shared_ptr<IkFastModule> shared_problem() {
-        return boost::dynamic_pointer_cast<IkFastModule>(shared_from_this());
+    inline std::shared_ptr<IkFastModule> shared_problem() {
+        return std::dynamic_pointer_cast<IkFastModule>(shared_from_this());
     }
-    inline boost::shared_ptr<IkFastModule const> shared_problem_const() const {
-        return boost::dynamic_pointer_cast<IkFastModule const>(shared_from_this());
+    inline std::shared_ptr<IkFastModule const> shared_problem_const() const {
+        return std::dynamic_pointer_cast<IkFastModule const>(shared_from_this());
     }
 
 public:
@@ -397,7 +397,7 @@ public:
             return false;
         }
 
-        boost::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikname,libraryname);
+        std::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikname,libraryname);
         if( !lib ) {
             return false;
         }
@@ -405,7 +405,7 @@ public:
         return true;
     }
 
-    boost::shared_ptr<IkLibrary> _AddIkLibrary(const string& ikname, const string& _libraryname)
+    std::shared_ptr<IkLibrary> _AddIkLibrary(const string& ikname, const string& _libraryname)
     {
 //#ifdef HAVE_BOOST_FILESYSTEM
 //        string libraryname = boost::filesystem::system_complete(boost::filesystem::path(_libraryname)).string();
@@ -415,7 +415,7 @@ public:
 
         // before adding a new library, check for existing
         boost::mutex::scoped_lock lock(GetLibraryMutex());
-        boost::shared_ptr<IkLibrary> lib;
+        std::shared_ptr<IkLibrary> lib;
         FOREACH(it, *GetLibraries()) {
             if( libraryname == (*it)->GetLibraryName() ) {
                 lib = *it;
@@ -426,7 +426,7 @@ public:
         if( !lib ) {
             lib.reset(new IkLibrary());
             if( !lib->Init(ikname, libraryname) ) {
-                return boost::shared_ptr<IkLibrary>();
+                return std::shared_ptr<IkLibrary>();
             }
             GetLibraries()->push_back(lib);
         }
@@ -436,7 +436,7 @@ public:
     void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         InterfaceBase::Clone(preference,cloningoptions);
-        boost::shared_ptr<IkFastModule const> r = RaveInterfaceConstCast<IkFastModule>(preference);
+        std::shared_ptr<IkFastModule const> r = RaveInterfaceConstCast<IkFastModule>(preference);
         ikfast_version_ = r->ikfast_version_;
         _platform = r->_platform;
     }
@@ -499,7 +499,7 @@ public:
         }
 
         string ikfastname = str(boost::format("ikfast.%s.%s.%s")%kinematicshash%striktype%manipname);
-        boost::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikfastname,ikfilenamefound);
+        std::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikfastname,ikfilenamefound);
         bool bsuccess = true;
         if( !lib ) {
             bsuccess = false;
@@ -667,7 +667,7 @@ public:
             }
 
             string ikfastname = str(boost::format("ikfast.%s.%s.%s")%pmanip->GetInverseKinematicsStructureHash(iktype)%ik_type_str%pmanip->GetName());
-            boost::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikfastname,ikfilenamefound);
+            std::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikfastname,ikfilenamefound);
             bool bsuccess = true;
             if( !lib ) {
                 bsuccess = false;
@@ -770,7 +770,7 @@ public:
         if( libraryname.size() == 0 ) {
             return false;
         }
-        boost::shared_ptr<IkLibrary> lib(new IkLibrary());
+        std::shared_ptr<IkLibrary> lib(new IkLibrary());
         if( !lib->Init("", libraryname) ) {
             RAVELOG_WARN(str(boost::format("failed to init library %s\n")%libraryname));
             return false;
@@ -791,7 +791,7 @@ public:
         return true;
     }
 
-    template<typename T> bool _PerfTiming(ostream& sout, boost::shared_ptr<ikfast::IkFastFunctions<T> > ikfunctions, int num, dReal maxtime)
+    template<typename T> bool _PerfTiming(ostream& sout, std::shared_ptr<ikfast::IkFastFunctions<T> > ikfunctions, int num, dReal maxtime)
     {
         OPENRAVE_ASSERT_OP(ikfunctions->_GetIkRealSize(),==,sizeof(T));
         BOOST_ASSERT((!!ikfunctions->_ComputeIk || !!ikfunctions->_ComputeIk2) && !!ikfunctions->_ComputeFk);
@@ -1555,11 +1555,11 @@ public:
         }
     }
 
-    static list< boost::shared_ptr<IkLibrary> >*& GetLibraries()
+    static list< std::shared_ptr<IkLibrary> >*& GetLibraries()
     {
-        static list< boost::shared_ptr<IkLibrary> >* s_vStaticLibraries=NULL;
+        static list< std::shared_ptr<IkLibrary> >* s_vStaticLibraries=NULL;
         if( s_vStaticLibraries == NULL ) {
-            s_vStaticLibraries = new list< boost::shared_ptr<IkLibrary> >();
+            s_vStaticLibraries = new list< std::shared_ptr<IkLibrary> >();
         }
         return s_vStaticLibraries;
     }
@@ -1577,7 +1577,7 @@ public:
         std::transform(_name.begin(), _name.end(), name.begin(), ::tolower);
         /// start from the newer libraries
         boost::mutex::scoped_lock lock(GetLibraryMutex());
-        for(list< boost::shared_ptr<IkLibrary> >::reverse_iterator itlib = GetLibraries()->rbegin(); itlib != GetLibraries()->rend(); ++itlib) {
+        for(list< std::shared_ptr<IkLibrary> >::reverse_iterator itlib = GetLibraries()->rbegin(); itlib != GetLibraries()->rend(); ++itlib) {
             FOREACHC(itikname,(*itlib)->GetIkNames()) {
                 if( name == *itikname ) {
                     return (*itlib)->CreateSolver(penv,vfreeinc,ikthreshold);

@@ -255,11 +255,11 @@ protected:
     SpatialTree< Node > _treeForward;
     std::vector< NodeBase* > _vecInitialNodes;
 
-    inline boost::shared_ptr<RrtPlanner> shared_planner() {
-        return boost::dynamic_pointer_cast<RrtPlanner>(shared_from_this());
+    inline std::shared_ptr<RrtPlanner> shared_planner() {
+        return std::dynamic_pointer_cast<RrtPlanner>(shared_from_this());
     }
-    inline boost::shared_ptr<RrtPlanner const> shared_planner_const() const {
-        return boost::dynamic_pointer_cast<RrtPlanner const>(shared_from_this());
+    inline std::shared_ptr<RrtPlanner const> shared_planner_const() const {
+        return std::dynamic_pointer_cast<RrtPlanner const>(shared_from_this());
     }
 };
 
@@ -908,7 +908,7 @@ public:
         return true;
     }
 protected:
-    boost::shared_ptr<BasicRRTParameters> _parameters;
+    std::shared_ptr<BasicRRTParameters> _parameters;
     dReal _fGoalBiasProb;
     bool _bOneStep;
     std::vector< std::vector<dReal> > _vecGoals;
@@ -996,7 +996,7 @@ public:
     }
 
 private:
-    boost::shared_ptr<ExplorationParameters> _parameters;
+    std::shared_ptr<ExplorationParameters> _parameters;
 
 };
 

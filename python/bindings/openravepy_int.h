@@ -36,7 +36,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/format.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/version.hpp>
@@ -89,45 +89,45 @@ class PyIkParameterization;
 class PyXMLReadable;
 class PyCameraIntrinsics;
 
-typedef boost::shared_ptr<PyInterfaceBase> PyInterfaceBasePtr;
-typedef boost::shared_ptr<PyInterfaceBase const> PyInterfaceBaseConstPtr;
-typedef boost::shared_ptr<PyKinBody> PyKinBodyPtr;
-typedef boost::shared_ptr<PyKinBody const> PyKinBodyConstPtr;
-typedef boost::shared_ptr<PyRobotBase> PyRobotBasePtr;
-typedef boost::shared_ptr<PyRobotBase const> PyRobotBaseConstPtr;
-typedef boost::shared_ptr<PyEnvironmentBase> PyEnvironmentBasePtr;
-typedef boost::shared_ptr<PyEnvironmentBase const> PyEnvironmentBaseConstPtr;
-typedef boost::shared_ptr<PyIkSolverBase> PyIkSolverBasePtr;
-typedef boost::shared_ptr<PyIkSolverBase const> PyIkSolverBaseConstPtr;
-typedef boost::shared_ptr<PyTrajectoryBase> PyTrajectoryBasePtr;
-typedef boost::shared_ptr<PyTrajectoryBase const> PyTrajectoryBaseConstPtr;
-typedef boost::shared_ptr<PyPhysicsEngineBase> PyPhysicsEngineBasePtr;
-typedef boost::shared_ptr<PyPhysicsEngineBase const> PyPhysicsEngineBaseConstPtr;
-typedef boost::shared_ptr<PyCollisionCheckerBase> PyCollisionCheckerBasePtr;
-typedef boost::shared_ptr<PyCollisionCheckerBase const> PyCollisionCheckerBaseConstPtr;
-typedef boost::shared_ptr<PyCollisionReport> PyCollisionReportPtr;
-typedef boost::shared_ptr<PyCollisionReport const> PyCollisionReportConstPtr;
-typedef boost::shared_ptr<PyPlannerBase> PyPlannerBasePtr;
-typedef boost::shared_ptr<PyPlannerBase const> PyPlannerBaseConstPtr;
-typedef boost::shared_ptr<PySensorBase> PySensorBasePtr;
-typedef boost::shared_ptr<PySensorBase const> PySensorBaseConstPtr;
-typedef boost::shared_ptr<PySensorSystemBase> PySensorSystemBasePtr;
-typedef boost::shared_ptr<PySensorSystemBase const> PySensorSystemBaseConstPtr;
-typedef boost::shared_ptr<PyControllerBase> PyControllerBasePtr;
-typedef boost::shared_ptr<PyControllerBase const> PyControllerBaseConstPtr;
-typedef boost::shared_ptr<PyMultiControllerBase> PyMultiControllerBasePtr;
-typedef boost::shared_ptr<PyMultiControllerBase const> PyMultiControllerBaseConstPtr;
-typedef boost::shared_ptr<PyModuleBase> PyModuleBasePtr;
-typedef boost::shared_ptr<PyModuleBase const> PyModuleBaseConstPtr;
-typedef boost::shared_ptr<PyViewerBase> PyViewerBasePtr;
-typedef boost::shared_ptr<PyViewerBase const> PyViewerBaseConstPtr;
-typedef boost::shared_ptr<PySpaceSamplerBase> PySpaceSamplerBasePtr;
-typedef boost::shared_ptr<PySpaceSamplerBase const> PySpaceSamplerBaseConstPtr;
-typedef boost::shared_ptr<PyConfigurationSpecification> PyConfigurationSpecificationPtr;
-typedef boost::shared_ptr<PyConfigurationSpecification const> PyConfigurationSpecificationConstPtr;
-typedef boost::shared_ptr<PyIkParameterization> PyIkParameterizationPtr;
-typedef boost::shared_ptr<PyXMLReadable> PyXMLReadablePtr;
-typedef boost::shared_ptr<PyCameraIntrinsics> PyCameraIntrinsicsPtr;
+typedef std::shared_ptr<PyInterfaceBase> PyInterfaceBasePtr;
+typedef std::shared_ptr<PyInterfaceBase const> PyInterfaceBaseConstPtr;
+typedef std::shared_ptr<PyKinBody> PyKinBodyPtr;
+typedef std::shared_ptr<PyKinBody const> PyKinBodyConstPtr;
+typedef std::shared_ptr<PyRobotBase> PyRobotBasePtr;
+typedef std::shared_ptr<PyRobotBase const> PyRobotBaseConstPtr;
+typedef std::shared_ptr<PyEnvironmentBase> PyEnvironmentBasePtr;
+typedef std::shared_ptr<PyEnvironmentBase const> PyEnvironmentBaseConstPtr;
+typedef std::shared_ptr<PyIkSolverBase> PyIkSolverBasePtr;
+typedef std::shared_ptr<PyIkSolverBase const> PyIkSolverBaseConstPtr;
+typedef std::shared_ptr<PyTrajectoryBase> PyTrajectoryBasePtr;
+typedef std::shared_ptr<PyTrajectoryBase const> PyTrajectoryBaseConstPtr;
+typedef std::shared_ptr<PyPhysicsEngineBase> PyPhysicsEngineBasePtr;
+typedef std::shared_ptr<PyPhysicsEngineBase const> PyPhysicsEngineBaseConstPtr;
+typedef std::shared_ptr<PyCollisionCheckerBase> PyCollisionCheckerBasePtr;
+typedef std::shared_ptr<PyCollisionCheckerBase const> PyCollisionCheckerBaseConstPtr;
+typedef std::shared_ptr<PyCollisionReport> PyCollisionReportPtr;
+typedef std::shared_ptr<PyCollisionReport const> PyCollisionReportConstPtr;
+typedef std::shared_ptr<PyPlannerBase> PyPlannerBasePtr;
+typedef std::shared_ptr<PyPlannerBase const> PyPlannerBaseConstPtr;
+typedef std::shared_ptr<PySensorBase> PySensorBasePtr;
+typedef std::shared_ptr<PySensorBase const> PySensorBaseConstPtr;
+typedef std::shared_ptr<PySensorSystemBase> PySensorSystemBasePtr;
+typedef std::shared_ptr<PySensorSystemBase const> PySensorSystemBaseConstPtr;
+typedef std::shared_ptr<PyControllerBase> PyControllerBasePtr;
+typedef std::shared_ptr<PyControllerBase const> PyControllerBaseConstPtr;
+typedef std::shared_ptr<PyMultiControllerBase> PyMultiControllerBasePtr;
+typedef std::shared_ptr<PyMultiControllerBase const> PyMultiControllerBaseConstPtr;
+typedef std::shared_ptr<PyModuleBase> PyModuleBasePtr;
+typedef std::shared_ptr<PyModuleBase const> PyModuleBaseConstPtr;
+typedef std::shared_ptr<PyViewerBase> PyViewerBasePtr;
+typedef std::shared_ptr<PyViewerBase const> PyViewerBaseConstPtr;
+typedef std::shared_ptr<PySpaceSamplerBase> PySpaceSamplerBasePtr;
+typedef std::shared_ptr<PySpaceSamplerBase const> PySpaceSamplerBaseConstPtr;
+typedef std::shared_ptr<PyConfigurationSpecification> PyConfigurationSpecificationPtr;
+typedef std::shared_ptr<PyConfigurationSpecification const> PyConfigurationSpecificationConstPtr;
+typedef std::shared_ptr<PyIkParameterization> PyIkParameterizationPtr;
+typedef std::shared_ptr<PyXMLReadable> PyXMLReadablePtr;
+typedef std::shared_ptr<PyCameraIntrinsics> PyCameraIntrinsicsPtr;
 
 
 
@@ -208,7 +208,7 @@ private:
     PyArrayObject* _pyarrobj;
 };
 
-typedef boost::shared_ptr<PythonThreadSaver> PythonThreadSaverPtr;
+typedef std::shared_ptr<PythonThreadSaver> PythonThreadSaverPtr;
 
 inline RaveVector<float> ExtractFloat3(const object& o)
 {
@@ -438,7 +438,7 @@ protected:
     PyEnvironmentBasePtr _pyenv;
 };
 
-typedef boost::shared_ptr<PyEnvironmentLockSaver> PyEnvironmentLockSaverPtr;
+typedef std::shared_ptr<PyEnvironmentLockSaver> PyEnvironmentLockSaverPtr;
 
 class PyUserData
 {
@@ -577,10 +577,10 @@ public:
         _pbase->SetUserData(key, pdata._handle);
     }
     void SetUserData(object o) {
-        _pbase->SetUserData(std::string(), boost::shared_ptr<UserData>(new PyUserObject(o)));
+        _pbase->SetUserData(std::string(), std::shared_ptr<UserData>(new PyUserObject(o)));
     }
     void SetUserData(const std::string& key, object o) {
-        _pbase->SetUserData(key, boost::shared_ptr<UserData>(new PyUserObject(o)));
+        _pbase->SetUserData(key, std::shared_ptr<UserData>(new PyUserObject(o)));
     }
     bool RemoveUserData(const std::string& key) {
         return _pbase->RemoveUserData(key);
@@ -632,7 +632,7 @@ public:
     virtual SensorBase::SensorGeometryPtr GetGeometry()=0;
 };
 
-typedef boost::shared_ptr<PySensorGeometry> PySensorGeometryPtr;
+typedef std::shared_ptr<PySensorGeometry> PySensorGeometryPtr;
 
 PySensorGeometryPtr toPySensorGeometry(SensorBase::SensorGeometryPtr);
 

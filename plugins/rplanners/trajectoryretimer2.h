@@ -38,8 +38,8 @@ public:
         // optional
         std::vector<dReal> _vConfigJerkLimit;
     };
-    typedef boost::shared_ptr<GroupInfo> GroupInfoPtr;
-    typedef boost::shared_ptr<GroupInfo const> GroupInfoConstPtr;
+    typedef std::shared_ptr<GroupInfo> GroupInfoPtr;
+    typedef std::shared_ptr<GroupInfo const> GroupInfoConstPtr;
 
 public:
     TrajectoryRetimer2(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
@@ -468,7 +468,7 @@ protected:
     }
 
     ConstraintTrajectoryTimingParametersPtr _parameters;
-    boost::shared_ptr<ManipConstraintChecker2> _manipconstraintchecker;
+    std::shared_ptr<ManipConstraintChecker2> _manipconstraintchecker;
 
     // caching
     ConfigurationSpecification _cachedoldspec, _cachednewspec; //!< the configuration specification that the cached structures have been set for

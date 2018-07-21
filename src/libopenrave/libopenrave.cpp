@@ -360,7 +360,7 @@ namespace OpenRAVE
 	/// there is only once global openrave state. It is created when openrave
 	/// is first used, and destroyed when the program quits or RaveDestroy is called.
 	class RaveGlobal : private boost::noncopyable,
-		public boost::enable_shared_from_this<RaveGlobal>,
+		public std::enable_shared_from_this<RaveGlobal>,
 		public UserData
 	{
 		typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
@@ -421,7 +421,7 @@ namespace OpenRAVE
 			Destroy();
 		}
 
-		static boost::shared_ptr<RaveGlobal>& instance()
+		static std::shared_ptr<RaveGlobal>& instance()
 		{
 			boost::call_once(create, once_rave_initialize_);
 			return global_state_;
@@ -656,7 +656,7 @@ namespace OpenRAVE
 		class XMLReaderFunctionData : public UserData
 		{
 		public:
-			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, boost::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
+			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, std::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
 			{
 				boost::mutex::scoped_lock lock(global->_mutexinternal);
 				_oldfn = global->_mapreaders[_type][_xmltag];
@@ -664,7 +664,7 @@ namespace OpenRAVE
 			}
 			virtual ~XMLReaderFunctionData()
 			{
-				boost::shared_ptr<RaveGlobal> global = _global.lock();
+				std::shared_ptr<RaveGlobal> global = _global.lock();
 				if (!!global) {
 					boost::mutex::scoped_lock lock(global->_mutexinternal);
 					global->_mapreaders[_type][_xmltag] = _oldfn;
@@ -672,7 +672,7 @@ namespace OpenRAVE
 			}
 		protected:
 			CreateXMLReaderFn _oldfn;
-			boost::weak_ptr<RaveGlobal> _global;
+			std::weak_ptr<RaveGlobal> _global;
 			InterfaceType _type;
 			std::string _xmltag;
 		};
@@ -692,7 +692,7 @@ namespace OpenRAVE
 			return it->second(pinterface, atts);
 		}
 
-		boost::shared_ptr<RaveDatabase> GetDatabase() const {
+		std::shared_ptr<RaveDatabase> GetDatabase() const {
 			return database_;
 		}
 		const std::map<InterfaceType, std::string>& GetInterfaceNamesMap() const {
@@ -877,7 +877,7 @@ namespace OpenRAVE
 			}
 
 			// get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
-			boost::shared_ptr<RaveDatabase> pdatabase = database_;
+			std::shared_ptr<RaveDatabase> pdatabase = database_;
 			if (!!pdatabase) 
 			{
 				if (pdatabase->HasInterface(PT_Viewer, "qtosg"))
@@ -1089,11 +1089,11 @@ namespace OpenRAVE
 		}
 
 	private:
-		static boost::shared_ptr<RaveGlobal> global_state_;
+		static std::shared_ptr<RaveGlobal> global_state_;
 		// state that is always present
 
 		// state that is initialized/destroyed
-		boost::shared_ptr<RaveDatabase> database_;
+		std::shared_ptr<RaveDatabase> database_;
 		int debug_level_;
 		boost::mutex _mutexinternal;
 		std::map<InterfaceType, READERSMAP > _mapreaders;
@@ -1139,7 +1139,7 @@ namespace OpenRAVE
 	}
 #endif
 
-	boost::shared_ptr<RaveGlobal> RaveGlobal::global_state_;
+	std::shared_ptr<RaveGlobal> RaveGlobal::global_state_;
 
 	void RaveSetDebugLevel(int level)
 	{
@@ -1188,13 +1188,13 @@ namespace OpenRAVE
 
 	void RaveInitializeFromState(UserDataPtr globalstate)
 	{
-		RaveGlobal::global_state_ = boost::dynamic_pointer_cast<RaveGlobal>(globalstate);
+		RaveGlobal::global_state_ = std::dynamic_pointer_cast<RaveGlobal>(globalstate);
 	}
 
 	UserDataPtr RaveGlobalState()
 	{
 		// only return valid pointer if initialized!
-		boost::shared_ptr<RaveGlobal> state = RaveGlobal::global_state_;
+		std::shared_ptr<RaveGlobal> state = RaveGlobal::global_state_;
 		if (!!state && state->IsInitialized()) {
 			return state;
 		}
@@ -1289,7 +1289,7 @@ namespace OpenRAVE
 		// TODO remove hack once MultiController is a registered interface
 		ControllerBasePtr pcontroller = RaveGlobal::instance()->GetDatabase()->CreateController(env, name);
 		if (name == "genericmulticontroller") {
-			return boost::static_pointer_cast<MultiControllerBase>(pcontroller);
+			return std::static_pointer_cast<MultiControllerBase>(pcontroller);
 		}
 		// don't support anything else
 		return MultiControllerBasePtr();
@@ -2163,7 +2163,7 @@ namespace OpenRAVE
 
 			std::vector<KinBody::LinkPtr > vbodyattachedlinks;
 			FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-				boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+				std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 				bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
 				KinBodyPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
 				if (bsamelink) {
@@ -2241,7 +2241,7 @@ namespace OpenRAVE
 		std::map<KinBody::LinkConstPtr, int>::iterator itnoncolliding;
 		std::vector<KinBody::LinkPtr > vbodyattachedlinks;
 		FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-			boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
 			KinBodyPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
 			if (!!pothergrabbedbody && pothergrabbedbody != pgrabbedbody && pothergrabbedbody->GetLinks().size() > 0) {
@@ -2274,7 +2274,7 @@ namespace OpenRAVE
 
 		std::set<KinBodyConstPtr> _setgrabbed;
 		FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-			boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			KinBodyConstPtr pothergrabbedbody(pgrabbed->_pgrabbedbody);
 			if (!!pothergrabbedbody) {
 				_setgrabbed.insert(pothergrabbedbody);
@@ -2336,7 +2336,7 @@ namespace OpenRAVE
 
 
 	// Dummy Reader
-	DummyXMLReader::DummyXMLReader(const std::string& fieldname, const std::string& pparentname, boost::shared_ptr<std::ostream> osrecord) : _fieldname(fieldname), _osrecord(osrecord)
+	DummyXMLReader::DummyXMLReader(const std::string& fieldname, const std::string& pparentname, std::shared_ptr<std::ostream> osrecord) : _fieldname(fieldname), _osrecord(osrecord)
 	{
 		_parentname = pparentname;
 		_parentname += ":";
@@ -2483,7 +2483,7 @@ namespace OpenRAVE
 		RAVELOG_WARN(str(boost::format("sensor %s does not implement Serialize") % GetXMLId()));
 	}
 
-	class CustomSamplerCallbackData : public boost::enable_shared_from_this<CustomSamplerCallbackData>, public UserData
+	class CustomSamplerCallbackData : public std::enable_shared_from_this<CustomSamplerCallbackData>, public UserData
 	{
 	public:
 		CustomSamplerCallbackData(const SpaceSamplerBase::StatusCallbackFn& callbackfn, SpaceSamplerBasePtr sampler) : _callbackfn(callbackfn), _samplerweak(sampler) {
@@ -2500,7 +2500,7 @@ namespace OpenRAVE
 		std::list<UserDataWeakPtr>::iterator _iterator;
 	};
 
-	typedef boost::shared_ptr<CustomSamplerCallbackData> CustomSamplerCallbackDataPtr;
+	typedef std::shared_ptr<CustomSamplerCallbackData> CustomSamplerCallbackDataPtr;
 
 	UserDataPtr SpaceSamplerBase::RegisterStatusCallback(const StatusCallbackFn& callbackfn)
 	{
@@ -2513,7 +2513,7 @@ namespace OpenRAVE
 	{
 		int ret = 0;
 		FOREACHC(it, __listRegisteredCallbacks) {
-			CustomSamplerCallbackDataPtr pitdata = boost::dynamic_pointer_cast<CustomSamplerCallbackData>(it->lock());
+			CustomSamplerCallbackDataPtr pitdata = std::dynamic_pointer_cast<CustomSamplerCallbackData>(it->lock());
 			if (!!pitdata) {
 				ret |= pitdata->_callbackfn(sampleiteration);
 			}

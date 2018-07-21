@@ -23,7 +23,7 @@
 #include <Python.h>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/format.hpp>
 #include <boost/python.hpp>
 #include <boost/assert.hpp>
@@ -105,12 +105,12 @@ namespace openravepy
 	public:
 		PyVoidHandle() {
 		}
-		PyVoidHandle(boost::shared_ptr<void> handle) : _handle(handle) {
+		PyVoidHandle(std::shared_ptr<void> handle) : _handle(handle) {
 		}
 		void Close() {
 			_handle.reset();
 		}
-		boost::shared_ptr<void> _handle;
+		std::shared_ptr<void> _handle;
 	};
 
 	class PyVoidHandleConst
@@ -118,12 +118,12 @@ namespace openravepy
 	public:
 		PyVoidHandleConst() {
 		}
-		PyVoidHandleConst(boost::shared_ptr<void const> handle) : _handle(handle) {
+		PyVoidHandleConst(std::shared_ptr<void const> handle) : _handle(handle) {
 		}
 		void Close() {
 			_handle.reset();
 		}
-		boost::shared_ptr<void const> _handle;
+		std::shared_ptr<void const> _handle;
 	};
 
 	template <typename T>
@@ -282,16 +282,16 @@ namespace openravepy
 	};
 
 	// register const versions of the classes
-	//template <class T> inline T* get_pointer( boost::shared_ptr<const T>
+	//template <class T> inline T* get_pointer( std::shared_ptr<const T>
 	//const& p){
 	//     return const_cast<T*>(p.get());
 	//}
 	//
-	//template <class T> struct pintee< boost::shared_ptr<const T> >{
+	//template <class T> struct pintee< std::shared_ptr<const T> >{
 	//     typedef T type;
 	//};
 	//
-	//boost::python::register_ptr_to_python< boost::shared_ptr<const my_class> >();
+	//boost::python::register_ptr_to_python< std::shared_ptr<const my_class> >();
 
 	template<typename T>
 	struct float_from_number

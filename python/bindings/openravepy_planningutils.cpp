@@ -90,7 +90,7 @@ public:
     OpenRAVE::planningutils::ActiveDOFTrajectorySmoother _smoother;
 };
 
-typedef boost::shared_ptr<PyActiveDOFTrajectorySmoother> PyActiveDOFTrajectorySmootherPtr;
+typedef std::shared_ptr<PyActiveDOFTrajectorySmoother> PyActiveDOFTrajectorySmootherPtr;
 
 PlannerStatus pySmoothAffineTrajectory(PyTrajectoryBasePtr pytraj, object omaxvelocities, object omaxaccelerations, const std::string& plannername="", const std::string& plannerparameters="")
 {
@@ -128,7 +128,7 @@ public:
     OpenRAVE::planningutils::ActiveDOFTrajectoryRetimer _retimer;
 };
 
-typedef boost::shared_ptr<PyActiveDOFTrajectoryRetimer> PyActiveDOFTrajectoryRetimerPtr;
+typedef std::shared_ptr<PyActiveDOFTrajectoryRetimer> PyActiveDOFTrajectoryRetimerPtr;
 
 class PyAffineTrajectoryRetimer
 {
@@ -153,7 +153,7 @@ public:
     OpenRAVE::planningutils::AffineTrajectoryRetimer _retimer;
 };
 
-typedef boost::shared_ptr<PyAffineTrajectoryRetimer> PyAffineTrajectoryRetimerPtr;
+typedef std::shared_ptr<PyAffineTrajectoryRetimer> PyAffineTrajectoryRetimerPtr;
 
 class PyDynamicsCollisionConstraint
 {
@@ -227,7 +227,7 @@ public:
     OpenRAVE::planningutils::DynamicsCollisionConstraintPtr _pconstraints;
 };
 
-typedef boost::shared_ptr<PyDynamicsCollisionConstraint> PyDynamicsCollisionConstraintPtr;
+typedef std::shared_ptr<PyDynamicsCollisionConstraint> PyDynamicsCollisionConstraintPtr;
 
 PlannerStatus pyRetimeAffineTrajectory(PyTrajectoryBasePtr pytraj, object omaxvelocities, object omaxaccelerations, bool hastimestamps=false, const std::string& plannername="", const std::string& plannerparameters="")
 {
@@ -293,7 +293,7 @@ class PyDHParameter
 public:
     PyDHParameter() : parentindex(-1), transform(ReturnTransform(Transform())), d(0), a(0), theta(0), alpha(0) {
     }
-    PyDHParameter(const OpenRAVE::planningutils::DHParameter& p, PyEnvironmentBasePtr pyenv) : joint(toPyKinBodyJoint(boost::const_pointer_cast<KinBody::Joint>(p.joint), pyenv)), parentindex(p.parentindex), transform(ReturnTransform(p.transform)), d(p.d), a(p.a), theta(p.theta), alpha(p.alpha) {
+    PyDHParameter(const OpenRAVE::planningutils::DHParameter& p, PyEnvironmentBasePtr pyenv) : joint(toPyKinBodyJoint(std::const_pointer_cast<KinBody::Joint>(p.joint), pyenv)), parentindex(p.parentindex), transform(ReturnTransform(p.transform)), d(p.d), a(p.a), theta(p.theta), alpha(p.alpha) {
     }
     PyDHParameter(object joint, int parentindex, object transform, dReal d, dReal a, dReal theta, dReal alpha) : joint(joint), parentindex(parentindex), transform(transform), d(d), a(a), theta(theta), alpha(alpha) {
     }
@@ -318,7 +318,7 @@ public:
 
 object toPyDHParameter(const OpenRAVE::planningutils::DHParameter& p, PyEnvironmentBasePtr pyenv)
 {
-    return object(boost::shared_ptr<PyDHParameter>(new PyDHParameter(p,pyenv)));
+    return object(std::shared_ptr<PyDHParameter>(new PyDHParameter(p,pyenv)));
 }
 
 class DHParameter_pickle_suite : public pickle_suite
@@ -406,7 +406,7 @@ public:
     OpenRAVE::planningutils::ManipulatorIKGoalSamplerPtr _sampler;
 };
 
-typedef boost::shared_ptr<PyManipulatorIKGoalSampler> PyManipulatorIKGoalSamplerPtr;
+typedef std::shared_ptr<PyManipulatorIKGoalSampler> PyManipulatorIKGoalSamplerPtr;
 
 
 } // end namespace planningutils
@@ -476,7 +476,7 @@ void InitPlanningUtils()
                   .staticmethod("GetDHParameters")
         ;
 
-        class_<planningutils::PyDHParameter, boost::shared_ptr<planningutils::PyDHParameter> >("DHParameter", DOXY_CLASS(planningutils::DHParameter))
+        class_<planningutils::PyDHParameter, std::shared_ptr<planningutils::PyDHParameter> >("DHParameter", DOXY_CLASS(planningutils::DHParameter))
         .def(init<>())
         .def(init<object, int, object, dReal, dReal, dReal, dReal>(args("joint","parentindex","transform","d","a","theta","alpha")))
         .def_readwrite("joint",&planningutils::PyDHParameter::joint)

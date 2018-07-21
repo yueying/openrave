@@ -27,7 +27,7 @@ using namespace OpenRAVE;
 using namespace std;
 
 #include <stdio.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/thread/thread.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
@@ -52,10 +52,10 @@ static bool is_display_gui = true, is_show_gui = true;
 static EnvironmentBasePtr s_penv;
 static ViewerBasePtr s_pviewer; //<! static viewer created by the main thread. need to quit from its main loop
 
-//static boost::shared_ptr<boost::thread> s_mainThread;
+//static std::shared_ptr<boost::thread> s_mainThread;
 static std::string s_sceneFile;
 static std::string s_saveScene; // if not NULL, saves the scene and exits
-static boost::shared_ptr<std::string> s_viewerName;
+static std::shared_ptr<std::string> s_viewerName;
 
 static list< pair<string, string> > s_listModules; // modules to initially create
 static vector<string> resource_files_vector; // xml files to open

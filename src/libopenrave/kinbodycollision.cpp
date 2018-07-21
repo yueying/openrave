@@ -81,12 +81,12 @@ namespace OpenRAVE
 		CollisionReport tempreport;
 		CollisionReportPtr pusereport = report;
 		if (!!report && (coloptions & CO_Distance)) {
-			pusereport = boost::shared_ptr<CollisionReport>(&tempreport, utils::null_deleter());
+			pusereport = std::shared_ptr<CollisionReport>(&tempreport, utils::null_deleter());
 		}
 
 		// check all grabbed bodies with (TODO: support CO_ActiveDOFs option)
 		FOREACHC(itgrabbed, _vGrabbedBodies) {
-			GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			KinBodyPtr pbody(pgrabbed->_pgrabbedbody);
 			if (!pbody) {
 				continue;
@@ -137,7 +137,7 @@ namespace OpenRAVE
 			// Instead, we will compare each of the body's links with every other
 			if (_vGrabbedBodies.size() > 1) {
 				FOREACHC(itgrabbed2, _vGrabbedBodies) {
-					GrabbedConstPtr pgrabbed2 = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
+					GrabbedConstPtr pgrabbed2 = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
 					KinBodyPtr pbody2(pgrabbed2->_pgrabbedbody);
 					if (pbody == pbody2) {
 						continue;
@@ -222,7 +222,7 @@ namespace OpenRAVE
 
 		bool bincollision = false;
 		if (plink->IsEnabled()) {
-			boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
+			std::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 			plink->SetTransform(tlinktrans);
 			if (pchecker->CheckCollision(LinkConstPtr(plink), report)) {
 				if (!bAllLinkCollisions) { // if checking all collisions, have to continue
@@ -237,7 +237,7 @@ namespace OpenRAVE
 		std::vector<KinBodyConstPtr> vbodyexcluded;
 		std::vector<KinBody::LinkConstPtr> vlinkexcluded;
 		FOREACHC(itgrabbed, _vGrabbedBodies) {
-			GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			if (pgrabbed->_plinkrobot == plink) {
 				KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
 				if (!!pbody) {
@@ -245,7 +245,7 @@ namespace OpenRAVE
 					vbodyexcluded.push_back(shared_kinbody_const());
 					FOREACHC(itgrabbed2, _vGrabbedBodies) {
 						if (itgrabbed2 != itgrabbed) {
-							GrabbedConstPtr pgrabbed2 = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
+							GrabbedConstPtr pgrabbed2 = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
 							KinBodyPtr pbody2 = pgrabbed2->_pgrabbedbody.lock();
 							if (!!pbody2) {
 								vbodyexcluded.push_back(pbody2);
@@ -291,7 +291,7 @@ namespace OpenRAVE
 		std::vector<KinBodyConstPtr> vbodyexcluded;
 		std::vector<KinBody::LinkConstPtr> vlinkexcluded;
 		FOREACHC(itgrabbed, _vGrabbedBodies) {
-			GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			if (pgrabbed->_plinkrobot == plink) {
 				KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
 				if (!!pbody) {
@@ -299,7 +299,7 @@ namespace OpenRAVE
 					vbodyexcluded.push_back(shared_kinbody_const());
 					FOREACHC(itgrabbed2, _vGrabbedBodies) {
 						if (itgrabbed2 != itgrabbed) {
-							GrabbedConstPtr pgrabbed2 = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
+							GrabbedConstPtr pgrabbed2 = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
 							KinBodyPtr pbody2 = pgrabbed2->_pgrabbedbody.lock();
 							if (!!pbody2) {
 								vbodyexcluded.push_back(pbody2);
@@ -331,7 +331,7 @@ namespace OpenRAVE
 		bool bincollision = false;
 		LinkPtr plink = links_vector_.at(ilinkindex);
 		if (plink->IsEnabled()) {
-			boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
+			std::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 			if (pchecker->CheckStandaloneSelfCollision(LinkConstPtr(plink), report)) {
 				if (!bAllLinkCollisions) { // if checking all collisions, have to continue
 					return true;
@@ -346,7 +346,7 @@ namespace OpenRAVE
 		std::vector<KinBodyConstPtr> vbodyexcluded;
 		std::vector<KinBody::LinkConstPtr> vlinkexcluded;
 		FOREACHC(itgrabbed, _vGrabbedBodies) {
-			GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			if (pgrabbed->_plinkrobot == plink) {
 				KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
 				if (!!pbody) {
@@ -381,7 +381,7 @@ namespace OpenRAVE
 		bool bincollision = false;
 		LinkPtr plink = links_vector_.at(ilinkindex);
 		if (plink->IsEnabled()) {
-			boost::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
+			std::shared_ptr<TransformSaver<LinkPtr> > linksaver(new TransformSaver<LinkPtr>(plink)); // gcc optimization bug when linksaver is on stack?
 			plink->SetTransform(tlinktrans);
 			if (pchecker->CheckStandaloneSelfCollision(LinkConstPtr(plink), report)) {
 				if (!bAllLinkCollisions) { // if checking all collisions, have to continue
@@ -397,7 +397,7 @@ namespace OpenRAVE
 		std::vector<KinBodyConstPtr> vbodyexcluded;
 		std::vector<KinBody::LinkConstPtr> vlinkexcluded;
 		FOREACHC(itgrabbed, _vGrabbedBodies) {
-			GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+			GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
 			if (pgrabbed->_plinkrobot == plink) {
 				KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
 				if (!!pbody) {

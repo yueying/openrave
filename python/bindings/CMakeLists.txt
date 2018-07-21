@@ -18,7 +18,7 @@ if( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
     # #include <boost/thread/thread.hpp>
     # #include <boost/thread/mutex.hpp>
     # #include <boost/thread/condition.hpp>
-    # #include <boost/shared_ptr.hpp>
+    # #include <memory>
     # #define PY_ARRAY_UNIQUE_SYMBOL PyArrayHandle
     # #include <boost/python.hpp>
     # #include <pyconfig.h>

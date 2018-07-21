@@ -138,13 +138,13 @@ Method wraps the WorkspaceTrajectoryTracker planner. For more details on paramet
 	}
 protected:
 
-	inline boost::shared_ptr<BaseManipulation> shared_problem() 
+	inline std::shared_ptr<BaseManipulation> shared_problem() 
 	{
-		return boost::dynamic_pointer_cast<BaseManipulation>(shared_from_this());
+		return std::dynamic_pointer_cast<BaseManipulation>(shared_from_this());
 	}
-	inline boost::shared_ptr<BaseManipulation const> shared_problem_const() const
+	inline std::shared_ptr<BaseManipulation const> shared_problem_const() const
 	{
-		return boost::dynamic_pointer_cast<BaseManipulation const>(shared_from_this());
+		return std::dynamic_pointer_cast<BaseManipulation const>(shared_from_this());
 	}
 
 	bool Traj(ostream& sout, istream& sinput)
@@ -212,7 +212,7 @@ protected:
 		Transform Tee;
 
 		WorkspaceTrajectoryParametersPtr params(new WorkspaceTrajectoryParameters(GetEnv()));
-		boost::shared_ptr<std::ostream> pOutputTrajStream;
+		std::shared_ptr<std::ostream> pOutputTrajStream;
 		params->ignorefirstcollision = 0.1;     // 0.1**2 * 5 * 0.5 = 0.025 m
 		std::string plannername = "workspacetrajectorytracker";
 		params->step_length_ = 0.01;
@@ -232,7 +232,7 @@ protected:
 			}
 			else if (cmd == "outputtraj") 
 			{
-				pOutputTrajStream = boost::shared_ptr<std::ostream>(&sout, utils::null_deleter());
+				pOutputTrajStream = std::shared_ptr<std::ostream>(&sout, utils::null_deleter());
 			}
 			else if (cmd == "maxsteps")
 			{
@@ -384,7 +384,7 @@ protected:
 		string strtrajfilename;
 		bool bExecute = true;
 		int nMaxTries = 2;     // max tries for the planner
-		boost::shared_ptr<ostream> pOutputTrajStream;
+		std::shared_ptr<ostream> pOutputTrajStream;
 
 		int nMaxJitterIterations = 1000;
 		RRTParametersPtr params(new RRTParameters());
@@ -431,7 +431,7 @@ protected:
 				}
 			}
 			else if (cmd == "outputtraj") {
-				pOutputTrajStream = boost::shared_ptr<ostream>(&sout, utils::null_deleter());
+				pOutputTrajStream = std::shared_ptr<ostream>(&sout, utils::null_deleter());
 			}
 			else if (cmd == "maxiter") {
 				sinput >> params->max_iterations_num_;
@@ -610,7 +610,7 @@ protected:
 
 		string strtrajfilename;
 		bool bExecute = true;
-		boost::shared_ptr<ostream> pOutputTrajStream;
+		std::shared_ptr<ostream> pOutputTrajStream;
 
 		Vector vconstraintaxis, vconstraintpos;
 		int affinedofs = 0;
@@ -652,7 +652,7 @@ protected:
 				listgoals.back().SetRotation3D(q);
 			}
 			else if (cmd == "outputtraj") {
-				pOutputTrajStream = boost::shared_ptr<ostream>(&sout, utils::null_deleter());
+				pOutputTrajStream = std::shared_ptr<ostream>(&sout, utils::null_deleter());
 			}
 			else if (cmd == "matrix") {
 				TransformMatrix m;
@@ -802,7 +802,7 @@ protected:
 		if (constrainterrorthresh > 0) {
 			RAVELOG_DEBUG("setting jacobian constraint function in planner parameters\n");
 			robot->SetActiveDOFValues(params->vinitialconfig); // have to set the initial configuraiton!
-			boost::shared_ptr<CM::GripperJacobianConstrains<double> > pconstraints(new CM::GripperJacobianConstrains<double>(robot->GetActiveManipulator(), tConstraintTargetWorldFrame, tConstraintTaskFrame, vconstraintfreedoms, constrainterrorthresh));
+			std::shared_ptr<CM::GripperJacobianConstrains<double> > pconstraints(new CM::GripperJacobianConstrains<double>(robot->GetActiveManipulator(), tConstraintTargetWorldFrame, tConstraintTaskFrame, vconstraintfreedoms, constrainterrorthresh));
 			pconstraints->_distmetricfn = params->_distmetricfn;
 			params->_neighstatefn = boost::bind(&CM::GripperJacobianConstrains<double>::RetractionConstraint, pconstraints, _1, _2);
 			// use linear interpolation!
@@ -926,7 +926,7 @@ protected:
 		vector<int> vhandjoints;
 		vector<dReal> vhandgoal;
 		bool bExecute = true;
-		boost::shared_ptr<ostream> pOutputTrajStream;
+		std::shared_ptr<ostream> pOutputTrajStream;
 		int nMaxTries = 1;
 		int maxdivision = 10;
 		int nMaxJitterIterations = 1000;
@@ -941,7 +941,7 @@ protected:
 				sinput >> strsavetraj;
 			}
 			else if (cmd == "outputtraj") {
-				pOutputTrajStream = boost::shared_ptr<ostream>(&sout, utils::null_deleter());
+				pOutputTrajStream = std::shared_ptr<ostream>(&sout, utils::null_deleter());
 			}
 			else if (cmd == "handjoints") {
 				int dof = 0;
@@ -1017,7 +1017,7 @@ protected:
 	{
 		RAVELOG_DEBUG("Starting JitterActive...\n");
 		bool bExecute = true, bOutputFinal = false;
-		boost::shared_ptr<ostream> pOutputTrajStream;
+		std::shared_ptr<ostream> pOutputTrajStream;
 		string cmd;
 		int nMaxJitterIterations = 5000;
 		dReal fJitter = 0.03f;
@@ -1038,7 +1038,7 @@ protected:
 				sinput >> fJitter;
 			}
 			else if (cmd == "outputtraj") {
-				pOutputTrajStream = boost::shared_ptr<ostream>(&sout, utils::null_deleter());
+				pOutputTrajStream = std::shared_ptr<ostream>(&sout, utils::null_deleter());
 			}
 			else if (cmd == "outputfinal") {
 				bOutputFinal = true;

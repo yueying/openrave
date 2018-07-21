@@ -93,11 +93,11 @@ public:
     }
 protected:
 
-    inline boost::shared_ptr<DualManipulation> shared_problem() {
-        return boost::dynamic_pointer_cast<DualManipulation>(shared_from_this());
+    inline std::shared_ptr<DualManipulation> shared_problem() {
+        return std::dynamic_pointer_cast<DualManipulation>(shared_from_this());
     }
-    inline boost::shared_ptr<DualManipulation const> shared_problem_const() const {
-        return boost::dynamic_pointer_cast<DualManipulation const>(shared_from_this());
+    inline std::shared_ptr<DualManipulation const> shared_problem_const() const {
+        return std::dynamic_pointer_cast<DualManipulation const>(shared_from_this());
     }
 
     bool SetActiveManip(ostream& sout, istream& sinput)
@@ -182,7 +182,7 @@ protected:
     {
         string strtrajfilename;
         bool bExecute = true;
-        boost::shared_ptr<ostream> pOutputTrajStream;
+        std::shared_ptr<ostream> pOutputTrajStream;
         int nMaxTries = 3;
         bool bSuccess=true;
 
@@ -215,7 +215,7 @@ protected:
                 sinput >> *it;
             }
             else if( cmd == "outputtraj" )
-                pOutputTrajStream = boost::shared_ptr<ostream>(&sout,utils::null_deleter());
+                pOutputTrajStream = std::shared_ptr<ostream>(&sout,utils::null_deleter());
             else if( cmd == "maxiter" )
                 sinput >> params->max_iterations_num_;
             else if( cmd == "execute" )
@@ -281,15 +281,15 @@ protected:
 
         if( constrainterrorthresh > 0 ) {
             RAVELOG_DEBUG("setting DualArmConstrained function in planner parameters\n");
-            boost::shared_ptr<CM::DualArmManipulation<double> > dplanner(new CM::DualArmManipulation<double>(robot,pmanipA,pmanipI));
+            std::shared_ptr<CM::DualArmManipulation<double> > dplanner(new CM::DualArmManipulation<double>(robot,pmanipA,pmanipI));
             dplanner->_distmetricfn = params->_distmetricfn;
             params->_neighstatefn = boost::bind(&CM::DualArmManipulation<double>::DualArmConstrained,dplanner,_1,_2);
             params->max_iterations_num_ = 1000;
         }
 
-        boost::shared_ptr<Trajectory> ptraj(RaveCreateTrajectory(GetEnv(),robot->GetActiveDOF()));
+        std::shared_ptr<Trajectory> ptraj(RaveCreateTrajectory(GetEnv(),robot->GetActiveDOF()));
 
-        boost::shared_ptr<PlannerBase> rrtplanner = RaveCreatePlanner(GetEnv(),_strRRTPlannerName);
+        std::shared_ptr<PlannerBase> rrtplanner = RaveCreatePlanner(GetEnv(),_strRRTPlannerName);
         if( !rrtplanner ) {
             RAVELOG_ERROR("failed to create BiRRTs\n");
             return false;
@@ -338,7 +338,7 @@ protected:
         RobotBase::ManipulatorConstPtr pmanip1 = robot->GetManipulators().at(1);
 
         bool bIgnoreFirstCollision = true;
-        boost::shared_ptr<ostream> pOutputTrajStream;
+        std::shared_ptr<ostream> pOutputTrajStream;
         string cmd;
         while(!sinput.eof()) {
             sinput >> cmd;
@@ -349,7 +349,7 @@ protected:
             if( cmd == "minsteps" )
                 sinput >> minsteps;
             else if( cmd == "outputtraj")
-                pOutputTrajStream = boost::shared_ptr<ostream>(&sout,utils::null_deleter());
+                pOutputTrajStream = std::shared_ptr<ostream>(&sout,utils::null_deleter());
             else if( cmd == "maxsteps")
                 sinput >> maxsteps;
             else if( cmd == "stepsize")
@@ -403,7 +403,7 @@ protected:
         //robot->SetActiveDOFs(pmanip->GetArmIndices());
         planningutils::JitterActiveDOF(robot,100);     // try to jitter out, don't worry if it fails
 
-        boost::shared_ptr<Trajectory> ptraj(RaveCreateTrajectory(GetEnv(),robot->GetActiveDOF()));
+        std::shared_ptr<Trajectory> ptraj(RaveCreateTrajectory(GetEnv(),robot->GetActiveDOF()));
         Trajectory::TPOINT point;
         vector<dReal> vPrevValues,v0Joints,v1Joints;
         bool bPrevInCollision = GetEnv()->CheckCollision(KinBodyConstPtr(robot))||robot->CheckSelfCollision();

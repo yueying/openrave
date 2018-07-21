@@ -48,7 +48,7 @@ public:
             _paramswrite.reset(new PlannerBase::PlannerParameters());
             _paramsread = _paramswrite;
         }
-        PyPlannerParameters(boost::shared_ptr<PyPlannerParameters> pyparameters) {
+        PyPlannerParameters(std::shared_ptr<PyPlannerParameters> pyparameters) {
             _paramswrite.reset(new PlannerBase::PlannerParameters());
             if( !!pyparameters ) {
                 _paramswrite->copy(pyparameters->GetParameters());
@@ -175,16 +175,16 @@ public:
         object __unicode__() {
             return ConvertStringToUnicode(__str__());
         }
-        bool __eq__(boost::shared_ptr<PyPlannerParameters> p) {
+        bool __eq__(std::shared_ptr<PyPlannerParameters> p) {
             return !!p && _paramsread == p->_paramsread;
         }
-        bool __ne__(boost::shared_ptr<PyPlannerParameters> p) {
+        bool __ne__(std::shared_ptr<PyPlannerParameters> p) {
             return !p || _paramsread != p->_paramsread;
         }
     };
 
-    typedef boost::shared_ptr<PyPlannerParameters> PyPlannerParametersPtr;
-    typedef boost::shared_ptr<PyPlannerParameters const> PyPlannerParametersConstPtr;
+    typedef std::shared_ptr<PyPlannerParameters> PyPlannerParametersPtr;
+    typedef std::shared_ptr<PyPlannerParameters const> PyPlannerParametersConstPtr;
 
     PyPlannerBase(PlannerBasePtr pplanner, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pplanner, pyenv), _pplanner(pplanner) {
     }
@@ -232,7 +232,7 @@ public:
         object res;
         PyGILState_STATE gstate = PyGILState_Ensure();
         try {
-            boost::shared_ptr<PyPlannerProgress> pyprogress(new PyPlannerProgress(progress));
+            std::shared_ptr<PyPlannerProgress> pyprogress(new PyPlannerProgress(progress));
             res = fncallback(object(pyprogress));
         }
         catch(...) {
@@ -338,14 +338,14 @@ void init_openravepy_planner()
                            .value("Interrupt",PA_Interrupt)
                            .value("ReturnWithAnySolution",PA_ReturnWithAnySolution)
     ;
-    class_<PyPlannerProgress, boost::shared_ptr<PyPlannerProgress> >("PlannerProgress", DOXY_CLASS(PlannerBase::PlannerProgress))
+    class_<PyPlannerProgress, std::shared_ptr<PyPlannerProgress> >("PlannerProgress", DOXY_CLASS(PlannerBase::PlannerProgress))
     .def_readwrite("_iteration",&PyPlannerProgress::_iteration)
     ;
 
     {
         bool (PyPlannerBase::*InitPlan1)(PyRobotBasePtr, PyPlannerBase::PyPlannerParametersPtr,bool) = &PyPlannerBase::InitPlan;
         bool (PyPlannerBase::*InitPlan2)(PyRobotBasePtr, const string &) = &PyPlannerBase::InitPlan;
-        scope planner = class_<PyPlannerBase, boost::shared_ptr<PyPlannerBase>, bases<PyInterfaceBase> >("Planner", DOXY_CLASS(PlannerBase), no_init)
+        scope planner = class_<PyPlannerBase, std::shared_ptr<PyPlannerBase>, bases<PyInterfaceBase> >("Planner", DOXY_CLASS(PlannerBase), no_init)
                         .def("InitPlan",InitPlan1,InitPlan_overloads(args("robot","params","releasegil"), DOXY_FN(PlannerBase,InitPlan "RobotBasePtr; PlannerParametersConstPtr")))
                         .def("InitPlan",InitPlan2,args("robot","xmlparams"), DOXY_FN(PlannerBase,InitPlan "RobotBasePtr; std::istream"))
                         .def("PlanPath",&PyPlannerBase::PlanPath,PlanPath_overloads(args("traj","releasegil"), DOXY_FN(PlannerBase,PlanPath)))

@@ -26,9 +26,9 @@ namespace qtosgrave {
 
 class ViewerWidget;
 class QtOSGViewer;
-typedef boost::shared_ptr<QtOSGViewer> QtOSGViewerPtr;
-typedef boost::weak_ptr<QtOSGViewer> QtOSGViewerWeakPtr;
-typedef boost::shared_ptr<QtOSGViewer const> QtOSGViewerConstPtr;
+typedef std::shared_ptr<QtOSGViewer> QtOSGViewerPtr;
+typedef std::weak_ptr<QtOSGViewer> QtOSGViewerWeakPtr;
+typedef std::shared_ptr<QtOSGViewer const> QtOSGViewerConstPtr;
 
 /// \brief class of the entire viewer that periodically syncs with the openrave environment.
 class QtOSGViewer : public QMainWindow, public ViewerBase
@@ -132,7 +132,7 @@ public:
     virtual UserDataPtr RegisterViewerThreadCallback(const ViewerThreadCallbackFn& fncallback);
 
     /// \brief Locks environment
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> LockEnvironment(uint64_t timeout=50000,bool bUpdateEnvironment = true);
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> LockEnvironment(uint64_t timeout=50000,bool bUpdateEnvironment = true);
 
 public slots:
 
@@ -261,7 +261,7 @@ public:
             BOOST_ASSERT(_handle != NULL);
         }
         virtual ~PrivateGraphHandle() {
-            boost::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
+            std::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
             if(!!viewer) {
                 viewer->_PostToGUIThread(boost::bind(&QtOSGViewer::_CloseGraphHandle, viewer, _handle)); // _handle is copied, so it will maintain the reference
             }
@@ -269,7 +269,7 @@ public:
 
         virtual void SetTransform(const RaveTransform<float>& t)
         {
-            boost::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
+            std::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
             if(!!viewer) {
                 viewer->_PostToGUIThread(boost::bind(&QtOSGViewer::_SetGraphTransform, viewer, _handle, t)); // _handle is copied, so it will maintain the reference
             }
@@ -277,7 +277,7 @@ public:
 
         virtual void SetShow(bool bShow)
         {
-            boost::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
+            std::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
             if(!!viewer) {
                 viewer->_PostToGUIThread(boost::bind(&QtOSGViewer::_SetGraphShow, viewer, _handle, bShow)); // _handle is copied, so it will maintain the reference
             }
@@ -288,13 +288,13 @@ public:
     };
 
     inline QtOSGViewerPtr shared_viewer() {
-        return boost::static_pointer_cast<QtOSGViewer>(shared_from_this());
+        return std::static_pointer_cast<QtOSGViewer>(shared_from_this());
     }
     inline QtOSGViewerWeakPtr weak_viewer() {
         return QtOSGViewerWeakPtr(shared_viewer());
     }
     inline QtOSGViewerConstPtr shared_viewer_const() const {
-        return boost::static_pointer_cast<QtOSGViewer const>(shared_from_this());
+        return std::static_pointer_cast<QtOSGViewer const>(shared_from_this());
     }
 
     /// \brief initializes osg view and the qt menus/dialog boxes

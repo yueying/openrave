@@ -115,7 +115,7 @@ namespace OpenRAVE
 		{
 			throw openrave_exception(_("invalid command"), ORE_InvalidArguments);
 		}
-		boost::shared_ptr<InterfaceCommand> interfacecmd;
+		std::shared_ptr<InterfaceCommand> interfacecmd;
 		{
 			boost::shared_lock< boost::shared_mutex > lock(interface_mutex_);
 			CMDMAP::iterator it = commands_map_.find(cmd);
@@ -158,7 +158,7 @@ namespace OpenRAVE
 		{
 			throw openrave_exception(str(boost::format(_("command '%s' already registered")) % cmdname), ORE_InvalidArguments);
 		}
-		commands_map_[cmdname] = boost::shared_ptr<InterfaceCommand>(new InterfaceCommand(fncmd, strhelp));
+		commands_map_[cmdname] = std::shared_ptr<InterfaceCommand>(new InterfaceCommand(fncmd, strhelp));
 	}
 
 	void InterfaceBase::UnregisterCommand(const std::string& cmdname)
@@ -256,7 +256,7 @@ namespace OpenRAVE
 		if (__mapJSONCommands.find(cmdname) != __mapJSONCommands.end()) {
 			throw openrave_exception(str(boost::format(_("command '%s' already registered")) % cmdname), ORE_InvalidArguments);
 		}
-		__mapJSONCommands[cmdname] = boost::shared_ptr<InterfaceJSONCommand>(new InterfaceJSONCommand(fncmd, strhelp));
+		__mapJSONCommands[cmdname] = std::shared_ptr<InterfaceJSONCommand>(new InterfaceJSONCommand(fncmd, strhelp));
 	}
 
 	void InterfaceBase::UnregisterJSONCommand(const std::string& cmdname)
@@ -271,7 +271,7 @@ namespace OpenRAVE
 	void InterfaceBase::SendJSONCommand(const std::string& cmdname, const rapidjson::Value& input, rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator) {
 		output.SetNull();
 
-		boost::shared_ptr<InterfaceJSONCommand> interfacecmd;
+		std::shared_ptr<InterfaceJSONCommand> interfacecmd;
 		{
 			boost::shared_lock< boost::shared_mutex > lock(interface_mutex_);
 			JSONCMDMAP::iterator it = __mapJSONCommands.find(cmdname);

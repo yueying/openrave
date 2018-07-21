@@ -150,7 +150,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         CollisionCheckerBase::Clone(preference, cloningoptions);
-        boost::shared_ptr<CacheCollisionChecker const> clone = boost::dynamic_pointer_cast<CacheCollisionChecker const> (preference);
+        std::shared_ptr<CacheCollisionChecker const> clone = std::dynamic_pointer_cast<CacheCollisionChecker const> (preference);
 
         DestroyEnvironment();
 

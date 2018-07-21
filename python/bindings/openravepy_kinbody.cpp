@@ -20,11 +20,11 @@
 namespace openravepy {
 
 class PyLink;
-typedef boost::shared_ptr<PyLink> PyLinkPtr;
-typedef boost::shared_ptr<PyLink const> PyLinkConstPtr;
+typedef std::shared_ptr<PyLink> PyLinkPtr;
+typedef std::shared_ptr<PyLink const> PyLinkConstPtr;
 class PyJoint;
-typedef boost::shared_ptr<PyJoint> PyJointPtr;
-typedef boost::shared_ptr<PyJoint const> PyJointConstPtr;
+typedef std::shared_ptr<PyJoint> PyJointPtr;
+typedef std::shared_ptr<PyJoint const> PyJointConstPtr;
 
 template <typename T>
 boost::python::object GetCustomParameters(const std::map<std::string, std::vector<T> >& parameters, boost::python::object oname=boost::python::object(), int index=-1)
@@ -131,7 +131,7 @@ public:
     float _fTransparency;
     bool _bVisible, _bModifiable;
 };
-typedef boost::shared_ptr<PyGeometryInfo> PyGeometryInfoPtr;
+typedef std::shared_ptr<PyGeometryInfo> PyGeometryInfoPtr;
 
 class PyLinkInfo
 {
@@ -227,7 +227,7 @@ public:
     bool _bStatic;
     bool _bIsEnabled;
 };
-typedef boost::shared_ptr<PyLinkInfo> PyLinkInfoPtr;
+typedef std::shared_ptr<PyLinkInfo> PyLinkInfoPtr;
 
 class PyElectricMotorActuatorInfo
 {
@@ -326,7 +326,7 @@ public:
     dReal coloumb_friction;
     dReal viscous_friction;
 };
-typedef boost::shared_ptr<PyElectricMotorActuatorInfo> PyElectricMotorActuatorInfoPtr;
+typedef std::shared_ptr<PyElectricMotorActuatorInfo> PyElectricMotorActuatorInfoPtr;
 
 class PyJointInfo
 {
@@ -562,7 +562,7 @@ public:
     object _bIsCircular;
     bool _bIsActive;
 };
-typedef boost::shared_ptr<PyJointInfo> PyJointInfoPtr;
+typedef std::shared_ptr<PyJointInfo> PyJointInfoPtr;
 
 class PyLink
 {
@@ -678,10 +678,10 @@ public:
         object GetInfo() {
             return object(PyGeometryInfoPtr(new PyGeometryInfo(_pgeometry->GetInfo())));
         }
-        bool __eq__(boost::shared_ptr<PyGeometry> p) {
+        bool __eq__(std::shared_ptr<PyGeometry> p) {
             return !!p && _pgeometry == p->_pgeometry;
         }
-        bool __ne__(boost::shared_ptr<PyGeometry> p) {
+        bool __ne__(std::shared_ptr<PyGeometry> p) {
             return !p || _pgeometry != p->_pgeometry;
         }
         int __hash__() {
@@ -742,7 +742,7 @@ public:
         return links;
     }
 
-    bool IsParentLink(boost::shared_ptr<PyLink> pylink) const {
+    bool IsParentLink(std::shared_ptr<PyLink> pylink) const {
         return _plink->IsParentLink(pylink->GetLink());
     }
 
@@ -838,7 +838,7 @@ public:
         boost::python::list geoms;
         size_t N = _plink->GetGeometries().size();
         for(size_t i = 0; i < N; ++i) {
-            geoms.append(boost::shared_ptr<PyGeometry>(new PyGeometry(_plink->GetGeometry(i))));
+            geoms.append(std::shared_ptr<PyGeometry>(new PyGeometry(_plink->GetGeometry(i))));
         }
         return geoms;
     }
@@ -898,7 +898,7 @@ public:
         return links;
     }
 
-    bool IsRigidlyAttached(boost::shared_ptr<PyLink>  plink) {
+    bool IsRigidlyAttached(std::shared_ptr<PyLink>  plink) {
         CHECK_POINTER(plink);
         return _plink->IsRigidlyAttached(plink->GetLink());
     }
@@ -974,10 +974,10 @@ public:
     object __unicode__() {
         return ConvertStringToUnicode(__str__());
     }
-    bool __eq__(boost::shared_ptr<PyLink> p) {
+    bool __eq__(std::shared_ptr<PyLink> p) {
         return !!p && _plink == p->_plink;
     }
-    bool __ne__(boost::shared_ptr<PyLink> p) {
+    bool __ne__(std::shared_ptr<PyLink> p) {
         return !p || _plink != p->_plink;
     }
     int __hash__() {
@@ -1290,10 +1290,10 @@ public:
     object __unicode__() {
         return ConvertStringToUnicode(__str__());
     }
-    bool __eq__(boost::shared_ptr<PyJoint> p) {
+    bool __eq__(std::shared_ptr<PyJoint> p) {
         return !!p && _pjoint==p->_pjoint;
     }
-    bool __ne__(boost::shared_ptr<PyJoint> p) {
+    bool __ne__(std::shared_ptr<PyJoint> p) {
         return !p || _pjoint!=p->_pjoint;
     }
     int __hash__() {
@@ -1358,7 +1358,7 @@ public:
         return ConvertStringToUnicode(__str__());
     }
 };
-typedef boost::shared_ptr<PyKinBodyStateSaver> PyKinBodyStateSaverPtr;
+typedef std::shared_ptr<PyKinBodyStateSaver> PyKinBodyStateSaverPtr;
 
 class PyManageData
 {
@@ -1410,15 +1410,15 @@ public:
     object __unicode__() {
         return ConvertStringToUnicode(__str__());
     }
-    bool __eq__(boost::shared_ptr<PyManageData> p) {
+    bool __eq__(std::shared_ptr<PyManageData> p) {
         return !!p && _pdata==p->_pdata;
     }
-    bool __ne__(boost::shared_ptr<PyManageData> p) {
+    bool __ne__(std::shared_ptr<PyManageData> p) {
         return !p || _pdata!=p->_pdata;
     }
 };
-typedef boost::shared_ptr<PyManageData> PyManageDataPtr;
-typedef boost::shared_ptr<PyManageData const> PyManageDataConstPtr;
+typedef std::shared_ptr<PyManageData> PyManageDataPtr;
+typedef std::shared_ptr<PyManageData const> PyManageDataConstPtr;
 
 PyKinBody::PyKinBody(KinBodyPtr pbody, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pbody,pyenv), _pbody(pbody)
 {
@@ -2688,7 +2688,7 @@ void PyKinBody::__enter__()
     if( _listStateSavers.size() == 0 ) {
         openravepy::LockEnvironment(_pyenv);
     }
-    _listStateSavers.push_back(boost::shared_ptr<void>(new KinBody::KinBodyStateSaver(_pbody)));
+    _listStateSavers.push_back(std::shared_ptr<void>(new KinBody::KinBodyStateSaver(_pbody)));
 }
 
 void PyKinBody::__exit__(object type, object value, object traceback)
@@ -3050,7 +3050,7 @@ void init_openravepy_kinbody()
                           .value("Trimesh",GT_TriMesh)
                           .value("Container",GT_Container)
     ;
-    object electricmotoractuatorinfo = class_<PyElectricMotorActuatorInfo, boost::shared_ptr<PyElectricMotorActuatorInfo> >("ElectricMotorActuatorInfo", DOXY_CLASS(KinBody::ElectricMotorActuatorInfo))
+    object electricmotoractuatorinfo = class_<PyElectricMotorActuatorInfo, std::shared_ptr<PyElectricMotorActuatorInfo> >("ElectricMotorActuatorInfo", DOXY_CLASS(KinBody::ElectricMotorActuatorInfo))
                                        .def_readwrite("model_type",&PyElectricMotorActuatorInfo::model_type)
                                        .def_readwrite("assigned_power_rating",&PyElectricMotorActuatorInfo::assigned_power_rating)
                                        .def_readwrite("max_speed",&PyElectricMotorActuatorInfo::max_speed)
@@ -3088,7 +3088,7 @@ void init_openravepy_kinbody()
                        .value("Trajectory",KinBody::JointTrajectory)
     ;
 
-    object geometryinfo = class_<PyGeometryInfo, boost::shared_ptr<PyGeometryInfo> >("GeometryInfo", DOXY_CLASS(KinBody::GeometryInfo))
+    object geometryinfo = class_<PyGeometryInfo, std::shared_ptr<PyGeometryInfo> >("GeometryInfo", DOXY_CLASS(KinBody::GeometryInfo))
                           .def_readwrite("_t",&PyGeometryInfo::_t)
                           .def_readwrite("_vGeomData",&PyGeometryInfo::_vGeomData)
                           .def_readwrite("_vGeomData2",&PyGeometryInfo::_vGeomData2)
@@ -3108,7 +3108,7 @@ void init_openravepy_kinbody()
                           .def_readwrite("_mapExtraGeometries",&PyGeometryInfo::_mapExtraGeometries)
                           .def_pickle(GeometryInfo_pickle_suite())
     ;
-    object linkinfo = class_<PyLinkInfo, boost::shared_ptr<PyLinkInfo> >("LinkInfo", DOXY_CLASS(KinBody::LinkInfo))
+    object linkinfo = class_<PyLinkInfo, std::shared_ptr<PyLinkInfo> >("LinkInfo", DOXY_CLASS(KinBody::LinkInfo))
                       .def_readwrite("_vgeometryinfos",&PyLinkInfo::_vgeometryinfos)
                       .def_readwrite("_name",&PyLinkInfo::_name)
                       .def_readwrite("_t",&PyLinkInfo::_t)
@@ -3123,7 +3123,7 @@ void init_openravepy_kinbody()
                       .def_readwrite("_bIsEnabled",&PyLinkInfo::_bIsEnabled)
                       .def_pickle(LinkInfo_pickle_suite())
     ;
-    object jointinfo = class_<PyJointInfo, boost::shared_ptr<PyJointInfo> >("JointInfo", DOXY_CLASS(KinBody::JointInfo))
+    object jointinfo = class_<PyJointInfo, std::shared_ptr<PyJointInfo> >("JointInfo", DOXY_CLASS(KinBody::JointInfo))
                        .def_readwrite("_type",&PyJointInfo::_type)
                        .def_readwrite("_name",&PyJointInfo::_name)
                        .def_readwrite("_linkname0",&PyJointInfo::_linkname0)
@@ -3153,7 +3153,7 @@ void init_openravepy_kinbody()
                        .def_pickle(JointInfo_pickle_suite())
     ;
 
-    object grabbedinfo = class_<PyKinBody::PyGrabbedInfo, boost::shared_ptr<PyKinBody::PyGrabbedInfo> >("GrabbedInfo", DOXY_CLASS(KinBody::GrabbedInfo))
+    object grabbedinfo = class_<PyKinBody::PyGrabbedInfo, std::shared_ptr<PyKinBody::PyGrabbedInfo> >("GrabbedInfo", DOXY_CLASS(KinBody::GrabbedInfo))
                          .def_readwrite("_grabbedname",&PyKinBody::PyGrabbedInfo::_grabbedname)
                          .def_readwrite("_robotlinkname",&PyKinBody::PyGrabbedInfo::_robotlinkname)
                          .def_readwrite("_trelative",&PyKinBody::PyGrabbedInfo::_trelative)
@@ -3201,7 +3201,7 @@ void init_openravepy_kinbody()
         std::string sInitFromBoxesDoc = std::string(DOXY_FN(KinBody,InitFromBoxes "const std::vector< AABB; bool")) + std::string("\nboxes is a Nx6 array, first 3 columsn are position, last 3 are extents");
         std::string sGetChainDoc = std::string(DOXY_FN(KinBody,GetChain)) + std::string("If returnjoints is false will return a list of links, otherwise will return a list of links (default is true)");
         std::string sComputeInverseDynamicsDoc = std::string(":param returncomponents: If True will return three N-element arrays that represents the torque contributions to M, C, and G.\n\n:param externalforcetorque: A dictionary of link indices and a 6-element array of forces/torques in that order.\n\n") + std::string(DOXY_FN(KinBody, ComputeInverseDynamics));
-        scope kinbody = class_<PyKinBody, boost::shared_ptr<PyKinBody>, bases<PyInterfaceBase> >("KinBody", DOXY_CLASS(KinBody), no_init)
+        scope kinbody = class_<PyKinBody, std::shared_ptr<PyKinBody>, bases<PyInterfaceBase> >("KinBody", DOXY_CLASS(KinBody), no_init)
                         .def("Destroy",&PyKinBody::Destroy, DOXY_FN(KinBody,Destroy))
                         .def("InitFromBoxes",&PyKinBody::InitFromBoxes,InitFromBoxes_overloads(args("boxes","draw","uri"), sInitFromBoxesDoc.c_str()))
                         .def("InitFromSpheres",&PyKinBody::InitFromSpheres,InitFromSpheres_overloads(args("spherex","draw","uri"), DOXY_FN(KinBody,InitFromSpheres)))
@@ -3374,7 +3374,7 @@ void init_openravepy_kinbody()
         kinbody.attr("JointInfo") = jointinfo;
         kinbody.attr("GrabbedInfo") = grabbedinfo;
         {
-            scope link = class_<PyLink, boost::shared_ptr<PyLink> >("Link", DOXY_CLASS(KinBody::Link), no_init)
+            scope link = class_<PyLink, std::shared_ptr<PyLink> >("Link", DOXY_CLASS(KinBody::Link), no_init)
                          .def("GetName",&PyLink::GetName, DOXY_FN(KinBody::Link,GetName))
                          .def("GetIndex",&PyLink::GetIndex, DOXY_FN(KinBody::Link,GetIndex))
                          .def("Enable",&PyLink::Enable,args("enable"), DOXY_FN(KinBody::Link,Enable))
@@ -3438,7 +3438,7 @@ void init_openravepy_kinbody()
             link.attr("GeomType") = geometrytype;
             link.attr("GeometryInfo") = geometryinfo;
             {
-                scope geometry = class_<PyLink::PyGeometry, boost::shared_ptr<PyLink::PyGeometry> >("Geometry", DOXY_CLASS(KinBody::Link::Geometry),no_init)
+                scope geometry = class_<PyLink::PyGeometry, std::shared_ptr<PyLink::PyGeometry> >("Geometry", DOXY_CLASS(KinBody::Link::Geometry),no_init)
                                  .def("SetCollisionMesh",&PyLink::PyGeometry::SetCollisionMesh,args("trimesh"), DOXY_FN(KinBody::Link::Geometry,SetCollisionMesh))
                                  .def("GetCollisionMesh",&PyLink::PyGeometry::GetCollisionMesh, DOXY_FN(KinBody::Link::Geometry,GetCollisionMesh))
                                  .def("InitCollisionMesh",&PyLink::PyGeometry::InitCollisionMesh, InitCollisionMesh_overloads(args("tesselation"), DOXY_FN(KinBody::Link::Geometry,GetCollisionMesh)))
@@ -3481,7 +3481,7 @@ void init_openravepy_kinbody()
             link.attr("GeomProperties") = link.attr("Geometry");
         }
         {
-            scope joint = class_<PyJoint, boost::shared_ptr<PyJoint> >("Joint", DOXY_CLASS(KinBody::Joint),no_init)
+            scope joint = class_<PyJoint, std::shared_ptr<PyJoint> >("Joint", DOXY_CLASS(KinBody::Joint),no_init)
                           .def("GetName", &PyJoint::GetName, DOXY_FN(KinBody::Joint,GetName))
                           .def("IsMimic",&PyJoint::IsMimic,IsMimic_overloads(args("axis"), DOXY_FN(KinBody::Joint,IsMimic)))
                           .def("GetMimicEquation",&PyJoint::GetMimicEquation,GetMimicEquation_overloads(args("axis","type","format"), DOXY_FN(KinBody::Joint,GetMimicEquation)))
@@ -3559,7 +3559,7 @@ void init_openravepy_kinbody()
         }
 
         {
-            scope statesaver = class_<PyKinBodyStateSaver, boost::shared_ptr<PyKinBodyStateSaver> >("KinBodyStateSaver", DOXY_CLASS(KinBody::KinBodyStateSaver), no_init)
+            scope statesaver = class_<PyKinBodyStateSaver, std::shared_ptr<PyKinBodyStateSaver> >("KinBodyStateSaver", DOXY_CLASS(KinBody::KinBodyStateSaver), no_init)
                                .def(init<PyKinBodyPtr>(args("body")))
                                .def(init<PyKinBodyPtr,object>(args("body","options")))
                                .def("GetBody",&PyKinBodyStateSaver::GetBody,DOXY_FN(KinBody::KinBodyStateSaver, GetBody))
@@ -3571,7 +3571,7 @@ void init_openravepy_kinbody()
         }
 
         {
-            scope managedata = class_<PyManageData, boost::shared_ptr<PyManageData> >("ManageData", DOXY_CLASS(KinBody::ManageData),no_init)
+            scope managedata = class_<PyManageData, std::shared_ptr<PyManageData> >("ManageData", DOXY_CLASS(KinBody::ManageData),no_init)
                                .def("GetSystem", &PyManageData::GetSystem, DOXY_FN(KinBody::ManageData,GetSystem))
                                .def("GetData", &PyManageData::GetData, DOXY_FN(KinBody::ManageData,GetData))
                                .def("GetOffsetLink", &PyManageData::GetOffsetLink, DOXY_FN(KinBody::ManageData,GetOffsetLink))

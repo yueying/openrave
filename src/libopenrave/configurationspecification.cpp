@@ -1149,9 +1149,9 @@ namespace OpenRAVE
 		RaveGetAffineDOFValuesFromVelocity(values.begin(), linearvel, angularvel, quatrotation, affinedofs, vaxis);
 	}
 
-	boost::shared_ptr<ConfigurationSpecification::SetConfigurationStateFn> ConfigurationSpecification::GetSetFn(EnvironmentBasePtr penv) const
+	std::shared_ptr<ConfigurationSpecification::SetConfigurationStateFn> ConfigurationSpecification::GetSetFn(EnvironmentBasePtr penv) const
 	{
-		boost::shared_ptr<SetConfigurationStateFn> fn;
+		std::shared_ptr<SetConfigurationStateFn> fn;
 		Validate();
 		std::vector< std::pair<PlannerBase::PlannerParameters::SetStateValuesFn, int> > setstatefns(_vgroups.size());
 		string bodyname;
@@ -1232,9 +1232,9 @@ namespace OpenRAVE
 		return fn;
 	}
 
-	boost::shared_ptr<ConfigurationSpecification::GetConfigurationStateFn> ConfigurationSpecification::GetGetFn(EnvironmentBasePtr penv) const
+	std::shared_ptr<ConfigurationSpecification::GetConfigurationStateFn> ConfigurationSpecification::GetGetFn(EnvironmentBasePtr penv) const
 	{
-		boost::shared_ptr<GetConfigurationStateFn> fn;
+		std::shared_ptr<GetConfigurationStateFn> fn;
 		Validate();
 		std::vector< std::pair<GetConfigurationStateFn, int> > getstatefns(_vgroups.size());
 		string bodyname;

@@ -131,11 +131,11 @@ public:
     object _trelative;
     object _setRobotLinksToIgnore;
 };
-typedef boost::shared_ptr<PyGrabbedInfo> PyGrabbedInfoPtr;
+typedef std::shared_ptr<PyGrabbedInfo> PyGrabbedInfoPtr;
 
 protected:
     KinBodyPtr _pbody;
-    std::list<boost::shared_ptr<void> > _listStateSavers;
+    std::list<std::shared_ptr<void> > _listStateSavers;
 
 public:
     PyKinBody(KinBodyPtr pbody, PyEnvironmentBasePtr pyenv);

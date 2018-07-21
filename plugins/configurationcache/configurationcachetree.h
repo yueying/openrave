@@ -536,8 +536,8 @@ public:
         UserDataPtr _changehandle;
     };
 
-    typedef boost::shared_ptr<KinBodyCachedData> KinBodyCachedDataPtr;
-    typedef boost::weak_ptr<KinBodyCachedData> KinBodyCachedDataWeakPtr;
+    typedef std::shared_ptr<KinBodyCachedData> KinBodyCachedDataPtr;
+    typedef std::weak_ptr<KinBodyCachedData> KinBodyCachedDataWeakPtr;
 
     EnvironmentBasePtr _penv; ///< environment
 

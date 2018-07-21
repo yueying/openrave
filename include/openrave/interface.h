@@ -44,7 +44,7 @@ enum SerializationOptions
 /** \brief <b>[interface]</b> Base class for all interfaces that OpenRAVE provides. See \ref interface_concepts.
     \ingroup interfaces
  */
-class OPENRAVE_API InterfaceBase : public boost::enable_shared_from_this<InterfaceBase>
+class OPENRAVE_API InterfaceBase : public std::enable_shared_from_this<InterfaceBase>
 {
 public:
     typedef std::map<std::string, XMLReadablePtr, CaseInsensitiveCompare> READERSMAP;
@@ -314,11 +314,11 @@ private:
     mutable std::map<std::string, UserDataPtr> user_data_map_; //!< \see GetUserData
 
     READERSMAP readable_interfaces_map_; //!< pointers to extra interfaces that are included with this object
-    typedef std::map<std::string, boost::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
+    typedef std::map<std::string, std::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
     CMDMAP commands_map_; //!< all registered commands
 
 #if OPENRAVE_RAPIDJSON
-    typedef std::map<std::string, boost::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
+    typedef std::map<std::string, std::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
     JSONCMDMAP __mapJSONCommands; //!< all registered commands
 #endif
     

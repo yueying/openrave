@@ -29,7 +29,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     // if grabbing, check if the transforms are different. If they are, then update the transform
     GrabbedPtr pPreviousGrabbed;
     FOREACHC(itgrabbed, _vGrabbedBodies) {
-        GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+        GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
         if( KinBodyConstPtr(pgrabbed->_pgrabbedbody) == pbody ) {
             pPreviousGrabbed = pgrabbed;
             break;
@@ -67,7 +67,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     //uint64_t starttime1 = utils::GetMicroTime();
     // always ignore links that are statically attached to plink (ie assume they are always colliding with the body)
 
-    std::vector<boost::shared_ptr<Link> > vattachedlinks;
+    std::vector<std::shared_ptr<Link> > vattachedlinks;
     plink->GetRigidlyAttachedLinks(vattachedlinks);
     std::set<int> setBodyLinksToIgnore;
     FOREACHC(itlink, vattachedlinks) {
@@ -105,7 +105,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr pBodyLinkToGrabWith, const std::set
         if( setBodyLinksToIgnore.size() > 0 ) {
             // update the current grabbed info with setBodyLinksToIgnore
             FOREACHC(itgrabbed, _vGrabbedBodies) {
-                GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+                GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
                 if( KinBodyConstPtr(pgrabbed->_pgrabbedbody) == pbody ) {
                     pgrabbed->AddMoreIgnoreLinks(setBodyLinksToIgnore);
                     break;
@@ -149,7 +149,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr pBodyLinkToGrabWith, const std::set
 void KinBody::Release(KinBodyPtr pbody)
 {
     FOREACH(itgrabbed, _vGrabbedBodies) {
-        GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+        GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
         if( KinBodyPtr(pgrabbed->_pgrabbedbody) == pbody ) {
             _vGrabbedBodies.erase(itgrabbed);
             _RemoveAttachedBody(pbody);
@@ -165,7 +165,7 @@ void KinBody::ReleaseAllGrabbed()
 {
     if( _vGrabbedBodies.size() > 0 ) {
         FOREACH(itgrabbed, _vGrabbedBodies) {
-            GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+            GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
             KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
             if( !!pbody ) {
                 _RemoveAttachedBody(pbody);
@@ -184,7 +184,7 @@ void KinBody::ReleaseAllGrabbedWithLink(LinkPtr pBodyLinkToReleaseWith)
         bool bReleased = false;
         int nCheckIndex = (int)_vGrabbedBodies.size()-1;
         while(nCheckIndex >= 0) {
-            GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(_vGrabbedBodies.at(nCheckIndex));
+            GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(_vGrabbedBodies.at(nCheckIndex));
             if( pgrabbed->_plinkrobot == pBodyLinkToReleaseWith ) {
                 KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
                 if( !!pbody ) {
@@ -207,7 +207,7 @@ void KinBody::RegrabAll()
     CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
     std::vector<LinkPtr > vattachedlinks;
     FOREACH(itgrabbed, _vGrabbedBodies) {
-        GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+        GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
         KinBodyPtr pbody(pgrabbed->_pgrabbedbody);
         if( !!pbody ) {
             _RemoveAttachedBody(pbody);
@@ -219,7 +219,7 @@ void KinBody::RegrabAll()
 
 void KinBody::_Regrab(UserDataPtr _pgrabbed)
 {
-    GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(_pgrabbed);
+    GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(_pgrabbed);
     KinBodyPtr pgrabbedbody = pgrabbed->_pgrabbedbody.lock();
     if( !!pgrabbedbody ) {
         // have to re-grab the body, which means temporarily resetting the collision checker and attachment
@@ -234,7 +234,7 @@ void KinBody::_Regrab(UserDataPtr _pgrabbed)
 KinBody::LinkPtr KinBody::IsGrabbing(KinBodyConstPtr pbody) const
 {
     FOREACHC(itgrabbed, _vGrabbedBodies) {
-        GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+        GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
         if( KinBodyConstPtr(pgrabbed->_pgrabbedbody) == pbody ) {
             return pgrabbed->_plinkrobot;
         }
@@ -246,7 +246,7 @@ void KinBody::GetGrabbed(std::vector<KinBodyPtr>& vbodies) const
 {
     vbodies.resize(0);
     FOREACHC(itgrabbed, _vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
         if( !!pbody && pbody->GetEnvironmentId() ) {
             vbodies.push_back(pbody);
@@ -258,7 +258,7 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
 {
     vgrabbedinfo.resize(_vGrabbedBodies.size());
     for(size_t i = 0; i < vgrabbedinfo.size(); ++i) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(_vGrabbedBodies[i]);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(_vGrabbedBodies[i]);
         vgrabbedinfo[i].reset(new GrabbedInfo());
         vgrabbedinfo[i]->_grabbedname = pgrabbed->_pgrabbedbody.lock()->GetName();
         vgrabbedinfo[i]->_robotlinkname = pgrabbed->_plinkrobot->GetName();
@@ -314,7 +314,7 @@ void KinBody::GetIgnoredLinksOfGrabbed(KinBodyConstPtr body, std::list<KinBody::
 {
     ignorelinks.clear();
     FOREACHC(itgrabbed, _vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyPtr grabbedbody = pgrabbed->_pgrabbedbody.lock();
         if( grabbedbody == body ) {
             FOREACHC(itbodylink, links_vector_) {
@@ -332,7 +332,7 @@ void KinBody::_UpdateGrabbedBodies()
 {
     vector<UserDataPtr>::iterator itgrabbed = _vGrabbedBodies.begin();
     while(itgrabbed != _vGrabbedBodies.end() ) {
-        GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+        GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
         KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
         if( !!pbody ) {
             Transform t = pgrabbed->_plinkrobot->GetTransform();
