@@ -302,8 +302,10 @@ namespace openravepy
 			{
 				IkParameterization ikparam;
 				EnvironmentMutex::scoped_lock lock(openravepy::GetEnvironment(_pyenv)->GetMutex()); // lock just in case since many users call this without locking...
-				if (ExtractIkParameterization(oparam, ikparam)) {
-					if (ikreturn) {
+				if (ExtractIkParameterization(oparam, ikparam)) 
+				{
+					if (ikreturn) 
+					{
 						IkReturn ikreturn(IKRA_Reject);
 						_FindIKSolution(ikparam, filteroptions, ikreturn, releasegil);
 						return openravepy::toPyIkReturn(ikreturn);
@@ -335,16 +337,19 @@ namespace openravepy
 
 			object FindIKSolution(object oparam, object freeparams, int filteroptions, bool ikreturn = false, bool releasegil = false) const
 			{
-				vector<dReal> vfreeparams = ExtractArray<dReal>(freeparams);
+				std::vector<dReal> vfreeparams = ExtractArray<dReal>(freeparams);
 				IkParameterization ikparam;
 				EnvironmentMutex::scoped_lock lock(openravepy::GetEnvironment(_pyenv)->GetMutex()); // lock just in case since many users call this without locking...
-				if (ExtractIkParameterization(oparam, ikparam)) {
-					if (ikreturn) {
+				if (ExtractIkParameterization(oparam, ikparam)) 
+				{
+					if (ikreturn) 
+					{
 						IkReturn ikreturn(IKRA_Reject);
 						_FindIKSolution(ikparam, vfreeparams, filteroptions, ikreturn, releasegil);
 						return openravepy::toPyIkReturn(ikreturn);
 					}
-					else {
+					else 
+					{
 						vector<dReal> solution;
 						if (!_FindIKSolution(ikparam, vfreeparams, solution, filteroptions, releasegil)) {
 							return object();

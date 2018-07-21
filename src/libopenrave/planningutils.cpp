@@ -828,18 +828,22 @@ static dReal _ComputeTransformBodyDistance(std::vector<dReal>::const_iterator it
     return TransformDistance2(t0, t1, 0.3);
 }
 
-int _SetAffineState(const std::list< boost::function< void(std::vector<dReal>::const_iterator) > >& listsetfunctions, const std::vector<dReal>& v, int options)
+int _SetAffineState(const std::list< boost::function< void(std::vector<dReal>::const_iterator) > >& listsetfunctions,
+	const std::vector<dReal>& v, int options)
 {
-    FOREACHC(itfn,listsetfunctions) {
+    FOREACHC(itfn,listsetfunctions) 
+	{
         (*itfn)(v.begin());
     }
     return 0;
 }
 
-void _GetAffineState(std::vector<dReal>& v, size_t expectedsize, const std::list< boost::function< void(std::vector<dReal>::iterator) > >& listgetfunctions)
+void _GetAffineState(std::vector<dReal>& v, size_t expectedsize, 
+	const std::list< boost::function< void(std::vector<dReal>::iterator) > >& listgetfunctions)
 {
     v.resize(expectedsize);
-    FOREACHC(itfn,listgetfunctions) {
+    FOREACHC(itfn,listgetfunctions) 
+	{
         (*itfn)(v.begin());
     }
 }
@@ -905,7 +909,7 @@ static PlannerStatus _PlanAffineTrajectory(TrajectoryBasePtr traj,
     // don't need to convert since the planner does that automatically
     //ConvertTrajectorySpecification(traj,newspec);
     PlannerBasePtr planner = RaveCreatePlanner(traj->GetEnv(),
-		plannername.size() > 0 ? plannername : string("parabolicsmoother"));
+		plannername.size() > 0 ? plannername : std::string("parabolicsmoother"));
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
     params->_vConfigVelocityLimit = maxvelocities;

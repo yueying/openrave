@@ -347,12 +347,12 @@ public:
                                 return PS_Failed;
                             }
 
-                            if( _parameters->_fStepLength > 0 ) {
-                                if( fgrouptime < _parameters->_fStepLength ) {
-                                    fgrouptime = _parameters->_fStepLength;
+                            if( _parameters->step_length_ > 0 ) {
+                                if( fgrouptime < _parameters->step_length_) {
+                                    fgrouptime = _parameters->step_length_;
                                 }
                                 else {
-                                    fgrouptime = std::ceil(fgrouptime/_parameters->_fStepLength-g_fEpsilonJointLimit)*_parameters->_fStepLength;
+                                    fgrouptime = std::ceil(fgrouptime/_parameters->step_length_ -g_fEpsilonJointLimit)*_parameters->step_length_;
                                 }
                             }
                             if( mintime < fgrouptime ) {

@@ -2958,7 +2958,7 @@ namespace OpenRAVE
 			}
 			else {
 				// joint should be static
-				BOOST_ASSERT(pjoint->IsStatic());
+            OPENRAVE_ASSERT_FORMAT(pjoint->IsStatic(), "joint %s (%d) is expected to be static", pjoint->GetName()%ijoint, ORE_Assert);
 			}
 		}
 	}
