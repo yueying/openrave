@@ -129,13 +129,6 @@ void SetGlobalDAE(std::shared_ptr<DAE>);
 boost::mutex& GetGlobalDAEMutex();
 
 
-// register for typeof (MSVC only)
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(ColladaXMLReadable::Binding)
-#endif
-
-
 bool RaveParseColladaURI(EnvironmentBasePtr penv, const std::string& uri,const AttributesList& atts);
 bool RaveParseColladaURI(EnvironmentBasePtr penv, KinBodyPtr& ppbody, const std::string& uri, const AttributesList& atts);
 bool RaveParseColladaURI(EnvironmentBasePtr penv, RobotBasePtr& pprobot, const std::string& uri, const AttributesList& atts);

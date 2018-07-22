@@ -597,9 +597,5 @@ public:
     dReal _thresh;
 };
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(RandomPermutationExecutor)
-#endif
 
 #endif

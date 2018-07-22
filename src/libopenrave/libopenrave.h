@@ -26,23 +26,6 @@
 
 //#include <boost/math/special_functions/round.hpp>
 
-// include boost for vc++ only (to get typeof working)
-#ifdef _MSC_VER
-#include <boost/typeof/std/string.hpp>
-#include <boost/typeof/std/vector.hpp>
-#include <boost/typeof/std/list.hpp>
-#include <boost/typeof/std/map.hpp>
-#include <boost/typeof/std/set.hpp>
-#include <boost/typeof/std/string.hpp>
-
-#define FOREACH(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; ++(it))
-#define FOREACH_NOINC(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; )
-
-#define FOREACHC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; ++(it))
-#define FOREACHC_NOINC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; )
-#define RAVE_REGISTER_BOOST
-
-#else
 #include <string>
 #include <vector>
 #include <list>
@@ -52,13 +35,11 @@
 #include <algorithm>
 #include <complex>
 
-#define FOREACH(it, v) for(typeof((v).begin())it = (v).begin(), __itend__=(v).end(); it != __itend__; (it)++)
-#define FOREACH_NOINC(it, v) for(typeof((v).begin())it = (v).begin(), __itend__=(v).end(); it != __itend__; )
+#define FOREACH(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; (it)++)
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; )
 
 #define FOREACHC FOREACH
 #define FOREACHC_NOINC FOREACH_NOINC
-
-#endif
 
 //template <typename T>
 //class openraveconst_iteratorbegin : public T::const_iterator

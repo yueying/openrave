@@ -1855,10 +1855,3 @@ PlannerBasePtr CreateParabolicSmoother2(EnvironmentBasePtr penv, std::istream& s
 
 } // end namespace rplanners
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(RampOptimizer::Ramp)
-BOOST_TYPEOF_REGISTER_TYPE(RampOptimizer::ParabolicCurve)
-BOOST_TYPEOF_REGISTER_TYPE(RampOptimizer::RampND)
-BOOST_TYPEOF_REGISTER_TYPE(RampOptimizer::ParabolicPath)
-#endif

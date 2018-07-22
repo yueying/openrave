@@ -1920,17 +1920,6 @@ private:
     RobotBasePtr _robot;
 };
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-
-BOOST_TYPEOF_REGISTER_TYPE(TaskCaging::BODYTRAJ)
-BOOST_TYPEOF_REGISTER_TYPE(TaskCaging::ConstrainedTaskData)
-BOOST_TYPEOF_REGISTER_TYPE(TaskCaging::ConstrainedTaskData::GRASP)
-BOOST_TYPEOF_REGISTER_TYPE(TaskCaging::ConstrainedTaskData::FEATURES)
-BOOST_TYPEOF_REGISTER_TYPE(TaskCaging::ConstrainedTaskData::FINDGRASPDATA)
-
-#endif
-
 ModuleBasePtr CreateTaskCaging(EnvironmentBasePtr penv) {
     return ModuleBasePtr(new TaskCaging(penv));
 }

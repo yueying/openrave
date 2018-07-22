@@ -253,13 +253,6 @@ private:
     RobotBasePtr _probot;
 };
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(KinBodyItem)
-BOOST_TYPEOF_REGISTER_TYPE(RobotItem)
-BOOST_TYPEOF_REGISTER_TYPE(RobotItem::EE)
-#endif
-
 }
 
 #endif   // RAVE_OSG_ITEM_H

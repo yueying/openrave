@@ -20,22 +20,6 @@
 #include <openrave/openrave.h> // should be included first in order to get boost throwing openrave exceptions
 #include <openrave/utils.h>
 
-// include boost for vc++ only (to get typeof working)
-#ifdef _MSC_VER
-#define _USE_MATH_DEFINES
-#include <boost/typeof/std/string.hpp>
-#include <boost/typeof/std/vector.hpp>
-#include <boost/typeof/std/list.hpp>
-#include <boost/typeof/std/map.hpp>
-#include <boost/typeof/std/string.hpp>
-
-#define FOREACH(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACH_NOINC(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); )
-
-#define FOREACHC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACHC_NOINC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); )
-#define RAVE_REGISTER_BOOST
-#else
 
 #include <string>
 #include <vector>
@@ -43,13 +27,12 @@
 #include <map>
 #include <string>
 
-#define FOREACH(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACH_NOINC(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); )
+#define FOREACH(it, v) for(auto it = (v).begin(); it != (v).end(); (it)++)
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
 
 #define FOREACHC FOREACH
 #define FOREACHC_NOINC FOREACH_NOINC
 
-#endif
 
 #define FORIT(it, v) for(it = (v).begin(); it != (v).end(); (it)++)
 
@@ -78,12 +61,6 @@ IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput
 #endif
 IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<double> > ikfunctions, const std::vector<dReal>& vfreeinc, dReal ikthreshold=1e-4);
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TEMPLATE(IkSingleDOFSolutionBase, 1)
-BOOST_TYPEOF_REGISTER_TEMPLATE(IkSolution, 1)
-BOOST_TYPEOF_REGISTER_TEMPLATE(IkSolutionList, 1)
-#endif
 
 #define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_ikfastsolvers", msgid)
 

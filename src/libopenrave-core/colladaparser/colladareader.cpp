@@ -5264,14 +5264,4 @@ bool RaveParseColladaData(EnvironmentBasePtr penv, RobotBasePtr& probot, const s
     return reader.Extract(probot, articulatedSystemId);
 }
 
-// register for typeof (MSVC only)
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(ColladaReader::InstanceModelBinding)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaReader::InterfaceType)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaReader::JointAxisBinding)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaReader::InstanceLinkBinding)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaReader::KinematicsSceneBindings)
-#endif
-
 } // end OpenRAVE namespace

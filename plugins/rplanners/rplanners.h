@@ -1055,10 +1055,4 @@ private:
     mutable std::vector< std::vector<NodePtr> > _vvCacheNodes;
 };
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(SimpleNode)
-BOOST_TYPEOF_REGISTER_TYPE(SpatialTree)
-#endif
-
 #endif

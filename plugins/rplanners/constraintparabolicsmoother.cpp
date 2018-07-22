@@ -1110,9 +1110,3 @@ PlannerBasePtr CreateConstraintParabolicSmoother(EnvironmentBasePtr penv, std::i
 {
     return PlannerBasePtr(new ConstraintParabolicSmoother(penv,sinput));
 }
-
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(ParabolicRamp::ParabolicRamp1D)
-BOOST_TYPEOF_REGISTER_TYPE(ParabolicRamp::ParabolicRampND)
-#endif

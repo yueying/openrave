@@ -45,7 +45,8 @@ namespace OpenRAVE
 		class OPENRAVE_API Group
 		{
 		public:
-			Group() : offset(0), dof(0) {
+			Group() : offset(0), dof(0) 
+			{
 			}
 
 			inline bool operator==(const Group& r) const {

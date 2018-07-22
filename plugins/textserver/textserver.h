@@ -2305,12 +2305,4 @@ protected:
 
 };
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-
-BOOST_TYPEOF_REGISTER_TYPE(SimpleTextServer::Socket)
-BOOST_TYPEOF_REGISTER_TYPE(SimpleTextServer::WORKERSTRUCT)
-
-#endif
-
 #endif

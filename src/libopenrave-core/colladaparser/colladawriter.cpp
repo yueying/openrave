@@ -2482,14 +2482,6 @@ private:
     bool _bReuseSimilar; //<! if true, attemps to resuse similar looking meshes and structures to reduce size
 };
 
-// register for typeof (MSVC only)
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(ColladaWriter::LINKOUTPUT)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaWriter::kinematics_model_output)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaWriter::instance_kinematics_model_output)
-BOOST_TYPEOF_REGISTER_TYPE(ColladaWriter::articulated_system_output)
-#endif
 
 void RaveWriteColladaFile(EnvironmentBasePtr penv, const string& filename, const AttributesList& atts)
 {

@@ -27,11 +27,6 @@ struct GRASPGOAL
     vector<dReal> vgoalconfiguration; //<! contains the configuration if this grasp was picked
 };
 
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(GRASPGOAL)
-#endif
-
 class GraspVectorCompare : public RealVectorCompare
 {
 public:
