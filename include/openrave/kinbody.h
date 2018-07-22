@@ -1646,13 +1646,13 @@ namespace OpenRAVE
 			\param[out] vjoints the joints to fill that describe the chain
 			\return true if the two links are connected (vjoints will be filled), false if the links are separate
 
-			\ja \brief 2つのリンクを繋ぐ関節の最短経路を計算する．
+			\ja \brief 2つのリンクを繋ぐ関節の最短経路を計算する�
 
 			受動的な関節は，位置関係が固定されているリンクを見つけるために調べられている
-			受動的な関節も返される可能があるから，注意する必要があります．
-			\param[in] linkindex1 始点リンクインデックス
-			\param[in] linkindex2 終点リンクインデックス
-			\param[out] vjoints　関節の経路
+			受動的な関節も返される可能があるから，注意する必要があります�
+			\param[in] linkindex1 始点リンクインデック�
+			\param[in] linkindex2 終点リンクインデック�
+			\param[out] vjoints　関節の経�
 			\return 経路が存在している場合，trueを返す．
 		 */
 		virtual bool GetChain(int linkindex1, int linkindex2, std::vector<JointPtr>& vjoints) const;
@@ -1795,7 +1795,7 @@ namespace OpenRAVE
 
 			\param transform affine transformation
 
-			\ja \brief 胴体の絶対姿勢を設定、残りのリンクは運動学の構造に従って変換される．
+			\ja \brief 胴体の絶対姿勢を設定、残りのリンクは運動学の構造に従って変換される�
 
 			\param transform 変換行列
 		 */
@@ -1813,6 +1813,11 @@ namespace OpenRAVE
 		/// \brief bEnabledOnlyLinks if true, will only count links that are enabled. By default this is false
 		virtual AABB ComputeAABBFromTransform(const Transform& tBody, bool bEnabledOnlyLinks = false) const;
 
+    /// \brief returns an axis-aligned bounding box when body has identity transform
+    ///
+    /// Internally equivalent to ComputeAABBFromTransform(Transform(), ...)
+    virtual AABB ComputeLocalAABB(bool bEnabledOnlyLinks=false) const;
+    
 		/// \brief Return the center of mass of entire robot in the world coordinate system.
 		virtual Vector GetCenterOfMass() const;
 

@@ -1529,6 +1529,11 @@ namespace OpenRAVE
 			ab.extents = vmax - ab.pos;
 		}
 		return ab;
+}
+
+AABB KinBody::ComputeLocalAABB(bool bEnabledOnlyLinks) const
+{
+    return ComputeAABBFromTransform(Transform(), bEnabledOnlyLinks);
 	}
 
 	Vector KinBody::GetCenterOfMass() const
