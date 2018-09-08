@@ -136,10 +136,12 @@ bool SampleProjectedOBBWithTest(const OBB& obb, dReal delta, const boost::functi
 class VisualFeedback : public ModuleBase
 {
 public:
-    inline std::shared_ptr<VisualFeedback> shared_problem() {
+    inline std::shared_ptr<VisualFeedback> shared_problem() 
+	{
         return std::dynamic_pointer_cast<VisualFeedback>(shared_from_this());
     }
-    inline std::shared_ptr<VisualFeedback const> shared_problem_const() const {
+    inline std::shared_ptr<VisualFeedback const> shared_problem_const() const 
+	{
         return std::dynamic_pointer_cast<VisualFeedback const>(shared_from_this());
     }
     friend class VisibilityConstraintFunction;
@@ -520,18 +522,21 @@ private:
     class GoalSampleFunction
     {
 public:
-        GoalSampleFunction(std::shared_ptr<VisualFeedback> vf, const vector<Transform>& visibilitytransforms) : _vconstraint(vf), _fSampleGoalProb(1.0f), _vf(vf), _visibilitytransforms(visibilitytransforms)
+        GoalSampleFunction(std::shared_ptr<VisualFeedback> vf, const vector<Transform>& visibilitytransforms)
+			: _vconstraint(vf), _fSampleGoalProb(1.0f), _vf(vf), _visibilitytransforms(visibilitytransforms)
         {
             RAVELOG_DEBUG(str(boost::format("have %d detection extents hypotheses\n")%_visibilitytransforms.size()));
             _ttarget = _vf->_targetlink->GetTransform();
             _sphereperms.PermuteStart(_visibilitytransforms.size());
         }
-        virtual ~GoalSampleFunction() {
+        virtual ~GoalSampleFunction() 
+		{
         }
 
         virtual bool Sample(vector<dReal>& pNewSample)
         {
-            if( RaveRandomFloat() > _fSampleGoalProb ) {
+            if( RaveRandomFloat() > _fSampleGoalProb )
+			{
                 return false;
             }
             RobotBase::RobotStateSaver state(_vf->_robot);
@@ -608,7 +613,8 @@ Visibility computation checks occlusion with other objects using ray sampling in
                         "Sets internal parameters of visibility computation");
     }
 
-    virtual ~VisualFeedback() {
+    virtual ~VisualFeedback() 
+	{
     }
 
     void Destroy()
@@ -625,9 +631,9 @@ Visibility computation checks occlusion with other objects using ray sampling in
         ModuleBase::Destroy();
     }
 
-    int main(const string& args)
+    int main(const std::string& args)
     {
-        stringstream ss(args);
+        std::stringstream ss(args);
         string robotname;
         _fMaxVelMult=1;
         ss >> robotname;
