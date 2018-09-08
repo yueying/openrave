@@ -32,7 +32,7 @@ namespace planningutils {
 /// \brief Jitters the active joint angles of the robot until it escapes collision.
 ///
 /// \return 0 if jitter failed and robot is in collision, -1 if robot originally not in collision, 1 if jitter succeeded and position is different.
-OPENRAVE_API int JitterActiveDOF(RobotBasePtr robot,int nMaxIterations=5000,dReal fRand=0.03,const PlannerBase::PlannerParameters::NeighStateFn& neighstatefn = PlannerBase::PlannerParameters::NeighStateFn());
+OPENRAVE_API int JitterActiveDOF(RobotBasePtr robot,int max_iterations_num=5000,dReal fRand=0.03,const PlannerBase::PlannerParameters::NeighStateFn& neighstatefn = PlannerBase::PlannerParameters::NeighStateFn());
 
 /// \brief Jitters the transform of a body until it escapes collision.
 OPENRAVE_API bool JitterTransform(KinBodyPtr pbody, float fJitter, int nMaxIterations=1000);

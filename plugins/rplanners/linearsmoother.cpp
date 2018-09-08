@@ -61,9 +61,9 @@ public:
         }
         _linearretimer->InitPlan(RobotBasePtr(), _parameters);
 
-        _vConfigVelocityLimitInv.resize(_parameters->_vConfigVelocityLimit.size());
+        _vConfigVelocityLimitInv.resize(_parameters->config_velocity_limit_vector_.size());
         for(int i = 0; i < (int)_vConfigVelocityLimitInv.size(); ++i) {
-            _vConfigVelocityLimitInv[i] = 1/_parameters->_vConfigVelocityLimit[i];
+            _vConfigVelocityLimitInv[i] = 1/_parameters->config_velocity_limit_vector_[i];
         }
         return !!_puniformsampler;
     }
@@ -844,13 +844,13 @@ protected:
         dReal f = 0;
         for(size_t i = 0; i < v.size(); ++i) {
             f += (v[i]-listNewNodes.back()[i])*(v[i]-listNewNodes.back()[i]);
-            if( v[i] < _parameters->_vConfigLowerLimit[i] ) {
-                RAVELOG_WARN_FORMAT("dof %d does not follow lower limit %f < %f", i%v[i]%_parameters->_vConfigLowerLimit[i]);
-                v[i] = _parameters->_vConfigLowerLimit[i];
+            if( v[i] < _parameters->config_lower_limit_vector_[i] ) {
+                RAVELOG_WARN_FORMAT("dof %d does not follow lower limit %f < %f", i%v[i]%_parameters->config_lower_limit_vector_[i]);
+                v[i] = _parameters->config_lower_limit_vector_[i];
             }
-            if( v[i] > _parameters->_vConfigUpperLimit[i] ) {
-                RAVELOG_WARN_FORMAT("dof %d does not follow upper limit %f > %f", i%v[i]%_parameters->_vConfigUpperLimit[i]);
-                v[i]  = _parameters->_vConfigUpperLimit[i];
+            if( v[i] > _parameters->config_upper_limit_vector_[i] ) {
+                RAVELOG_WARN_FORMAT("dof %d does not follow upper limit %f > %f", i%v[i]%_parameters->config_upper_limit_vector_[i]);
+                v[i]  = _parameters->config_upper_limit_vector_[i];
             }
         }
         if( f > 1e-10 ) {
@@ -1236,19 +1236,19 @@ protected:
         FOREACH(itperturbation,perturbations) {
             for(size_t i = 0; i < a.size(); ++i) {
                 anew[i] = a[i] + *itperturbation * parameters->_vConfigResolution.at(i);
-                if( anew[i] < _parameters->_vConfigLowerLimit[i] ) {
-                    anew[i] = _parameters->_vConfigLowerLimit[i];
+                if( anew[i] < _parameters->config_lower_limit_vector_[i] ) {
+                    anew[i] = _parameters->config_lower_limit_vector_[i];
                 }
-                if( anew[i] > _parameters->_vConfigUpperLimit[i] ) {
-                    anew[i]  = _parameters->_vConfigUpperLimit[i];
+                if( anew[i] > _parameters->config_upper_limit_vector_[i] ) {
+                    anew[i]  = _parameters->config_upper_limit_vector_[i];
                 }
 
                 bnew[i] = b[i] + *itperturbation * parameters->_vConfigResolution.at(i);
-                if( bnew[i] < _parameters->_vConfigLowerLimit[i] ) {
-                    bnew[i] = _parameters->_vConfigLowerLimit[i];
+                if( bnew[i] < _parameters->config_lower_limit_vector_[i] ) {
+                    bnew[i] = _parameters->config_lower_limit_vector_[i];
                 }
-                if( bnew[i] > _parameters->_vConfigUpperLimit[i] ) {
-                    bnew[i]  = _parameters->_vConfigUpperLimit[i];
+                if( bnew[i] > _parameters->config_upper_limit_vector_[i] ) {
+                    bnew[i]  = _parameters->config_upper_limit_vector_[i];
                 }
             }
             if( parameters->CheckPathAllConstraints(anew,bnew,std::vector<dReal>(), std::vector<dReal>(), 0, interval, options) != 0 ) {

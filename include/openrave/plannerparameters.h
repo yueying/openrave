@@ -22,12 +22,14 @@
 
 #include <openrave/planningutils.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 class OPENRAVE_API ExplorationParameters : public PlannerBase::PlannerParameters
 {
 public:
-    ExplorationParameters() : _fExploreProb(0), _nExpectedDataSize(100), _bProcessingExploration(false) {
+    ExplorationParameters() : _fExploreProb(0), _nExpectedDataSize(100), _bProcessingExploration(false) 
+	{
         xml_parameters_vector_.push_back("exploreprob");
         xml_parameters_vector_.push_back("expectedsize");
     }
@@ -681,7 +683,8 @@ class OPENRAVE_API WorkspaceTrajectoryParameters : public PlannerBase::PlannerPa
 {
 public:
     WorkspaceTrajectoryParameters(EnvironmentBasePtr penv);
-    inline EnvironmentBasePtr GetEnv() const {
+    inline EnvironmentBasePtr GetEnv() const 
+	{
         return _penv;
     }
 
@@ -711,7 +714,8 @@ typedef std::shared_ptr<WorkspaceTrajectoryParameters const> WorkspaceTrajectory
 class OPENRAVE_API RRTParameters : public PlannerBase::PlannerParameters
 {
 public:
-    RRTParameters() : _minimumgoalpaths(1), _bProcessing(false) {
+    RRTParameters() : _minimumgoalpaths(1), _bProcessing(false)
+	{
         xml_parameters_vector_.push_back("minimumgoalpaths");
     }
 

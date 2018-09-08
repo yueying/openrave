@@ -49,11 +49,19 @@ namespace OpenRAVE
 			{
 			}
 
-			inline bool operator==(const Group& r) const {
-				return offset == r.offset && dof == r.dof && name == r.name && interpolation == r.interpolation;
+			inline bool operator==(const Group& r) const 
+			{
+				return offset == r.offset 
+					&& dof == r.dof 
+					&& name == r.name 
+					&& interpolation == r.interpolation;
 			}
-			inline bool operator!=(const Group& r) const {
-				return offset != r.offset || dof != r.dof || name != r.name || interpolation != r.interpolation;
+			inline bool operator!=(const Group& r) const 
+			{
+				return offset != r.offset 
+					|| dof != r.dof 
+					|| name != r.name 
+					|| interpolation != r.interpolation;
 			}
 
 			/// \brief For each data point, the number of values to offset before data for this group starts.

@@ -16,7 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "libopenrave.h"
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
 {

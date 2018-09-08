@@ -165,10 +165,10 @@ PlannerBase::PlannerParameters& PlannerBase::PlannerParameters::operator=(const 
     _vGoalConfigVelocities.resize(0);
     vgoalconfig.resize(0);
     _configurationspecification = ConfigurationSpecification();
-    _vConfigLowerLimit.resize(0);
-    _vConfigUpperLimit.resize(0);
+    config_lower_limit_vector_.resize(0);
+    config_upper_limit_vector_.resize(0);
     _vConfigResolution.resize(0);
-    _vConfigVelocityLimit.resize(0);
+    config_velocity_limit_vector_.resize(0);
     _vConfigAccelerationLimit.resize(0);
     _sPostProcessingPlanner = "";
     _sPostProcessingParameters.resize(0);
@@ -194,10 +194,12 @@ void PlannerBase::PlannerParameters::copy(std::shared_ptr<PlannerParameters cons
 
 int PlannerBase::PlannerParameters::SetStateValues(const std::vector<dReal>& values, int options) const
 {
-    if( !!_setstatevaluesfn ) {
+    if( !!_setstatevaluesfn ) 
+	{
         return _setstatevaluesfn(values, options);
     }
-    if( !!_setstatefn ) {
+    if( !!_setstatefn )
+	{
         RAVELOG_VERBOSE("Using deprecated PlannerParameters::_setstatefn, please set _setstatevaluesfn instead");
         _setstatefn(values);
         return 0;
@@ -229,17 +231,17 @@ bool PlannerBase::PlannerParameters::serialize(std::ostream& O, int options) con
     }
     O << "</_vgoalconfigvelocities>" << endl;
     O << "<_vconfiglowerlimit>";
-    FOREACHC(it, _vConfigLowerLimit) {
+    FOREACHC(it, config_lower_limit_vector_) {
         O << *it << " ";
     }
     O << "</_vconfiglowerlimit>" << endl;
     O << "<_vconfigupperlimit>";
-    FOREACHC(it, _vConfigUpperLimit) {
+    FOREACHC(it, config_upper_limit_vector_) {
         O << *it << " ";
     }
     O << "</_vconfigupperlimit>" << endl;
     O << "<_vconfigvelocitylimit>";
-    FOREACHC(it, _vConfigVelocityLimit) {
+    FOREACHC(it, config_velocity_limit_vector_) {
         O << *it << " ";
     }
     O << "</_vconfigvelocitylimit>" << endl;
@@ -356,16 +358,16 @@ bool PlannerBase::PlannerParameters::endElement(const std::string& name)
             _vGoalConfigVelocities = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
         }
         else if( name == "_vconfiglowerlimit") {
-            _vConfigLowerLimit = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            config_lower_limit_vector_ = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
         }
         else if( name == "_vconfigupperlimit") {
-            _vConfigUpperLimit = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            config_upper_limit_vector_ = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
         }
         else if( name == "_vconfigresolution") {
             _vConfigResolution = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
         }
         else if( name == "_vconfigvelocitylimit") {
-            _vConfigVelocityLimit = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            config_velocity_limit_vector_ = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
         }
         else if( name == "_vconfigaccelerationlimit") {
             _vConfigAccelerationLimit = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
@@ -456,15 +458,15 @@ void PlannerBase::PlannerParameters::SetRobotActiveJoints(RobotBasePtr robot)
     _setstatevaluesfn = boost::bind(SetActiveDOFValuesParameters,robot, _1, _2);
     _getstatefn = boost::bind(&RobotBase::GetActiveDOFValues,robot,_1);
 
-    robot->GetActiveDOFLimits(_vConfigLowerLimit,_vConfigUpperLimit);
-    robot->GetActiveDOFVelocityLimits(_vConfigVelocityLimit);
+    robot->GetActiveDOFLimits(config_lower_limit_vector_,config_upper_limit_vector_);
+    robot->GetActiveDOFVelocityLimits(config_velocity_limit_vector_);
     robot->GetActiveDOFAccelerationLimits(_vConfigAccelerationLimit);
     robot->GetActiveDOFResolutions(_vConfigResolution);
     robot->GetActiveDOFValues(vinitialconfig);
     robot->GetActiveDOFVelocities(_vInitialConfigVelocities); // necessary?
     _configurationspecification = robot->GetActiveConfigurationSpecification();
 
-    _neighstatefn = boost::bind(AddStatesWithLimitCheck, _1, _2, _3, boost::ref(_vConfigLowerLimit), boost::ref(_vConfigUpperLimit)); // probably ok... do we need to clamp limits?
+    _neighstatefn = boost::bind(AddStatesWithLimitCheck, _1, _2, _3, boost::ref(config_lower_limit_vector_), boost::ref(config_upper_limit_vector_)); // probably ok... do we need to clamp limits?
 
     // have to do this last, disable timed constraints for default
     std::list<KinBodyPtr> listCheckCollisions; listCheckCollisions.push_back(robot);
@@ -761,9 +763,9 @@ void PlannerBase::PlannerParameters::SetConfigurationSpecification(EnvironmentBa
     _setstatevaluesfn = boost::bind(CallSetStateValuesFns,setstatevaluesfns, spec.GetDOF(), nMaxDOFForGroup, _1, _2);
     _getstatefn = boost::bind(CallGetStateFns,getstatefns, spec.GetDOF(), nMaxDOFForGroup, _1);
     _neighstatefn = boost::bind(_CallNeighStateFns,neighstatefns, spec.GetDOF(), nMaxDOFForGroup, _1,_2,_3);
-    _vConfigLowerLimit.swap(vConfigLowerLimit);
-    _vConfigUpperLimit.swap(vConfigUpperLimit);
-    _vConfigVelocityLimit.swap(vConfigVelocityLimit);
+    config_lower_limit_vector_.swap(vConfigLowerLimit);
+    config_upper_limit_vector_.swap(vConfigUpperLimit);
+    config_velocity_limit_vector_.swap(vConfigVelocityLimit);
     _vConfigAccelerationLimit.swap(vConfigAccelerationLimit);
     _vConfigResolution.swap(vConfigResolution);
     _configurationspecification = spec;
@@ -780,10 +782,10 @@ void PlannerBase::PlannerParameters::Validate() const
     OPENRAVE_ASSERT_OP(_vInitialConfigVelocities.size()%GetDOF(),==,0);
     OPENRAVE_ASSERT_OP(_vGoalConfigVelocities.size()%GetDOF(),==,0);
     OPENRAVE_ASSERT_OP(vgoalconfig.size()%GetDOF(),==,0);
-    OPENRAVE_ASSERT_OP(_vConfigLowerLimit.size(),==,(size_t)GetDOF());
-    OPENRAVE_ASSERT_OP(_vConfigUpperLimit.size(),==,(size_t)GetDOF());
-    if( _vConfigVelocityLimit.size() > 0 ) {
-        OPENRAVE_ASSERT_OP(_vConfigVelocityLimit.size(),==,(size_t)GetDOF());
+    OPENRAVE_ASSERT_OP(config_lower_limit_vector_.size(),==,(size_t)GetDOF());
+    OPENRAVE_ASSERT_OP(config_upper_limit_vector_.size(),==,(size_t)GetDOF());
+    if( config_velocity_limit_vector_.size() > 0 ) {
+        OPENRAVE_ASSERT_OP(config_velocity_limit_vector_.size(),==,(size_t)GetDOF());
     }
     if( _vConfigAccelerationLimit.size() > 0 ) {
         OPENRAVE_ASSERT_OP(_vConfigAccelerationLimit.size(),==,(size_t)GetDOF());

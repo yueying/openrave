@@ -146,7 +146,8 @@ inline static uint64_t GetNanoPerformanceTime()
 
 struct null_deleter
 {
-    void operator()(void const *) const {
+    void operator()(void const *) const 
+	{
     }
 };
 

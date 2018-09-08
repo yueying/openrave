@@ -179,11 +179,11 @@ public:
         _ptarget->SetActiveDOFs(v);
 
         params->_configurationspecification = _probot->GetActiveConfigurationSpecification() + _ptarget->GetActiveConfigurationSpecification();
-        _probot->GetActiveDOFLimits(params->_vConfigLowerLimit,params->_vConfigUpperLimit);
-        _pdoorjoint->GetLimits(params->_vConfigLowerLimit,params->_vConfigUpperLimit,true);
+        _probot->GetActiveDOFLimits(params->config_lower_limit_vector_,params->config_upper_limit_vector_);
+        _pdoorjoint->GetLimits(params->config_lower_limit_vector_,params->config_upper_limit_vector_,true);
 
-        _probot->GetActiveDOFVelocityLimits(params->_vConfigVelocityLimit);
-        params->_vConfigVelocityLimit.push_back(100);
+        _probot->GetActiveDOFVelocityLimits(params->config_velocity_limit_vector_);
+        params->config_velocity_limit_vector_.push_back(100);
 
         _probot->GetActiveDOFAccelerationLimits(params->_vConfigAccelerationLimit);
         params->_vConfigAccelerationLimit.push_back(100);

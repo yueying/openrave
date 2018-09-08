@@ -37,8 +37,9 @@ namespace OpenRAVE
 		}
 
 		/// return the static interface type this class points to (used for safe casting)
-		static inline InterfaceType GetInterfaceTypeStatic() {
-			return PT_ProblemInstance;
+		static inline InterfaceType GetInterfaceTypeStatic()
+		{
+			return PT_Module;
 		}
 
 		/// gets called every time a problem instance is loaded to initialize the problem.

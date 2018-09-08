@@ -92,9 +92,9 @@ bool CheckValidity(dReal Ta,dReal Tb,const std::vector<dReal>& q0,const std::vec
 {
 
     vector<dReal> amax = params->_vConfigAccelerationLimit;
-    vector<dReal> vmax = params->_vConfigVelocityLimit;
-    vector<dReal> qmin = params->_vConfigLowerLimit;
-    vector<dReal> qmax = params->_vConfigUpperLimit;
+    vector<dReal> vmax = params->config_velocity_limit_vector_;
+    vector<dReal> qmin = params->config_lower_limit_vector_;
+    vector<dReal> qmax = params->config_upper_limit_vector_;
 
     dReal q1,v1,a0,a1;
     qres.resize(q0.size(),0);
@@ -144,9 +144,9 @@ bool CheckMerge(dReal T0,dReal T1,dReal T2,const std::vector<dReal>& q0,const st
     dReal T = T0+T1+T2;
     dReal Q,A0,B0lo,B0hi,A1lo,A1hi,B1,A2lo,B2lo,A2hi,B2hi;
     vector<dReal> amax = params->_vConfigAccelerationLimit;
-    vector<dReal> vmax = params->_vConfigVelocityLimit;
-    vector<dReal> qmin = params->_vConfigLowerLimit;
-    vector<dReal> qmax = params->_vConfigUpperLimit;
+    vector<dReal> vmax = params->config_velocity_limit_vector_;
+    vector<dReal> qmin = params->config_lower_limit_vector_;
+    vector<dReal> qmax = params->config_upper_limit_vector_;
     Interval sol = Interval(T0/T,(T0+T1)/T);
 
     for(size_t j=0; j<q0.size(); j++) {
@@ -845,7 +845,7 @@ bool ComputeLinearRampsWithConstraints(std::list<ParabolicRamp::ParabolicRampND>
     dReal delta = params->minswitchtime;
     int numdof = params->GetDOF();
     for(int i=0; i<numdof; i++) {
-        vmaxs = min(vmaxs,params->_vConfigVelocityLimit[i]/RaveFabs(dx[i]));
+        vmaxs = min(vmaxs,params->config_velocity_limit_vector_[i]/RaveFabs(dx[i]));
         amaxs = min(amaxs,params->_vConfigAccelerationLimit[i]/RaveFabs(dx[i]));
     }
 
@@ -963,7 +963,7 @@ bool ComputeLinearRampsWithConstraints2(std::list<ParabolicRamp::ParabolicRampND
         for(int j=0; j<numdof; j++) {
             amax[j]=params->_vConfigAccelerationLimit[j]*coef;
         }
-        bool res = newramp.SolveMinTimeLinear(amax,params->_vConfigVelocityLimit);
+        bool res = newramp.SolveMinTimeLinear(amax,params->config_velocity_limit_vector_);
         if(!res) {
             if(coef <= small) {
                 RAVELOG_DEBUG("Quasi-static traj failed (solvemintime), stops ComputeLinearRamps right away\n");
@@ -1007,7 +1007,7 @@ bool ComputeQuadraticRampsWithConstraints(std::list<ParabolicRamp::ParabolicRamp
     dReal mintime;
     bool solved = false;
     int numdof = params->GetDOF();
-    std::vector<dReal> amax, vmax = params->_vConfigVelocityLimit;
+    std::vector<dReal> amax, vmax = params->config_velocity_limit_vector_;
     amax.resize(numdof);
 
     // Iteratively timescales up until the time-related constraints are met
@@ -1028,11 +1028,11 @@ bool ComputeQuadraticRampsWithConstraints(std::list<ParabolicRamp::ParabolicRamp
         //RAVELOG_VERBOSE("Coef: %d\n", coef);
         for(int j=0; j<numdof; j++) {
             if(params->maxmanipspeed>0) {
-                vmax[j]=max(params->_vConfigVelocityLimit[j]*coef,max(RaveFabs(dx0[j]),RaveFabs(dx1[j])));
+                vmax[j]=max(params->config_velocity_limit_vector_[j]*coef,max(RaveFabs(dx0[j]),RaveFabs(dx1[j])));
             }
             amax[j]=params->_vConfigAccelerationLimit[j]*coef;
         }
-        mintime = ParabolicRamp::SolveMinTimeBounded(x0,dx0,x1,dx1, amax, vmax, params->_vConfigLowerLimit, params->_vConfigUpperLimit, tmpramps1d, params->_multidofinterp);
+        mintime = ParabolicRamp::SolveMinTimeBounded(x0,dx0,x1,dx1, amax, vmax, params->config_lower_limit_vector_, params->config_upper_limit_vector_, tmpramps1d, params->_multidofinterp);
         if(mintime > fOriginalTrajectorySegmentTime) {
             //RAVELOG_VERBOSE("Too long\n");
             if(coef>=1) {

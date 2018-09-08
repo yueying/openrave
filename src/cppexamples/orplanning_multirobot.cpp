@@ -58,7 +58,7 @@ public:
                 {
                     while(1) {
                         for(int i = 0; i < params->GetDOF(); ++i) {
-                            params->vgoalconfig[i] = params->_vConfigLowerLimit[i] + (params->_vConfigUpperLimit[i]-params->_vConfigLowerLimit[i])*RaveRandomFloat();
+                            params->vgoalconfig[i] = params->config_lower_limit_vector_[i] + (params->config_upper_limit_vector_[i]-params->config_lower_limit_vector_[i])*RaveRandomFloat();
                         }
                         params->_setstatefn(params->vgoalconfig);
                         if( params->_checkpathconstraintsfn(params->vgoalconfig,params->vgoalconfig,IT_OpenStart,PlannerBase::ConfigurationListPtr()) ) {

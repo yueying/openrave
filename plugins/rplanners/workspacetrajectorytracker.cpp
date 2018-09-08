@@ -67,7 +67,7 @@ Planner Parameters\n\
         // check if the parameters configuration space actually reflects the active manipulator, move to the upper and lower limits
         {
             RobotBase::RobotStateSaver saver(_robot);
-            boost::array<std::vector<dReal>*,2> testvalues = { { &parameters->_vConfigLowerLimit,&parameters->_vConfigUpperLimit}};
+            boost::array<std::vector<dReal>*,2> testvalues = { { &parameters->config_lower_limit_vector_,&parameters->config_upper_limit_vector_}};
             vector<dReal> dummyvalues;
             for(size_t i = 0; i < testvalues.size(); ++i) {
                 if( parameters->SetStateValues(*testvalues[i]) != 0 ) {

@@ -1487,8 +1487,10 @@ protected:
                 return static_cast<IkReturnAction>(retactionall|IKRA_RejectCustomFilter);
             }
         }
-        else {
-            FOREACH(itravesol, vravesols) {
+        else 
+		{
+            FOREACH(itravesol, vravesols)
+			{
                 _vsolutionindices = vsolutionindices;
                 FOREACH(it,_vsolutionindices) {
                     *it += itravesol->second<<16;

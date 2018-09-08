@@ -86,10 +86,15 @@ enum NeighborStateStatus
 class OPENRAVE_API ConstraintFilterReturn
 {
 public:
-    ConstraintFilterReturn() : _fTimeWhenInvalid(0), _returncode(0), _bHasRampDeviatedFromInterpolation(false) {
+    ConstraintFilterReturn() 
+		: _fTimeWhenInvalid(0),
+		_returncode(0), 
+		_bHasRampDeviatedFromInterpolation(false) 
+	{
     }
     /// \brief clears the data
-    inline void Clear() {
+    inline void Clear()
+	{
         _configurations.resize(0);
         _configurationtimes.resize(0);
         _invalidvalues.resize(0);
@@ -186,9 +191,9 @@ private:
             - _getstatefn
             - _neighstatefn
             - _checkpathconstraintsfn
-            - _vConfigLowerLimit
-            - _vConfigUpperLimit
-            - _vConfigVelocityLimit
+            - config_lower_limit_vector_
+            - config_upper_limit_vector_
+            - config_velocity_limit_vector_
             - _vConfigAccelerationLimit
             - _vConfigResolution
             - vinitialconfig
@@ -372,10 +377,10 @@ private:
         std::vector<dReal> _vInitialConfigVelocities, _vGoalConfigVelocities;
 
         /// \brief the absolute limits of the configuration space.
-        std::vector<dReal> _vConfigLowerLimit, _vConfigUpperLimit;
+        std::vector<dReal> config_lower_limit_vector_, config_upper_limit_vector_;
 
         /// \brief the absolute velocity limits of each DOF of the configuration space.
-        std::vector<dReal> _vConfigVelocityLimit;
+        std::vector<dReal> config_velocity_limit_vector_;
 
         /// \brief the absolute acceleration limits of each DOF of the configuration space.
         std::vector<dReal> _vConfigAccelerationLimit;

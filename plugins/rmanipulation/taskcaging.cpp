@@ -1224,8 +1224,8 @@ private:
             params->_setstatevaluesfn = boost::bind(&ConstrainedTaskData::SetState,taskdata,_1,_2);
             params->_getstatefn = boost::bind(&ConstrainedTaskData::GetState,taskdata,_1);
 
-            params->_vConfigLowerLimit = taskdata->GetLower();
-            params->_vConfigUpperLimit = taskdata->GetUpper();
+            params->config_lower_limit_vector_ = taskdata->GetLower();
+            params->config_upper_limit_vector_ = taskdata->GetUpper();
             params->_vConfigResolution = taskdata->GetResolution();
 
             vector<dReal> vtargetinit;

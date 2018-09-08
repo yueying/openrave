@@ -116,7 +116,7 @@ public:
 
         void SetConfigVelocityLimit(object o)
         {
-            _paramswrite->_vConfigVelocityLimit = ExtractArray<dReal>(o);
+            _paramswrite->config_velocity_limit_vector_ = ExtractArray<dReal>(o);
         }
 
         void SetConfigAccelerationLimit(object o)
@@ -365,7 +365,7 @@ void init_openravepy_planner()
         .def("SetInitialConfig",&PyPlannerBase::PyPlannerParameters::SetInitialConfig,args("values"),"sets PlannerParameters::vinitialconfig")
         .def("SetInitialConfigVelocities",&PyPlannerBase::PyPlannerParameters::SetInitialConfigVelocities,args("velocities"),"sets PlannerParameters::_vInitialConfigVelocities")
         .def("SetGoalConfigVelocities",&PyPlannerBase::PyPlannerParameters::SetGoalConfigVelocities,args("velocities"),"sets PlannerParameters::_vGoalConfigVelocities")
-        .def("SetConfigVelocityLimit",&PyPlannerBase::PyPlannerParameters::SetConfigVelocityLimit,args("velocities"),"sets PlannerParameters::_vConfigVelocityLimit")
+        .def("SetConfigVelocityLimit",&PyPlannerBase::PyPlannerParameters::SetConfigVelocityLimit,args("velocities"),"sets PlannerParameters::config_velocity_limit_vector_")
         .def("SetConfigAccelerationLimit",&PyPlannerBase::PyPlannerParameters::SetConfigAccelerationLimit,args("accelerations"),"sets PlannerParameters::_vConfigAccelerationLimit")
         .def("SetConfigResolution",&PyPlannerBase::PyPlannerParameters::SetConfigResolution,args("resolutions"),"sets PlannerParameters::_vConfigResolution")
         .def("SetMaxIterations",&PyPlannerBase::PyPlannerParameters::SetMaxIterations,args("maxiterations"),"sets PlannerParameters::_nMaxIterations")

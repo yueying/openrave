@@ -68,7 +68,7 @@ Uses the Rapidly-Exploring Random Trees Algorithm.\n\
         _vecInitialNodes.resize(0);
         _sampleConfig.resize(params->GetDOF());
         // TODO perhaps distmetricfn should take into number of revolutions of circular joints
-        _treeForward.Init(shared_planner(), params->GetDOF(), params->_distmetricfn, params->step_length_, params->_distmetricfn(params->_vConfigLowerLimit, params->_vConfigUpperLimit));
+        _treeForward.Init(shared_planner(), params->GetDOF(), params->_distmetricfn, params->step_length_, params->_distmetricfn(params->config_lower_limit_vector_, params->config_upper_limit_vector_));
         std::vector<dReal> vinitialconfig(params->GetDOF());
         for(size_t index = 0; index < params->vinitialconfig.size(); index += params->GetDOF()) {
             std::copy(params->vinitialconfig.begin()+index,params->vinitialconfig.begin()+index+params->GetDOF(),vinitialconfig.begin());
@@ -309,7 +309,7 @@ Some python code to display data::\n\
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         // TODO perhaps distmetricfn should take into number of revolutions of circular joints
-        _treeBackward.Init(shared_planner(), _parameters->GetDOF(), _parameters->_distmetricfn, _parameters->step_length_, _parameters->_distmetricfn(_parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit));
+        _treeBackward.Init(shared_planner(), _parameters->GetDOF(), _parameters->_distmetricfn, _parameters->step_length_, _parameters->_distmetricfn(_parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_));
 
         //read in all goals
         if( (_parameters->vgoalconfig.size() % _parameters->GetDOF()) != 0 ) {
@@ -611,8 +611,8 @@ Some python code to display data::\n\
         goalpath.length = 0;
         vector<dReal> vivel(dof,1.0);
         for(size_t i = 0; i < vivel.size(); ++i) {
-            if( _parameters->_vConfigVelocityLimit.at(i) != 0 ) {
-                vivel[i] = 1/_parameters->_vConfigVelocityLimit.at(i);
+            if( _parameters->config_velocity_limit_vector_.at(i) != 0 ) {
+                vivel[i] = 1/_parameters->config_velocity_limit_vector_.at(i);
             }
         }
 

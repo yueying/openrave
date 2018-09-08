@@ -669,13 +669,15 @@ void RobotBase::SetActiveDOFValues(const std::vector<dReal>& values, uint32_t bC
 
 void RobotBase::GetActiveDOFValues(std::vector<dReal>& values) const
 {
-    if( active_dof_num_ < 0 ) {
+    if( active_dof_num_ < 0 ) 
+	{
         GetDOFValues(values);
         return;
     }
 
     values.resize(GetActiveDOF());
-    if( values.size() == 0 ) {
+    if( values.size() == 0 ) 
+	{
         return;
     }
     vector<dReal>::iterator itvalues = values.begin();
