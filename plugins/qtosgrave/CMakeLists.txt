@@ -12,8 +12,10 @@ endif()
 INCLUDE(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSGHelper.cmake)
 #include(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSG.cmake)
 find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgUtil osgQt osgGA osgFX osgText osgViewer osgManipulator)
+find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgGA osgFX osgText osgViewer osgManipulator)
 
 FIND_PACKAGE(Qt5 QUIET COMPONENTS Core Xml OpenGL Gui Widgets)
+if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND)
 IF( NOT Qt5_FOUND)
 	ESSAGE("Qt5 not found. Install it and set Qt5_DIR accordingly")
 	IF (WIN32)
@@ -27,9 +29,7 @@ endif()
 
 #if (QT_FOUND AND QT_QTCORE_FOUND AND QT_QTGUI_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND AND OSGQT_FOUND)
   message(STATUS "Detected Qt/OSG GUI, making plugin")
-
-  include_directories(${QT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
-  message(STATUS "QT dirs: " ${QT_INCLUDE_DIR} " OPENGL: " ${QT_QTOPENGL_INCLUDE_DIR})
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
   include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
   include_directories(${OSGQT_INCLUDE_DIR})
 
@@ -46,6 +46,8 @@ endif()
   # generate rules for building source files from the resources
   QT5_ADD_RESOURCES(QTOSG_RCC_SRCS ${QTOSG_RCCS})
   set(CMAKE_AUTOMOC ON)
+  qt5_add_resources(QTOSG_RCC_SRCS ${QTOSG_RCCS})
+  qt5_wrap_cpp(QTOSG_MOC_SRCS ${QTOSG_MOCS})
   ADD_DEFINITIONS(-DQT_DISABLE_DEPRECATED_BEFORE=0)
   include( ${QT_USE_FILE} )
   #qt4_wrap_cpp(QTOSG_MOC_SRCS ${QTOSG_MOCS})
@@ -76,7 +78,8 @@ endif()
   message(STATUS "Link libraries: ${extLIBS}")
 
   # build sources, moc'd sources, and rcc'd sources
-  add_library(qtosgrave SHARED ${QTOSG_SRCS} ${QTOSG_MOC_SRCS} ${QTOSG_RCC_SRCS})  
+
+  add_library(qtosgrave SHARED ${QTOSG_SRCS} ${QTOSG_MOC_SRCS} ${QTOSG_RCC_SRCS})
   target_link_libraries (qtosgrave ${extLIBS} libopenrave)
 
   #if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)

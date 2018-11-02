@@ -49,26 +49,26 @@ namespace OpenRAVE
 
 		std::string model_type; //!< the type of actuator it is. Usually the motor model name is ok, but can include other info like gear box, etc
 		//@{ from motor data sheet
-		dReal assigned_power_rating; //!< the nominal power the electric motor can safely produce. Units are **Mass * Distance虏 * Time-鲁**
-		dReal max_speed; //!< the maximum speed of the motor **Time-鹿**
-		dReal no_load_speed; //!< specifies the speed of the motor powered by the nominal voltage when the motor provides zero torque. Units are **Time-鹿**.
-		dReal stall_torque; //!< the maximum torque achievable by the motor at the nominal voltage. This torque is achieved at zero velocity (stall). Units are **Mass * Distance * Time-虏**.
-		dReal max_instantaneous_torque; //!< the maximum instantenous torque achievable by the motor when voltage <= nominal voltage. Motor going between nominal_torque and max_instantaneous_torque can overheat, so should not be driven at it for a long time. Units are **Mass * Distance * Time-虏**.
+		dReal assigned_power_rating; //!< the nominal power the electric motor can safely produce. Units are **Mass * Distance�* Time-�*
+		dReal max_speed; //!< the maximum speed of the motor **Time-�*
+		dReal no_load_speed; //!< specifies the speed of the motor powered by the nominal voltage when the motor provides zero torque. Units are **Time-�*.
+		dReal stall_torque; //!< the maximum torque achievable by the motor at the nominal voltage. This torque is achieved at zero velocity (stall). Units are **Mass * Distance * Time-�*.
+		dReal max_instantaneous_torque; //!< the maximum instantenous torque achievable by the motor when voltage <= nominal voltage. Motor going between nominal_torque and max_instantaneous_torque can overheat, so should not be driven at it for a long time. Units are **Mass * Distance * Time-�*.
 		std::vector<std::pair<dReal, dReal> > nominal_speed_torque_points; //!< the speed and torque achievable when the motor is powered by the nominal voltage. Given the speed, the max torque can be computed. If not specified, the speed-torque curve will just be a line connecting the no load speed and the stall torque directly (ideal). Should be ordered from increasing speed.
 		std::vector<std::pair<dReal, dReal> > max_speed_torque_points; //!< the speed and torque achievable when the motor is powered by the max voltage/current. Given the speed, the max torque can be computed. If not specified, the speed-torque curve will just be a line connecting the no load speed and the max_instantaneous_torque directly (ideal). Should be ordered from increasing speed.
-		dReal nominal_torque; //!< the maximum torque the motor can provide continuously without overheating. Units are **Mass * Distance * Time-虏**.
-		dReal rotor_inertia; //!< the inertia of the rotating element about the axis of rotation. Units are **Mass * Distance虏**.
-		dReal torque_constant; //!< specifies the proportion relating current to torque. Units are **Mass * Distance * Time-鹿 * Charge-鹿**.
-		dReal nominal_voltage; //!< the nominal voltage the electric motor can safely produce. Units are **Mass * Distance虏 * Time-虏 * Charge**.
-		dReal speed_constant; //!< the constant of proportionality relating speed to voltage. Units are **Mass-鹿 * Distance-虏 * Time * Charge-鹿**.
-		dReal starting_current; //!< specifies the current through the motor at zero velocity, equal to the nominal voltage divided by the terminal resistance. Also called the stall current.  Units are **Time-鹿 * Charge**.
-		dReal terminal_resistance; //!< the resistance of the motor windings. Units are **Mass * Distance虏 * Time-鹿 * Charge-虏**.
+		dReal nominal_torque; //!< the maximum torque the motor can provide continuously without overheating. Units are **Mass * Distance * Time-�*.
+		dReal rotor_inertia; //!< the inertia of the rotating element about the axis of rotation. Units are **Mass * Distance�*.
+		dReal torque_constant; //!< specifies the proportion relating current to torque. Units are **Mass * Distance * Time-�* Charge-�*.
+		dReal nominal_voltage; //!< the nominal voltage the electric motor can safely produce. Units are **Mass * Distance�* Time-�* Charge**.
+		dReal speed_constant; //!< the constant of proportionality relating speed to voltage. Units are **Mass-�* Distance-�* Time * Charge-�*.
+		dReal starting_current; //!< specifies the current through the motor at zero velocity, equal to the nominal voltage divided by the terminal resistance. Also called the stall current.  Units are **Time-�* Charge**.
+		dReal terminal_resistance; //!< the resistance of the motor windings. Units are **Mass * Distance�* Time-�* Charge-�*.
 		//@}
 
 		//@{ depending on gear box
 		dReal gear_ratio; //!< specifies the ratio between the input speed of the transmission (the speed of the motor shaft) and the output speed of the transmission.
-		dReal coloumb_friction; //!< static coloumb friction on each joint after the gear box. Units are **Mass * Distance * Time-虏**.
-		dReal viscous_friction; //!< viscous friction on each joint after the gear box. Units are **Mass * Distance * Time-虏**.
+		dReal coloumb_friction; //!< static coloumb friction on each joint after the gear box. Units are **Mass * Distance * Time-�*.
+		dReal viscous_friction; //!< viscous friction on each joint after the gear box. Units are **Mass * Distance * Time-�*.
 		//@}
 	};
 
@@ -800,7 +800,13 @@ namespace OpenRAVE
 			boost::array<dReal, 3> _vmaxjerk;                 //!< the maximum jerk (rad/s^3) of the joint
 			boost::array<dReal, 3> _vmaxtorque;               //!< maximum torque (N.m, kg m^2/s^2) that should be applied to the joint. Usually this is computed from the motor nominal torque and gear ratio. Ignore if values are 0.
 			boost::array<dReal, 3> _vmaxinertia;             //!< maximum inertia (kg m^2) that the joint can exhibit. Usually this is set for safety reasons. Ignore if values are 0.
+       
+        boost::array<dReal,3> _vhardmaxaccel;            ///< the hard maximum acceleration (rad/s^2), robot cannot exceed this acceleration. used for verification checking
+       
+        boost::array<dReal,3> _vhardmaxjerk;             ///< the hard maximum jerk (rad/s^3), robot cannot exceed this jerk. used for verification checking
 			boost::array<dReal, 3> _vweights;                //!< the weights of the joint for computing distance metrics.
+   
+        boost::array<dReal,3> _vweights;                ///< the weights of the joint for computing distance metrics.
 
 			/// \brief internal offset parameter that determines the branch the angle centers on
 			///
@@ -872,10 +878,23 @@ namespace OpenRAVE
 				return _info._vmaxjerk[iaxis];
 			}
 
-			//!< \brief gets the max instantaneous torque of the joint
+        inline dReal GetHardMaxVel(int iaxis=0) const {
+            return _info._vhardmaxvel[iaxis];
+        }
+        inline dReal GetHardMaxAccel(int iaxis=0) const {
+            return _info._vhardmaxaccel[iaxis];
+        }
+        inline dReal GetHardMaxJerk(int iaxis=0) const {
+            return _info._vhardmaxjerk[iaxis];
+        }
+
 			///
 			/// If _infoElectricMotor is filled, the will compute the max instantaneous torque depending on the current speed of the joint.
 			dReal GetMaxTorque(int iaxis = 0) const;
+        ///< \brief gets the max instantaneous torque of the joint
+        ///
+        /// If _infoElectricMotor is filled, the will compute the max instantaneous torque depending on the current speed of the joint.
+        dReal GetMaxTorque(int iaxis=0) const;
 
 			//!< \brief gets the max instantaneous torque limits of the joint
 			///
@@ -1048,6 +1067,42 @@ namespace OpenRAVE
 
 			/// \brief \see GetJerkLimits
 			virtual void SetJerkLimits(const std::vector<dReal>& vmax);
+
+        /** \brief Returns the hard max velocities of the joint
+
+            \param[out] the max vel
+            \param[in] bAppend if true will append to the end of the vector instead of erasing it
+         */
+        virtual void GetHardVelocityLimits(std::vector<dReal>& vmax, bool bAppend=false) const;
+
+        virtual dReal GetHardVelocityLimit(int iaxis=0) const;
+
+        /// \brief \see GetHardVelocityLimits
+        virtual void SetHardVelocityLimits(const std::vector<dReal>& vmax);
+
+        /** \brief Returns the hard max accelerations of the joint
+
+            \param[out] the max accel
+            \param[in] bAppend if true will append to the end of the vector instead of erasing it
+         */
+        virtual void GetHardAccelerationLimits(std::vector<dReal>& vmax, bool bAppend=false) const;
+
+        virtual dReal GetHardAccelerationLimit(int iaxis=0) const;
+
+        /// \brief \see GetHardAccelerationLimits
+        virtual void SetHardAccelerationLimits(const std::vector<dReal>& vmax);
+
+        /** \brief Returns the hard max jerks of the joint
+
+            \param[out] the max jerk
+            \param[in] bAppend if true will append to the end of the vector instead of erasing it
+         */
+        virtual void GetHardJerkLimits(std::vector<dReal>& vmax, bool bAppend=false) const;
+
+        virtual dReal GetHardJerkLimit(int iaxis=0) const;
+
+        /// \brief \see GetHardJerkLimits
+        virtual void SetHardJerkLimits(const std::vector<dReal>& vmax);
 
 			/** \brief Returns the max torques of the joint
 
@@ -1317,6 +1372,7 @@ namespace OpenRAVE
 			KinBodyPtr pbody; //!< pointer to the body. if using this, make sure the environment is locked.
 			std::vector<Transform> vectrans; //!< \see KinBody::GetLinkTransformations
 			std::vector<dReal> jointvalues; //!< \see KinBody::GetDOFValues
+        std::vector<uint8_t> vLinkEnableStates; ///< \see KinBody::GetLinkEnableStates
 			std::string strname;         //!< \see KinBody::GetName
 			std::string uri; //!< \see KinBody::GetURI
 			int updatestamp; //!< \see KinBody::GetUpdateStamp
@@ -1563,6 +1619,21 @@ namespace OpenRAVE
 		/// \param dofindices the dof indices to return the values for. If empty, will compute for all the dofs
 		virtual void GetDOFJerkLimits(std::vector<dReal>& maxjerks, const std::vector<int>& dofindices = std::vector<int>()) const;
 
+    /// \brief Returns the hard max velocity for each DOF
+    ///
+    /// \param dofindices the dof indices to return the values for. If empty, will compute for all the dofs
+    virtual void GetDOFHardVelocityLimits(std::vector<dReal>& maxvels, const std::vector<int>& dofindices = std::vector<int>()) const;
+
+    /// \brief Returns the hard max acceleration for each DOF
+    ///
+    /// \param dofindices the dof indices to return the values for. If empty, will compute for all the dofs
+    virtual void GetDOFHardAccelerationLimits(std::vector<dReal>& maxaccels, const std::vector<int>& dofindices = std::vector<int>()) const;
+
+    /// \brief Returns the hard max jerk for each DOF
+    ///
+    /// \param dofindices the dof indices to return the values for. If empty, will compute for all the dofs
+    virtual void GetDOFHardJerkLimits(std::vector<dReal>& maxjerks, const std::vector<int>& dofindices = std::vector<int>()) const;
+
 		/// \brief Returns the max torque for each DOF
 		virtual void GetDOFTorqueLimits(std::vector<dReal>& maxaccelerations) const;
 
@@ -1593,6 +1664,15 @@ namespace OpenRAVE
 
 		/// \brief \see GetDOFJerkLimits
 		virtual void SetDOFJerkLimits(const std::vector<dReal>& maxlimits);
+
+    /// \brief \see GetDOFHardVelocityLimits
+    virtual void SetDOFHardVelocityLimits(const std::vector<dReal>& maxlimits);
+
+    /// \brief \see GetDOFHardAccelerationLimits
+    virtual void SetDOFHardAccelerationLimits(const std::vector<dReal>& maxlimits);
+
+    /// \brief \see GetDOFHardJerkLimits
+    virtual void SetDOFHardJerkLimits(const std::vector<dReal>& maxlimits);
 
 		/// \brief \see GetDOFTorqueLimits
 		virtual void SetDOFTorqueLimits(const std::vector<dReal>& maxlimits);
@@ -1650,11 +1730,11 @@ namespace OpenRAVE
 
 			\ja \brief 2銇ゃ伄銉兂銈倰绻嬨亹闁㈢瘈銇渶鐭祵璺倰瑷堢畻銇欍倠锛
 
-			鍙楀嫊鐨勩仾闁㈢瘈銇紝浣嶇疆闁總銇屽浐瀹氥仌銈屻仸銇勩倠銉兂銈倰瑕嬨仱銇戙倠銇熴倎銇銇广倝銈屻仸銇勩倠
-			鍙楀嫊鐨勩仾闁㈢瘈銈傝繑銇曘倢銈嬪彲鑳姐亴銇傘倠銇嬨倝锛屾敞鎰忋仚銈嬪繀瑕併亴銇傘倞銇俱仚锛
+			鍙楀嫊鐨勩仾闁㈢瘈銇紝浣嶇疆闁總銇屽浐瀹氥仌銈屻仸銇勩倠銉兂銈倰瑕嬨仱銇戙倠銇熴倎銇銇广倝銈屻仸銇勩�
+			鍙楀嫊鐨勩仾闁㈢瘈銈傝繑銇曘倢銈嬪彲鑳姐亴銇傘倠銇嬨倝锛屾敞鎰忋仚銈嬪繀瑕併亴銇傘倞銇俱仚�
 			\param[in] linkindex1 濮嬬偣銉兂銈偆銉炽儑銉冦偗銈
 			\param[in] linkindex2 绲傜偣銉兂銈偆銉炽儑銉冦偗銈
-			\param[out] vjoints銆€闁㈢瘈銇祵璺
+			\param[out] vjoints銆€闁㈢瘈銇祵�
 			\return 绲岃矾銇屽瓨鍦ㄣ仐銇︺亜銈嬪牬鍚堬紝true銈掕繑銇欙紟
 		 */
 		virtual bool GetChain(int linkindex1, int linkindex2, std::vector<JointPtr>& vjoints) const;

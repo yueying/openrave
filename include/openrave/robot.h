@@ -779,6 +779,9 @@ namespace OpenRAVE
 		virtual void GetActiveDOFVelocityLimits(std::vector<dReal>& v) const;
 		virtual void GetActiveDOFAccelerationLimits(std::vector<dReal>& v) const;
 		virtual void GetActiveDOFJerkLimits(std::vector<dReal>& v) const;
+    virtual void GetActiveDOFHardVelocityLimits(std::vector<dReal>& v) const;
+    virtual void GetActiveDOFHardAccelerationLimits(std::vector<dReal>& v) const;
+    virtual void GetActiveDOFHardJerkLimits(std::vector<dReal>& v) const;
 		virtual void GetActiveDOFMaxVel(std::vector<dReal>& v) const {
 			return GetActiveDOFVelocityLimits(v);
 		}
@@ -787,6 +790,15 @@ namespace OpenRAVE
 		}
 		virtual void GetActiveDOFMaxJerk(std::vector<dReal>& v) const {
 			return GetActiveDOFJerkLimits(v);
+    }
+    virtual void GetActiveDOFHardMaxVel(std::vector<dReal>& v) const {
+        return GetActiveDOFHardVelocityLimits(v);
+    }
+    virtual void GetActiveDOFHardMaxAccel(std::vector<dReal>& v) const {
+        return GetActiveDOFHardAccelerationLimits(v);
+    }
+    virtual void GetActiveDOFHardMaxJerk(std::vector<dReal>& v) const {
+        return GetActiveDOFHardJerkLimits(v);
 		}
 
 		/// computes the configuration difference q1-q2 and stores it in q1. Takes into account joint limits and circular joints
