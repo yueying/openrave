@@ -2761,7 +2761,7 @@ protected:
     SpaceSamplerBasePtr _logginguniformsampler; ///< used for logging, seed is random
     ConstraintFilterReturnPtr _constraintreturn;
     MyRampFeasibilityChecker _feasibilitychecker;
-    boost::shared_ptr<ManipConstraintChecker> _manipconstraintchecker;
+    std::shared_ptr<ManipConstraintChecker> _manipconstraintchecker;
 
     //@{ cache
     ParabolicRamp::DynamicPath _cacheintermediate, _cacheintermediate2, _cachedynamicpath;

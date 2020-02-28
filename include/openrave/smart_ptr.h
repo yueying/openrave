@@ -1,4 +1,4 @@
-#ifndef OPENRAVE_SMART_PTR_H
+﻿#ifndef OPENRAVE_SMART_PTR_H
 #define OPENRAVE_SMART_PTR_H
 
 #define OPENRAVE_UNIQUE_PTR boost::unique_ptr

@@ -21,12 +21,12 @@
 
 namespace OpenRAVE
 {
-static boost::shared_ptr<DAE> s_dae;
+static std::shared_ptr<DAE> s_dae;
 static boost::mutex s_daemutex;
 static bool s_daedestroycallback=false; // true if we already registered with RaveAddCallbackForDestroy
 
 /// \brief should have s_daemutex locked before calling
-void SetGlobalDAE(boost::shared_ptr<DAE> newdae)
+void SetGlobalDAE(std::shared_ptr<DAE> newdae)
 {
     RAVELOG_VERBOSE("resetting global collada DAE\n");
     s_dae = newdae;
@@ -40,7 +40,7 @@ void ResetGlobalDAEWithLock()
 }
 
 /// \brief should have s_daemutex locked before calling
-boost::shared_ptr<DAE> GetGlobalDAE(bool resetdefaults)
+std::shared_ptr<DAE> GetGlobalDAE(bool resetdefaults)
 {
     if( !s_daedestroycallback ) {
         RaveAddCallbackForDestroy(ResetGlobalDAEWithLock);

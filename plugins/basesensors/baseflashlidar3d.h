@@ -23,7 +23,7 @@ protected:
     class BaseFlashLidar3DXMLReader : public BaseXMLReader
     {
 public:
-        BaseFlashLidar3DXMLReader(boost::shared_ptr<BaseFlashLidar3DSensor> psensor) : _psensor(psensor) {
+        BaseFlashLidar3DXMLReader(std::shared_ptr<BaseFlashLidar3DSensor> psensor) : _psensor(psensor) {
         }
 
         virtual ProcessElement startElement(const std::string& name, const AttributesList& atts)
@@ -109,7 +109,7 @@ public:
 
 protected:
         BaseXMLReaderPtr _pcurreader;
-        boost::shared_ptr<BaseFlashLidar3DSensor> _psensor;
+        std::shared_ptr<BaseFlashLidar3DSensor> _psensor;
         stringstream ss;
     };
 
@@ -358,7 +358,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         SensorBase::Clone(preference,cloningoptions);
-        boost::shared_ptr<BaseFlashLidar3DSensor const> r = boost::dynamic_pointer_cast<BaseFlashLidar3DSensor const>(preference);
+        std::shared_ptr<BaseFlashLidar3DSensor const> r = boost::dynamic_pointer_cast<BaseFlashLidar3DSensor const>(preference);
         *_pgeom = *r->_pgeom;
         _vColor = r->_vColor;
         std::copy(&r->_iKK[0],&r->_iKK[4],&_iKK[0]);
@@ -422,8 +422,8 @@ protected:
         }
     }
 
-    boost::shared_ptr<BaseFlashLidar3DGeom> _pgeom;
-    boost::shared_ptr<LaserSensorData> _pdata;
+    std::shared_ptr<BaseFlashLidar3DGeom> _pgeom;
+    std::shared_ptr<LaserSensorData> _pdata;
     vector<int> _databodyids;     ///< if non 0, for each point in _data, specifies the body that was hit
     CollisionReportPtr _report;
     // more geom stuff

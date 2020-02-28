@@ -80,7 +80,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     //uint64_t starttime1 = utils::GetMicroTime();
     // always ignore links that are statically attached to plink (ie assume they are always colliding with the body)
 
-    std::vector<boost::shared_ptr<Link> > vattachedlinks;
+    std::vector<std::shared_ptr<Link> > vattachedlinks;
     plink->GetRigidlyAttachedLinks(vattachedlinks);
     std::set<int> setBodyLinksToIgnore;
     FOREACHC(itlink, vattachedlinks) {

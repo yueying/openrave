@@ -58,7 +58,7 @@ void IkReturn::Clear()
     //_reports.resize(0); // TODO
 }
 
-class CustomIkSolverFilterData : public boost::enable_shared_from_this<CustomIkSolverFilterData>, public UserData
+class CustomIkSolverFilterData : public std::enable_shared_from_this<CustomIkSolverFilterData>, public UserData
 {
 public:
     CustomIkSolverFilterData(int32_t priority, const IkSolverBase::IkFilterCallbackFn& filterfn, IkSolverBasePtr iksolver) : _priority(priority), _filterfn(filterfn), _iksolverweak(iksolver) {
@@ -76,9 +76,9 @@ public:
     std::list<UserDataWeakPtr>::iterator _iterator;
 };
 
-typedef boost::shared_ptr<CustomIkSolverFilterData> CustomIkSolverFilterDataPtr;
+typedef std::shared_ptr<CustomIkSolverFilterData> CustomIkSolverFilterDataPtr;
 
-class IkSolverFinishCallbackData : public boost::enable_shared_from_this<IkSolverFinishCallbackData>, public UserData
+class IkSolverFinishCallbackData : public std::enable_shared_from_this<IkSolverFinishCallbackData>, public UserData
 {
 public:
     IkSolverFinishCallbackData(const IkSolverBase::IkFinishCallbackFn& finishfn, IkSolverBasePtr iksolver) : _finishfn(finishfn), _iksolverweak(iksolver) {
@@ -95,7 +95,7 @@ public:
     std::list<UserDataWeakPtr>::iterator _iterator;
 };
 
-typedef boost::shared_ptr<IkSolverFinishCallbackData> IkSolverFinishCallbackDataPtr;
+typedef std::shared_ptr<IkSolverFinishCallbackData> IkSolverFinishCallbackDataPtr;
 
 bool CustomIkSolverFilterDataCompare(UserDataPtr data0, UserDataPtr data1)
 {
@@ -105,10 +105,10 @@ bool CustomIkSolverFilterDataCompare(UserDataPtr data0, UserDataPtr data1)
 bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dReal>& q0, int filteroptions, IkReturnPtr ikreturn)
 {
     if( !ikreturn ) {
-        return Solve(param,q0,filteroptions,boost::shared_ptr< vector<dReal> >());
+        return Solve(param,q0,filteroptions,std::shared_ptr< vector<dReal> >());
     }
     ikreturn->Clear();
-    boost::shared_ptr< vector<dReal> > psolution(&ikreturn->_vsolution, utils::null_deleter());
+    std::shared_ptr< vector<dReal> > psolution(&ikreturn->_vsolution, utils::null_deleter());
     if( !Solve(param,q0,filteroptions,psolution) ) {
         ikreturn->_action = IKRA_Reject;
         return false;
@@ -136,10 +136,10 @@ bool IkSolverBase::SolveAll(const IkParameterization& param, int filteroptions, 
 bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dReal>& q0, const std::vector<dReal>& vFreeParameters, int filteroptions, IkReturnPtr ikreturn)
 {
     if( !ikreturn ) {
-        return Solve(param,q0,vFreeParameters,filteroptions,boost::shared_ptr< vector<dReal> >());
+        return Solve(param,q0,vFreeParameters,filteroptions,std::shared_ptr< vector<dReal> >());
     }
     ikreturn->Clear();
-    boost::shared_ptr< vector<dReal> > psolution(&ikreturn->_vsolution, utils::null_deleter());
+    std::shared_ptr< vector<dReal> > psolution(&ikreturn->_vsolution, utils::null_deleter());
     if( !Solve(param,q0,vFreeParameters,filteroptions,psolution) ) {
         ikreturn->_action = IKRA_Reject;
         return false;

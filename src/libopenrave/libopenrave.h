@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -287,7 +287,7 @@ void CallGetStateFns(const std::vector< std::pair<PlannerBase::PlannerParameters
 void subtractstates(std::vector<dReal>& q1, const std::vector<dReal>& q2);
 
 /// \brief The information of a currently grabbed body.
-class Grabbed : public UserData, public boost::enable_shared_from_this<Grabbed>
+class Grabbed : public UserData, public std::enable_shared_from_this<Grabbed>
 {
 public:
     Grabbed(KinBodyPtr pgrabbedbody, KinBody::LinkPtr plinkrobot) : _pgrabbedbody(pgrabbedbody), _plinkrobot(plinkrobot) {
@@ -330,8 +330,8 @@ private:
     std::map<KinBody::LinkConstPtr, int> _mapLinkIsNonColliding; // the collision state for each link at the time the body was grabbed.
 };
 
-typedef boost::shared_ptr<Grabbed> GrabbedPtr;
-typedef boost::shared_ptr<Grabbed const> GrabbedConstPtr;
+typedef std::shared_ptr<Grabbed> GrabbedPtr;
+typedef std::shared_ptr<Grabbed const> GrabbedConstPtr;
 
 /// -1 v1 is smaller than v2
 // 0 two vectors are equivalent

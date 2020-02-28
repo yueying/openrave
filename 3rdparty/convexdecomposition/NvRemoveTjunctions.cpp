@@ -61,7 +61,7 @@ NvRemoveTjunctions.cpp : A code snippet to remove tjunctions from a triangle mes
 #ifdef USE_EXT_HASH_MAP
 #include <ext/hash_map>
 #else
-#include <hash_map>
+#include <unordered_map>
 #endif
 #include "NvUserMemAlloc.h"
 #include "NvHashMap.h"

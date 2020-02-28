@@ -114,7 +114,7 @@ public:
             if( robot->GetActiveConfigurationSpecification() != ptraj->GetConfigurationSpecification() ) {
                 ptraj->Init(robot->GetActiveConfigurationSpecification());
             }
-            boost::shared_ptr<MoveUnsync> pgoalfn(new MoveUnsync());
+            std::shared_ptr<MoveUnsync> pgoalfn(new MoveUnsync());
             pgoalfn->thresh = 0;
             pgoalfn->vhandjoints = vhandjoints;
             pgoalfn->vhandgoal = vhandgoal;
@@ -135,7 +135,7 @@ public:
                 return true;
             }
 
-            boost::shared_ptr<PlannerBase> planner(RaveCreatePlanner(penv,pplannername));
+            std::shared_ptr<PlannerBase> planner(RaveCreatePlanner(penv,pplannername));
             if( !planner ) {
                 RAVELOG_WARN(str(boost::format("failed to find planner %s\n")%pplannername));
                 return false;
@@ -343,7 +343,7 @@ protected:
         boost::numeric::ublas::matrix<T> _J, _Jt, _invJJt, _invJ, _error, _qdelta;
     };
 
-    static bool SetActiveTrajectory(RobotBasePtr robot, TrajectoryBasePtr pActiveTraj, bool bExecute, const string& strsavetraj, boost::shared_ptr<ostream> pout,dReal fMaxVelMult=1)
+    static bool SetActiveTrajectory(RobotBasePtr robot, TrajectoryBasePtr pActiveTraj, bool bExecute, const string& strsavetraj, std::shared_ptr<ostream> pout,dReal fMaxVelMult=1)
     {
         if( pActiveTraj->GetNumWaypoints() == 0 ) {
             return false;

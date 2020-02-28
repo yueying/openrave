@@ -138,7 +138,7 @@ public:
         }
         std::string type, name;
     };
-    typedef boost::shared_ptr<InterfaceType> InterfaceTypePtr;
+    typedef std::shared_ptr<InterfaceType> InterfaceTypePtr;
 
     /// \brief bindings for instance models
     class InstanceModelBinding
@@ -205,7 +205,7 @@ public:
 public:
         KinBody::LinkPtr _link;
         domNodeRef _node;
-        boost::shared_ptr<daeURI> _nodeurifromphysics; ///< node URL from instance_rigid_body
+        std::shared_ptr<daeURI> _nodeurifromphysics; ///< node URL from instance_rigid_body
         domLinkRef _domlink;
         domInstance_rigid_bodyRef _irigidbody;
         domRigid_bodyRef _rigidbody;
@@ -279,7 +279,7 @@ public:
         // the comments of GetGlobalDAE() in OpenRAVE for more details
 #if LIBXML_VERSION >= 20900
         if (_bResetGlobalDae) {
-            SetGlobalDAE(boost::shared_ptr<DAE>());
+            SetGlobalDAE(std::shared_ptr<DAE>());
         }
 #endif
     }
@@ -768,7 +768,7 @@ public:
     /// \param articulatedSystemId If not empty, will extract the first articulated_system whose id matches articulatedSystemId. If empty, will extract the first articulated system found.
     bool Extract(RobotBasePtr& probot, const std::string& articulatedSystemId=std::string())
     {
-        std::list< pair<domInstance_kinematics_modelRef, boost::shared_ptr<KinematicsSceneBindings> > > listPossibleBodies;
+        std::list< pair<domInstance_kinematics_modelRef, std::shared_ptr<KinematicsSceneBindings> > > listPossibleBodies;
         domCOLLADA::domSceneRef allscene = _dom->getScene();
         if( !allscene ) {
             return false;
@@ -803,7 +803,7 @@ public:
             if (!kscene) {
                 continue;
             }
-            boost::shared_ptr<KinematicsSceneBindings> bindings(new KinematicsSceneBindings());
+            std::shared_ptr<KinematicsSceneBindings> bindings(new KinematicsSceneBindings());
             _ExtractKinematicsVisualBindings(allscene->getInstance_visual_scene(),kiscene,*bindings);
             _ExtractPhysicsBindings(allscene,*bindings);
             for(size_t ias = 0; ias < kscene->getInstance_articulated_system_array().getCount(); ++ias) {
@@ -891,7 +891,7 @@ public:
             }
         }
 
-        std::list< pair<domInstance_kinematics_modelRef, boost::shared_ptr<KinematicsSceneBindings> > > listPossibleBodies;
+        std::list< pair<domInstance_kinematics_modelRef, std::shared_ptr<KinematicsSceneBindings> > > listPossibleBodies;
         bool bSuccess = false;
         //  parse each instance kinematics scene for the first available model
         for (size_t iscene = 0; iscene < allscene->getInstance_kinematics_scene_array().getCount(); iscene++) {
@@ -900,7 +900,7 @@ public:
             if (!kscene) {
                 continue;
             }
-            boost::shared_ptr<KinematicsSceneBindings> bindings(new KinematicsSceneBindings());
+            std::shared_ptr<KinematicsSceneBindings> bindings(new KinematicsSceneBindings());
             _ExtractKinematicsVisualBindings(allscene->getInstance_visual_scene(),kiscene,*bindings);
             _ExtractPhysicsBindings(allscene,*bindings);
             for(size_t ias = 0; ias < kscene->getInstance_articulated_system_array().getCount(); ++ias) {
@@ -2147,7 +2147,7 @@ public:
 
                     bool joint_locked = false;     // if locked, joint angle is static
                     bool has_soft_limits = false, has_hard_limits = false;
-                    boost::shared_ptr<uint8_t> is_circular;
+                    std::shared_ptr<uint8_t> is_circular;
 
                     if (!!kinematics_axis_info) {
                         // contains the soft controller limits
@@ -5500,7 +5500,7 @@ private:
         return 1;
     }
 
-    boost::shared_ptr<DAE> _dae;
+    std::shared_ptr<DAE> _dae;
     domCOLLADA* _dom;
     EnvironmentBasePtr _penv;
     dReal _fGlobalScale;

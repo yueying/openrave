@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -66,15 +66,15 @@ public:
 
         list<OpenRAVE::GraphHandlePtr> listhandles;
     };
-    typedef boost::shared_ptr<GraphHandleMulti> GraphHandleMultiPtr;
+    typedef std::shared_ptr<GraphHandleMulti> GraphHandleMultiPtr;
 
     class CollisionCallbackData : public UserData
     {
 public:
-        CollisionCallbackData(const CollisionCallbackFn& callback, boost::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
+        CollisionCallbackData(const CollisionCallbackFn& callback, std::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
         }
         virtual ~CollisionCallbackData() {
-            boost::shared_ptr<Environment> penv = _pweakenv.lock();
+            std::shared_ptr<Environment> penv = _pweakenv.lock();
             if( !!penv ) {
                 boost::timed_mutex::scoped_lock lock(penv->_mutexInterfaces);
                 penv->_listRegisteredCollisionCallbacks.erase(_iterator);
@@ -84,18 +84,18 @@ public:
         list<UserDataWeakPtr>::iterator _iterator;
         CollisionCallbackFn _callback;
 protected:
-        boost::weak_ptr<Environment> _pweakenv;
+        std::weak_ptr<Environment> _pweakenv;
     };
     friend class CollisionCallbackData;
-    typedef boost::shared_ptr<CollisionCallbackData> CollisionCallbackDataPtr;
+    typedef std::shared_ptr<CollisionCallbackData> CollisionCallbackDataPtr;
 
     class BodyCallbackData : public UserData
     {
 public:
-        BodyCallbackData(const BodyCallbackFn& callback, boost::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
+        BodyCallbackData(const BodyCallbackFn& callback, std::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
         }
         virtual ~BodyCallbackData() {
-            boost::shared_ptr<Environment> penv = _pweakenv.lock();
+            std::shared_ptr<Environment> penv = _pweakenv.lock();
             if( !!penv ) {
                 boost::timed_mutex::scoped_lock lock(penv->_mutexInterfaces);
                 penv->_listRegisteredBodyCallbacks.erase(_iterator);
@@ -105,10 +105,10 @@ public:
         list<UserDataWeakPtr>::iterator _iterator;
         BodyCallbackFn _callback;
 protected:
-        boost::weak_ptr<Environment> _pweakenv;
+        std::weak_ptr<Environment> _pweakenv;
     };
     friend class BodyCallbackData;
-    typedef boost::shared_ptr<BodyCallbackData> BodyCallbackDataPtr;
+    typedef std::shared_ptr<BodyCallbackData> BodyCallbackDataPtr;
 
 public:
     Environment() : EnvironmentBase()
@@ -404,7 +404,7 @@ public:
     virtual EnvironmentBasePtr CloneSelf(int options)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        boost::shared_ptr<Environment> penv(new Environment());
+        std::shared_ptr<Environment> penv(new Environment());
         penv->_Clone(boost::static_pointer_cast<Environment const>(shared_from_this()),options,false);
         return penv;
     }
@@ -1331,7 +1331,7 @@ public:
             if( !bSuccess || !robot ) {
                 return RobotBasePtr();
             }
-            robot->__struri = preader->_filename;
+            robot->__struri = preader->file_name_;
         }
 
         if( !!robot ) {
@@ -1472,7 +1472,7 @@ public:
             if( !bSuccess || !body ) {
                 return KinBodyPtr();
             }
-            body->__struri = preader->_filename;
+            body->__struri = preader->file_name_;
         }
 
         if( !!body ) {
@@ -1495,7 +1495,7 @@ public:
                 return InterfaceBasePtr();
             }
             bool bSuccess = _ParseXMLFile(preader, filename);
-            boost::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = boost::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
+            std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = boost::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
             if( !bSuccess || !preadable || !preadable->_pinterface) {
                 return InterfaceBasePtr();
             }
@@ -1571,7 +1571,7 @@ public:
         }
         else {
             BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), type, pinterface, RaveGetInterfaceName(type), atts);
-            boost::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = boost::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
+            std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = boost::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
             if( !!preadable ) {
                 if( !_ParseXMLFile(preader, filename) ) {
                     return InterfaceBasePtr();
@@ -1604,22 +1604,22 @@ public:
         if( !bSuccess ) {
             return InterfaceBasePtr();
         }
-        pinterface->__struri = preader->_filename;
+        pinterface->__struri = preader->file_name_;
         return pinterface;
     }
 
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshURI(boost::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts)
+    virtual std::shared_ptr<TriMesh> ReadTrimeshURI(std::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts)
     {
         RaveVector<float> diffuseColor, ambientColor;
         return _ReadTrimeshURI(ptrimesh,filename,diffuseColor, ambientColor, atts);
     }
 
-    virtual boost::shared_ptr<TriMesh> _ReadTrimeshURI(boost::shared_ptr<TriMesh> ptrimesh, const std::string& filename, RaveVector<float>& diffuseColor, RaveVector<float>& ambientColor, const AttributesList& atts)
+    virtual std::shared_ptr<TriMesh> _ReadTrimeshURI(std::shared_ptr<TriMesh> ptrimesh, const std::string& filename, RaveVector<float>& diffuseColor, RaveVector<float>& ambientColor, const AttributesList& atts)
     {
         //EnvironmentMutex::scoped_lock lockenv(GetMutex()); // don't lock!
         string filedata = RaveFindLocalFile(filename);
         if( filedata.size() == 0 ) {
-            return boost::shared_ptr<TriMesh>();
+            return std::shared_ptr<TriMesh>();
         }
         Vector vScaleGeometry(1,1,1);
         float ftransparency;
@@ -1641,16 +1641,16 @@ public:
         return ptrimesh;
     }
 
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshData(boost::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, const AttributesList& atts)
+    virtual std::shared_ptr<TriMesh> ReadTrimeshData(std::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, const AttributesList& atts)
     {
         RaveVector<float> diffuseColor, ambientColor;
         return _ReadTrimeshData(ptrimesh, data, formathint, diffuseColor, ambientColor, atts);
     }
 
-    virtual boost::shared_ptr<TriMesh> _ReadTrimeshData(boost::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, RaveVector<float>& diffuseColor, RaveVector<float>& ambientColor, const AttributesList& atts)
+    virtual std::shared_ptr<TriMesh> _ReadTrimeshData(std::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, RaveVector<float>& diffuseColor, RaveVector<float>& ambientColor, const AttributesList& atts)
     {
         if( data.size() == 0 ) {
-            return boost::shared_ptr<TriMesh>();
+            return std::shared_ptr<TriMesh>();
         }
 
         Vector vScaleGeometry(1,1,1);
@@ -2140,7 +2140,7 @@ protected:
         return OpenRAVEXMLParser::ParseXMLData(preader, pdata);
     }
 
-    virtual void _Clone(boost::shared_ptr<Environment const> r, int options, bool bCheckSharedResources=false)
+    virtual void _Clone(std::shared_ptr<Environment const> r, int options, bool bCheckSharedResources=false)
     {
         if( !bCheckSharedResources ) {
             Destroy();
@@ -2582,7 +2582,7 @@ protected:
         RAVELOG_VERBOSE_FORMAT("starting simulation thread envid=%d", environmentid);
         while( _bInit && !_bShutdownSimulation ) {
             bool bNeedSleep = true;
-            boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv;
+            std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv;
             if( _bEnableSimulation ) {
                 bNeedSleep = false;
                 lockenv = _LockEnvironmentWithTimeout(100000);
@@ -2671,13 +2671,13 @@ protected:
         }
     }
 
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> _LockEnvironmentWithTimeout(uint64_t timeout)
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> _LockEnvironmentWithTimeout(uint64_t timeout)
     {
         // try to acquire the lock
 #if BOOST_VERSION >= 103500
-        boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetMutex(),boost::defer_lock_t()));
+        std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetMutex(),boost::defer_lock_t()));
 #else
-        boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetMutex(),false));
+        std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetMutex(),false));
 #endif
         uint64_t basetime = utils::GetMicroTime();
         while(utils::GetMicroTime()-basetime<timeout ) {
@@ -2797,7 +2797,7 @@ protected:
     int _nEnvironmentIndex;                   ///< next network index
     std::map<int, KinBodyWeakPtr> _mapBodies;     ///< a map of all the bodies in the environment. Controlled through the KinBody constructor and destructors
 
-    boost::shared_ptr<boost::thread> _threadSimulation;                      ///< main loop for environment simulation
+    std::shared_ptr<boost::thread> _threadSimulation;                      ///< main loop for environment simulation
 
     mutable EnvironmentMutex _mutexEnvironment;          ///< protects internal data from multithreading issues
     mutable boost::mutex _mutexEnvironmentIds;      ///< protects _vecbodies/_vecrobots from multithreading issues

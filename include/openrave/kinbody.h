@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -22,13 +22,15 @@
 #ifndef OPENRAVE_KINBODY_H
 #define OPENRAVE_KINBODY_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 class OpenRAVEFunctionParserReal;
 typedef boost::shared_ptr< OpenRAVEFunctionParserReal > OpenRAVEFunctionParserRealPtr;
 
 /// \brief The type of geometry primitive.
-enum GeometryType {
+enum GeometryType 
+{
     GT_None = 0,
     GT_Box = 1,
     GT_Sphere = 2,

@@ -33,8 +33,8 @@ public:
         TrajectoryBasePtr ptraj;
         int posindex, velindex, waypointindex, timeindex;
     };
-    typedef boost::shared_ptr<ParabolicGroupInfo> ParabolicGroupInfoPtr;
-    typedef boost::shared_ptr<ParabolicGroupInfo const> ParabolicGroupInfoConstPtr;
+    typedef std::shared_ptr<ParabolicGroupInfo> ParabolicGroupInfoPtr;
+    typedef std::shared_ptr<ParabolicGroupInfo const> ParabolicGroupInfoConstPtr;
 
     ParabolicTrajectoryRetimer2(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryRetimer2(penv, sinput)
     {

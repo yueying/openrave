@@ -40,8 +40,8 @@ public:
 
         //ConfigurationSpecification::Group gaccel;
     };
-    typedef boost::shared_ptr<CubicGroupInfo> CubicGroupInfoPtr;
-    typedef boost::shared_ptr<CubicGroupInfo const> CubicGroupInfoConstPtr;
+    typedef std::shared_ptr<CubicGroupInfo> CubicGroupInfoPtr;
+    typedef std::shared_ptr<CubicGroupInfo const> CubicGroupInfoConstPtr;
 
     CubicTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryRetimer(penv,sinput)
     {

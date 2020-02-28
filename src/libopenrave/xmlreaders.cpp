@@ -689,7 +689,7 @@ void StreamXMLWriter::SetCharData(const std::string& data)
 
 BaseXMLWriterPtr StreamXMLWriter::AddChild(const std::string& xmltag, const AttributesList& atts)
 {
-    boost::shared_ptr<StreamXMLWriter> child(new StreamXMLWriter(xmltag,atts));
+    std::shared_ptr<StreamXMLWriter> child(new StreamXMLWriter(xmltag,atts));
     _listchildren.push_back(child);
     return child;
 }

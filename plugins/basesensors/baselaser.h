@@ -23,7 +23,7 @@ protected:
     class BaseLaser2DXMLReader : public BaseXMLReader
     {
 public:
-        BaseLaser2DXMLReader(boost::shared_ptr<BaseLaser2DSensor> psensor) : _psensor(psensor) {
+        BaseLaser2DXMLReader(std::shared_ptr<BaseLaser2DSensor> psensor) : _psensor(psensor) {
         }
 
         virtual ProcessElement startElement(const std::string& name, const AttributesList& atts)
@@ -113,7 +113,7 @@ public:
 
 protected:
         BaseXMLReaderPtr _pcurreader;
-        boost::shared_ptr<BaseLaser2DSensor> _psensor;
+        std::shared_ptr<BaseLaser2DSensor> _psensor;
         stringstream ss;
     };
 
@@ -344,7 +344,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         SensorBase::Clone(preference,cloningoptions);
-        boost::shared_ptr<BaseLaser2DSensor const> r = boost::dynamic_pointer_cast<BaseLaser2DSensor const>(preference);
+        std::shared_ptr<BaseLaser2DSensor const> r = boost::dynamic_pointer_cast<BaseLaser2DSensor const>(preference);
         *_pgeom = *r->_pgeom;
         _vColor = r->_vColor;
         _trans = r->_trans;
@@ -428,8 +428,8 @@ protected:
         }
     }
 
-    boost::shared_ptr<LaserGeomData> _pgeom;
-    boost::shared_ptr<LaserSensorData> _pdata;
+    std::shared_ptr<LaserGeomData> _pgeom;
+    std::shared_ptr<LaserSensorData> _pdata;
     vector<int> _databodyids;     ///< if non 0, for each point in _data, specifies the body that was hit
     CollisionReportPtr _report;
 
@@ -453,7 +453,7 @@ protected:
     class BaseSpinningLaser2DXMLReader : public BaseLaser2DXMLReader
     {
 public:
-        BaseSpinningLaser2DXMLReader(boost::shared_ptr<BaseSpinningLaser2DSensor> psensor) : BaseLaser2DXMLReader(psensor), _bProcessing(false) {
+        BaseSpinningLaser2DXMLReader(std::shared_ptr<BaseSpinningLaser2DSensor> psensor) : BaseLaser2DXMLReader(psensor), _bProcessing(false) {
         }
 
         virtual ProcessElement startElement(const std::string& name, const AttributesList& atts)
@@ -474,7 +474,7 @@ public:
         virtual bool endElement(const string& name)
         {
             if( _bProcessing ) {
-                boost::shared_ptr<BaseSpinningLaser2DSensor> psensor = boost::dynamic_pointer_cast<BaseSpinningLaser2DSensor>(_psensor);
+                std::shared_ptr<BaseSpinningLaser2DSensor> psensor = boost::dynamic_pointer_cast<BaseSpinningLaser2DSensor>(_psensor);
 
                 if( name == "spinaxis" ) {
                     ss >> psensor->_vGeomSpinAxis.x >> psensor->_vGeomSpinAxis.y >> psensor->_vGeomSpinAxis.z;
@@ -556,7 +556,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         BaseLaser2DSensor::Clone(preference,cloningoptions);
-        boost::shared_ptr<BaseSpinningLaser2DSensor const> r = boost::dynamic_pointer_cast<BaseSpinningLaser2DSensor const>(preference);
+        std::shared_ptr<BaseSpinningLaser2DSensor const> r = boost::dynamic_pointer_cast<BaseSpinningLaser2DSensor const>(preference);
         _fGeomSpinSpeed = r->_fGeomSpinSpeed;
         _vGeomSpinAxis = r->_vGeomSpinAxis;
         _vGeomSpinPos = r->_vGeomSpinPos;

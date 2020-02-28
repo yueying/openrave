@@ -122,93 +122,93 @@ void   tc_sleep(NxU32 ms)
    #endif
 }
 
-void tc_spinloop()
-{
-   #ifndef _MSC_VER
-      sched_yield();
-   #else
-      __asm { pause };
-   #endif
-}
+//void tc_spinloop()
+//{
+  // #ifndef _MSC_VER
+    //  sched_yield();
+//   #else
+//      __asm { pause };
+//   #endif
+//}
 
-void tc_interlockedExchange(void *dest, const int64_t exchange)
-{
-#ifndef _MSC_VER
-	  // not working
-	  assert(false);
-	  //__sync_lock_test_and_set((int64_t*)dest, exchange);
-   #else
-      __asm
-      {
-         mov      ebx, dword ptr [exchange]
-         mov      ecx, dword ptr [exchange + 4]
-         mov      edi, dest
-         mov      eax, dword ptr [edi]
-         mov      edx, dword ptr [edi + 4]
-         jmp      start
-      retry:
-         pause
-      start:
-         lock cmpxchg8b [edi]
-         jnz      retry
-      };
-   #endif
-}
+//void tc_interlockedExchange(void *dest, const int64_t exchange)
+//{
+//#ifndef _MSC_VER
+//	  // not working
+//	  assert(false);
+//	  //__sync_lock_test_and_set((int64_t*)dest, exchange);
+//   #else
+//      __asm
+//      {
+//         mov      ebx, dword ptr [exchange]
+//         mov      ecx, dword ptr [exchange + 4]
+//         mov      edi, dest
+//         mov      eax, dword ptr [edi]
+//         mov      edx, dword ptr [edi + 4]
+//         jmp      start
+//      retry:
+//         pause
+//      start:
+//         lock cmpxchg8b [edi]
+//         jnz      retry
+//      };
+//   #endif
+//}
 
-NxI32 tc_interlockedCompareExchange(void *dest, NxI32 exchange, NxI32 compare)
-{
-#ifndef _MSC_VER
-	  // not working
-	  assert(false);
-	  return 0;
-	  //return __sync_val_compare_and_swap((uintptr_t*)dest, exchange, compare);
-	  //return __sync_bool_compare_and_swap((uintptr_t*)dest, exchange, compare);
-   #else
-      char _ret;
-      //
-      __asm
-      {
-         mov      edx, [dest]
-         mov      eax, [compare]
-         mov      ecx, [exchange]
+//NxI32 tc_interlockedCompareExchange(void *dest, NxI32 exchange, NxI32 compare)
+//{
+//#ifndef _MSC_VER
+//	  // not working
+//	  assert(false);
+//	  return 0;
+//	  //return __sync_val_compare_and_swap((uintptr_t*)dest, exchange, compare);
+//	  //return __sync_bool_compare_and_swap((uintptr_t*)dest, exchange, compare);
+//   #else
+//      char _ret;
+//      //
+//      __asm
+//      {
+//         mov      edx, [dest]
+//         mov      eax, [compare]
+//         mov      ecx, [exchange]
+//
+//         lock cmpxchg [edx], ecx
+//
+//         setz    al
+//         mov     byte ptr [_ret], al
+//      }
+//      //
+//      return _ret;
+//   #endif
+//}
 
-         lock cmpxchg [edx], ecx
-
-         setz    al
-         mov     byte ptr [_ret], al
-      }
-      //
-      return _ret;
-   #endif
-}
-
-NxI32 tc_interlockedCompareExchange(void *dest, const NxI32 exchange1, const NxI32 exchange2, const NxI32 compare1, const NxI32 compare2)
-{
-#ifndef _MSC_VER
-	  // not working
-      assert(false);
-	  return 0;
-	  //uint64_t exchange = ((uint64_t)exchange1 << 32) | (uint64_t)exchange2;
-	  //uint64_t compare = ((uint64_t)compare1 << 32) | (uint64_t)compare2;
-	  //return __sync_bool_compare_and_swap((int64_t*)dest, exchange, compare);
-   #else
-      char _ret;
-      //
-      __asm
-      {
-         mov     ebx, [exchange1]
-         mov     ecx, [exchange2]
-         mov     edi, [dest]
-         mov     eax, [compare1]
-         mov     edx, [compare2]
-         lock cmpxchg8b [edi]
-         setz    al
-         mov     byte ptr [_ret], al
-      }
-      //
-      return _ret;
-   #endif
-}
+//NxI32 tc_interlockedCompareExchange(void *dest, const NxI32 exchange1, const NxI32 exchange2, const NxI32 compare1, const NxI32 compare2)
+//{
+//#ifndef _MSC_VER
+//	  // not working
+//      assert(false);
+//	  return 0;
+//	  //uint64_t exchange = ((uint64_t)exchange1 << 32) | (uint64_t)exchange2;
+//	  //uint64_t compare = ((uint64_t)compare1 << 32) | (uint64_t)compare2;
+//	  //return __sync_bool_compare_and_swap((int64_t*)dest, exchange, compare);
+//   #else
+//      char _ret;
+//      //
+//      __asm
+//      {
+//         mov     ebx, [exchange1]
+//         mov     ecx, [exchange2]
+//         mov     edi, [dest]
+//         mov     eax, [compare1]
+//         mov     edx, [compare2]
+//         lock cmpxchg8b [edi]
+//         setz    al
+//         mov     byte ptr [_ret], al
+//      }
+//      //
+//      return _ret;
+//   #endif
+//}
 
 class MyThreadMutex : public ThreadMutex
 {

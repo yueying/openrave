@@ -150,7 +150,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         CollisionCheckerBase::Clone(preference, cloningoptions);
-        OPENRAVE_SHARED_PTR<CacheCollisionChecker const> clone = OPENRAVE_DYNAMIC_POINTER_CAST<CacheCollisionChecker const> (preference);
+        std::shared_ptr<CacheCollisionChecker const> clone = OPENRAVE_DYNAMIC_POINTER_CAST<CacheCollisionChecker const> (preference);
 
         DestroyEnvironment();
 

@@ -195,7 +195,7 @@ RobotBase::RobotStateSaver::~RobotStateSaver()
     }
 }
 
-void RobotBase::RobotStateSaver::Restore(boost::shared_ptr<RobotBase> robot)
+void RobotBase::RobotStateSaver::Restore(std::shared_ptr<RobotBase> robot)
 {
     _RestoreRobot(!robot ? _probot : robot);
     KinBodyStateSaver::Restore(!robot ? KinBodyPtr(_probot) : KinBodyPtr(robot));
@@ -231,7 +231,7 @@ private:
     EnvironmentBasePtr _pEnv;
 };
 
-void RobotBase::RobotStateSaver::_RestoreRobot(boost::shared_ptr<RobotBase> probot)
+void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot)
 {
     if( !probot ) {
         return;

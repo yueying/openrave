@@ -231,7 +231,7 @@ public:
     struct instance_kinematics_model_output
     {
         domInstance_kinematics_modelRef ikm;
-        boost::shared_ptr<kinematics_model_output> kmout;
+        std::shared_ptr<kinematics_model_output> kmout;
         std::vector<axis_sids> vaxissids; /// ordered same as kmout->vaxissids
         std::vector<std::pair<std::string,std::string> > vkinematicsbindings;     // node and kinematics model bindings
     };
@@ -239,14 +239,14 @@ public:
     struct instance_physics_model_output
     {
         domInstance_physics_modelRef ipm;
-        boost::shared_ptr<physics_model_output> pmout;
+        std::shared_ptr<physics_model_output> pmout;
     };
 
     struct instance_articulated_system_output
     {
         KinBodyPtr pbody; ///< the body written for
         domInstance_articulated_systemRef ias;
-        boost::shared_ptr<instance_physics_model_output> ipmout; // this needs to be an array to support full spec
+        std::shared_ptr<instance_physics_model_output> ipmout; // this needs to be an array to support full spec
         std::vector<axis_sids> vaxissids;
         std::vector<std::string > vlinksids;
         std::vector<std::pair<std::string,std::string> > vkinematicsbindings;
@@ -256,8 +256,8 @@ public:
     {
         KinBodyPtr body;
         std::string uri, kinematicsgeometryhash;
-        boost::shared_ptr<kinematics_model_output> kmout;
-        boost::shared_ptr<physics_model_output> pmout;
+        std::shared_ptr<kinematics_model_output> kmout;
+        std::shared_ptr<physics_model_output> pmout;
     };
 
 
@@ -370,7 +370,7 @@ private:
         // There is no simple workaround for libxml2 before 2.9.0. Read
         // the comments of GetGlobalDAE() in OpenRAVE for more details
 #if LIBXML_VERSION >= 20900
-        SetGlobalDAE(boost::shared_ptr<DAE>());
+        SetGlobalDAE(std::shared_ptr<DAE>());
 #endif
     }
 
@@ -509,14 +509,14 @@ private:
         Vector vgravity = _penv->GetPhysicsEngine()->GetGravity();
         g->getValue().set3 (vgravity.x, vgravity.y, vgravity.z);
 
-        std::list<boost::shared_ptr<instance_articulated_system_output> > listModelDatabase;
+        std::list<std::shared_ptr<instance_articulated_system_output> > listModelDatabase;
         int globalid = 0;
         FOREACHC(itbody,listbodies) {
             BOOST_ASSERT((*itbody)->GetEnv()==_penv);
             BOOST_ASSERT(_mapBodyIds.find((*itbody)->GetEnvironmentId()) == _mapBodyIds.end());
             _mapBodyIds[(*itbody)->GetEnvironmentId()] = globalid++;
 
-            boost::shared_ptr<instance_articulated_system_output> iasout;
+            std::shared_ptr<instance_articulated_system_output> iasout;
             if( _CheckForExternalWrite(*itbody) ) {
                 iasout = _WriteKinBodyExternal(*itbody,_scene.kiscene);
             }
@@ -542,7 +542,7 @@ private:
         _CreateScene(probot->GetName());
         _mapBodyIds[probot->GetEnvironmentId()] = 0;
 
-        boost::shared_ptr<instance_articulated_system_output> iasout;
+        std::shared_ptr<instance_articulated_system_output> iasout;
         if( _CheckForExternalWrite(probot) ) {
             iasout = _WriteKinBodyExternal(probot,_scene.kiscene);
         }
@@ -566,7 +566,7 @@ private:
         _CreateScene(pbody->GetName());
         _mapBodyIds[pbody->GetEnvironmentId()] = 0;
 
-        boost::shared_ptr<instance_articulated_system_output> iasout;
+        std::shared_ptr<instance_articulated_system_output> iasout;
         if( _CheckForExternalWrite(pbody) ) {
             iasout = _WriteKinBodyExternal(pbody,_scene.kiscene);
         }
@@ -625,7 +625,7 @@ private:
     }
 
     /// \brief try to write kinbody as an external reference
-    virtual boost::shared_ptr<instance_articulated_system_output> _WriteKinBodyExternal(KinBodyPtr pbody, domInstance_kinematics_sceneRef ikscene)
+    virtual std::shared_ptr<instance_articulated_system_output> _WriteKinBodyExternal(KinBodyPtr pbody, domInstance_kinematics_sceneRef ikscene)
     {
         RAVELOG_DEBUG(str(boost::format("writing body %s as external reference")%pbody->GetName()));
         string asid = str(boost::format("body%d")%_mapBodyIds[pbody->GetEnvironmentId()]);
@@ -655,7 +655,7 @@ private:
             ias->setUrl(_ComputeBestURI(pcolladainfo->_articulated_systemURIs));
         }
 
-        boost::shared_ptr<instance_articulated_system_output> iasout(new instance_articulated_system_output());
+        std::shared_ptr<instance_articulated_system_output> iasout(new instance_articulated_system_output());
         iasout->pbody = pbody;
         iasout->ias = ias;
 
@@ -796,7 +796,7 @@ private:
             }
 
             if( IsWrite("physics") ) {
-                boost::shared_ptr<instance_physics_model_output> ipmout(new instance_physics_model_output());
+                std::shared_ptr<instance_physics_model_output> ipmout(new instance_physics_model_output());
                 ipmout->ipm = daeSafeCast<domInstance_physics_model>(_scene.pscene->add(COLLADA_ELEMENT_INSTANCE_PHYSICS_MODEL));
 
                 if( IsWrite("visual") ) {
@@ -865,7 +865,7 @@ private:
     }
 
     /// \brief Write robot in a given scene
-    virtual boost::shared_ptr<instance_articulated_system_output> _WriteKinBody(KinBodyPtr pbody)
+    virtual std::shared_ptr<instance_articulated_system_output> _WriteKinBody(KinBodyPtr pbody)
     {
         RAVELOG_VERBOSE(str(boost::format("writing robot as instance_articulated_system (%d) %s\n")%_mapBodyIds[pbody->GetEnvironmentId()]%pbody->GetName()));
         string asid = str(boost::format("body%d")%_mapBodyIds[pbody->GetEnvironmentId()]);
@@ -878,7 +878,7 @@ private:
         ias->setUrl((string("#")+asmid).c_str());
         ias->setName(pbody->GetName().c_str());
 
-        boost::shared_ptr<instance_articulated_system_output> iasout(new instance_articulated_system_output());
+        std::shared_ptr<instance_articulated_system_output> iasout(new instance_articulated_system_output());
         iasout->pbody = pbody;
         iasout->ias = ias;
 
@@ -896,7 +896,7 @@ private:
         domInstance_articulated_systemRef ias_motion = daeSafeCast<domInstance_articulated_system>(motion->add(COLLADA_ELEMENT_INSTANCE_ARTICULATED_SYSTEM));
         ias_motion->setUrl(str(boost::format("#%s")%askid).c_str());
 
-        boost::shared_ptr<instance_kinematics_model_output> ikmout = _WriteInstance_kinematics_model(pbody,kinematics,askid);
+        std::shared_ptr<instance_kinematics_model_output> ikmout = _WriteInstance_kinematics_model(pbody,kinematics,askid);
 
         std::string kmodelid = _GetKinematicsModelId(pbody);
         for(size_t iaxissid = 0; iaxissid < ikmout->vaxissids.size(); ++iaxissid) {
@@ -1053,7 +1053,7 @@ private:
         _WriteKinBodyExtraInfo(pbody,articulated_system_motion);
         _WriteKinBodyType(pbody,articulated_system_motion);
 
-        boost::shared_ptr<kinematics_model_output> kmout = _GetKinematics_model(pbody);
+        std::shared_ptr<kinematics_model_output> kmout = _GetKinematics_model(pbody);
         kmodelid += "/";
         FOREACHC(itjoint,pbody->GetJoints()) {
             domExtraRef pextra = daeSafeCast<domExtra>(articulated_system_motion->add(COLLADA_ELEMENT_EXTRA));
@@ -1131,13 +1131,13 @@ private:
     }
 
     /// \brief Write common kinematic body in a given scene, called by _WriteKinBody
-    virtual boost::shared_ptr<instance_kinematics_model_output> _WriteInstance_kinematics_model(KinBodyPtr pbody, daeElementRef parent, const string& sidscope)
+    virtual std::shared_ptr<instance_kinematics_model_output> _WriteInstance_kinematics_model(KinBodyPtr pbody, daeElementRef parent, const string& sidscope)
     {
         EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
         RAVELOG_VERBOSE(str(boost::format("writing instance_kinematics_model (%d) %s\n")%_mapBodyIds[pbody->GetEnvironmentId()]%pbody->GetName()));
-        boost::shared_ptr<kinematics_model_output> kmout = WriteKinematics_model(pbody);
+        std::shared_ptr<kinematics_model_output> kmout = WriteKinematics_model(pbody);
 
-        boost::shared_ptr<instance_kinematics_model_output> ikmout(new instance_kinematics_model_output());
+        std::shared_ptr<instance_kinematics_model_output> ikmout(new instance_kinematics_model_output());
         ikmout->kmout = kmout;
         ikmout->ikm = daeSafeCast<domInstance_kinematics_model>(parent->add(COLLADA_ELEMENT_INSTANCE_KINEMATICS_MODEL));
 
@@ -1187,17 +1187,17 @@ private:
         return ikmout;
     }
 
-    virtual boost::shared_ptr<instance_physics_model_output> _WriteInstance_physics_model(KinBodyPtr pbody, daeElementRef parent, const string& sidscope)
+    virtual std::shared_ptr<instance_physics_model_output> _WriteInstance_physics_model(KinBodyPtr pbody, daeElementRef parent, const string& sidscope)
     {
         if( !IsWrite("physics") ) {
-            return boost::shared_ptr<instance_physics_model_output>();
+            return std::shared_ptr<instance_physics_model_output>();
         }
-        boost::shared_ptr<physics_model_output> pmout = WritePhysics_model(pbody);
-        boost::shared_ptr<instance_physics_model_output> ipmout(new instance_physics_model_output());
+        std::shared_ptr<physics_model_output> pmout = WritePhysics_model(pbody);
+        std::shared_ptr<instance_physics_model_output> ipmout(new instance_physics_model_output());
         ipmout->pmout = pmout;
         ipmout->ipm = daeSafeCast<domInstance_physics_model>(parent->add(COLLADA_ELEMENT_INSTANCE_PHYSICS_MODEL));
         string nodeid = _GetNodeId(pbody);
-        boost::shared_ptr<kinematics_model_output> kmout = _GetKinematics_model(pbody);
+        std::shared_ptr<kinematics_model_output> kmout = _GetKinematics_model(pbody);
         if( !kmout ) {
             RAVELOG_WARN(str(boost::format("kinematics_model for %s should be present")%pbody->GetName()));
         }
@@ -1241,10 +1241,10 @@ private:
         return ipmout;
     }
 
-    virtual boost::shared_ptr<kinematics_model_output> WriteKinematics_model(KinBodyPtr pbody)
+    virtual std::shared_ptr<kinematics_model_output> WriteKinematics_model(KinBodyPtr pbody)
     {
         EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-        boost::shared_ptr<kinematics_model_output> kmout;
+        std::shared_ptr<kinematics_model_output> kmout;
         if( _bReuseSimilar ) {
             kmout = _GetKinematics_model(pbody);
         }
@@ -1708,9 +1708,9 @@ private:
         return kmout;
     }
 
-    virtual boost::shared_ptr<physics_model_output> WritePhysics_model(KinBodyPtr pbody)
+    virtual std::shared_ptr<physics_model_output> WritePhysics_model(KinBodyPtr pbody)
     {
-        boost::shared_ptr<physics_model_output> pmout = _GetPhysics_model(pbody);
+        std::shared_ptr<physics_model_output> pmout = _GetPhysics_model(pbody);
         if( !!pmout ) {
             return pmout;
         }
@@ -2200,7 +2200,7 @@ private:
     }
 
     /// \brief writes the dynamic rigid constr
-    void _WriteDynamicRigidConstraints(domInstance_with_extraRef piscene, const std::list<boost::shared_ptr<instance_articulated_system_output> >& listModelDatabase)
+    void _WriteDynamicRigidConstraints(domInstance_with_extraRef piscene, const std::list<std::shared_ptr<instance_articulated_system_output> >& listModelDatabase)
     {
         domTechniqueRef ptec;
         // go through every body and check if it has grabbed bodies
@@ -2214,7 +2214,7 @@ private:
                 continue;
             }
             FOREACHC(itgrabbed,vGrabbedBodies) {
-                boost::shared_ptr<instance_articulated_system_output> grabbedias;
+                std::shared_ptr<instance_articulated_system_output> grabbedias;
                 FOREACHC(itias2,listModelDatabase) {
                     if( (*itias2)->pbody == *itgrabbed ) {
                         grabbedias = *itias2;
@@ -2449,7 +2449,7 @@ private:
         t[2] = v.z;
     }
 
-    virtual void _AddKinematics_model(KinBodyPtr pbody, boost::shared_ptr<kinematics_model_output> kmout) {
+    virtual void _AddKinematics_model(KinBodyPtr pbody, std::shared_ptr<kinematics_model_output> kmout) {
         FOREACH(it, _listkinbodies) {
             if( _bReuseSimilar ) {
                 if( it->uri == pbody->GetURI() && it->kinematicsgeometryhash == pbody->GetKinematicsGeometryHash() ) {
@@ -2472,7 +2472,7 @@ private:
         _listkinbodies.push_back(cache);
     }
 
-    virtual boost::shared_ptr<kinematics_model_output> _GetKinematics_model(KinBodyPtr pbody) {
+    virtual std::shared_ptr<kinematics_model_output> _GetKinematics_model(KinBodyPtr pbody) {
         FOREACH(it, _listkinbodies) {
             if( _bReuseSimilar ) {
                 if( it->uri == pbody->GetURI() && it->kinematicsgeometryhash == pbody->GetKinematicsGeometryHash() ) {
@@ -2483,10 +2483,10 @@ private:
                 return it->kmout;
             }
         }
-        return boost::shared_ptr<kinematics_model_output>();
+        return std::shared_ptr<kinematics_model_output>();
     }
 
-    virtual void _AddPhysics_model(KinBodyPtr pbody, boost::shared_ptr<physics_model_output> pmout) {
+    virtual void _AddPhysics_model(KinBodyPtr pbody, std::shared_ptr<physics_model_output> pmout) {
         FOREACH(it, _listkinbodies) {
             if( _bReuseSimilar ) {
                 if( it->uri == pbody->GetURI() && it->kinematicsgeometryhash == pbody->GetKinematicsGeometryHash() ) {
@@ -2509,7 +2509,7 @@ private:
         _listkinbodies.push_back(cache);
     }
 
-    virtual boost::shared_ptr<physics_model_output> _GetPhysics_model(KinBodyPtr pbody) {
+    virtual std::shared_ptr<physics_model_output> _GetPhysics_model(KinBodyPtr pbody) {
         FOREACH(it, _listkinbodies) {
             if( _bReuseSimilar ) {
                 if( it->uri == pbody->GetURI() && it->kinematicsgeometryhash == pbody->GetKinematicsGeometryHash() ) {
@@ -2520,7 +2520,7 @@ private:
                 return it->pmout;
             }
         }
-        return boost::shared_ptr<physics_model_output>();
+        return std::shared_ptr<physics_model_output>();
     }
 
     virtual std::string _GetNodeId(KinBodyConstPtr pbody) {
@@ -2600,7 +2600,7 @@ private:
         return _bForceWriteAll || _setForceWriteOptions.find(type) != _setForceWriteOptions.end();
     }
 
-    boost::shared_ptr<DAE> _dae;
+    std::shared_ptr<DAE> _dae;
     domCOLLADA* _dom;
     daeDocument* _doc;
     domCOLLADA::domSceneRef _globalscene;

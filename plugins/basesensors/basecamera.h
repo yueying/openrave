@@ -24,7 +24,7 @@ protected:
     class BaseCameraXMLReader : public BaseXMLReader
     {
 public:
-        BaseCameraXMLReader(boost::shared_ptr<BaseCameraSensor> psensor) : _psensor(psensor) {
+        BaseCameraXMLReader(std::shared_ptr<BaseCameraSensor> psensor) : _psensor(psensor) {
         }
 
         virtual ProcessElement startElement(const std::string& name, const AttributesList& atts)
@@ -161,7 +161,7 @@ public:
 
 protected:
         BaseXMLReaderPtr _pcurreader;
-        boost::shared_ptr<BaseCameraSensor> _psensor;
+        std::shared_ptr<BaseCameraSensor> _psensor;
         stringstream ss;
     };
 public:
@@ -255,7 +255,7 @@ public:
         _dataviewer.reset();
         _psensor_reference.reset();
         
-        boost::shared_ptr<CameraGeomData> pgeom = _pgeom;
+        std::shared_ptr<CameraGeomData> pgeom = _pgeom;
         if( !!pgeom && pgeom->sensor_reference.size() > 0 ) {
             // does not exist yet
             SensorBasePtr psensor_reference = GetEnv()->GetSensor(pgeom->sensor_reference);
@@ -277,7 +277,7 @@ public:
 
     virtual bool SimulationStep(dReal fTimeElapsed)
     {
-        boost::shared_ptr<CameraSensorData> pdata = _pdata;
+        std::shared_ptr<CameraSensorData> pdata = _pdata;
 
         _RenderGeometry();
         if(( _pgeom->width > 0) &&( _pgeom->height > 0) && _bPower) {
@@ -311,7 +311,7 @@ public:
             }
             CameraGeomData* pgeom = new CameraGeomData();
             *pgeom = *_pgeom;
-            return SensorGeometryConstPtr(boost::shared_ptr<CameraGeomData>(pgeom));
+            return SensorGeometryConstPtr(std::shared_ptr<CameraGeomData>(pgeom));
         }
         return SensorGeometryConstPtr();
     }
@@ -319,7 +319,7 @@ public:
     virtual SensorDataPtr CreateSensorData(SensorType type)
     {
         if(( type == ST_Invalid) ||( type == ST_Camera) ) {
-            return SensorDataPtr(boost::shared_ptr<CameraSensorData>(new CameraSensorData()));
+            return SensorDataPtr(std::shared_ptr<CameraSensorData>(new CameraSensorData()));
         }
         return SensorDataPtr();
     }
@@ -389,7 +389,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         SensorBase::Clone(preference,cloningoptions);
-        boost::shared_ptr<BaseCameraSensor const> r = boost::dynamic_pointer_cast<BaseCameraSensor const>(preference);
+        std::shared_ptr<BaseCameraSensor const> r = boost::dynamic_pointer_cast<BaseCameraSensor const>(preference);
         // r->_pgeom->sensor_reference should already be correct
         *_pgeom = *r->_pgeom;
         _vColor = r->_vColor;
@@ -421,7 +421,7 @@ public:
 
     virtual void SetName(const std::string& newname)
     {
-        boost::shared_ptr<CameraGeomData> pgeom = _pgeom;
+        std::shared_ptr<CameraGeomData> pgeom = _pgeom;
         if( !!pgeom && pgeom->sensor_reference.size() > 0 ) {
             // does not exist yet
             SensorBasePtr psensor_reference = _psensor_reference.lock();
@@ -493,8 +493,8 @@ protected:
         }
     }
 
-    boost::shared_ptr<CameraGeomData> _pgeom;
-    boost::shared_ptr<CameraSensorData> _pdata;
+    std::shared_ptr<CameraGeomData> _pgeom;
+    std::shared_ptr<CameraSensorData> _pdata;
 
     // more geom stuff
     vector<uint8_t> _vimagedata;

@@ -356,7 +356,7 @@ static boost::once_flag _onceRaveInitialize = BOOST_ONCE_INIT;
 
 /// there is only once global openrave state. It is created when openrave
 /// is first used, and destroyed when the program quits or RaveDestroy is called.
-class RaveGlobal : private boost::noncopyable, public boost::enable_shared_from_this<RaveGlobal>, public UserData
+class RaveGlobal : private boost::noncopyable, public std::enable_shared_from_this<RaveGlobal>, public UserData
 {
     typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
 
@@ -415,7 +415,7 @@ public:
         Destroy();
     }
 
-    static boost::shared_ptr<RaveGlobal>& instance()
+    static std::shared_ptr<RaveGlobal>& instance()
     {
         boost::call_once(_create,_onceRaveInitialize);
         return _state;
@@ -644,7 +644,7 @@ public:
     class XMLReaderFunctionData : public UserData
     {
 public:
-        XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, boost::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
+        XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, std::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
         {
             boost::mutex::scoped_lock lock(global->_mutexinternal);
             _oldfn = global->_mapreaders[_type][_xmltag];
@@ -652,7 +652,7 @@ public:
         }
         virtual ~XMLReaderFunctionData()
         {
-            boost::shared_ptr<RaveGlobal> global = _global.lock();
+            std::shared_ptr<RaveGlobal> global = _global.lock();
             if( !!global ) {
                 boost::mutex::scoped_lock lock(global->_mutexinternal);
                 global->_mapreaders[_type][_xmltag] = _oldfn;
@@ -660,7 +660,7 @@ public:
         }
 protected:
         CreateXMLReaderFn _oldfn;
-        boost::weak_ptr<RaveGlobal> _global;
+        std::weak_ptr<RaveGlobal> _global;
         InterfaceType _type;
         std::string _xmltag;
     };
@@ -680,7 +680,7 @@ protected:
         return it->second(pinterface,atts);
     }
 
-    boost::shared_ptr<RaveDatabase> GetDatabase() const {
+    std::shared_ptr<RaveDatabase> GetDatabase() const {
         return _pdatabase;
     }
     const std::map<InterfaceType,std::string>& GetInterfaceNamesMap() const {
@@ -853,7 +853,7 @@ protected:
         }
 
         // get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
-        boost::shared_ptr<RaveDatabase> pdatabase = _pdatabase;
+        std::shared_ptr<RaveDatabase> pdatabase = _pdatabase;
         if( !!pdatabase ) {
             if( pdatabase->HasInterface(PT_Viewer, "qtosg") ) {
                 return std::string("qtosg");
@@ -1049,11 +1049,11 @@ protected:
     }
 
 private:
-    static boost::shared_ptr<RaveGlobal> _state;
+    static std::shared_ptr<RaveGlobal> _state;
     // state that is always present
 
     // state that is initialized/destroyed
-    boost::shared_ptr<RaveDatabase> _pdatabase;
+    std::shared_ptr<RaveDatabase> _pdatabase;
     int _nDebugLevel;
     boost::mutex _mutexinternal;
     std::map<InterfaceType, READERSMAP > _mapreaders;
@@ -1098,7 +1098,7 @@ log4cxx::LoggerPtr RaveGetLogger()
 }
 #endif
 
-boost::shared_ptr<RaveGlobal> RaveGlobal::_state;
+std::shared_ptr<RaveGlobal> RaveGlobal::_state;
 
 void RaveSetDebugLevel(int level)
 {
@@ -1153,7 +1153,7 @@ void RaveInitializeFromState(UserDataPtr globalstate)
 UserDataPtr RaveGlobalState()
 {
     // only return valid pointer if initialized!
-    boost::shared_ptr<RaveGlobal> state = RaveGlobal::_state;
+    std::shared_ptr<RaveGlobal> state = RaveGlobal::_state;
     if( !!state && state->_IsInitialized() ) {
         return state;
     }
@@ -2193,7 +2193,7 @@ void Grabbed::ProcessCollidingLinks(const std::set<int>& setRobotLinksToIgnore)
 
         std::vector<KinBody::LinkPtr > vbodyattachedlinks;
         FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-            boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+            std::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
             bool bsamelink = find(_vattachedlinks.begin(),_vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
             KinBodyPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
             if( !pothergrabbedbody ) {
@@ -2275,7 +2275,7 @@ void Grabbed::UpdateCollidingLinks()
     std::map<KinBody::LinkConstPtr, int>::iterator itnoncolliding;
     std::vector<KinBody::LinkPtr > vbodyattachedlinks;
     FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-        boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        std::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         bool bsamelink = find(_vattachedlinks.begin(),_vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
         KinBodyPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
         if( !pothergrabbedbody ) {
@@ -2312,7 +2312,7 @@ void Grabbed::UpdateCollidingLinks()
 
     std::set<KinBodyConstPtr> _setgrabbed;
     FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-        boost::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        std::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyConstPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
         if( !!pothergrabbedbody ) {
             _setgrabbed.insert(pothergrabbedbody);
@@ -2377,7 +2377,7 @@ std::istream& operator>>(std::istream& I, TriMesh& trimesh)
 
 
 // Dummy Reader
-DummyXMLReader::DummyXMLReader(const std::string& fieldname, const std::string& pparentname, boost::shared_ptr<std::ostream> osrecord) : _fieldname(fieldname), _osrecord(osrecord)
+DummyXMLReader::DummyXMLReader(const std::string& fieldname, const std::string& pparentname, std::shared_ptr<std::ostream> osrecord) : _fieldname(fieldname), _osrecord(osrecord)
 {
     _parentname = pparentname;
     _parentname += ":";
@@ -2521,7 +2521,7 @@ void SensorBase::Serialize(BaseXMLWriterPtr writer, int options) const
     RAVELOG_WARN(str(boost::format("sensor %s does not implement Serialize")%GetXMLId()));
 }
 
-class CustomSamplerCallbackData : public boost::enable_shared_from_this<CustomSamplerCallbackData>, public UserData
+class CustomSamplerCallbackData : public std::enable_shared_from_this<CustomSamplerCallbackData>, public UserData
 {
 public:
     CustomSamplerCallbackData(const SpaceSamplerBase::StatusCallbackFn& callbackfn, SpaceSamplerBasePtr sampler) : _callbackfn(callbackfn), _samplerweak(sampler) {
@@ -2538,7 +2538,7 @@ public:
     std::list<UserDataWeakPtr>::iterator _iterator;
 };
 
-typedef boost::shared_ptr<CustomSamplerCallbackData> CustomSamplerCallbackDataPtr;
+typedef std::shared_ptr<CustomSamplerCallbackData> CustomSamplerCallbackDataPtr;
 
 UserDataPtr SpaceSamplerBase::RegisterStatusCallback(const StatusCallbackFn& callbackfn)
 {

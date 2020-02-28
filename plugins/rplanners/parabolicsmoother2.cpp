@@ -3344,7 +3344,7 @@ protected:
     SpaceSamplerBasePtr _uniformsampler;        ///< used for planning, seed is controlled
     ConstraintFilterReturnPtr _constraintreturn;
     MyRampNDFeasibilityChecker _feasibilitychecker;
-    boost::shared_ptr<ManipConstraintChecker2> _manipconstraintchecker;
+    std::shared_ptr<ManipConstraintChecker2> _manipconstraintchecker;
     TrajectoryBasePtr _pdummytraj;
     PlannerProgress _progress;
     bool _bUsePerturbation;

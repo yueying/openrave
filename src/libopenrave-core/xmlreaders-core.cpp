@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -348,7 +348,7 @@ static bool _ParseSpecialSTLFile(EnvironmentBasePtr penv, const std::string& fil
             string newdata;
             newdata.reserve(endpos - pos);
             newdata.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-            boost::shared_ptr<aiSceneManaged> scene(new aiSceneManaged(newdata, false));
+            std::shared_ptr<aiSceneManaged> scene(new aiSceneManaged(newdata, false));
             if( (!scene->_scene || !scene->_scene->mRootNode) && newdata.size() >= 5 && newdata.substr(0,5) == std::string("solid") ) {
                 // most likely a binary STL file with the first 5 words being solid. unfortunately assimp does not handle this well, so
                 newdata[0] = 'x';
@@ -688,7 +688,7 @@ bool ParseXMLFile(BaseXMLReaderPtr preader, const string& filename)
 #ifdef HAVE_BOOST_FILESYSTEM
     SetParseDirectoryScope scope(boost::filesystem::path(filedata).parent_path().string());
 #endif
-    preader->_filename = filedata;
+    preader->file_name_ = filedata;
 
     int ret=-1;
     try {
@@ -723,8 +723,8 @@ bool ParseXMLData(BaseXMLReaderPtr preader, const std::string& pdata)
 }
 
 class KinBodyXMLReader;
-typedef boost::shared_ptr<KinBodyXMLReader> KinBodyXMLReaderPtr;
-typedef boost::shared_ptr<KinBodyXMLReader const> KinBodyXMLReaderConstPtr;
+typedef std::shared_ptr<KinBodyXMLReader> KinBodyXMLReaderPtr;
+typedef std::shared_ptr<KinBodyXMLReader const> KinBodyXMLReaderConstPtr;
 
 class StreamXMLReader : public BaseXMLReader
 {
@@ -761,7 +761,7 @@ public:
     }
 protected:
     stringstream _ss;
-    boost::shared_ptr<BaseXMLReader> _pcurreader;
+    std::shared_ptr<BaseXMLReader> _pcurreader;
 };
 
 class LinkXMLReader : public StreamXMLReader
@@ -964,7 +964,7 @@ public:
                     _plink->SetTransform(tOrigTrans);
                 }
 
-                xmlreaders::GeometryInfoReaderPtr geomreader = boost::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(_pcurreader);
+                xmlreaders::GeometryInfoReaderPtr geomreader = std::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(_pcurreader);
                 if( !!geomreader ) {
                     KinBody::GeometryInfoPtr info = geomreader->GetGeometryInfo();
 
@@ -1727,8 +1727,8 @@ private:
 };
 
 class InterfaceXMLReader;
-typedef boost::shared_ptr<InterfaceXMLReader> InterfaceXMLReaderPtr;
-typedef boost::shared_ptr<InterfaceXMLReader const> InterfaceXMLReaderConstPtr;
+typedef std::shared_ptr<InterfaceXMLReader> InterfaceXMLReaderPtr;
+typedef std::shared_ptr<InterfaceXMLReader const> InterfaceXMLReaderConstPtr;
 
 class InterfaceXMLReader : public StreamXMLReader
 {
@@ -1805,7 +1805,7 @@ public:
                     GetXMLErrorCount()++;
                     break;
                 }
-                _filename = _pinterface->GetURI();
+                file_name_ = _pinterface->GetURI();
             }
         }
 
@@ -1825,7 +1825,7 @@ public:
                     // should set a name for it to get stored
                     _readername = _pinterface->GetXMLId();
                 }
-                SetFilename(_filename);
+                SetFilename(file_name_);
             }
         }
     }
@@ -1864,7 +1864,7 @@ public:
                 }
             }
 
-            SetFilename(_filename);
+            SetFilename(file_name_);
         }
     }
 
@@ -2114,7 +2114,7 @@ public:
             AttributesList newatts = atts;
             newatts.emplace_back("skipgeometry", _bSkipGeometry ? "1" : "0");
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            boost::shared_ptr<LinkXMLReader> plinkreader(new LinkXMLReader(_plink, _pchain, newatts));
+            std::shared_ptr<LinkXMLReader> plinkreader(new LinkXMLReader(_plink, _pchain, newatts));
             plinkreader->SetMassType(_masstype, _fMassValue, _vMassExtents);
             plinkreader->_fnGetModelsDir = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
             plinkreader->_fnGetOffsetFrom = boost::bind(&KinBodyXMLReader::GetOffsetFrom,this,_1);
@@ -2125,7 +2125,7 @@ public:
             _pjoint.reset();
             AttributesList newatts = atts;
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            boost::shared_ptr<JointXMLReader> pjointreader(new JointXMLReader(_pjoint,_pchain, atts));
+            std::shared_ptr<JointXMLReader> pjointreader(new JointXMLReader(_pjoint,_pchain, atts));
             pjointreader->_fnGetModelsDir = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
             pjointreader->_fnGetOffsetFrom = boost::bind(&KinBodyXMLReader::GetOffsetFrom,this,_1);
             _pcurreader = pjointreader;
@@ -2184,7 +2184,7 @@ public:
                 }
                 else if( xmlname == "joint" ) {
                     _pjoint->dofindex = _pchain->GetDOF();
-                    boost::shared_ptr<JointXMLReader> pjointreader = boost::dynamic_pointer_cast<JointXMLReader>(_pcurreader);
+                    std::shared_ptr<JointXMLReader> pjointreader = boost::dynamic_pointer_cast<JointXMLReader>(_pcurreader);
                     if( _pjoint->_info._bIsActive ) {
                         _pjoint->jointindex = (int)_pchain->_vecjoints.size();
                         _pchain->_vecjoints.push_back(_pjoint);
@@ -2296,8 +2296,8 @@ public:
             if( _bodyname.size() > 0 ) {
                 _pchain->SetName(_bodyname);
             }
-            if( _filename.size() > 0 ) {
-                SetFilename(_filename);
+            if( file_name_.size() > 0 ) {
+                SetFilename(file_name_);
             }
 
             // add prefix
@@ -2366,7 +2366,7 @@ public:
         }
     }
 
-    const boost::shared_ptr< std::vector<dReal> > GetJointValues() {
+    const std::shared_ptr< std::vector<dReal> > GetJointValues() {
         return _vjointvalues;
     }
 protected:
@@ -2391,7 +2391,7 @@ protected:
     bool _bSkipGeometry;
     Vector _vScaleGeometry;
     bool _bMakeJoinedLinksAdjacent;
-    boost::shared_ptr< std::vector<dReal> > _vjointvalues;
+    std::shared_ptr< std::vector<dReal> > _vjointvalues;
 
     string _processingtag;         /// if not empty, currently processing
     bool _bOverwriteDiffuse, _bOverwriteAmbient, _bOverwriteTransparency;
@@ -2463,7 +2463,7 @@ public:
     }
 
     string _robotname;
-    boost::shared_ptr< vector<string> > _vjoints;
+    std::shared_ptr< vector<string> > _vjoints;
     int nControlTransformation;
     RobotBasePtr _probot;
 };
@@ -2975,8 +2975,8 @@ public:
             if( _robotname.size() > 0 ) {
                 _probot->SetName(_robotname);
             }
-            if( _filename.size() > 0 ) {
-                SetFilename(_filename);
+            if( file_name_.size() > 0 ) {
+                SetFilename(file_name_);
             }
 
             // put the sensors and manipulators in front of what was declared. this is necessary so that user-based manipulator definitions come before the pre-defined ones.
@@ -3087,7 +3087,7 @@ public:
         }
     }
 
-    const boost::shared_ptr< std::vector<dReal> > GetJointValues() {
+    const std::shared_ptr< std::vector<dReal> > GetJointValues() {
         return _vjointvalues;
     }
 
@@ -3098,7 +3098,7 @@ protected:
     string _prefix;
     string _processingtag;
 
-    boost::shared_ptr<std::vector<dReal> >  _vjointvalues;
+    std::shared_ptr<std::vector<dReal> >  _vjointvalues;
     RobotBase::AttachedSensorPtr _psensor;
 
     Transform _trans;
@@ -3140,7 +3140,7 @@ protected:
     string _args;
 };
 
-typedef boost::shared_ptr<ModuleXMLReader> ModuleXMLReaderPtr;
+typedef std::shared_ptr<ModuleXMLReader> ModuleXMLReaderPtr;
 
 class SensorXMLReader : public InterfaceXMLReader
 {
@@ -3337,12 +3337,12 @@ public:
                 if( !_bInEnvironment ) {
                     InterfaceXMLReaderPtr pinterfacereader = boost::dynamic_pointer_cast<InterfaceXMLReader>(_pcurreader);
                     if( !!pinterfacereader ) {
-                        pinterfacereader->SetFilename(_filename);
+                        pinterfacereader->SetFilename(file_name_);
                     }
                 }
 
                 if( !!boost::dynamic_pointer_cast<RobotXMLReader>(_pcurreader) ) {
-                    boost::shared_ptr<RobotXMLReader> robotreader = boost::dynamic_pointer_cast<RobotXMLReader>(_pcurreader);
+                    std::shared_ptr<RobotXMLReader> robotreader = boost::dynamic_pointer_cast<RobotXMLReader>(_pcurreader);
                     BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_Robot);
                     RobotBasePtr probot = RaveInterfaceCast<RobotBase>(_pinterface);
                     _penv->Add(probot);
@@ -3516,7 +3516,9 @@ BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, InterfaceType ty
 class GlobalInterfaceXMLReader : public StreamXMLReader
 {
 public:
-    GlobalInterfaceXMLReader(EnvironmentBasePtr penv, const AttributesList &atts, bool bAddToEnvironment=false) : _penv(penv), _atts(atts), _bAddToEnvironment(bAddToEnvironment) {
+    GlobalInterfaceXMLReader(EnvironmentBasePtr penv, const AttributesList &atts, bool bAddToEnvironment=false)
+		: _penv(penv), _atts(atts), _bAddToEnvironment(bAddToEnvironment) 
+	{
     }
     virtual ProcessElement startElement(const std::string& xmlname, const AttributesList &atts)
     {
@@ -3561,7 +3563,7 @@ public:
                     if( _bAddToEnvironment ) {
                         // set joint values if kinbody or robot
                         if( !!boost::dynamic_pointer_cast<RobotXMLReader>(_pcurreader) ) {
-                            boost::shared_ptr<RobotXMLReader> robotreader = boost::dynamic_pointer_cast<RobotXMLReader>(_pcurreader);
+                            std::shared_ptr<RobotXMLReader> robotreader = boost::dynamic_pointer_cast<RobotXMLReader>(_pcurreader);
                             BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_Robot);
                             RobotBasePtr probot = RaveInterfaceCast<RobotBase>(_pinterface);
                             _penv->Add(probot);
@@ -3604,7 +3606,7 @@ public:
                     }
                     return true;
                 }
-                bool bisenvironment = !!boost::dynamic_pointer_cast<EnvironmentXMLReader>(_pcurreader);
+                bool bisenvironment = !!std::dynamic_pointer_cast<EnvironmentXMLReader>(_pcurreader);
                 _pcurreader.reset();
                 return bisenvironment;
             }

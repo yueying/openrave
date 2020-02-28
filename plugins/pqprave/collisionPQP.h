@@ -35,11 +35,11 @@ public:
             return _pbody.lock();
         }
         KinBodyWeakPtr _pbody;
-        vector<boost::shared_ptr<PQP_Model> > vlinks;
+        vector<std::shared_ptr<PQP_Model> > vlinks;
         int nLastStamp;
     };
-    typedef boost::shared_ptr<KinBodyInfo> KinBodyInfoPtr;
-    typedef boost::shared_ptr<KinBodyInfo const> KinBodyInfoConstPtr;
+    typedef std::shared_ptr<KinBodyInfo> KinBodyInfoPtr;
+    typedef std::shared_ptr<KinBodyInfo const> KinBodyInfoConstPtr;
 
     CollisionCheckerPQP(EnvironmentBasePtr penv) : CollisionCheckerBase(penv)
     {
@@ -103,7 +103,7 @@ public:
         pinfo->vlinks.reserve(pbody->GetLinks().size());
         FOREACHC(itlink, pbody->GetLinks()) {
             const TriMesh& trimesh = (*itlink)->GetCollisionData();
-            boost::shared_ptr<PQP_Model> pm;
+            std::shared_ptr<PQP_Model> pm;
             if( trimesh.indices.size() > 0 ) {
                 pm.reset(new PQP_Model());
                 pm->BeginModel(trimesh.indices.size()/3);
@@ -416,7 +416,7 @@ public:
         return false;
     }
 
-    boost::shared_ptr<PQP_Model> GetLinkModel(KinBody::LinkConstPtr plink)
+    std::shared_ptr<PQP_Model> GetLinkModel(KinBody::LinkConstPtr plink)
     {
         KinBodyInfoPtr pinfo = boost::dynamic_pointer_cast<KinBodyInfo>(plink->GetParent()->GetUserData(_userdatakey));
         BOOST_ASSERT( pinfo->GetBody() == plink->GetParent());
@@ -558,8 +558,8 @@ private:
         if( !_IsActiveLink(link1->GetParent(),link1->GetIndex()) || !_IsActiveLink(link2->GetParent(),link2->GetIndex()) ) {
             return false;
         }
-        boost::shared_ptr<PQP_Model> m1 = GetLinkModel(link1);
-        boost::shared_ptr<PQP_Model> m2 = GetLinkModel(link2);
+        std::shared_ptr<PQP_Model> m1 = GetLinkModel(link1);
+        std::shared_ptr<PQP_Model> m2 = GetLinkModel(link2);
         bool bcollision = false;
         if( !m1 || !m2 ) {
             return false;

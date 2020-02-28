@@ -56,7 +56,7 @@ KinBody::KinBodyStateSaver::~KinBodyStateSaver()
     }
 }
 
-void KinBody::KinBodyStateSaver::Restore(boost::shared_ptr<KinBody> body)
+void KinBody::KinBodyStateSaver::Restore(std::shared_ptr<KinBody> body)
 {
     _RestoreKinBody(!body ? _pbody : body);
 }
@@ -71,7 +71,7 @@ void KinBody::KinBodyStateSaver::SetRestoreOnDestructor(bool restore)
     _bRestoreOnDestructor = restore;
 }
 
-void KinBody::KinBodyStateSaver::_RestoreKinBody(boost::shared_ptr<KinBody> pbody)
+void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
 {
     if( !pbody ) {
         return;

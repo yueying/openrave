@@ -43,7 +43,7 @@ public:
     int _properties;
     boost::function<void()> _callback;
 protected:
-    boost::weak_ptr<KinBody const> _pweakbody;
+    std::weak_ptr<KinBody const> _pweakbody;
 };
 
 class CallFunctionAtDestructor
@@ -59,7 +59,7 @@ protected:
     boost::function<void()> _fn;
 };
 
-typedef boost::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
+typedef std::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
 
 ElectricMotorActuatorInfo::ElectricMotorActuatorInfo()
 {
@@ -3416,7 +3416,7 @@ void KinBody::_ComputeInternalInformation()
             }
         }
         // fill Mimic::_vmimicdofs, check that there are no circular dependencies between the mimic joints
-        std::map<Mimic::DOFFormat, boost::shared_ptr<Mimic> > mapmimic;
+        std::map<Mimic::DOFFormat, std::shared_ptr<Mimic> > mapmimic;
         for(int ijoints = 0; ijoints < 2; ++ijoints) {
             vector<JointPtr>& vjoints = ijoints ? _vPassiveJoints : _vecjoints;
             int jointindex=0;
@@ -3450,14 +3450,14 @@ void KinBody::_ComputeInternalInformation()
         while(bchanged) {
             bchanged = false;
             FOREACH(itmimic,mapmimic) {
-                boost::shared_ptr<Mimic> mimic = itmimic->second;
+                std::shared_ptr<Mimic> mimic = itmimic->second;
                 Mimic::DOFHierarchy h;
                 h.dofformatindex = 0;
                 FOREACH(itdofformat,mimic->_vdofformat) {
                     if( mapmimic.find(*itdofformat) == mapmimic.end() ) {
                         continue; // this is normal, just means that the parent is a regular dof
                     }
-                    boost::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
+                    std::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
                     FOREACH(itmimicdof, mimicparent->_vmimicdofs) {
                         if( mimicparent->_vdofformat[itmimicdof->dofformatindex] == itmimic->first ) {
                             JointPtr pjoint = itmimic->first.GetJoint(*this);

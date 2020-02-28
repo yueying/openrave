@@ -116,7 +116,7 @@ bool KinBody::Link::IsVisible() const
     return false;
 }
 
-void KinBody::Link::GetParentLinks(std::vector< boost::shared_ptr<Link> >& vParentLinks) const
+void KinBody::Link::GetParentLinks(std::vector< std::shared_ptr<Link> >& vParentLinks) const
 {
     KinBodyConstPtr parent(_parent);
     vParentLinks.resize(_vParentLinks.size());
@@ -502,7 +502,7 @@ void KinBody::Link::RemoveGeometryByName(const std::string& geometryname, bool r
     }
 }
 
-void KinBody::Link::SwapGeometries(boost::shared_ptr<Link>& link)
+void KinBody::Link::SwapGeometries(std::shared_ptr<Link>& link)
 {
     _vGeometries.swap(link->_vGeometries);
     FOREACH(itgeom,_vGeometries) {
@@ -526,7 +526,7 @@ bool KinBody::Link::ValidateContactNormal(const Vector& position, Vector& normal
     return false;
 }
 
-void KinBody::Link::GetRigidlyAttachedLinks(std::vector<boost::shared_ptr<Link> >& vattachedlinks) const
+void KinBody::Link::GetRigidlyAttachedLinks(std::vector<std::shared_ptr<Link> >& vattachedlinks) const
 {
     KinBodyPtr parent(_parent);
     vattachedlinks.resize(0);

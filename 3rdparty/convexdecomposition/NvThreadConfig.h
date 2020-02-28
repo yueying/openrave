@@ -71,10 +71,10 @@ namespace CONVEX_DECOMPOSITION
 NxU32 tc_timeGetTime(void);
 void     tc_sleep(NxU32 ms);
 
-void     tc_spinloop();
-void     tc_interlockedExchange(void *dest, const int64_t exchange);
-NxI32      tc_interlockedCompareExchange(void *dest, NxI32 exchange, NxI32 compare);
-NxI32      tc_interlockedCompareExchange(void *dest, const NxI32 exchange1, const NxI32 exchange2, const NxI32 compare1, const NxI32 compare2);
+//void     tc_spinloop();
+//void     tc_interlockedExchange(void *dest, const int64_t exchange);
+//NxI32      tc_interlockedCompareExchange(void *dest, NxI32 exchange, NxI32 compare);
+//NxI32      tc_interlockedCompareExchange(void *dest, const NxI32 exchange1, const NxI32 exchange2, const NxI32 compare1, const NxI32 compare2);
 
 class ThreadMutex
 {
