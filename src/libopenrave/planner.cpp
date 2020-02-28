@@ -335,7 +335,7 @@ int PlannerParameters::SetStateValues(const std::vector<dReal>& values, int opti
     if( !!_setstatevaluesfn ) {
         return _setstatevaluesfn(values, options);
     }
-    throw openrave_exception(_("need to set PlannerParameters::_setstatevaluesfn"));
+    throw OpenRAVEException(_("need to set PlannerParameters::_setstatevaluesfn"));
 }
 
 bool PlannerParameters::serialize(std::ostream& O, int options) const

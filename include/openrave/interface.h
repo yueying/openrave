@@ -127,7 +127,7 @@ public:
     ///
     /// \param preference the interface whose information to clone
     /// \param cloningoptions mask of CloningOptions
-    /// \throw openrave_exception if command doesn't succeed
+    /// \throw OpenRAVEException if command doesn't succeed
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions);
 
     /// \brief return true if the command is supported
@@ -150,7 +150,7 @@ public:
 
         \param is the input stream containing the command
         \param os the output stream containing the output
-        \exception openrave_exception Throw if the command is not supported.
+        \exception OpenRAVEException Throw if the command is not supported.
         \return true if the command is successfully processed, otherwise false.
      */
     virtual bool SendCommand(std::ostream& os, std::istream& is);
@@ -179,7 +179,7 @@ public:
         \param input the input rapidjson value
         \param output the output rapidjson value
         \param allocator allocator used to set alue on output rapidjson value
-        \exception openrave_exception Throw if the command is not supported.
+        \exception OpenRAVEException Throw if the command is not supported.
      */
     virtual void SendJSONCommand(const std::string& cmdname, const rapidjson::Value& input, rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator);
 
@@ -231,7 +231,7 @@ public:
     /// \param cmdname - command name, converted to lower case
     /// \param fncmd function to execute for the command
     /// \param strhelp - help string in reStructuredText, see \ref writing_plugins_doc.
-    /// \exception openrave_exception Throw if there exists a registered command already.
+    /// \exception OpenRAVEException Throw if there exists a registered command already.
     virtual void RegisterCommand(const std::string& cmdname, InterfaceCommandFn fncmd, const std::string& strhelp);
 
     /// \brief Unregisters the command. <b>[multi-thread safe]</b>
@@ -261,7 +261,7 @@ public:
     /// \param cmdname - command name, converted to lower case
     /// \param fncmd function to execute for the command
     /// \param strhelp - help string in reStructuredText, see \ref writing_plugins_doc.
-    /// \exception openrave_exception Throw if there exists a registered command already.
+    /// \exception OpenRAVEException Throw if there exists a registered command already.
     virtual void RegisterJSONCommand(const std::string& cmdname, InterfaceJSONCommandFn fncmd, const std::string& strhelp);
 
     /// \brief Unregisters the command. <b>[multi-thread safe]</b>
@@ -287,7 +287,7 @@ private:
 #endif // OPENRAVE_RAPIDJSON
 
     inline InterfaceBase& operator=(const InterfaceBase&r) {
-        throw openrave_exception("InterfaceBase copying not allowed");
+        throw OpenRAVEException("InterfaceBase copying not allowed");
     }
 
     mutable boost::shared_mutex _mutexInterface; ///< internal mutex for protecting data from methods that might be access from any thread (those methods should be commented).

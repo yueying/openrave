@@ -1763,7 +1763,7 @@ protected:
 
         return totvol;     // return volume
 #else
-        throw openrave_exception(str(boost::format("QHull library not found, cannot compute convex hull of contact points")));
+        throw OpenRAVEException(str(boost::format("QHull library not found, cannot compute convex hull of contact points")));
         return 0;
 #endif
     }

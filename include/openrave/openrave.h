@@ -176,8 +176,6 @@ private:
     OpenRAVEErrorCode _error;
 };
 
-typedef OpenRAVEException openrave_exception;
-
 class OPENRAVE_LOCAL CaseInsensitiveCompare
 {
 public:
@@ -235,21 +233,21 @@ typedef std::weak_ptr<SerializableData> SerializableDataWeakPtr;
 
 
 #define OPENRAVE_EXCEPTION_FORMAT0(s, errorcode) \
-OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] %s")%(__PRETTY_FUNCTION__)%(__LINE__)%(s)),errorcode)
+OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] %s")%(__PRETTY_FUNCTION__)%(__LINE__)%(s)),errorcode)
 
 /// adds the function name and line number to an openrave exception
-#define OPENRAVE_EXCEPTION_FORMAT(s, args, errorcode) OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] ")%(__PRETTY_FUNCTION__)%(__LINE__)) + boost::str(boost::format(s)%args),errorcode)
+#define OPENRAVE_EXCEPTION_FORMAT(s, args, errorcode) OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] ")%(__PRETTY_FUNCTION__)%(__LINE__)) + boost::str(boost::format(s)%args),errorcode)
 
-#define OPENRAVE_ASSERT_FORMAT(testexpr, s, args, errorcode) { if( !(testexpr) ) { throw OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] (%s) failed ")%(__PRETTY_FUNCTION__)%(__LINE__)%(# testexpr)) + boost::str(boost::format(s)%args),errorcode); } }
+#define OPENRAVE_ASSERT_FORMAT(testexpr, s, args, errorcode) { if( !(testexpr) ) { throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] (%s) failed ")%(__PRETTY_FUNCTION__)%(__LINE__)%(# testexpr)) + boost::str(boost::format(s)%args),errorcode); } }
 
-#define OPENRAVE_ASSERT_FORMAT0(testexpr, s, errorcode) { if( !(testexpr) ) { throw OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] (%s) failed %s")%(__PRETTY_FUNCTION__)%(__LINE__)%(# testexpr)%(s)),errorcode); } }
+#define OPENRAVE_ASSERT_FORMAT0(testexpr, s, errorcode) { if( !(testexpr) ) { throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] (%s) failed %s")%(__PRETTY_FUNCTION__)%(__LINE__)%(# testexpr)%(s)),errorcode); } }
 
 // note that expr1 and expr2 will be evaluated twice if not equal
-#define OPENRAVE_ASSERT_OP_FORMAT(expr1,op,expr2,s, args, errorcode) { if( !((expr1) op (expr2)) ) { throw OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] %s %s %s, (eval %s %s %s) ")%(__PRETTY_FUNCTION__)%(__LINE__)%(# expr1)%(# op)%(# expr2)%(expr1)%(# op)%(expr2)) + boost::str(boost::format(s)%args),errorcode); } }
+#define OPENRAVE_ASSERT_OP_FORMAT(expr1,op,expr2,s, args, errorcode) { if( !((expr1) op (expr2)) ) { throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] %s %s %s, (eval %s %s %s) ")%(__PRETTY_FUNCTION__)%(__LINE__)%(# expr1)%(# op)%(# expr2)%(expr1)%(# op)%(expr2)) + boost::str(boost::format(s)%args),errorcode); } }
 
-#define OPENRAVE_ASSERT_OP_FORMAT0(expr1,op,expr2,s, errorcode) { if( !((expr1) op (expr2)) ) { throw OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] %s %s %s, (eval %s %s %s) %s")%(__PRETTY_FUNCTION__)%(__LINE__)%(# expr1)%(# op)%(# expr2)%(expr1)%(# op)%(expr2)%(s)),errorcode); } }
+#define OPENRAVE_ASSERT_OP_FORMAT0(expr1,op,expr2,s, errorcode) { if( !((expr1) op (expr2)) ) { throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] %s %s %s, (eval %s %s %s) %s")%(__PRETTY_FUNCTION__)%(__LINE__)%(# expr1)%(# op)%(# expr2)%(expr1)%(# op)%(expr2)%(s)),errorcode); } }
 
-#define OPENRAVE_ASSERT_OP(expr1,op,expr2) { if( !((expr1) op (expr2)) ) { throw OpenRAVE::openrave_exception(boost::str(boost::format("[%s:%d] %s %s %s, (eval %s %s %s) ")%(__PRETTY_FUNCTION__)%(__LINE__)%(# expr1)%(# op)%(# expr2)%(expr1)%(# op)%(expr2)),ORE_Assert); } }
+#define OPENRAVE_ASSERT_OP(expr1,op,expr2) { if( !((expr1) op (expr2)) ) { throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] %s %s %s, (eval %s %s %s) ")%(__PRETTY_FUNCTION__)%(__LINE__)%(# expr1)%(# op)%(# expr2)%(expr1)%(# op)%(expr2)),ORE_Assert); } }
 
 #define OPENRAVE_DUMMY_IMPLEMENTATION { throw OPENRAVE_EXCEPTION_FORMAT0("not implemented",ORE_NotImplemented); }
 
@@ -481,7 +479,7 @@ public:
 
     /// \brief saves character data to the child. Special characters like '<' are automatically converted to fit inside XML.
     ///
-    /// \throw openrave_exception throws if this element cannot have character data or the character data was not written
+    /// \throw OpenRAVEException throws if this element cannot have character data or the character data was not written
     virtual void SetCharData(const std::string& data) = 0;
 
     /// \brief returns a writer for child elements
@@ -722,7 +720,7 @@ protected:
     /// \brief check if the groups form a continguous space
     ///
     /// If there are two or more groups with the same semantic names, will fail. Theese groups should be merged into one.
-    /// \throw openrave_exception if not valid
+    /// \throw OpenRAVEException if not valid
     virtual void Validate() const;
 
     virtual bool operator==(const ConfigurationSpecification& r) const;
@@ -731,13 +729,13 @@ protected:
     /// \brief return the group whose name begins with a particular string.
     ///
     /// If multiple groups exist that begin with the same string, then the shortest one is returned.
-    /// \throw openrave_exception if a group is not found
+    /// \throw OpenRAVEException if a group is not found
     virtual const Group& GetGroupFromName(const std::string& name) const;
 
     /// \brief return the group whose name begins with a particular string.
     ///
     /// If multiple groups exist that begin with the same string, then the shortest one is returned.
-    /// \throw openrave_exception if a group is not found
+    /// \throw OpenRAVEException if a group is not found
     virtual Group& GetGroupFromName(const std::string& name);
 
     /// \brief finds the most compatible group to the given group
@@ -832,7 +830,7 @@ protected:
     /** \brief Adds a new group to the specification and returns its new offset.
 
         If the new group's semantic name does not exist in the current specification, adds it and returns the new offset.
-        If the new group's semantic name exists in the current specification and it exactly matches, then function returns the old group's index. If the semantic names match, but parameters do not match, then an openrave_exception is thrown.
+        If the new group's semantic name exists in the current specification and it exactly matches, then function returns the old group's index. If the semantic names match, but parameters do not match, then an OpenRAVEException is thrown.
         This method is not responsible for merging semantic information
      */
     virtual int AddGroup(const std::string& name, int dof, const std::string& interpolation = "");
@@ -840,14 +838,14 @@ protected:
     /** \brief Merges all the information from the input group into this group
 
         For groups that are merged, the interpolation is overwritten if the source group has an empty string.
-        \throw openrave_exception throws if groups do not contain enough information to be merged or interpolations do not match.
+        \throw OpenRAVEException throws if groups do not contain enough information to be merged or interpolations do not match.
      */
     virtual ConfigurationSpecification& operator+= (const ConfigurationSpecification& r);
 
     /** \brief Return a new specification that holds the merged information from the current and input specification and the input parameter..
 
         For groups that are merged, the interpolation either has to match for both groups, or one of the groups needs an empty interpolation.
-        \throw openrave_exception throws if groups do not contain enough information to be merged or interpolations do not match.
+        \throw OpenRAVEException throws if groups do not contain enough information to be merged or interpolations do not match.
      */
     virtual ConfigurationSpecification operator+ (const ConfigurationSpecification& r) const;
 
@@ -923,7 +921,7 @@ protected:
 
         \param g the group whose name, dof, and interpolation are extracted.
         If the new group's semantic name does not exist in the current specification, adds it and returns the new offset.
-        If the new group's semantic name exists in the current specification and it exactly matches, then function returns the old group's index. If the semantic names match, but parameters do not match, then an openrave_exception is thrown.
+        If the new group's semantic name exists in the current specification and it exactly matches, then function returns the old group's index. If the semantic names match, but parameters do not match, then an OpenRAVEException is thrown.
         This method is not responsible for merging semantic information
      */
     virtual int AddGroup(const Group& g);
@@ -976,7 +974,7 @@ protected:
         \param numpoints the number of points to convert. The target and source strides are gtarget.dof and gsource.dof
         \param penv [optional] The environment which might be needed to fill in unknown data. Assumes environment is locked.
         \param filluninitialized If there exists target groups that cannot be initialized, then will set default values using the current environment. For example, the current joint values of the body will be used.
-        \throw openrave_exception throw f groups are incompatible
+        \throw OpenRAVEException throw f groups are incompatible
      */
     static void ConvertGroupData(std::vector<dReal>::iterator ittargetdata, 
 		size_t targetstride, const Group& gtarget, std::vector<dReal>::const_iterator itsourcedata,
@@ -1065,7 +1063,7 @@ public:
         case IKP_Translation3D: SetTranslation3D(t.trans); break;
         case IKP_Lookat3D: SetLookat3D(t.trans); break;
         default:
-            throw openrave_exception(str(boost::format("IkParameterization constructor does not support type 0x%x")%_type));
+            throw OpenRAVEException(str(boost::format("IkParameterization constructor does not support type 0x%x")%_type));
         }
     }
 
@@ -1684,7 +1682,7 @@ public:
 
         \param name Describes the type of data, cannot contain spaces or new lines.
         \param values the values representing the data
-        \throw openrave_exception throws if the name is invalid
+        \throw OpenRAVEException throws if the name is invalid
      */
     inline void SetCustomValues(const std::string& name, const std::vector<dReal>& values)
     {
@@ -1889,7 +1887,7 @@ public:
             break;
         }
         default:
-            throw openrave_exception(str(boost::format("parameterization 0x%x does not support left-transform")%GetType()));
+            throw OpenRAVEException(str(boost::format("parameterization 0x%x does not support left-transform")%GetType()));
         }
         for(std::map<std::string, std::vector<dReal> >::iterator it = _mapCustomData.begin(); it != _mapCustomData.end(); ++it) {
             _MultiplyTransform(t, it->first, it->second);
@@ -2051,7 +2049,7 @@ public:
 //            break;
 //        }
         default:
-            throw openrave_exception(str(boost::format("parameterization 0x%x does not support right-transforms")%GetType()));
+            throw OpenRAVEException(str(boost::format("parameterization 0x%x does not support right-transforms")%GetType()));
         }
         for(std::map<std::string, std::vector<dReal> >::iterator it = _mapCustomData.begin(); it != _mapCustomData.end(); ++it) {
             _MultiplyTransformRight(t, it->first, it->second);
@@ -2323,7 +2321,7 @@ OPENRAVE_API const char* RaveGetErrorCodeString(OpenRAVEErrorCode error);
 
     \param affinedofs a mask of \ref DOFAffine values
     \param dof a set of values inside affinedofs, the index of the first value is returned
-    \throw openrave_exception throws if dof is not present in affinedofs
+    \throw OpenRAVEException throws if dof is not present in affinedofs
  */
 OPENRAVE_API int RaveGetIndexFromAffineDOF(int affinedofs, DOFAffine dof);
 
@@ -2331,13 +2329,13 @@ OPENRAVE_API int RaveGetIndexFromAffineDOF(int affinedofs, DOFAffine dof);
 
     \param affinedofs a mask of \ref DOFAffine values
     \param index an index into the affine dof array
-    \throw openrave_exception throws if dof if index is out of bounds
+    \throw OpenRAVEException throws if dof if index is out of bounds
  */
 OPENRAVE_API DOFAffine RaveGetAffineDOFFromIndex(int affinedofs, int index);
 
 /// \brief Returns the degrees of freedom needed to represent all the values in the affine dof mask.
 ///
-/// \throw openrave_exception throws if
+/// \throw OpenRAVEException throws if
 OPENRAVE_API int RaveGetAffineDOF(int affinedofs);
 
 /** \brief Converts the transformation matrix into the specified affine values format.
@@ -2428,7 +2426,7 @@ inline const char* RaveGetInterfaceHash(InterfaceType type)
     case PT_Viewer: return OPENRAVE_VIEWER_HASH;
     case PT_SpaceSampler: return OPENRAVE_SPACESAMPLER_HASH;
     default:
-        throw openrave_exception("failed to find openrave interface type",ORE_InvalidArguments);
+        throw OpenRAVEException("failed to find openrave interface type",ORE_InvalidArguments);
         return NULL;
     }
 }
@@ -2589,7 +2587,7 @@ inline std::shared_ptr<T> RaveClone(std::shared_ptr<T const> preference, int clo
     \param envhash the hash of the environment (use the global define OPENRAVE_ENVIRONMENT_HASH)
     \param createfn functions to create the interface it takes two parameters: the environment and an istream to the rest of the interface creation arguments.
     \return a handle if function is successfully registered. By destroying the handle, the interface will be automatically unregistered.
-    \throw openrave_exception Will throw with ORE_InvalidInterfaceHash if hashes do not match
+    \throw OpenRAVEException Will throw with ORE_InvalidInterfaceHash if hashes do not match
  */
 OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
 
@@ -2615,7 +2613,7 @@ OPENRAVE_API void RaveGetEnvironments(std::list<EnvironmentBasePtr>& listenviron
 
 /// \brief Returns the current registered reader for the interface type/xmlid
 ///
-/// \throw openrave_exception Will throw with ORE_InvalidArguments if registered function could not be found.
+/// \throw OpenRAVEException Will throw with ORE_InvalidArguments if registered function could not be found.
 OPENRAVE_API BaseXMLReaderPtr RaveCallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts);
 
 /** \brief Returns the absolute path of the filename on the local filesystem resolving relative paths from OpenRAVE paths.
@@ -2729,7 +2727,7 @@ const std::string& IkParameterization::GetName() const
     if( it != RaveGetIkParameterizationMap().end() ) {
         return it->second;
     }
-    throw openrave_exception(str(boost::format("IkParameterization iktype 0x%x not supported")%_type));
+    throw OpenRAVEException(str(boost::format("IkParameterization iktype 0x%x not supported")%_type));
 }
 
 } // end namespace OpenRAVE

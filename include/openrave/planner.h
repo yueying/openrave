@@ -194,7 +194,7 @@ private:
         - _vInitialConfigVelocities - the initial velocities (at vinitialconfig) of the robot when starting to plan
         - _vGoalConfigVelocities - the goal velocities (at vinitialconfig) of the robot when finishing the plan
         - _configurationspecification
-        \throw openrave_exception If the configuration specification is invalid or points to targets that are not present in the environment.
+        \throw OpenRAVEException If the configuration specification is invalid or points to targets that are not present in the environment.
      */
     virtual void SetConfigurationSpecification(EnvironmentBasePtr env, const ConfigurationSpecification& spec);
 
@@ -202,7 +202,7 @@ private:
     ///
     /// Assumes at minimum that  _setstatevaluesfn and _getstatefn are set. Correct environment should be
     /// locked when this function is called since _getstatefn will be called.
-    /// \throw openrave_exception If not consistent, will throw an exception
+    /// \throw OpenRAVEException If not consistent, will throw an exception
     virtual void Validate() const;
 
     /// \brief the configuration specification in which the planner works in. This specification is passed to the trajecotry creation modules.

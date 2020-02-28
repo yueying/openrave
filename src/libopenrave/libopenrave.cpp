@@ -674,7 +674,7 @@ protected:
     {
         READERSMAP::iterator it = _mapreaders[type].find(xmltag);
         if( it == _mapreaders[type].end() ) {
-            //throw openrave_exception(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
+            //throw OpenRAVEException(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
             return BaseXMLReaderPtr();
         }
         return it->second(pinterface,atts);
@@ -1883,11 +1883,13 @@ void RaveGetVelocityFromAffineDOFVelocities(Vector& linearvel, Vector& angularve
     }
 }
 
-OpenRAVEException::OpenRAVEException() : std::exception(), _s("unknown exception"), _error(ORE_Failed)
+OpenRAVEException::OpenRAVEException() 
+	: std::exception(), _s("unknown exception"), _error(ORE_Failed)
 {
 }
 
-OpenRAVEException::OpenRAVEException(const std::string& s, OpenRAVEErrorCode error) : std::exception()
+OpenRAVEException::OpenRAVEException(const std::string& s, OpenRAVEErrorCode error) 
+	: std::exception()
 {
     _error = error;
     _s = "openrave (";
@@ -2565,7 +2567,7 @@ CollisionOptionsStateSaver::CollisionOptionsStateSaver(CollisionCheckerBasePtr p
     _p = p;
     if( !_p->SetCollisionOptions(newoptions) ) {
         if( required ) {
-            throw openrave_exception(str(boost::format(_("Failed to set collision options %d in checker %s\n"))%newoptions%_p->GetXMLId()));
+            throw OpenRAVEException(str(boost::format(_("Failed to set collision options %d in checker %s\n"))%newoptions%_p->GetXMLId()));
         }
     }
 }

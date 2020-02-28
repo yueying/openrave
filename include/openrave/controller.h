@@ -129,7 +129,7 @@ public:
     ///
     /// \param controller the controller to init
     /// \param dofindices robot dof indices to control
-    /// \throw openrave_exception if the controller dofs interfere with current set dofs, will throw an exception
+    /// \throw OpenRAVEException if the controller dofs interfere with current set dofs, will throw an exception
     virtual bool AttachController(ControllerBasePtr controller, const std::vector<int>& dofindices, int nControlTransformation) = 0;
 
     /// \brief removes a controller from being managed. <b>[multi-thread safe]</b>

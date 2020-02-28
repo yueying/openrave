@@ -136,7 +136,7 @@ public:
 
         /// \brief new name for manipulator
         ///
-        /// \throw openrave_exception if name is already used in another manipulator
+        /// \throw OpenRAVEException if name is already used in another manipulator
         virtual void SetName(const std::string& name);
 
         /// \brief Gripper indices of the joints that the  manipulator controls.
@@ -300,7 +300,7 @@ public:
             \param[inout] report [optional] collision report
             \param[in] numredundantsamples If > 0, will check collision using the full redundant degree of freedom of the IkParameterization. For example, if ikparam is IKP_TranslationDirection5D, then there's 1 degree of freedom around the axis. The manipulator will have numredundantsamples samples around this degree of freedom, and check each one. If == 0, then will use the manipulator's IK solver to get the end effector transforms to sample.
             \return true if a collision occurred
-            /// \throw openrave_exception if the gripper location cannot be fully determined from the passed in ik parameterization.
+            /// \throw OpenRAVEException if the gripper location cannot be fully determined from the passed in ik parameterization.
          */
         virtual bool CheckEndEffectorCollision(const IkParameterization& ikparam, CollisionReportPtr report = CollisionReportPtr(), int numredundantsamples=0) const;
 
@@ -312,7 +312,7 @@ public:
             \param[out] report [optional] collision report
             \param[in] bIgnoreManipulatorLinks if true, then will ignore any links that can potentially move because of manipulator moving.
             \return true if a collision occurred
-            /// \throw openrave_exception if the gripper location cannot be fully determined from the passed in ik parameterization.
+            /// \throw OpenRAVEException if the gripper location cannot be fully determined from the passed in ik parameterization.
          */
         virtual bool CheckEndEffectorSelfCollision(const IkParameterization& ikparam, CollisionReportPtr report = CollisionReportPtr(), int numredundantsamples=0, bool bIgnoreManipulatorLinks=false) const;
 
@@ -669,7 +669,7 @@ public:
         /// \brief restore the state
         ///
         /// \param robot if set, will attempt to restore the stored state to the passed in body, otherwise will restore it for the original body.
-        /// \throw openrave_exception if the passed in body is not compatible with the saved state, will throw
+        /// \throw OpenRAVEException if the passed in body is not compatible with the saved state, will throw
         virtual void Restore(std::shared_ptr<RobotBase> robot=std::shared_ptr<RobotBase>());
 
         /// \brief release the body state. _pbody will not get restored on destruction
@@ -914,7 +914,7 @@ private:
     /// \brief sets the active manipulator of the robot
     ///
     /// \param manipname manipulator name
-    /// \throw openrave_exception if manipulator not present, will throw an exception
+    /// \throw OpenRAVEException if manipulator not present, will throw an exception
     virtual ManipulatorPtr SetActiveManipulator(const std::string& manipname);
     virtual void SetActiveManipulator(ManipulatorConstPtr pmanip);
     virtual ManipulatorPtr GetActiveManipulator();
@@ -924,7 +924,7 @@ private:
     ///
     /// Will change the robot structure hash..
     /// \return the new manipulator attached to the robot
-    /// \throw openrave_exception If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
+    /// \throw OpenRAVEException If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
     virtual ManipulatorPtr AddManipulator(const ManipulatorInfo& manipinfo, bool removeduplicate=false);
 
     /// \brief removes a manipulator from the robot list. if successful, returns true
@@ -937,7 +937,7 @@ private:
     ///
     /// Will change the robot structure hash.
     /// \return the new attached sensor
-    /// \throw openrave_exception If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
+    /// \throw OpenRAVEException If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
     virtual AttachedSensorPtr AddAttachedSensor(const AttachedSensorInfo& attachedsensorinfo, bool removeduplicate=false);
 
     /// \brief Returns an attached sensor from its name. If no sensor is with that name is present, returns empty pointer.
@@ -952,7 +952,7 @@ private:
     ///
     /// Will change the robot structure hash.
     /// \return the new connected body
-    /// \throw openrave_exception If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
+    /// \throw OpenRAVEException If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
     virtual ConnectedBodyPtr AddConnectedBody(const ConnectedBodyInfo& connectedBodyInfo, bool removeduplicate=false);
 
     /// \brief get connected body with given name active.

@@ -28,7 +28,7 @@
 
 #define CHECK_INTERFACE(pinterface) { \
         if( (pinterface)->GetEnv() != shared_from_this() ) \
-            throw openrave_exception(str(boost::format(_("Interface %s:%s is from a different environment"))%RaveGetInterfaceName((pinterface)->GetInterfaceType())%(pinterface)->GetXMLId()),ORE_InvalidArguments); \
+            throw OpenRAVEException(str(boost::format(_("Interface %s:%s is from a different environment"))%RaveGetInterfaceName((pinterface)->GetInterfaceType())%(pinterface)->GetXMLId()),ORE_InvalidArguments); \
 } \
 
 #define CHECK_COLLISION_BODY(body) { \
@@ -658,7 +658,7 @@ public:
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_INTERFACE(pbody);
         if( !utils::IsValidName(pbody->GetName()) ) {
-            throw openrave_exception(str(boost::format(_("kinbody name: \"%s\" is not valid"))%pbody->GetName()));
+            throw OpenRAVEException(str(boost::format(_("kinbody name: \"%s\" is not valid"))%pbody->GetName()));
         }
         if( !_CheckUniqueName(KinBodyConstPtr(pbody),!bAnonymous) ) {
             // continue to add random numbers until a unique name is found
@@ -694,10 +694,10 @@ public:
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_INTERFACE(robot);
         if( !robot->IsRobot() ) {
-            throw openrave_exception(str(boost::format(_("kinbody \"%s\" is not a robot"))%robot->GetName()));
+            throw OpenRAVEException(str(boost::format(_("kinbody \"%s\" is not a robot"))%robot->GetName()));
         }
         if( !utils::IsValidName(robot->GetName()) ) {
-            throw openrave_exception(str(boost::format(_("kinbody name: \"%s\" is not valid"))%robot->GetName()));
+            throw OpenRAVEException(str(boost::format(_("kinbody name: \"%s\" is not valid"))%robot->GetName()));
         }
         if( !_CheckUniqueName(KinBodyConstPtr(robot),!bAnonymous) ) {
             // continue to add random numbers until a unique name is found
@@ -734,7 +734,7 @@ public:
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_INTERFACE(psensor);
         if( !utils::IsValidName(psensor->GetName()) ) {
-            throw openrave_exception(str(boost::format(_("sensor name: \"%s\" is not valid"))%psensor->GetName()));
+            throw OpenRAVEException(str(boost::format(_("sensor name: \"%s\" is not valid"))%psensor->GetName()));
         }
         if( !_CheckUniqueName(SensorBaseConstPtr(psensor),!bAnonymous) ) {
             // continue to add random numbers until a unique name is found
@@ -1213,7 +1213,7 @@ public:
                 (*itviewer)->RemoveKinBody(robot);
             }
             if( std::find(_vecrobots.begin(),_vecrobots.end(),robot) != _vecrobots.end() ) {
-                throw openrave_exception(str(boost::format(_("KinRobot::Init for %s, cannot Init a robot while it is added to the environment\n"))%robot->GetName()));
+                throw OpenRAVEException(str(boost::format(_("KinRobot::Init for %s, cannot Init a robot while it is added to the environment\n"))%robot->GetName()));
             }
         }
 
@@ -1299,7 +1299,7 @@ public:
                 (*itviewer)->RemoveKinBody(robot);
             }
             if( std::find(_vecrobots.begin(),_vecrobots.end(),robot) != _vecrobots.end() ) {
-                throw openrave_exception(str(boost::format(_("KinRobot::Init for %s, cannot Init a robot while it is added to the environment\n"))%robot->GetName()));
+                throw OpenRAVEException(str(boost::format(_("KinRobot::Init for %s, cannot Init a robot while it is added to the environment\n"))%robot->GetName()));
             }
         }
 
@@ -1356,7 +1356,7 @@ public:
                 (*itviewer)->RemoveKinBody(body);
             }
             if( std::find(_vecbodies.begin(),_vecbodies.end(),body) != _vecbodies.end() ) {
-                throw openrave_exception(str(boost::format(_("KinBody::Init for %s, cannot Init a body while it is added to the environment\n"))%body->GetName()));
+                throw OpenRAVEException(str(boost::format(_("KinBody::Init for %s, cannot Init a body while it is added to the environment\n"))%body->GetName()));
             }
         }
 
@@ -1440,7 +1440,7 @@ public:
                 (*itviewer)->RemoveKinBody(body);
             }
             if( std::find(_vecbodies.begin(),_vecbodies.end(),body) != _vecbodies.end() ) {
-                throw openrave_exception(str(boost::format(_("KinBody::Init for %s, cannot Init a body while it is added to the environment\n"))%body->GetName()));
+                throw OpenRAVEException(str(boost::format(_("KinBody::Init for %s, cannot Init a body while it is added to the environment\n"))%body->GetName()));
             }
         }
 
@@ -2507,7 +2507,7 @@ protected:
         FOREACHC(itbody,_vecbodies) {
             if(( *itbody != pbody) &&( (*itbody)->GetName() == pbody->GetName()) ) {
                 if( bDoThrow ) {
-                    throw openrave_exception(str(boost::format(_("env=%d, body %s does not have unique name"))%GetId()%pbody->GetName()));
+                    throw OpenRAVEException(str(boost::format(_("env=%d, body %s does not have unique name"))%GetId()%pbody->GetName()));
                 }
                 return false;
             }
@@ -2519,7 +2519,7 @@ protected:
         FOREACHC(itsensor,_listSensors) {
             if(( *itsensor != psensor) &&( (*itsensor)->GetName() == psensor->GetName()) ) {
                 if( bDoThrow ) {
-                    throw openrave_exception(str(boost::format(_("env=%d, sensor %s does not have unique name"))%GetId()%psensor->GetName()));
+                    throw OpenRAVEException(str(boost::format(_("env=%d, sensor %s does not have unique name"))%GetId()%psensor->GetName()));
                 }
                 return false;
             }
@@ -2531,7 +2531,7 @@ protected:
         FOREACHC(itviewer,_listViewers) {
             if(( *itviewer != pviewer) &&( (*itviewer)->GetName() == pviewer->GetName()) ) {
                 if( bDoThrow ) {
-                    throw openrave_exception(str(boost::format(_("env=%d, viewer '%s' does not have unique name"))%GetId()%pviewer->GetName()));
+                    throw OpenRAVEException(str(boost::format(_("env=%d, viewer '%s' does not have unique name"))%GetId()%pviewer->GetName()));
                 }
                 return false;
             }

@@ -188,7 +188,7 @@ public:
         case CC_RenderGeometryCheck:
             return _bRenderGeometry;
         }
-        throw openrave_exception(str(boost::format("SensorBase::Configure: unknown command 0x%x")%command));
+        throw OpenRAVEException(str(boost::format("SensorBase::Configure: unknown command 0x%x")%command));
     }
 
     virtual bool SimulationStep(dReal fTimeElapsed)

@@ -112,7 +112,7 @@ public:
         streampos pos = is.tellg();
         is >> cmd;
         if( !is ) {
-            throw openrave_exception("invalid argument",ORE_InvalidArguments);
+            throw OpenRAVEException("invalid argument",ORE_InvalidArguments);
         }
         std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
         if( cmd == "sync" ) {

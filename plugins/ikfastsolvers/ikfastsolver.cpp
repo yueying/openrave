@@ -256,7 +256,7 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
         _vfreeparamscales.resize(0);
         FOREACH(itfree, _vfreeparams) {
             if( *itfree < 0 || *itfree >= (int)_qlower.size() ) {
-                throw openrave_exception(str(boost::format(_("free parameter idx %d out of bounds\n"))%*itfree));
+                throw OpenRAVEException(str(boost::format(_("free parameter idx %d out of bounds\n"))%*itfree));
             }
             if( _qupper[*itfree] > _qlower[*itfree] ) {
                 _vfreeparamscales.push_back(1.0f/(_qupper[*itfree]-_qlower[*itfree]));
@@ -708,7 +708,7 @@ protected:
         IkParameterization ikparamdummy;
         const IkParameterization& param = _ConvertIkParameterization(rawparam, ikparamdummy);
         if( vFreeParameters.size() != _vfreeparams.size() ) {
-            throw openrave_exception(_("free parameters not equal"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("free parameters not equal"),ORE_InvalidArguments);
         }
         if( !!ikreturn ) {
             ikreturn->Clear();
@@ -736,7 +736,7 @@ protected:
         IkParameterization ikparamdummy;
         const IkParameterization& param = _ConvertIkParameterization(rawparam, ikparamdummy);
         if( vFreeParameters.size() != _vfreeparams.size() ) {
-            throw openrave_exception(_("free parameters not equal"),ORE_InvalidArguments);
+            throw OpenRAVEException(_("free parameters not equal"),ORE_InvalidArguments);
         }
         RobotBase::ManipulatorPtr pmanip(_pmanip);
         RobotBasePtr probot = pmanip->GetRobot();
@@ -1077,7 +1077,7 @@ protected:
             return false;
         }
 
-        throw openrave_exception(str(boost::format(_("don't support ik parameterization 0x%x"))%param.GetType()),ORE_InvalidArguments);
+        throw OpenRAVEException(str(boost::format(_("don't support ik parameterization 0x%x"))%param.GetType()),ORE_InvalidArguments);
     }
 
     bool _CallIk2(const IkParameterization& param, const vector<IkReal>& vfree, const Transform& tLocalTool, ikfast::IkSolutionList<IkReal>& solutions)
@@ -1281,7 +1281,7 @@ protected:
             return false;
         }
 
-        throw openrave_exception(str(boost::format(_("don't support ik parameterization 0x%x"))%param.GetType()),ORE_InvalidArguments);
+        throw OpenRAVEException(str(boost::format(_("don't support ik parameterization 0x%x"))%param.GetType()),ORE_InvalidArguments);
     }
 
     static bool SortSolutionDistances(const pair<size_t,dReal>& p1, const pair<size_t,dReal>& p2)

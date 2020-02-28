@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2008 Carnegie Mellon University (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2006-2008 Carnegie Mellon University (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -19,17 +19,22 @@ ControllerBasePtr CreateIdealController(EnvironmentBasePtr penv, std::istream& s
 ControllerBasePtr CreateIdealVelocityController(EnvironmentBasePtr penv, std::istream& sinput);
 ControllerBasePtr CreateRedirectController(EnvironmentBasePtr penv, std::istream& sinput);
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, 
+	std::istream& sinput, EnvironmentBasePtr penv)
 {
-    switch(type) {
+    switch(type) 
+	{
     case PT_Controller:
-        if( interfacename == "idealcontroller") {
+        if( interfacename == "idealcontroller") 
+		{
             return CreateIdealController(penv,sinput);
         }
-        else if( interfacename == "idealvelocitycontroller") {
+        else if( interfacename == "idealvelocitycontroller")
+		{
             return CreateIdealVelocityController(penv,sinput);
         }
-        else if( interfacename == "redirectcontroller" ) {
+        else if( interfacename == "redirectcontroller" )
+		{
             return CreateRedirectController(penv,sinput);
         }
         break;
