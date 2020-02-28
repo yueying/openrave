@@ -439,7 +439,7 @@ public:
     std::string file_name_;
 };
 
-typedef std::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
+typedef boost::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
 
 /// \brief reads until the tag ends
 class OPENRAVE_API DummyXMLReader : public BaseXMLReader
@@ -562,7 +562,8 @@ using mathextra::mult4;
 /// The minimum degree of freedoms required is set in the upper 4 bits of each type.
 /// The number of values used to represent the parameterization ( >= dof ) is the next 4 bits.
 /// The lower bits contain a unique id of the type.
-enum IkParameterizationType {
+enum IkParameterizationType 
+{
     IKP_None=0,
     IKP_Transform6D=0x67000001,     ///< end effector reaches desired 6D transformation
     IKP_Rotation3D=0x34000002,     ///< end effector reaches desired 3D rotation
@@ -634,13 +635,17 @@ public:
     class OPENRAVE_API Group
     {
 public:
-        Group() : offset(0), dof(0) {
+        Group() : offset(0), dof(0) 
+		{
         }
 
-        inline bool operator==(const Group& r) const {
+        inline bool operator==(const Group& r) const 
+		{
             return offset==r.offset && dof==r.dof && name==r.name && interpolation==r.interpolation;
         }
-        inline bool operator!=(const Group& r) const {
+
+        inline bool operator!=(const Group& r) const 
+		{
             return offset!=r.offset || dof!=r.dof || name!=r.name || interpolation!=r.interpolation;
         }
 
@@ -794,11 +799,6 @@ protected:
         \param adddeltatime If true will add the 'deltatime' tag, which is necessary for trajectory sampling
      */
     virtual void AddDerivativeGroups(int deriv, bool adddeltatime=false);
-
-    /// \deprecated (12/07/30)
-    inline void AddVelocityGroups(bool adddeltatime) RAVE_DEPRECATED {
-        AddDerivativeGroups(1,adddeltatime);
-    }
 
     /** \brief converts all the groups to the corresponding velocity groups and returns the specification
 
@@ -978,7 +978,9 @@ protected:
         \param filluninitialized If there exists target groups that cannot be initialized, then will set default values using the current environment. For example, the current joint values of the body will be used.
         \throw openrave_exception throw f groups are incompatible
      */
-    static void ConvertGroupData(std::vector<dReal>::iterator ittargetdata, size_t targetstride, const Group& gtarget, std::vector<dReal>::const_iterator itsourcedata, size_t sourcestride, const Group& gsource, size_t numpoints, EnvironmentBaseConstPtr penv, bool filluninitialized = true);
+    static void ConvertGroupData(std::vector<dReal>::iterator ittargetdata, 
+		size_t targetstride, const Group& gtarget, std::vector<dReal>::const_iterator itsourcedata,
+		size_t sourcestride, const Group& gsource, size_t numpoints, EnvironmentBaseConstPtr penv, bool filluninitialized = true);
 
     /** \brief Converts from one specification to another.
 
@@ -990,7 +992,9 @@ protected:
         \param penv [optional] The environment which might be needed to fill in unknown data. Assumes environment is locked.
         \param filluninitialized If there exists target groups that cannot be initialized, then will set default values using the current environment. For example, the current joint values of the body will be used.
      */
-    static void ConvertData(std::vector<dReal>::iterator ittargetdata, const ConfigurationSpecification& targetspec, std::vector<dReal>::const_iterator itsourcedata, const ConfigurationSpecification& sourcespec, size_t numpoints, EnvironmentBaseConstPtr penv, bool filluninitialized = true);
+    static void ConvertData(std::vector<dReal>::iterator ittargetdata,
+		const ConfigurationSpecification& targetspec, std::vector<dReal>::const_iterator itsourcedata,
+		const ConfigurationSpecification& sourcespec, size_t numpoints, EnvironmentBaseConstPtr penv, bool filluninitialized = true);
 
     /// \brief gets the name of the interpolation that represents the derivative of the passed in interpolation.
     ///
@@ -1037,35 +1041,25 @@ inline T NormalizeCircularAnglePrivate(T theta, T min, T max)
 class OPENRAVE_API IkParameterization
 {
 public:
-    /// \deprecated (11/10/12)
-    typedef IkParameterizationType Type RAVE_DEPRECATED;
-    static const IkParameterizationType Type_None RAVE_DEPRECATED = IKP_None;
-    static const IkParameterizationType Type_Transform6D RAVE_DEPRECATED = IKP_Transform6D;
-    static const IkParameterizationType Type_Rotation3D RAVE_DEPRECATED =IKP_Rotation3D;
-    static const IkParameterizationType Type_Translation3D RAVE_DEPRECATED =IKP_Translation3D;
-    static const IkParameterizationType Type_Direction3D RAVE_DEPRECATED = IKP_Direction3D;
-    static const IkParameterizationType Type_Ray4D RAVE_DEPRECATED = IKP_Ray4D;
-    static const IkParameterizationType Type_Lookat3D RAVE_DEPRECATED = IKP_Lookat3D;
-    static const IkParameterizationType Type_TranslationDirection5D RAVE_DEPRECATED = IKP_TranslationDirection5D;
-    static const IkParameterizationType Type_TranslationXY2D RAVE_DEPRECATED = IKP_TranslationXY2D;
-    static const IkParameterizationType Type_TranslationXYOrientation3D RAVE_DEPRECATED = IKP_TranslationXYOrientation3D;
-    static const IkParameterizationType Type_TranslationLocalGlobal6D RAVE_DEPRECATED = IKP_TranslationLocalGlobal6D;
-    static const IkParameterizationType Type_NumberOfParameterizations RAVE_DEPRECATED = IKP_NumberOfParameterizations;
-
-    IkParameterization() : _type(IKP_None) {
+    IkParameterization() : _type(IKP_None) 
+	{
     }
     /// \brief sets a 6D transform parameterization
-    IkParameterization(const Transform &t) {
+    IkParameterization(const Transform &t)
+	{
         SetTransform6D(t);
     }
     /// \brief sets a ray parameterization
-    IkParameterization(const RAY &r) {
+    IkParameterization(const RAY &r)
+	{
         SetRay4D(r);
     }
     /// \brief set a custom parameterization using a transform as the source of the data. Not all types are supported with this method.
-    IkParameterization(const Transform &t, IkParameterizationType type) {
+    IkParameterization(const Transform &t, IkParameterizationType type) 
+	{
         _type=type;
-        switch(_type) {
+        switch(_type) 
+		{
         case IKP_Transform6D: SetTransform6D(t); break;
         case IKP_Rotation3D: SetRotation3D(t.rot); break;
         case IKP_Translation3D: SetTranslation3D(t.trans); break;
@@ -2447,11 +2441,11 @@ inline std::shared_ptr<T> RaveInterfaceCast(InterfaceBasePtr pinterface)
 {
     if( !!pinterface ) {
         if( pinterface->GetInterfaceType() == T::GetInterfaceTypeStatic() ) {
-            return boost::static_pointer_cast<T>(pinterface);
+            return std::static_pointer_cast<T>(pinterface);
         }
         // encode special cases
         if((pinterface->GetInterfaceType() == PT_Robot)&&(T::GetInterfaceTypeStatic() == PT_KinBody)) {
-            return boost::static_pointer_cast<T>(pinterface);
+            return std::static_pointer_cast<T>(pinterface);
         }
     }
     return std::shared_ptr<T>();
@@ -2465,11 +2459,11 @@ inline std::shared_ptr<T const> RaveInterfaceConstCast(InterfaceBaseConstPtr pin
 {
     if( !!pinterface ) {
         if( pinterface->GetInterfaceType() == T::GetInterfaceTypeStatic() ) {
-            return boost::static_pointer_cast<T const>(pinterface);
+            return std::static_pointer_cast<T const>(pinterface);
         }
         // encode special cases
         if((pinterface->GetInterfaceType() == PT_Robot)&&(T::GetInterfaceTypeStatic() == PT_KinBody)) {
-            return boost::static_pointer_cast<T const>(pinterface);
+            return std::static_pointer_cast<T const>(pinterface);
         }
     }
     return std::shared_ptr<T>();
@@ -2581,7 +2575,7 @@ inline std::shared_ptr<T> RaveClone(std::shared_ptr<T const> preference, int clo
 {
     InterfaceBasePtr pcloned = RaveCreateInterface(!pcloneenv ? preference->GetEnv() : pcloneenv, preference->GetInterfaceType(), preference->GetXMLId());
     OPENRAVE_ASSERT_FORMAT(!!pcloned, "Failed to clone interface=%s id=%s", RaveGetInterfaceName(preference->GetInterfaceType())%preference->GetXMLId(), ORE_InvalidArguments);
-    std::shared_ptr<T> pclonedcast = boost::dynamic_pointer_cast<T>(pcloned);
+    std::shared_ptr<T> pclonedcast = std::dynamic_pointer_cast<T>(pcloned);
     OPENRAVE_ASSERT_FORMAT(!!pclonedcast, "Interface created but failed to cast interface=%s id=%s", RaveGetInterfaceName(preference->GetInterfaceType())%preference->GetXMLId(), ORE_InvalidArguments);
     pclonedcast->Clone(preference,cloningoptions);
     return pclonedcast;
@@ -2627,7 +2621,7 @@ OPENRAVE_API BaseXMLReaderPtr RaveCallXMLReader(InterfaceType type, const std::s
 /** \brief Returns the absolute path of the filename on the local filesystem resolving relative paths from OpenRAVE paths.
 
     The OpenRAVE paths consist of a list of directories specified by $OPENRAVE_DATA environment variable and custom added user paths.
-    Requires boost::filesystem to be installed
+    Requires std::filesystem to be installed
     \param filename the filename to look for
     \param curdir the current directory in case the filename is relative
     \return an empty string if file isn't found, otherwise path to full filename on local filesystem

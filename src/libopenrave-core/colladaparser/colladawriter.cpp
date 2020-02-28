@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -33,7 +33,7 @@ using namespace ColladaDOM150;
 
 namespace OpenRAVE
 {
-
+#define M_PI       3.14159265358979323846   // pi
 /// \brief converts raw XML data to DAE using libxml2
 namespace XMLtoDAE
 {
@@ -587,7 +587,7 @@ private:
             // user doesn't want to use external refs
             return false;
         }
-        ColladaXMLReadablePtr pcolladainfo = boost::dynamic_pointer_cast<ColladaXMLReadable>(pbody->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
+        ColladaXMLReadablePtr pcolladainfo = std::dynamic_pointer_cast<ColladaXMLReadable>(pbody->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
         return !!pcolladainfo;
     }
 
@@ -633,7 +633,7 @@ private:
         string asmid = str(boost::format("%s_motion")%asid);
         string iasmid = str(boost::format("%s_motion_inst")%asid);
         string iassid = str(boost::format("%s_kinematics_inst")%asid);
-        ColladaXMLReadablePtr pcolladainfo = boost::dynamic_pointer_cast<ColladaXMLReadable>(pbody->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
+        ColladaXMLReadablePtr pcolladainfo = std::dynamic_pointer_cast<ColladaXMLReadable>(pbody->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
 
         domArticulated_systemRef articulated_system_motion;
         domInstance_articulated_systemRef ias = daeSafeCast<domInstance_articulated_system>(_scene.kscene->add(COLLADA_ELEMENT_INSTANCE_ARTICULATED_SYSTEM));
@@ -2351,7 +2351,7 @@ private:
                     if( !!pgeom ) {
                         // have to handle some geometry types specially
                         if( pgeom->GetType() == SensorBase::ST_Camera ) {
-                            SensorBase::CameraGeomData camgeom = *boost::static_pointer_cast<SensorBase::CameraGeomData const>(pgeom);
+                            SensorBase::CameraGeomData camgeom = *std::static_pointer_cast<SensorBase::CameraGeomData const>(pgeom);
                             if( camgeom.target_region.size() > 0 ) {
                                 // have to convert to equivalent collada url
                                 KinBodyPtr ptargetbody = probot->GetEnv()->GetKinBody(camgeom.target_region);
@@ -2422,7 +2422,7 @@ private:
                         if( IsWrite("geometry") ) {
                             string geomid = _GetExtraGeometryId(*itlink,itgeomgroup->first,igeom);
                             igeom++;
-                            domGeometryRef pdomgeom = WriteGeometry(boost::make_shared<const KinBody::Link::Geometry>(*itlink, **itgeominfo), geomid);
+                            domGeometryRef pdomgeom = WriteGeometry(std::make_shared<const KinBody::Link::Geometry>(*itlink, **itgeominfo), geomid);
                             bind_instance_geometry->setAttribute("url", (string("#")+geomid).c_str());
                             bind_instance_geometry->setAttribute("material", (string("#")+geomid+string("_mat")).c_str());
                         }

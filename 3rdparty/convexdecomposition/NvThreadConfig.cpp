@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 NvThreadConfig.cpp : A simple wrapper class to define threading and mutex locks.
 
@@ -57,6 +57,7 @@ NvThreadConfig.cpp : A simple wrapper class to define threading and mutex locks.
 
 #define _WIN32_WINNT 0x400
 #include <windows.h>
+#include <timeapi.h>
 
 #pragma comment(lib,"winmm.lib")
 

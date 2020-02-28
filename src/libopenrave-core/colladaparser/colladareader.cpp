@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>, Stefan Ulbrich, Gustavo Rodriguez
 //
 // This file is part of OpenRAVE.
@@ -21,7 +21,7 @@
 
 namespace OpenRAVE
 {
-
+#define M_PI       3.14159265358979323846   // pi
 using namespace ColladaDOM150;
 
 class ColladaReader : public daeErrorHandler
@@ -709,14 +709,14 @@ public:
 
         FOREACH(itsensor, vsensors) {
             if( (*itsensor)->Supports(SensorBase::ST_Camera) ) {
-                SensorBase::CameraGeomDataConstPtr pcamgeom = boost::static_pointer_cast<SensorBase::CameraGeomData const>((*itsensor)->GetSensorGeometry(SensorBase::ST_Camera));
+                SensorBase::CameraGeomDataConstPtr pcamgeom = std::static_pointer_cast<SensorBase::CameraGeomData const>((*itsensor)->GetSensorGeometry(SensorBase::ST_Camera));
                 if( pcamgeom->target_region.size() > 0 ) {
                     std::string resolvedTargetRegion; // resolved name
                     //daeURI uri(*_dae, pcamgeom->target_region);
                     //RAVELOG_INFO_FORMAT("asdfasf: %s", _MakeFullURI(pcamgeom->target_region));//uri.getURI());
                     // check if there's any URL matching pcamgeom->target_region
                     FOREACHC(ittestbody, vbodies) {
-                        ColladaXMLReadablePtr pcolladainfo = boost::dynamic_pointer_cast<ColladaXMLReadable>((*ittestbody)->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
+                        ColladaXMLReadablePtr pcolladainfo = std::dynamic_pointer_cast<ColladaXMLReadable>((*ittestbody)->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
                         if( !!pcolladainfo ) {
                             FOREACHC(iturl, pcolladainfo->_articulated_systemURIs) {
                                 if( iturl->first == pcamgeom->target_region ) {
@@ -1101,7 +1101,7 @@ public:
             }
 
             // write the axis parameters
-            ColladaXMLReadablePtr pcolladainfo = boost::dynamic_pointer_cast<ColladaXMLReadable>(pbody->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
+            ColladaXMLReadablePtr pcolladainfo = std::dynamic_pointer_cast<ColladaXMLReadable>(pbody->GetReadableInterface(ColladaXMLReadable::GetXMLIdStatic()));
             if( !!pcolladainfo ) {
                 // check if any URIs in pcolladainfo->_articulated_systemURIs are external. If yes, and current ias->getUrl() is inside this document, do not add
                 bool bHasExternal = false;
@@ -4686,7 +4686,7 @@ private:
                             std::vector<KinBody::GeometryInfoPtr> vgeometries;
                             vgeometries.reserve(itgeomgroup->second.size());
                             FOREACH(itgeominfo, itgeomgroup->second) {
-                                vgeometries.push_back(boost::make_shared<KinBody::GeometryInfo>(*itgeominfo));
+                                vgeometries.push_back(std::make_shared<KinBody::GeometryInfo>(*itgeominfo));
                             }
                             itlinkgeomgroups->first->SetGroupGeometries(itgeomgroup->first, vgeometries);
                         }

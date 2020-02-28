@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2016 Rosen Diankov, Gustavo Puche, OpenGrasp Team
 //
 // OpenRAVE Qt/OpenSceneGraph Viewer is licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +32,9 @@ namespace qtosgrave {
 
 class QOSGViewerWidget;
 class QtOSGViewer;
-typedef boost::shared_ptr<QtOSGViewer> QtOSGViewerPtr;
-typedef boost::weak_ptr<QtOSGViewer> QtOSGViewerWeakPtr;
-typedef boost::shared_ptr<QtOSGViewer const> QtOSGViewerConstPtr;
+typedef std::shared_ptr<QtOSGViewer> QtOSGViewerPtr;
+typedef std::weak_ptr<QtOSGViewer> QtOSGViewerWeakPtr;
+typedef std::shared_ptr<QtOSGViewer const> QtOSGViewerConstPtr;
 
 /// \brief class of the entire viewer that periodically syncs with the openrave environment.
 class QtOSGViewer : public QMainWindow, public ViewerBase
@@ -138,7 +138,7 @@ public:
     virtual UserDataPtr RegisterViewerThreadCallback(const ViewerThreadCallbackFn& fncallback);
 
     /// \brief Locks environment
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> LockEnvironment(uint64_t timeout=50000,bool bUpdateEnvironment = true);
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> LockEnvironment(uint64_t timeout=50000,bool bUpdateEnvironment = true);
 
 public slots:
 
@@ -229,7 +229,7 @@ public:
 
         inline void Call() {
             // have to set finished at the end
-            boost::shared_ptr<void> finishfn((void*) 0, boost::bind(&GUIThreadFunction::SetFinished, this));
+            std::shared_ptr<void> finishfn((void*) 0, boost::bind(&GUIThreadFunction::SetFinished, this));
             BOOST_ASSERT(!_bcalled);
             _bcalled = true;
             _fn();
@@ -259,7 +259,7 @@ private:
         bool _bfinished; ///< true if function processing is finished
         bool _bisblocking; ///< if true, then the caller is blocking until the function completes
     };
-    typedef boost::shared_ptr<GUIThreadFunction> GUIThreadFunctionPtr;
+    typedef std::shared_ptr<GUIThreadFunction> GUIThreadFunctionPtr;
 
     /// \brief implementation of graph handles for qtosg
     class PrivateGraphHandle : public GraphHandle
@@ -269,7 +269,7 @@ public:
             BOOST_ASSERT(_handle != NULL);
         }
         virtual ~PrivateGraphHandle() {
-            boost::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
+            std::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
             if(!!viewer) {
                 viewer->_PostToGUIThread(boost::bind(&QtOSGViewer::_CloseGraphHandle, viewer, _handle)); // _handle is copied, so it will maintain the reference
             }
@@ -277,7 +277,7 @@ public:
 
         virtual void SetTransform(const RaveTransform<float>& t)
         {
-            boost::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
+            std::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
             if(!!viewer) {
                 viewer->_PostToGUIThread(boost::bind(&QtOSGViewer::_SetGraphTransform, viewer, _handle, t)); // _handle is copied, so it will maintain the reference
             }
@@ -285,7 +285,7 @@ public:
 
         virtual void SetShow(bool bShow)
         {
-            boost::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
+            std::shared_ptr<QtOSGViewer> viewer = _wviewer.lock();
             if(!!viewer) {
                 viewer->_PostToGUIThread(boost::bind(&QtOSGViewer::_SetGraphShow, viewer, _handle, bShow)); // _handle is copied, so it will maintain the reference
             }
@@ -296,13 +296,13 @@ public:
     };
 
     inline QtOSGViewerPtr shared_viewer() {
-        return boost::static_pointer_cast<QtOSGViewer>(shared_from_this());
+        return std::static_pointer_cast<QtOSGViewer>(shared_from_this());
     }
     inline QtOSGViewerWeakPtr weak_viewer() {
         return QtOSGViewerWeakPtr(shared_viewer());
     }
     inline QtOSGViewerConstPtr shared_viewer_const() const {
-        return boost::static_pointer_cast<QtOSGViewer const>(shared_from_this());
+        return std::static_pointer_cast<QtOSGViewer const>(shared_from_this());
     }
 
     /// \brief initializes osg view and the qt menus/dialog boxes

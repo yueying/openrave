@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -588,7 +588,7 @@ void KinBody::GeometryInfo::DeserializeJSON(const rapidjson::Value &value, const
         _vGeomData.y *= fUnitScale;
 
     }
-    else if (typestr == "trimesh" or typestr == "mesh") {
+    else if (typestr == "trimesh" || typestr == "mesh") {
         _type = GT_TriMesh;
         RAVE_DESERIALIZEJSON_REQUIRED(value, "mesh", _meshcollision);
 

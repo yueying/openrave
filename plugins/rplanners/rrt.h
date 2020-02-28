@@ -256,10 +256,10 @@ protected:
     std::vector< NodeBase* > _vecInitialNodes;
 
     inline std::shared_ptr<RrtPlanner> shared_planner() {
-        return boost::static_pointer_cast<RrtPlanner>(shared_from_this());
+        return std::static_pointer_cast<RrtPlanner>(shared_from_this());
     }
     inline std::shared_ptr<RrtPlanner const> shared_planner_const() const {
-        return boost::static_pointer_cast<RrtPlanner const>(shared_from_this());
+        return std::static_pointer_cast<RrtPlanner const>(shared_from_this());
     }
 };
 

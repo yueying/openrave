@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2019 OpenRAVE
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -221,15 +221,15 @@ inline void LoadJsonValue(const rapidjson::Value& v, unsigned int& t) {
     }
 }
 
-inline void LoadJsonValue(const rapidjson::Value& v, unsigned long long& t) {
-    if (v.IsUint64()) {
-        t = v.GetUint64();
-    } else if (v.IsString()) {
-        t = boost::lexical_cast<unsigned long long>(v.GetString());
-    } else {
-        throw OpenraveJSONException("Cannot convert json value " + GetJsonString(v) + " to Int64", MJE_Failed);
-    }
-}
+//inline void LoadJsonValue(const rapidjson::Value& v, unsigned long long& t) {
+//    if (v.IsUint64()) {
+//        t = v.GetUint64();
+//    } else if (v.IsString()) {
+//        t = boost::lexical_cast<unsigned long long>(v.GetString());
+//    } else {
+//        throw OpenraveJSONException("Cannot convert json value " + GetJsonString(v) + " to Int64", MJE_Failed);
+//    }
+//}
 
 inline void LoadJsonValue(const rapidjson::Value& v, uint64_t& t) {
     if (v.IsUint64()) {
@@ -285,9 +285,9 @@ template<class T> inline void LoadJsonValue(const rapidjson::Value& v, std::vect
 
 template<class T, size_t N> inline void LoadJsonValue(const rapidjson::Value& v, std::array<T, N>& t);
 
-template<class T> inline void LoadJsonValue(const rapidjson::Value& v, boost::shared_ptr<T>& ptr) {
+template<class T> inline void LoadJsonValue(const rapidjson::Value& v, std::shared_ptr<T>& ptr) {
     // this way prevents copy constructor from getting called
-    ptr = boost::shared_ptr<T>(new T());
+    ptr = std::shared_ptr<T>(new T());
     LoadJsonValue(v, *ptr);
 }
 
@@ -398,17 +398,17 @@ inline void SaveJsonValue(rapidjson::Value& v, unsigned int t, rapidjson::Docume
     v.SetUint(t);
 }
 
-inline void SaveJsonValue(rapidjson::Value& v, long long t, rapidjson::Document::AllocatorType& alloc) {
-    v.SetInt64(t);
-}
+//inline void SaveJsonValue(rapidjson::Value& v, long long t, rapidjson::Document::AllocatorType& alloc) {
+//    v.SetInt64(t);
+//}
 
 inline void SaveJsonValue(rapidjson::Value& v, int64_t t, rapidjson::Document::AllocatorType& alloc) {
     v.SetInt64(t);
 }
 
-inline void SaveJsonValue(rapidjson::Value& v, unsigned long long t, rapidjson::Document::AllocatorType& alloc) {
-    v.SetUint64(t);
-}
+//inline void SaveJsonValue(rapidjson::Value& v, unsigned long long t, rapidjson::Document::AllocatorType& alloc) {
+//    v.SetUint64(t);
+//}
 
 inline void SaveJsonValue(rapidjson::Value& v, uint64_t t, rapidjson::Document::AllocatorType& alloc) {
     v.SetUint64(t);
@@ -434,9 +434,9 @@ template<class T> inline void SaveJsonValue(rapidjson::Value& v, const std::vect
 
 template<class T, size_t N> inline void SaveJsonValue(rapidjson::Value& v, const std::array<T, N>& t, rapidjson::Document::AllocatorType& alloc);
 
-/** do not remove: otherwise boost::shared_ptr could be treated as bool
+/** do not remove: otherwise std::shared_ptr could be treated as bool
  */
-template<class T> inline void SaveJsonValue(rapidjson::Value& v, const boost::shared_ptr<T>& ptr, rapidjson::Document::AllocatorType& alloc) {
+template<class T> inline void SaveJsonValue(rapidjson::Value& v, const std::shared_ptr<T>& ptr, rapidjson::Document::AllocatorType& alloc) {
     SaveJsonValue(v, *ptr, alloc);
 }
 

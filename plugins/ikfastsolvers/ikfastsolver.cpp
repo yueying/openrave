@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2016 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -88,10 +88,10 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
     }
 
     inline std::shared_ptr<IkFastSolver<IkReal> > shared_solver() {
-        return boost::static_pointer_cast<IkFastSolver<IkReal> >(shared_from_this());
+        return std::static_pointer_cast<IkFastSolver<IkReal> >(shared_from_this());
     }
     inline std::shared_ptr<IkFastSolver<IkReal> const> shared_solver_const() const {
-        return boost::static_pointer_cast<IkFastSolver<IkReal> const>(shared_from_this());
+        return std::static_pointer_cast<IkFastSolver<IkReal> const>(shared_from_this());
     }
     inline std::weak_ptr<IkFastSolver<IkReal> > weak_solver() {
         return shared_solver();
@@ -788,7 +788,7 @@ protected:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         IkSolverBase::Clone(preference, cloningoptions);
-        std::shared_ptr< IkFastSolver<IkReal> const > r = boost::dynamic_pointer_cast<IkFastSolver<IkReal> const>(preference);
+        std::shared_ptr< IkFastSolver<IkReal> const > r = std::dynamic_pointer_cast<IkFastSolver<IkReal> const>(preference);
 
         _pmanip.reset();
         _cblimits.reset();

@@ -329,7 +329,7 @@ public:
         std::vector<ConfigurationSpecification::Group>::const_iterator itcompatposgroup = ptraj->GetConfigurationSpecification().FindCompatibleGroup(posspec._vgroups.at(0), false);
         OPENRAVE_ASSERT_FORMAT(itcompatposgroup != ptraj->GetConfigurationSpecification()._vgroups.end(), "failed to find group %s in passed in trajectory", posspec._vgroups.at(0).name, ORE_InvalidArguments);
 
-        ConstraintTrajectoryTimingParametersConstPtr parameters = boost::dynamic_pointer_cast<ConstraintTrajectoryTimingParameters const>(GetParameters());
+        ConstraintTrajectoryTimingParametersConstPtr parameters = std::dynamic_pointer_cast<ConstraintTrajectoryTimingParameters const>(GetParameters());
 
         ParabolicRamp::DynamicPath &dynamicpath=_cachedynamicpath;
         dynamicpath.ramps.resize(0); // clear

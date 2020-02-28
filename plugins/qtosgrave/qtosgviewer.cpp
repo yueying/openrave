@@ -437,7 +437,7 @@ void QtOSGViewer::_UpdateViewerCallback()
                 listRegisteredViewerThreadCallbacks = _listRegisteredViewerThreadCallbacks;
             }
             FOREACH(it,listRegisteredViewerThreadCallbacks) {
-                ViewerThreadCallbackDataPtr pdata = boost::dynamic_pointer_cast<ViewerThreadCallbackData>(it->lock());
+                ViewerThreadCallbackDataPtr pdata = std::dynamic_pointer_cast<ViewerThreadCallbackData>(it->lock());
                 if( !!pdata ) {
                     try {
                         pdata->_callback();
@@ -1918,7 +1918,7 @@ void QtOSGViewer::UpdateFromModel()
     FOREACH(itbody, vecbodies) {
         BOOST_ASSERT( !!itbody->pbody );
         KinBodyPtr pbody = itbody->pbody; // try to use only as an id, don't call any methods!
-        KinBodyItemPtr pitem = boost::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
+        KinBodyItemPtr pitem = std::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
 
         if( !!pitem ) {
             if( !pitem->GetBody() ) {
@@ -1953,7 +1953,7 @@ void QtOSGViewer::UpdateFromModel()
                     }
 
                     if( pbody->IsRobot() ) {
-                        pitem = std::shared_ptr<RobotItem>(new RobotItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), boost::static_pointer_cast<RobotBase>(pbody), _viewGeometryMode), ITEM_DELETER);
+                        pitem = std::shared_ptr<RobotItem>(new RobotItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), std::static_pointer_cast<RobotBase>(pbody), _viewGeometryMode), ITEM_DELETER);
                     }
                     else {
                         pitem = std::shared_ptr<KinBodyItem>(new KinBodyItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), pbody, _viewGeometryMode), ITEM_DELETER);
@@ -1971,7 +1971,7 @@ void QtOSGViewer::UpdateFromModel()
                     newdata = true;
                 }
                 else {
-                    pitem = boost::static_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
+                    pitem = std::static_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
                     BOOST_ASSERT( _mapbodies.find(pbody) != _mapbodies.end() && _mapbodies[pbody] == pitem );
                 }
             }

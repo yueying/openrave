@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -235,7 +235,7 @@ void CViewerThread(EnvironmentBasePtr penv, const string &strviewer, int bShowVi
         boost::mutex::scoped_lock lock(s_mutexViewer);
         pviewer = RaveCreateViewer(penv, strviewer);
         if( !!pviewer ) {
-            penv->AddViewer(pviewer);
+            penv->Add(pviewer);
         }
         s_conditionViewer.notify_one();
     }

@@ -299,11 +299,11 @@ private:
     mutable std::map<std::string, UserDataPtr> __mapUserData; ///< \see GetUserData
 
     READERSMAP __mapReadableInterfaces; ///< pointers to extra interfaces that are included with this object
-    typedef std::map<std::string, boost::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
+    typedef std::map<std::string, std::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
     CMDMAP __mapCommands; ///< all registered commands
 
 #if OPENRAVE_RAPIDJSON
-    typedef std::map<std::string, boost::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
+    typedef std::map<std::string, std::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
     JSONCMDMAP __mapJSONCommands; ///< all registered commands
 #endif
     

@@ -89,7 +89,7 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
         pbody->ReleaseAllGrabbed();
         OPENRAVE_ASSERT_OP(pbody->_vGrabbedBodies.size(),==,0);
         FOREACH(itgrabbed, _vGrabbedBodies) {
-            GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+            GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
             KinBodyPtr pbodygrab = pgrabbed->_pgrabbedbody.lock();
             if( !!pbodygrab ) {
                 if( pbody->GetEnv() == _pbody->GetEnv() ) {
@@ -237,7 +237,7 @@ void KinBody::KinBodyStateSaverRef::_RestoreKinBody(KinBody& body)
         body.ReleaseAllGrabbed();
         OPENRAVE_ASSERT_OP(body._vGrabbedBodies.size(),==,0);
         FOREACH(itgrabbed, _vGrabbedBodies) {
-            GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+            GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
             KinBodyPtr pbodygrab = pgrabbed->_pgrabbedbody.lock();
             if( !!pbodygrab ) {
                 if( body.GetEnv() == body.GetEnv() ) {

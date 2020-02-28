@@ -1512,10 +1512,10 @@ protected:
 
 protected:
     inline std::shared_ptr<TaskManipulation> shared_problem() {
-        return boost::static_pointer_cast<TaskManipulation>(shared_from_this());
+        return std::static_pointer_cast<TaskManipulation>(shared_from_this());
     }
     inline std::shared_ptr<TaskManipulation const> shared_problem_const() const {
-        return boost::static_pointer_cast<TaskManipulation const>(shared_from_this());
+        return std::static_pointer_cast<TaskManipulation const>(shared_from_this());
     }
 
     /// \brief grasps using the list of grasp goals. Removes all the goals that the planner planned with

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -80,7 +80,7 @@ public:
 public:
         XMLData(const std::string& xmlid) : XMLReadable(xmlid), id(0) {
         }
-        virtual void copy(boost::shared_ptr<XMLData const> pdata) {
+        virtual void copy(std::shared_ptr<XMLData const> pdata) {
             *this = *pdata;
         }
 
@@ -92,30 +92,38 @@ public:
         friend class SimpleSensorSystem;
     };
 
-    class OPENRAVE_API BodyData : public KinBody::ManageData {
+    class OPENRAVE_API BodyData : public KinBody::ManageData 
+	{
 public:
-        BodyData(SensorSystemBasePtr psensorsystem, KinBodyPtr pbody, boost::shared_ptr<XMLData> initdata) : KinBody::ManageData(psensorsystem), _initdata(initdata), bPresent(false), bEnabled(true), bLock(false)
+        BodyData(SensorSystemBasePtr psensorsystem, KinBodyPtr pbody, std::shared_ptr<XMLData> initdata)
+			: KinBody::ManageData(psensorsystem), _initdata(initdata), bPresent(false), bEnabled(true), bLock(false)
         {
             SetBody(pbody);
         }
 
-        virtual XMLReadableConstPtr GetData() const {
+        virtual XMLReadableConstPtr GetData() const
+		{
             return _initdata;
         }
-        virtual KinBody::LinkPtr GetOffsetLink() const {
+        virtual KinBody::LinkPtr GetOffsetLink() const
+		{
             return KinBody::LinkPtr(_plink);
         }
 
-        virtual bool IsPresent() const {
+        virtual bool IsPresent() const 
+		{
             return bPresent;
         }
-        virtual bool IsEnabled() const {
+        virtual bool IsEnabled() const 
+		{
             return bEnabled;
         }
-        virtual bool IsLocked() const {
+        virtual bool IsLocked() const 
+		{
             return bLock;
         }
-        virtual bool Lock(bool bDoLock) {
+        virtual bool Lock(bool bDoLock) 
+		{
             bLock = bDoLock; return true;
         }
 
@@ -140,7 +148,7 @@ protected:
             _plink = plink;
         }
 
-        boost::shared_ptr<XMLData> _initdata;
+        std::shared_ptr<XMLData> _initdata;
         uint64_t lastupdated;
         Transform tnew;         ///< most recent transform that is was set
 
@@ -155,7 +163,7 @@ protected:
     class OPENRAVE_API SimpleXMLReader : public BaseXMLReader
     {
 public:
-        SimpleXMLReader(boost::shared_ptr<XMLData>);
+        SimpleXMLReader(std::shared_ptr<XMLData>);
         virtual XMLReadablePtr GetReadable() {
             return _pdata;
         }
@@ -164,7 +172,7 @@ public:
         virtual void characters(const std::string& ch);
 
 protected:
-        boost::shared_ptr<XMLData> _pdata;
+        std::shared_ptr<XMLData> _pdata;
         std::stringstream ss;
     };
 
@@ -185,13 +193,13 @@ protected:
     virtual bool SwitchBody(KinBodyPtr pbody1, KinBodyPtr pbody2);
 
 protected:
-    typedef std::pair<boost::shared_ptr<BodyData>, Transform > SNAPSHOT;
-    typedef std::map<int,boost::shared_ptr<BodyData> > BODIES;
-    virtual boost::shared_ptr<BodyData> CreateBodyData(KinBodyPtr pbody, boost::shared_ptr<XMLData const> pdata);
+    typedef std::pair<std::shared_ptr<BodyData>, Transform > SNAPSHOT;
+    typedef std::map<int,std::shared_ptr<BodyData> > BODIES;
+    virtual std::shared_ptr<BodyData> CreateBodyData(KinBodyPtr pbody, std::shared_ptr<XMLData const> pdata);
     virtual void _UpdateBodies(std::list<SNAPSHOT>& listbodies);
     virtual void _UpdateBodiesThread();
 
-    virtual void SetRecentTransform(boost::shared_ptr<BodyData> pdata, const Transform& t) {
+    virtual void SetRecentTransform(std::shared_ptr<BodyData> pdata, const Transform& t) {
         pdata->tnew = t;
     }
 

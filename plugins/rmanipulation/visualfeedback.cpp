@@ -137,10 +137,10 @@ class VisualFeedback : public ModuleBase
 {
 public:
     inline std::shared_ptr<VisualFeedback> shared_problem() {
-        return boost::static_pointer_cast<VisualFeedback>(shared_from_this());
+        return std::static_pointer_cast<VisualFeedback>(shared_from_this());
     }
     inline std::shared_ptr<VisualFeedback const> shared_problem_const() const {
-        return boost::static_pointer_cast<VisualFeedback const>(shared_from_this());
+        return std::static_pointer_cast<VisualFeedback const>(shared_from_this());
     }
     friend class VisibilityConstraintFunction;
 
@@ -848,7 +848,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
             }
         }
 
-        _pcamerageom = boost::static_pointer_cast<SensorBase::CameraGeomData const>(psensor->GetSensor()->GetSensorGeometry());
+        _pcamerageom = std::static_pointer_cast<SensorBase::CameraGeomData const>(psensor->GetSensor()->GetSensorGeometry());
         if( !bHasRayDensity ) {
             _fSampleRayDensity = 20.0f/_pcamerageom->KK.fx;
         }

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -32,11 +32,11 @@ public:
     };
 
     std::shared_ptr<PhysicsData> _GetData(KinBodyConstPtr pbody) {
-        std::shared_ptr<PhysicsData> pdata = boost::dynamic_pointer_cast<PhysicsData>(pbody->GetUserData("_genericphysics_"));
+        std::shared_ptr<PhysicsData> pdata = std::dynamic_pointer_cast<PhysicsData>(pbody->GetUserData("_genericphysics_"));
         if( !pdata ) {
             // isn't initialized for some reason, this can happen during environment cloning
-            InitKinBody(boost::const_pointer_cast<KinBody>(pbody)); // fixme
-            pdata = boost::dynamic_pointer_cast<PhysicsData>(pbody->GetUserData("_genericphysics_"));
+            InitKinBody(std::const_pointer_cast<KinBody>(pbody)); // fixme
+            pdata = std::dynamic_pointer_cast<PhysicsData>(pbody->GetUserData("_genericphysics_"));
         }
         return pdata;
     }
@@ -133,7 +133,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         PhysicsEngineBase::Clone(preference,cloningoptions);
-        std::shared_ptr<GenericPhysicsEngine const> r = boost::dynamic_pointer_cast<GenericPhysicsEngine const>(preference);
+        std::shared_ptr<GenericPhysicsEngine const> r = std::dynamic_pointer_cast<GenericPhysicsEngine const>(preference);
         _vgravity = r->_vgravity;
     }
 

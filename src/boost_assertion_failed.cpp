@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2018 Rosen Diankov
 #if !defined(OPENRAVE_DISABLE_ASSERT_HANDLER) && (defined(BOOST_ENABLE_ASSERT_HANDLER))
 
@@ -14,7 +14,7 @@
     #define HIDDEN
   #endif
 #endif
-
+#define HIDDEN
 /// Modifications controlling %boost library behavior.
 namespace boost
 {

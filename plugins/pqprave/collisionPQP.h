@@ -88,7 +88,7 @@ public:
 
     virtual bool _InitKinBody(KinBodyConstPtr pbody)
     {
-        KinBodyInfoPtr pinfo = boost::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
+        KinBodyInfoPtr pinfo = std::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
         // need the pbody check since kinbodies can be cloned and could have the wrong pointer
         if( !!pinfo && pinfo->GetBody() == pbody ) {
             return true;
@@ -96,7 +96,7 @@ public:
 
         pinfo.reset(new KinBodyInfo());
 
-        pinfo->_pbody = boost::const_pointer_cast<KinBody>(pbody);
+        pinfo->_pbody = std::const_pointer_cast<KinBody>(pbody);
         pbody->SetUserData(_userdatakey, pinfo);
 
         PQP_REAL p1[3], p2[3], p3[3];
@@ -418,7 +418,7 @@ public:
 
     std::shared_ptr<PQP_Model> GetLinkModel(KinBody::LinkConstPtr plink)
     {
-        KinBodyInfoPtr pinfo = boost::dynamic_pointer_cast<KinBodyInfo>(plink->GetParent()->GetUserData(_userdatakey));
+        KinBodyInfoPtr pinfo = std::dynamic_pointer_cast<KinBodyInfo>(plink->GetParent()->GetUserData(_userdatakey));
         BOOST_ASSERT( pinfo->GetBody() == plink->GetParent());
         return pinfo->vlinks.at(plink->GetIndex());
     }

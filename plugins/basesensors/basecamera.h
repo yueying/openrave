@@ -167,7 +167,7 @@ protected:
 public:
     static BaseXMLReaderPtr CreateXMLReader(InterfaceBasePtr ptr, const AttributesList& atts)
     {
-        return BaseXMLReaderPtr(new BaseCameraXMLReader(boost::dynamic_pointer_cast<BaseCameraSensor>(ptr)));
+        return BaseXMLReaderPtr(new BaseCameraXMLReader(std::dynamic_pointer_cast<BaseCameraSensor>(ptr)));
     }
 
     BaseCameraSensor(EnvironmentBasePtr penv) : SensorBase(penv) {
@@ -271,7 +271,7 @@ public:
     virtual void SetSensorGeometry(SensorGeometryConstPtr pgeometry)
     {
         OPENRAVE_ASSERT_OP(pgeometry->GetType(), ==, ST_Camera );
-        *_pgeom = *boost::static_pointer_cast<CameraGeomData const>(pgeometry);
+        *_pgeom = *std::static_pointer_cast<CameraGeomData const>(pgeometry);
         _Reset();
     }
 
@@ -329,7 +329,7 @@ public:
         if( _bPower &&( psensordata->GetType() == ST_Camera) ) {
             boost::mutex::scoped_lock lock(_mutexdata);
             if( _pdata->vimagedata.size() > 0 ) {
-                *boost::dynamic_pointer_cast<CameraSensorData>(psensordata) = *_pdata;
+                *std::dynamic_pointer_cast<CameraSensorData>(psensordata) = *_pdata;
                 return true;
             }
         }
@@ -389,7 +389,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         SensorBase::Clone(preference,cloningoptions);
-        std::shared_ptr<BaseCameraSensor const> r = boost::dynamic_pointer_cast<BaseCameraSensor const>(preference);
+        std::shared_ptr<BaseCameraSensor const> r = std::dynamic_pointer_cast<BaseCameraSensor const>(preference);
         // r->_pgeom->sensor_reference should already be correct
         *_pgeom = *r->_pgeom;
         _vColor = r->_vColor;

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -28,6 +28,7 @@
 // for some reason there's a clash between winsock.h and winsock2.h, so don't include winsockX directly. Also cannot define WIN32_LEAN_AND_MEAN for vc100
 #undef WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <WinSock2.h>
 #define usleep(microseconds) Sleep((microseconds+999)/1000)
 #endif
 
@@ -472,10 +473,10 @@ public:
 private:
 
     inline std::shared_ptr<SimpleTextServer> shared_server() {
-        return boost::static_pointer_cast<SimpleTextServer>(shared_from_this());
+        return std::static_pointer_cast<SimpleTextServer>(shared_from_this());
     }
     inline std::shared_ptr<SimpleTextServer const> shared_server_const() const {
-        return boost::static_pointer_cast<SimpleTextServer const>(shared_from_this());
+        return std::static_pointer_cast<SimpleTextServer const>(shared_from_this());
     }
 
     // called from threads other than the main worker to wait until
@@ -931,7 +932,7 @@ protected:
 
     bool worEnvCreateModule(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
-        GetEnv()->Add(boost::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->first, true, boost::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->second);
+        GetEnv()->Add(std::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->first, true, std::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->second);
         return true;
     }
 
@@ -1243,7 +1244,7 @@ protected:
 
         switch(psensordata->GetType()) {
         case SensorBase::ST_Laser: {
-            std::shared_ptr<SensorBase::LaserSensorData> plaserdata = boost::static_pointer_cast<SensorBase::LaserSensorData>(psensordata);
+            std::shared_ptr<SensorBase::LaserSensorData> plaserdata = std::static_pointer_cast<SensorBase::LaserSensorData>(psensordata);
             os << plaserdata->ranges.size() << " ";
             if( plaserdata->positions.size() != plaserdata->ranges.size() ) {
                 os << "1 ";
@@ -1279,14 +1280,14 @@ protected:
             break;
         }
         case SensorBase::ST_Camera: {
-            std::shared_ptr<SensorBase::CameraSensorData> pcameradata = boost::static_pointer_cast<SensorBase::CameraSensorData>(psensordata);
+            std::shared_ptr<SensorBase::CameraSensorData> pcameradata = std::static_pointer_cast<SensorBase::CameraSensorData>(psensordata);
 
             if( psensor->GetSensorGeometry()->GetType() != SensorBase::ST_Camera ) {
                 RAVELOG_ERROR("sensor geometry not a camera type\n");
                 return false;
             }
 
-            SensorBase::CameraGeomDataConstPtr pgeom = boost::static_pointer_cast<SensorBase::CameraGeomData const>(psensor->GetSensorGeometry());
+            SensorBase::CameraGeomDataConstPtr pgeom = std::static_pointer_cast<SensorBase::CameraGeomData const>(psensor->GetSensorGeometry());
 
             if( (int)pcameradata->vimagedata.size() != pgeom->width*pgeom->height*3 ) {
                 RAVELOG_ERROR(str(boost::format("image data wrong size %d != %d\n")%pcameradata->vimagedata.size()%(pgeom->width*pgeom->height*3)));
@@ -2278,7 +2279,7 @@ protected:
         else {
             stringstream::streampos inputpos = is.tellg();
             list<ModuleBasePtr> listProblems;
-            GetEnv()->GetLoadedProblems(listProblems);
+            GetEnv()->GetModules(listProblems);
             FOREACHC(itprob, listProblems) {
                 is.seekg(inputpos);
                 if( !(*itprob)->SendCommand(os,is) ) {

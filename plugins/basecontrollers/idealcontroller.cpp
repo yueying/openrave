@@ -414,10 +414,10 @@ private:
     }
 
     inline std::shared_ptr<IdealController> shared_controller() {
-        return boost::static_pointer_cast<IdealController>(shared_from_this());
+        return std::static_pointer_cast<IdealController>(shared_from_this());
     }
     inline std::shared_ptr<IdealController const> shared_controller_const() const {
-        return boost::static_pointer_cast<IdealController const>(shared_from_this());
+        return std::static_pointer_cast<IdealController const>(shared_from_this());
     }
     inline std::weak_ptr<IdealController> weak_controller() {
         return shared_controller();

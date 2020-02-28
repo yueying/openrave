@@ -178,7 +178,7 @@ For joints J2xJ3, the index operation is::\n\n\
     virtual void _ComputeInternalInformation()
     {
         RobotBase::_ComputeInternalInformation();
-        std::shared_ptr<XMLData> cmdata = boost::dynamic_pointer_cast<XMLData>(GetReadableInterface("collisionmap"));
+        std::shared_ptr<XMLData> cmdata = std::dynamic_pointer_cast<XMLData>(GetReadableInterface("collisionmap"));
         if( !!cmdata ) {
             // process the collisionmap structures
             FOREACH(itmap,cmdata->listmaps) {
@@ -203,7 +203,7 @@ For joints J2xJ3, the index operation is::\n\n\
             return true;
         }
         // check if the current joint angles fall within the allowable range
-        std::shared_ptr<XMLData> cmdata = boost::dynamic_pointer_cast<XMLData>(GetReadableInterface("collisionmap"));
+        std::shared_ptr<XMLData> cmdata = std::dynamic_pointer_cast<XMLData>(GetReadableInterface("collisionmap"));
         if( !!cmdata ) {
             vector<dReal> values;
             boost::array<int,2> indices={ { 0,0}};

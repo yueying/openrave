@@ -122,7 +122,7 @@ void SimpleSensorSystem::AddRegisteredBodies(const std::vector<KinBodyPtr>& vbod
 {
     // go through all bodies in the environment and check for mocap data
     FOREACHC(itbody, vbodies) {
-        std::shared_ptr<XMLData> pmocapdata = boost::dynamic_pointer_cast<XMLData>((*itbody)->GetReadableInterface(_xmlid));
+        std::shared_ptr<XMLData> pmocapdata = std::dynamic_pointer_cast<XMLData>((*itbody)->GetReadableInterface(_xmlid));
         if( !!pmocapdata ) {
             KinBody::ManageDataPtr p = AddKinBody(*itbody, pmocapdata);
             if( !!p ) {
@@ -135,9 +135,9 @@ void SimpleSensorSystem::AddRegisteredBodies(const std::vector<KinBodyPtr>& vbod
 KinBody::ManageDataPtr SimpleSensorSystem::AddKinBody(KinBodyPtr pbody, XMLReadableConstPtr _pdata)
 {
     BOOST_ASSERT(pbody->GetEnv()==GetEnv());
-    std::shared_ptr<XMLData const> pdata = boost::static_pointer_cast<XMLData const>(_pdata);
+    std::shared_ptr<XMLData const> pdata = std::static_pointer_cast<XMLData const>(_pdata);
     if( !pdata ) {
-        pdata = boost::dynamic_pointer_cast<XMLData const>(pbody->GetReadableInterface(_xmlid));
+        pdata = std::dynamic_pointer_cast<XMLData const>(pbody->GetReadableInterface(_xmlid));
         if( !pdata ) {
             RAVELOG_VERBOSE(str(boost::format("failed to find manage data for body %s\n")%pbody->GetName()));
             return KinBody::ManageDataPtr();

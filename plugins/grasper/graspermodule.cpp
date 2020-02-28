@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Carnegie Mellon University (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "plugindefs.h"
-
+#define NOMINMAX
+#include <cmath>
 #include <algorithm>
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
-#include <cmath>
-
 
 #ifdef QHULL_FOUND
+
+
 
 extern "C"
 {
@@ -1724,7 +1725,9 @@ protected:
             rewind(errfile);
             char buf[255];
             // + 1 because fgets reads at most count - 1 chars
-            while (static_cast<size_t>(ftell(errfile)) < errMsgEndPos && (fgets(buf, std::min(errMsgEndPos - ftell(errfile) + 1, sizeof(buf)), errfile) != NULL)) {
+            while (static_cast<size_t>(ftell(errfile)) < errMsgEndPos 
+				&& (fgets(buf, std::min(errMsgEndPos - ftell(errfile) + 1, sizeof(buf)), errfile) != NULL)) 
+			{
                 RAVELOG_WARN(buf);
             }
             rewind(errfile); // Rewind errfile for next error

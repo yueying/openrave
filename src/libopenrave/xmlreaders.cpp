@@ -124,16 +124,16 @@ bool TrajectoryReader::endElement(const std::string& name)
     if( !!_pcurreader ) {
         if( _pcurreader->endElement(name) ) {
             if( _bInReadable ) {
-                HierarchicalXMLReaderPtr reader = boost::dynamic_pointer_cast<HierarchicalXMLReader>(_pcurreader);
+                HierarchicalXMLReaderPtr reader = std::dynamic_pointer_cast<HierarchicalXMLReader>(_pcurreader);
                 _ptraj->SetReadableInterface(reader->GetReadable()->GetXMLId(), reader->GetReadable());
                 _pcurreader.reset();
             }
             else {
-                if( !!boost::dynamic_pointer_cast<ConfigurationSpecification::Reader>(_pcurreader) ) {
+                if( !!std::dynamic_pointer_cast<ConfigurationSpecification::Reader>(_pcurreader) ) {
                     BOOST_ASSERT(_spec.IsValid());
                     _ptraj->Init(_spec);
                 }
-                bool bret = !!boost::dynamic_pointer_cast<TrajectoryReader>(_pcurreader);
+                bool bret = !!std::dynamic_pointer_cast<TrajectoryReader>(_pcurreader);
                 _pcurreader.reset();
                 if( bret ) {
                     return true;
@@ -299,7 +299,7 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
 {
     if( !!_pcurreader ) {
         if( _pcurreader->endElement(xmlname) ) {
-            bool bret = !!boost::dynamic_pointer_cast<GeometryInfoReader>(_pcurreader);
+            bool bret = !!std::dynamic_pointer_cast<GeometryInfoReader>(_pcurreader);
             _pcurreader.reset();
             if( bret ) {
                 return true;
@@ -516,7 +516,7 @@ bool ElectricMotorActuatorInfoReader::endElement(const std::string& xmlname)
 {
     if( !!_pcurreader ) {
         if( _pcurreader->endElement(xmlname) ) {
-            bool bret = !!boost::dynamic_pointer_cast<ElectricMotorActuatorInfoReader>(_pcurreader);
+            bool bret = !!std::dynamic_pointer_cast<ElectricMotorActuatorInfoReader>(_pcurreader);
             _pcurreader.reset();
             if( bret ) {
                 return true;

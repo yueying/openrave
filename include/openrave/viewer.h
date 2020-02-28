@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -22,7 +22,8 @@
 #ifndef OPENRAVE_VIEWER_H
 #define OPENRAVE_VIEWER_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /** \brief Handle holding the plot from the viewers. The plot will continue to be drawn as long as a reference to this handle is held.
 
@@ -32,7 +33,8 @@ namespace OpenRAVE {
 class OPENRAVE_API GraphHandle
 {
 public:
-    virtual ~GraphHandle() {
+    virtual ~GraphHandle()
+	{
     }
 
     /// \brief Changes the underlying transformation of the plot. <b>[multi-thread safe]</b>
@@ -43,9 +45,9 @@ public:
     virtual void SetShow(bool bshow) OPENRAVE_DUMMY_IMPLEMENTATION;
 };
 
-typedef boost::shared_ptr<GraphHandle> GraphHandlePtr;
-typedef boost::shared_ptr<GraphHandle const> GraphHandleConstPtr;
-typedef boost::weak_ptr<GraphHandle const> GraphHandleWeakPtr;
+typedef std::shared_ptr<GraphHandle> GraphHandlePtr;
+typedef std::shared_ptr<GraphHandle const> GraphHandleConstPtr;
+typedef std::weak_ptr<GraphHandle const> GraphHandleWeakPtr;
 
 /** \brief <b>[interface]</b> Base class for the graphics and gui engine that renders the environment and provides visual sensor information. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_viewer.
     \ingroup interfaces
@@ -53,18 +55,17 @@ typedef boost::weak_ptr<GraphHandle const> GraphHandleWeakPtr;
 class OPENRAVE_API ViewerBase : public InterfaceBase
 {
 public:
-    enum ViewerEvents
-    {
-        VE_ItemSelection = 1,
-    } RAVE_DEPRECATED;
-
-    ViewerBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Viewer, penv) {
+    ViewerBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Viewer, penv)
+	{
     }
-    virtual ~ViewerBase() {
+
+    virtual ~ViewerBase() 
+	{
     }
 
     /// \brief return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
+    static inline InterfaceType GetInterfaceTypeStatic() 
+	{
         return PT_Viewer;
     }
 
@@ -106,7 +107,8 @@ public:
         \param t the rotation and translation of the camera. Note that +z is treated as the camera direction axis! So all points in front of the camera have a positive dot product with its +z direction.
         \param intrinsics the intrinsic parameters of the camera defining FOV, distortion, principal point, and focal length. The focal length is used to define the near plane for culling.
      */
-    virtual bool GetCameraImage(std::vector<uint8_t>& memory, int width, int height, const RaveTransform<float>& t, const SensorBase::CameraIntrinsics& intrinsics) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual bool GetCameraImage(std::vector<uint8_t>& memory, int width, int height, 
+		const RaveTransform<float>& t, const SensorBase::CameraIntrinsics& intrinsics) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     //@}
 
@@ -155,24 +157,9 @@ public:
 
     virtual void SetSize(int w, int h) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    /// \deprecated (11/06/13)
-    virtual void ViewerSetSize(int w, int h) RAVE_DEPRECATED {
-        SetSize(w,h);
-    }
-
     virtual void Move(int x, int y) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    /// \deprecated (11/06/13)
-    virtual void ViewerMove(int x, int y) RAVE_DEPRECATED {
-        Move(x,y);
-    }
-
     virtual void SetName(const std::string& name) OPENRAVE_DUMMY_IMPLEMENTATION;
-
-    /// \deprecated (11/06/13)
-    virtual void ViewerSetTitle(const std::string& ptitle) RAVE_DEPRECATED {
-        SetName(ptitle);
-    }
 
     /// \brief controls showing the viewer.
     ///
@@ -192,37 +179,46 @@ public:
     }
 
 protected:
-    /// \deprecated (12/12/11)
-    virtual void SetViewerData(KinBodyPtr body, UserDataPtr data) RAVE_DEPRECATED {
-        body->SetUserData(GetXMLId(), data);
-    }
 
-    virtual GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, const RaveVector<float>& color, int drawstyle = 0) OPENRAVE_DUMMY_IMPLEMENTATION;
-    virtual GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, const float* colors, int drawstyle = 0, bool bhasalpha=false) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize,
+		const RaveVector<float>& color, int drawstyle = 0) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, 
+		const float* colors, int drawstyle = 0, bool bhasalpha=false) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    virtual GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
-    virtual GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, 
+		float fwidth, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride,
+		float fwidth, const float* colors) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    virtual GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
-    virtual GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride,
+		float fwidth, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, 
+		float fwidth, const float* colors) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    virtual GraphHandlePtr drawarrow(const RaveVector<float>& p1, const RaveVector<float>& p2, float fwidth, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawarrow(const RaveVector<float>& p1, const RaveVector<float>& p2, 
+		float fwidth, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     virtual GraphHandlePtr drawbox(const RaveVector<float>& vpos, const RaveVector<float>& vextents) OPENRAVE_DUMMY_IMPLEMENTATION;
-    virtual GraphHandlePtr drawplane(const RaveTransform<float>& tplane, const RaveVector<float>& vextents, const boost::multi_array<float,3>& vtexture) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawplane(const RaveTransform<float>& tplane, 
+		const RaveVector<float>& vextents, const boost::multi_array<float,3>& vtexture) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    virtual GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, int numTriangles, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
-    virtual GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, int numTriangles, const boost::multi_array<float,2>& colors) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, 
+		int numTriangles, const RaveVector<float>& color) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, 
+		int numTriangles, const boost::multi_array<float,2>& colors) OPENRAVE_DUMMY_IMPLEMENTATION;
 
-    inline ViewerBasePtr shared_viewer() {
-        return boost::static_pointer_cast<ViewerBase>(shared_from_this());
+    inline ViewerBasePtr shared_viewer() 
+	{
+        return std::static_pointer_cast<ViewerBase>(shared_from_this());
     }
-    inline ViewerBaseConstPtr shared_viewer_const() const {
-        return boost::static_pointer_cast<ViewerBase const>(shared_from_this());
+    inline ViewerBaseConstPtr shared_viewer_const() const 
+	{
+        return std::static_pointer_cast<ViewerBase const>(shared_from_this());
     }
 
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_VIEWER_HASH;
     }
 

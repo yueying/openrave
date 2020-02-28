@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -1147,7 +1147,7 @@ int RaveInitialize(bool bLoadAllPlugins, int level)
 
 void RaveInitializeFromState(UserDataPtr globalstate)
 {
-    RaveGlobal::_state = boost::dynamic_pointer_cast<RaveGlobal>(globalstate);
+    RaveGlobal::_state = std::dynamic_pointer_cast<RaveGlobal>(globalstate);
 }
 
 UserDataPtr RaveGlobalState()
@@ -1248,7 +1248,7 @@ MultiControllerBasePtr RaveCreateMultiController(EnvironmentBasePtr env, const s
     // TODO remove hack once MultiController is a registered interface
     ControllerBasePtr pcontroller = RaveGlobal::instance()->GetDatabase()->CreateController(env, name);
     if( name == "genericmulticontroller" ) {
-        return boost::static_pointer_cast<MultiControllerBase>(pcontroller);
+        return std::static_pointer_cast<MultiControllerBase>(pcontroller);
     }
     // don't support anything else
     return MultiControllerBasePtr();
@@ -2193,7 +2193,7 @@ void Grabbed::ProcessCollidingLinks(const std::set<int>& setRobotLinksToIgnore)
 
         std::vector<KinBody::LinkPtr > vbodyattachedlinks;
         FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-            std::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+            std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
             bool bsamelink = find(_vattachedlinks.begin(),_vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
             KinBodyPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
             if( !pothergrabbedbody ) {
@@ -2275,7 +2275,7 @@ void Grabbed::UpdateCollidingLinks()
     std::map<KinBody::LinkConstPtr, int>::iterator itnoncolliding;
     std::vector<KinBody::LinkPtr > vbodyattachedlinks;
     FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-        std::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         bool bsamelink = find(_vattachedlinks.begin(),_vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
         KinBodyPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
         if( !pothergrabbedbody ) {
@@ -2312,7 +2312,7 @@ void Grabbed::UpdateCollidingLinks()
 
     std::set<KinBodyConstPtr> _setgrabbed;
     FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
-        std::shared_ptr<Grabbed const> pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyConstPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
         if( !!pothergrabbedbody ) {
             _setgrabbed.insert(pothergrabbedbody);
@@ -2443,7 +2443,7 @@ EnvironmentBase::EnvironmentBase()
         RAVELOG_WARN("OpenRAVE global state not initialized! Need to call RaveInitialize before any OpenRAVE services can be used. For now, initializing with default parameters.\n");
         RaveInitialize(true);
     }
-    __nUniqueId = RaveGlobal::instance()->RegisterEnvironment(this);
+    unique_id_ = RaveGlobal::instance()->RegisterEnvironment(this);
 }
 
 EnvironmentBase::~EnvironmentBase()
@@ -2551,7 +2551,7 @@ int SpaceSamplerBase::_CallStatusFunctions(int sampleiteration)
 {
     int ret = 0;
     FOREACHC(it,__listRegisteredCallbacks) {
-        CustomSamplerCallbackDataPtr pitdata = boost::dynamic_pointer_cast<CustomSamplerCallbackData>(it->lock());
+        CustomSamplerCallbackDataPtr pitdata = std::dynamic_pointer_cast<CustomSamplerCallbackData>(it->lock());
         if( !!pitdata) {
             ret |= pitdata->_callbackfn(sampleiteration);
         }

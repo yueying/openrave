@@ -45,7 +45,7 @@ std::istream& operator>>(std::istream& I, PlannerParameters& pp)
             if( c == pMatchPlannerParameters[nMatchPlannerParametersSize-1] ) {
                 // matches at the end, check if previous string matches
                 if( vstrbuf.size() >= nMatchPlannerParametersSize) {
-                    if( strncasecmp(&vstrbuf[vstrbuf.size()-nMatchPlannerParametersSize], pMatchPlannerParameters, nMatchPlannerParametersSize) == 0 ) {
+                    if(strncmp(&vstrbuf[vstrbuf.size()-nMatchPlannerParametersSize], pMatchPlannerParameters, nMatchPlannerParametersSize) == 0 ) {
                         // matches, so quit
                         bFoundMatch = true;
                         break;
@@ -457,7 +457,7 @@ bool PlannerParameters::endElement(const std::string& name)
 {
     if( !!__pcurreader ) {
         if( __pcurreader->endElement(name) ) {
-            std::shared_ptr<DummyXMLReader> pdummy = boost::dynamic_pointer_cast<DummyXMLReader>(__pcurreader);
+            std::shared_ptr<DummyXMLReader> pdummy = std::dynamic_pointer_cast<DummyXMLReader>(__pcurreader);
             if( !!pdummy ) {
                 if( pdummy->GetFieldName() == "_postprocessing" ) {
                     _sPostProcessingParameters = _sslocal->str();
@@ -1049,7 +1049,7 @@ PlannerStatus PlannerBase::_ProcessPostPlanners(RobotBasePtr probot, TrajectoryB
     // transfer the callbacks?
     list<UserDataPtr> listhandles;
     FOREACHC(it,__listRegisteredCallbacks) {
-        CustomPlannerCallbackDataPtr pitdata = boost::dynamic_pointer_cast<CustomPlannerCallbackData>(it->lock());
+        CustomPlannerCallbackDataPtr pitdata = std::dynamic_pointer_cast<CustomPlannerCallbackData>(it->lock());
         if( !!pitdata) {
             listhandles.push_back(__cachePostProcessPlanner->RegisterPlanCallback(pitdata->_callbackfn));
         }
@@ -1073,7 +1073,7 @@ PlannerStatus PlannerBase::_ProcessPostPlanners(RobotBasePtr probot, TrajectoryB
 PlannerAction PlannerBase::_CallCallbacks(const PlannerProgress& progress)
 {
     FOREACHC(it,__listRegisteredCallbacks) {
-        CustomPlannerCallbackDataPtr pitdata = boost::dynamic_pointer_cast<CustomPlannerCallbackData>(it->lock());
+        CustomPlannerCallbackDataPtr pitdata = std::dynamic_pointer_cast<CustomPlannerCallbackData>(it->lock());
         if( !!pitdata) {
             PlannerAction ret = pitdata->_callbackfn(progress);
             if( ret != PA_None ) {

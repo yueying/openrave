@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
  *
  * Copyright (c) 2010-2011, the Trustees of Indiana University
  * All rights reserved.
@@ -2867,7 +2867,7 @@ Real SolveMinTimeBounded(const Vector& x0,const Vector& v0,const Vector& x1,cons
                 ttotal += ramps[i][j].ttotal;
             }
             // Don't do anything if this is the slowest ramp.
-            if ((i == maxTimeIndex) and (!endTimeUpdated)) {
+            if ((i == maxTimeIndex) && (!endTimeUpdated)) {
                 PARABOLIC_RAMP_PLOG("joint %d is already the slowest, continue to the next DOF", i);
                 continue;
             }

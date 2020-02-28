@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2016 Puttichai Lertkultanon & Rosen Diankov
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the
@@ -46,7 +46,9 @@ struct RampNDSection {
     dReal da, db; // obstacle distances at xa and xb
 };
 
-int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect, FeasibilityCheckerBase* feas, DistanceCheckerBase* dist, int maxiter, __attribute__((unused)) int options)
+int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect, FeasibilityCheckerBase* feas,
+	DistanceCheckerBase* dist, int maxiter, 
+	int options)
 {
     BOOST_ASSERT(0);
     return 0xffff;
@@ -58,17 +60,22 @@ int CheckRampNDFeasibility(const std::vector<RampND>& rampndVect, FeasibilityChe
     return 0xffff;
 }
 
-RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas) : feas(_feas), tol(0), distance(NULL), maxiter(0), constraintmask(0) {
+RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas) 
+	: feas(_feas), tol(0), distance(NULL), maxiter(0), constraintmask(0) {
 }
 
-RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas, DistanceCheckerBase* _dist, int _maxiter) : feas(_feas), tol(0), distance(_dist), maxiter(_maxiter), constraintmask(0) {
+RampNDFeasibilityChecker::RampNDFeasibilityChecker(FeasibilityCheckerBase* _feas, 
+	DistanceCheckerBase* _dist, int _maxiter) 
+	: feas(_feas), tol(0), distance(_dist), maxiter(_maxiter), constraintmask(0) {
 }
 
 int RampNDFeasibilityChecker::Check(const std::vector<RampND>& rampndVect, int options)
 {
-    if ((options & constraintmask) == constraintmask) {
-        FOREACH(itrampnd, rampndVect) {
-            itrampnd->constraintChecked = true;
+    if ((options & constraintmask) == constraintmask)
+	{
+        for(auto itrampnd: rampndVect) 
+		{
+            itrampnd.constraintChecked = true;
         }
     }
     if( distance ) {

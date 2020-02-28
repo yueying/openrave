@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -240,8 +240,10 @@ protected:
         return true;
     }
 
-    bool _WriteJointValues(GroupInfoConstPtr inforaw, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata) {
-        CubicGroupInfoConstPtr info = boost::dynamic_pointer_cast<CubicGroupInfo const>(inforaw);
+    bool _WriteJointValues(GroupInfoConstPtr inforaw, std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata)
+	{
+        CubicGroupInfoConstPtr info = std::dynamic_pointer_cast<CubicGroupInfo const>(inforaw);
         _v0pos.resize(info->gpos.dof);
         _v1pos.resize(info->gpos.dof);
         for(int i = 0; i < info->gpos.dof; ++i) {

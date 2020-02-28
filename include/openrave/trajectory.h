@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -171,15 +171,18 @@ public:
     virtual void Swap(TrajectoryBasePtr traj) OPENRAVE_DUMMY_IMPLEMENTATION;
 
 protected:
-    inline TrajectoryBasePtr shared_trajectory() {
-        return boost::static_pointer_cast<TrajectoryBase>(shared_from_this());
+    inline TrajectoryBasePtr shared_trajectory() 
+	{
+        return std::static_pointer_cast<TrajectoryBase>(shared_from_this());
     }
-    inline TrajectoryBaseConstPtr shared_trajectory_const() const {
-        return boost::static_pointer_cast<TrajectoryBase const>(shared_from_this());
+    inline TrajectoryBaseConstPtr shared_trajectory_const() const 
+	{
+        return std::static_pointer_cast<TrajectoryBase const>(shared_from_this());
     }
 
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_TRAJECTORY_HASH;
     }
 };

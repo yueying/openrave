@@ -996,7 +996,7 @@ osg::ref_ptr<osg::Camera> QOSGViewerWidget::_CreateHUDCamera( int x, int y, int 
 KinBodyItemPtr QOSGViewerWidget::_GetItemFromName(const std::string& name)
 {
     KinBodyPtr pbody = _penv->GetKinBody(name);
-    KinBodyItemPtr pitem = boost::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
+    KinBodyItemPtr pitem = std::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
     return pitem;
 }
 
@@ -1013,7 +1013,7 @@ KinBodyItemPtr QOSGViewerWidget::FindKinBodyItemFromOSGNode(OSGNodePtr node)
             if( !pitem ) {
                 RAVELOG_WARN("trying to use a deleted item\n");
             }
-            return boost::dynamic_pointer_cast<KinBodyItem>(pitem);
+            return std::dynamic_pointer_cast<KinBodyItem>(pitem);
         }
     }
 
@@ -1144,7 +1144,7 @@ void QOSGViewerWidget::_InitializeLights(int nlights)
 //    FOREACH(itbody,vecbodies) {
 //        BOOST_ASSERT( !!itbody->pbody );
 //        KinBodyPtr pbody = itbody->pbody; // try to use only as an id, don't call any methods!
-//        KinBodyItemPtr pitem = boost::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
+//        KinBodyItemPtr pitem = std::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
 //        if (!!pitem) {
 //            pitem->UpdateFromOSG();
 //        }

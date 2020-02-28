@@ -151,9 +151,9 @@ struct null_deleter
     }
 };
 
-template <class T> boost::shared_ptr<T> sptr_from(boost::weak_ptr<T> const& wpt)
+template <class T> std::shared_ptr<T> sptr_from(std::weak_ptr<T> const& wpt)
 {
-    return boost::shared_ptr<T>(wpt); // throws on wpt.expired()
+    return std::shared_ptr<T>(wpt); // throws on wpt.expired()
 }
 
 template<typename T>

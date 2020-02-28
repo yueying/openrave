@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
+﻿// Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -36,11 +36,11 @@
 #include <boost/typeof/std/set.hpp>
 #include <boost/typeof/std/string.hpp>
 
-#define FOREACH(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); ++(it))
-#define FOREACH_NOINC(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); )
+#define FOREACH(it, v) for(auto it = (v).begin(); it != (v).end(); ++(it))
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
 
-#define FOREACHC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); ++(it))
-#define FOREACHC_NOINC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); )
+#define FOREACHC(it, v) for(auto it = (v).begin(); it != (v).end(); ++(it))
+#define FOREACHC_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
 #define RAVE_REGISTER_BOOST
 
 #else

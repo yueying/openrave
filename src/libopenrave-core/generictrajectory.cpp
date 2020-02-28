@@ -504,7 +504,7 @@ public:
     void Swap(TrajectoryBasePtr rawtraj)
     {
         OPENRAVE_ASSERT_OP(GetXMLId(),==,rawtraj->GetXMLId());
-        std::shared_ptr<GenericTrajectory> traj = boost::dynamic_pointer_cast<GenericTrajectory>(rawtraj);
+        std::shared_ptr<GenericTrajectory> traj = std::dynamic_pointer_cast<GenericTrajectory>(rawtraj);
         _spec.Swap(traj->_spec);
         _vderivoffsets.swap(traj->_vderivoffsets);
         _vddoffsets.swap(traj->_vddoffsets);

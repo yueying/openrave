@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -22,13 +22,14 @@
 #ifndef  OPENRAVE_ENVIRONMENTBASE_H
 #define  OPENRAVE_ENVIRONMENTBASE_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 typedef boost::recursive_try_mutex EnvironmentMutex;
 
 /** \brief Maintains a world state, which serves as the gateway to all functions offered through %OpenRAVE. See \ref arch_environment.
  */
-class OPENRAVE_API EnvironmentBase : public boost::enable_shared_from_this<EnvironmentBase>
+class OPENRAVE_API EnvironmentBase : public std::enable_shared_from_this<EnvironmentBase>
 {
 public:
     EnvironmentBase();
@@ -45,12 +46,14 @@ public:
     virtual void Reset()=0;
 
     /// \brief set user data
-    virtual void SetUserData(UserDataPtr data) {
-        __pUserData = data;
+    virtual void SetUserData(UserDataPtr data) 
+	{
+        user_data_ = data;
     }
     /// \brief return the user custom data
-    virtual UserDataPtr GetUserData() const {
-        return __pUserData;
+    virtual UserDataPtr GetUserData() const 
+	{
+        return user_data_;
     }
 
     /// \brief Returns the OpenRAVE global state, used for initializing plugins
@@ -123,13 +126,6 @@ public:
 
     /// \see CollisionCheckerBase::CheckSelfCollision
     virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) = 0;
-
-    /// \deprecated (13/04/09)
-    virtual bool CheckSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) RAVE_DEPRECATED
-    {
-        //RAVELOG_WARN("CollisionCheckerBase::CheckSelfCollision has been deprecated, please use CollisionCheckerBase::CheckStandaloneSelfCollision\n");
-        return CheckStandaloneSelfCollision(pbody, report);
-    }
 
     typedef boost::function<CollisionAction(CollisionReportPtr,bool)> CollisionCallbackFn;
 
@@ -228,7 +224,8 @@ public:
     /// \brief Loads a scene from in-memory data and adds all objects in the environment. <b>[multi-thread safe]</b>
     virtual bool LoadData(const std::string& data, const AttributesList& atts = AttributesList()) = 0;
 
-    virtual bool LoadXMLData(const std::string& data, const AttributesList& atts = AttributesList()) {
+    virtual bool LoadXMLData(const std::string& data, const AttributesList& atts = AttributesList()) 
+	{
         return LoadData(data,atts);
     }
 
@@ -245,14 +242,8 @@ public:
         - 'password' - the password/key to encrypt the data with, collada supports this through zae zip archives
         \throw openrave_exception Throw if failed to save anything
      */
-    virtual void Save(const std::string& filename, SelectionOptions options=SO_Everything, const AttributesList& atts = AttributesList()) = 0;
-
-    /// \deprecated (12/08/15)
-    virtual void Save(const std::string& filename, SelectionOptions options, const std::string& selectname) RAVE_DEPRECATED {
-        AttributesList atts;
-        atts.emplace_back("target", selectname);
-        Save(filename,options,atts);
-    }
+    virtual void Save(const std::string& filename, SelectionOptions options=SO_Everything,
+		const AttributesList& atts = AttributesList()) = 0;
 
     /** \brief Saves a scene depending on the filename extension.
 
@@ -268,7 +259,8 @@ public:
         - 'password' - the password/key to encrypt the data with, collada supports this through zae zip archives
         \throw openrave_exception Throw if failed to save anything
      */
-    virtual void WriteToMemory(const std::string& filetype, std::vector<char>& output, SelectionOptions options=SO_Everything, const AttributesList& atts = AttributesList()) = 0;
+    virtual void WriteToMemory(const std::string& filetype, std::vector<char>& output,
+		SelectionOptions options=SO_Everything, const AttributesList& atts = AttributesList()) = 0;
 
     /** \brief Initializes a robot from a resource file. The robot is not added to the environment when calling this function. <b>[multi-thread safe]</b>
 
@@ -276,16 +268,23 @@ public:
         \param filename the name of the resource file, its extension determines the format of the file. See \ref supported_formats.
         \param atts The attribute/value pair specifying loading options. Defined in \ref arch_robot.
      */
-    virtual RobotBasePtr ReadRobotURI(RobotBasePtr robot, const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
-    virtual RobotBasePtr ReadRobotXMLFile(RobotBasePtr robot, const std::string& filename, const AttributesList& atts = AttributesList()) {
+    virtual RobotBasePtr ReadRobotURI(RobotBasePtr robot, const std::string& filename, 
+		const AttributesList& atts = AttributesList()) = 0;
+
+    virtual RobotBasePtr ReadRobotXMLFile(RobotBasePtr robot, const std::string& filename,
+		const AttributesList& atts = AttributesList())
+	{
         return ReadRobotURI(robot,filename,atts);
     }
 
     /// \brief Creates a new robot from a file with no extra load options specified. <b>[multi-thread safe]</b>
-    virtual RobotBasePtr ReadRobotURI(const std::string& filename) {
+    virtual RobotBasePtr ReadRobotURI(const std::string& filename)
+	{
         return ReadRobotURI(RobotBasePtr(),filename,AttributesList());
     }
-    virtual RobotBasePtr ReadRobotXMLFile(const std::string& filename) {
+
+    virtual RobotBasePtr ReadRobotXMLFile(const std::string& filename) 
+	{
         return ReadRobotURI(filename);
     }
 
@@ -295,8 +294,11 @@ public:
         \param robot If a null pointer is passed, a new robot will be created, otherwise an existing robot will be filled
         \param atts The attribute/value pair specifying loading options. If contains "uri", then will set the new body's uri string to it. If the file is COLLADA, can also specify articulatdSystemId for the then atts can have articulatdSystemId.  More info in \ref arch_robot.
      */
-    virtual RobotBasePtr ReadRobotData(RobotBasePtr robot, const std::string& data, const AttributesList& atts = AttributesList()) = 0;
-    virtual RobotBasePtr ReadRobotXMLData(RobotBasePtr robot, const std::string& data, const AttributesList& atts = AttributesList()) {
+    virtual RobotBasePtr ReadRobotData(RobotBasePtr robot, const std::string& data,
+		const AttributesList& atts = AttributesList()) = 0;
+
+    virtual RobotBasePtr ReadRobotXMLData(RobotBasePtr robot, const std::string& data, const AttributesList& atts = AttributesList())
+	{
         return ReadRobotData(robot,data,atts);
     }
 
@@ -307,15 +309,20 @@ public:
         \param atts The attribute/value pair specifying loading options. Defined in \ref arch_kinbody.
      */
     virtual KinBodyPtr ReadKinBodyURI(KinBodyPtr body, const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
-    virtual KinBodyPtr ReadKinBodyXMLFile(KinBodyPtr body, const std::string& filename, const AttributesList& atts = AttributesList()) {
+
+    virtual KinBodyPtr ReadKinBodyXMLFile(KinBodyPtr body, const std::string& filename, const AttributesList& atts = AttributesList()) 
+	{
         return ReadKinBodyURI(body,filename,atts);
     }
 
     /// \brief Creates a new kinbody from an XML file with no extra load options specified. <b>[multi-thread safe]</b>
-    virtual KinBodyPtr ReadKinBodyURI(const std::string& filename) {
+    virtual KinBodyPtr ReadKinBodyURI(const std::string& filename) 
+	{
         return ReadKinBodyURI(KinBodyPtr(),filename,AttributesList());
     }
-    virtual KinBodyPtr ReadKinBodyXMLFile(const std::string& filename) {
+
+    virtual KinBodyPtr ReadKinBodyXMLFile(const std::string& filename) 
+	{
         return ReadKinBodyURI(filename);
     }
 
@@ -326,7 +333,9 @@ public:
         \param atts The attribute/value pair specifying loading options. If contains "uri", then will set the new body's uri string to it. If the file is COLLADA, can also specify articulatdSystemId for the then atts can have articulatdSystemId. More info in \ref arch_kinbody.
      */
     virtual KinBodyPtr ReadKinBodyData(KinBodyPtr body, const std::string& data, const AttributesList& atts = AttributesList()) = 0;
-    virtual KinBodyPtr ReadKinBodyXMLData(KinBodyPtr body, const std::string& data, const AttributesList& atts = AttributesList()) {
+
+    virtual KinBodyPtr ReadKinBodyXMLData(KinBodyPtr body, const std::string& data, const AttributesList& atts = AttributesList()) 
+	{
         return ReadKinBodyData(body,data,atts);
     }
 
@@ -336,13 +345,21 @@ public:
         \param filename the name of the resource file, its extension determines the format of the file. See \ref supported_formats.
         \param atts The attribute/value pair specifying loading options. See the individual interface descriptions at \ref interface_concepts.
      */
-    virtual InterfaceBasePtr ReadInterfaceURI(InterfaceBasePtr pinterface, InterfaceType type, const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
-    virtual InterfaceBasePtr ReadInterfaceXMLFile(InterfaceBasePtr pinterface, InterfaceType type, const std::string& filename, const AttributesList& atts = AttributesList()) {
+    virtual InterfaceBasePtr ReadInterfaceURI(InterfaceBasePtr pinterface, InterfaceType type,
+		const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
+
+    virtual InterfaceBasePtr ReadInterfaceXMLFile(InterfaceBasePtr pinterface, 
+		InterfaceType type, const std::string& filename, const AttributesList& atts = AttributesList())
+	{
         return ReadInterfaceURI(pinterface,type,filename,atts);
     }
 
-    virtual InterfaceBasePtr ReadInterfaceURI(const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
-    virtual InterfaceBasePtr ReadInterfaceXMLFile(const std::string& filename, const AttributesList& atts = AttributesList()) {
+    virtual InterfaceBasePtr ReadInterfaceURI(const std::string& filename, 
+		const AttributesList& atts = AttributesList()) = 0;
+
+    virtual InterfaceBasePtr ReadInterfaceXMLFile(const std::string& filename, 
+		const AttributesList& atts = AttributesList()) 
+	{
         return ReadInterfaceURI(filename,atts);
     }
 
@@ -352,8 +369,12 @@ public:
         \param data string containing data
         \param atts The attribute/value pair specifying loading options. See the individual interface descriptions at \ref interface_concepts.
      */
-    virtual InterfaceBasePtr ReadInterfaceData(InterfaceBasePtr pinterface, InterfaceType type, const std::string& data, const AttributesList& atts = AttributesList()) = 0;
-    virtual InterfaceBasePtr ReadInterfaceXMLData(InterfaceBasePtr pinterface, InterfaceType type, const std::string& data, const AttributesList& atts = AttributesList()) {
+    virtual InterfaceBasePtr ReadInterfaceData(InterfaceBasePtr pinterface, InterfaceType type,
+		const std::string& data, const AttributesList& atts = AttributesList()) = 0;
+
+    virtual InterfaceBasePtr ReadInterfaceXMLData(InterfaceBasePtr pinterface, InterfaceType type,
+		const std::string& data, const AttributesList& atts = AttributesList()) 
+	{
         return ReadInterfaceData(pinterface,type,data,atts);
     }
 
@@ -362,8 +383,12 @@ public:
         \param filename the name of the resource file, its extension determines the format of the file. Complex meshes and articulated meshes are all triangulated appropriately. See \ref supported_formats.
         \param atts Options to control the parsing process.
      */
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshURI(boost::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshFile(boost::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts = AttributesList()) {
+    virtual std::shared_ptr<TriMesh> ReadTrimeshURI(std::shared_ptr<TriMesh> ptrimesh,
+		const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
+
+    virtual std::shared_ptr<TriMesh> ReadTrimeshFile(std::shared_ptr<TriMesh> ptrimesh,
+		const std::string& filename, const AttributesList& atts = AttributesList())
+	{
         return ReadTrimeshURI(ptrimesh,filename,atts);
     }
 
@@ -373,7 +398,8 @@ public:
         \param formathint is the hint to the underlying cad importer for the format of data
         \param atts Options to control the parsing process.
      */
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshData(boost::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, const AttributesList& atts = AttributesList()) = 0;
+    virtual std::shared_ptr<TriMesh> ReadTrimeshData(std::shared_ptr<TriMesh> ptrimesh,
+		const std::string& data, const std::string& formathint, const AttributesList& atts = AttributesList()) = 0;
 
     //@}
 
@@ -391,23 +417,6 @@ public:
         \throw openrave_exception Throw if interface is invalid or already added
      */
     virtual void Add(InterfaceBasePtr pinterface, bool bAnonymous=false, const std::string& cmdargs="") = 0;
-
-    /// \deprecated (12/04/18)
-    virtual void AddKinBody(KinBodyPtr body, bool bAnonymous=false) RAVE_DEPRECATED {
-        RAVELOG_WARN("EnvironmentBase::AddKinBody deprecated, please use EnvironmentBase::Add\n");
-        Add(body,bAnonymous);
-    }
-    /// \deprecated (12/04/18)
-    virtual void AddRobot(RobotBasePtr robot, bool bAnonymous=false) RAVE_DEPRECATED {
-        RAVELOG_WARN("EnvironmentBase::AddRobot deprecated, please use EnvironmentBase::Add\n");
-        Add(robot,bAnonymous);
-    }
-
-    /// \deprecated (12/04/18)
-    virtual void AddSensor(SensorBasePtr sensor, bool bAnonymous=false) RAVE_DEPRECATED {
-        RAVELOG_WARN("EnvironmentBase::AddSensor deprecated, please use EnvironmentBase::Add\n");
-        Add(sensor,bAnonymous);
-    }
 
     /// \brief bodycallback(body, action)
     ///
@@ -518,9 +527,6 @@ public:
     /// \param[out] trimesh - The output triangle mesh
     /// \param[in] body body the triangulate
     /// \throw openrave_exception Throw if failed to add anything
-    void Triangulate(TriMesh& trimesh, KinBodyConstPtr pbody) RAVE_DEPRECATED {
-        return Triangulate(trimesh, *pbody);
-    }
     virtual void Triangulate(TriMesh& trimesh, const KinBody &body) = 0;
 
     /// \brief General triangulation of the whole scene. <b>[multi-thread safe]</b>
@@ -535,11 +541,6 @@ public:
     /// \brief Load a new module, need to Lock if calling outside simulation thread
     virtual int AddModule(ModuleBasePtr module, const std::string& cmdargs) = 0;
 
-    /// \deprecated (12/01/30) see \ref EnvironmentBase::AddModule
-    virtual int LoadProblem(ModuleBasePtr module, const std::string& cmdargs) RAVE_DEPRECATED {
-        return AddModule(module,cmdargs);
-    }
-
     /// \brief Fills a list with the loaded modules in the environment.
     ///
     /// A separate **interface mutex** is locked for reading the modules.
@@ -547,11 +548,6 @@ public:
     /// \param timeout microseconds to wait before throwing an exception, if 0, will block indefinitely.
     /// \throw openrave_exception with ORE_Timeout error code
     virtual void GetModules(std::list<ModuleBasePtr>& listModules, uint64_t timeout=0) const = 0;
-
-    /// \deprecated (12/01/30)
-    virtual void GetLoadedProblems(std::list<ModuleBasePtr>& listModules) const {
-        GetModules(listModules);
-    }
 
     /// \brief Return the global environment mutex used to protect environment information access in multi-threaded environments.
     ///
@@ -564,20 +560,6 @@ public:
     /// \anchor env_plotting
     //@{
 
-    /// \deprecated (10/11/05)
-    typedef OpenRAVE::GraphHandlePtr GraphHandlePtr RAVE_DEPRECATED;
-
-    /// \deprecated (12/04/18)
-    virtual void AddViewer(ViewerBasePtr pviewer) {
-        Add(pviewer);
-    }
-
-    /// \deprecated (11/06/13) see AddViewer
-    virtual bool AttachViewer(ViewerBasePtr pnewviewer) RAVE_DEPRECATED {
-        Add(pnewviewer);
-        return true;
-    }
-
     /// \brief Return a viewer with a particular name.
     ///
     /// When no name is specified, the first loaded viewer is returned.
@@ -588,6 +570,10 @@ public:
     /// If the environment is locked, the viewers are guaranteed to stay loaded in the environment.
     virtual void GetViewers(std::list<ViewerBasePtr>& listViewers) const = 0;
 
+	virtual void AddViewer(ViewerBasePtr pviewer) 
+	{
+		Add(pviewer);
+	}
     /// \brief Plot a point cloud with one color. <b>[multi-thread safe]</b>
     ///
     /// \param ppoints array of points
@@ -597,7 +583,8 @@ public:
     /// \param color the rgb color of the point. The last component of the color is used for alpha blending
     /// \param drawstyle if 0 will draw pixels. if 1, will draw 3D spheres
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1), int drawstyle = 0) = 0;
+    virtual OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints,
+		int stride, float fPointSize, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1), int drawstyle = 0) = 0;
 
     /// \brief. Plots 3D points with individual colors. <b>[multi-thread safe]</b>
     ///
@@ -608,39 +595,45 @@ public:
     /// \param drawstyle if 0 will draw pixels. if 1, will draw 3D spherse
     /// \param bhasalpha if true, then each color consists of 4 values with the last value being the alpha of the point (1 means opaque). If false, then colors is 3 values.
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, const float* colors, int drawstyle = 0, bool bhasalpha = false) = 0;
+    virtual OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, 
+		float fPointSize, const float* colors, int drawstyle = 0, bool bhasalpha = false) = 0;
 
     /// \brief Draws a series of connected lines with one color. <b>[multi-thread safe]</b>
     ///
     /// \param stride stride in bytes to next point, ie: nextpoint = (float*)((char*)ppoints+stride)
     /// \param color the rgb color of the point. The last component of the color is used for alpha blending
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1)) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, 
+		int stride, float fwidth, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1)) = 0;
 
     /// \brief Draws a series of connected lines with individual colors. <b>[multi-thread safe]</b>
     ///
     /// \param stride stride in bytes to next point, ie: nextpoint = (float*)((char*)ppoints+stride)
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawlinestrip(const float* ppoints, 
+		int numPoints, int stride, float fwidth, const float* colors) = 0;
 
     /// \brief Draws a list of individual lines, each specified by a succeeding pair of points. <b>[multi-thread safe]</b>
     ///
     /// \param stride stride in bytes to next point, ie: nextpoint = (float*)((char*)ppoints+stride)
     /// \param color the rgb color of the point. The last component of the color is used for alpha blending.
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1)) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawlinelist(const float* ppoints, int numPoints,
+		int stride, float fwidth, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1)) = 0;
 
     /// \brief Draws a list of individual lines, each specified by a succeeding pair of points. <b>[multi-thread safe]</b>
     ///
     /// \param stride stride in bytes to next point, ie: nextpoint = (float*)((char*)ppoints+stride)
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawlinelist(const float* ppoints, int numPoints,
+		int stride, float fwidth, const float* colors) = 0;
 
     /// \brief Draws an arrow p1 is start, p2 is finish. <b>[multi-thread safe]</b>
     ///
     /// \param color the rgb color of the point. The last component of the color is used for alpha blending.
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawarrow(const RaveVector<float>& p1, const RaveVector<float>& p2, float fwidth, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1)) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawarrow(const RaveVector<float>& p1, 
+		const RaveVector<float>& p2, float fwidth, const RaveVector<float>& color = RaveVector<float>(1,0.5,0.5,1)) = 0;
 
     /// \brief Draws a box. <b>[multi-thread safe]</b>
     ///
@@ -654,9 +647,11 @@ public:
     /// \param vextents the extents of the plane along the x and y directions (z is ignored)
     /// \param vtexture a 3D array specifying height x width x color (the color dimension can be 1, 3, or 4 (for alpha blending))
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawplane(const RaveTransform<float>& tplane, const RaveVector<float>& vextents, const boost::multi_array<float,3>& vtexture) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawplane(const RaveTransform<float>& tplane,
+		const RaveVector<float>& vextents, const boost::multi_array<float,3>& vtexture) = 0;
 
-    virtual OpenRAVE::GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, int numTriangles, const RaveVector<float>& color) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawtrimesh(const float* ppoints, int stride,
+		const int* pIndices, int numTriangles, const RaveVector<float>& color) = 0;
 
     /// \brief Draws a triangle mesh, each vertices of each triangle should be counter-clockwise. <b>[multi-thread safe]</b>
     ///
@@ -667,7 +662,8 @@ public:
     /// points and triangles will be rendered in list order.
     /// \param color The color of the triangle. The last component of the color is used for alpha blending
     /// \return handle to plotted points, graph is removed when handle is destroyed (goes out of scope). This requires the user to always store the handle in a persistent variable if the plotted graphics are to remain on the viewer.
-    virtual OpenRAVE::GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, int numTriangles, const boost::multi_array<float,2>& colors) = 0;
+    virtual OpenRAVE::GraphHandlePtr drawtrimesh(const float* ppoints,
+		int stride, const int* pIndices, int numTriangles, const boost::multi_array<float,2>& colors) = 0;
     //@}
 
     //@{ debug/global commands
@@ -692,18 +688,20 @@ public:
     //@}
 
     /// \brief returns the unique id of the environment
-    inline int GetId() const {
-        return __nUniqueId;
+    inline int GetId() const 
+	{
+        return unique_id_;
     }
 
 protected:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_ENVIRONMENT_HASH;
     }
 
 private:
-    UserDataPtr __pUserData;         ///< \see GetUserData
-    int __nUniqueId;         ///< \see RaveGetEnvironmentId
+    UserDataPtr user_data_;         ///< \see GetUserData
+    int unique_id_;         ///< \see RaveGetEnvironmentId
 };
 
 } // end namespace OpenRAVE

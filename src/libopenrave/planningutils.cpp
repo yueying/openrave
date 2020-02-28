@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -727,7 +727,7 @@ PlannerStatus ActiveDOFTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, bool 
         return PlannerStatus(PS_HasSolution);
     }
 
-    TrajectoryTimingParametersPtr parameters = boost::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
+    TrajectoryTimingParametersPtr parameters = std::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
     if( parameters->_hastimestamps != hastimestamps ) {
         parameters->_hastimestamps = hastimestamps;
         if( !_planner->InitPlan(_robot,parameters) ) {
@@ -1063,7 +1063,7 @@ PlannerStatus AffineTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, const st
         _parameters = parameters;
     }
     else {
-        parameters = boost::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
+        parameters = std::dynamic_pointer_cast<TrajectoryTimingParameters>(_parameters);
     }
 
 

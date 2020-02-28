@@ -35,11 +35,11 @@
 #include <boost/typeof/std/set.hpp>
 #include <boost/typeof/std/string.hpp>
 
-#define FOREACH(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; ++(it))
-#define FOREACH_NOINC(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; )
+#define FOREACH(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; ++(it))
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; )
 
-#define FOREACHC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; ++(it))
-#define FOREACHC_NOINC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(), __itend__=(v).end(); it != __itend__; )
+#define FOREACHC(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; ++(it))
+#define FOREACHC_NOINC(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; )
 #define RAVE_REGISTER_BOOST
 
 #else

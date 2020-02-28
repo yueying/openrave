@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -139,8 +139,8 @@ public:
     virtual ControllerBasePtr GetController(int dof) const = 0;
 };
 
-typedef boost::shared_ptr<MultiControllerBase> MultiControllerBasePtr;
-typedef boost::shared_ptr<MultiControllerBase const> MultiControllerBaseConstPtr;
+typedef std::shared_ptr<MultiControllerBase> MultiControllerBasePtr;
+typedef std::shared_ptr<MultiControllerBase const> MultiControllerBaseConstPtr;
 
 } // end namespace OpenRAVE
 

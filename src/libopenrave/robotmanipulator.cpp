@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2019 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -17,7 +17,7 @@
 #include "libopenrave.h"
 
 namespace OpenRAVE {
-
+#define M_PI       3.14159265358979323846   // pi
 RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) : _info(info), __probot(probot) {
 }
 RobotBase::Manipulator::~Manipulator() {
@@ -1364,7 +1364,7 @@ bool RobotBase::Manipulator::CheckIndependentCollision(CollisionReportPtr report
 
             // check if any grabbed bodies are attached to this link
             FOREACHC(itgrabbed,probot->_vGrabbedBodies) {
-                GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+                GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
                 if( pgrabbed->_plinkrobot == *itlink ) {
                     if( vbodyexcluded.empty() ) {
                         vbodyexcluded.push_back(KinBodyConstPtr(probot));

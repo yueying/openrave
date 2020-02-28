@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2014 Gustavo Puche, Rosen Diankov, OpenGrasp Team
 //
 // OpenRAVE Qt/OpenSceneGraph Viewer is licensed under the Apache License, Version 2.0 (the "License");
@@ -33,11 +33,11 @@
 #include <boost/typeof/std/set.hpp>
 #include <boost/typeof/std/string.hpp>
 
-#define FOREACH(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACH_NOINC(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); )
+#define FOREACH(it, v) for(auto it = (v).begin(); it != (v).end(); (it)++)
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
 
-#define FOREACHC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACHC_NOINC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); )
+#define FOREACHC(it, v) for(auto it = (v).begin(); it != (v).end(); (it)++)
+#define FOREACHC_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
 #define RAVE_REGISTER_BOOST
 
 #else
@@ -220,13 +220,13 @@ protected:
     bool _found;
 };
 
-inline boost::shared_ptr<EnvironmentMutex::scoped_try_lock> LockEnvironmentWithTimeout(EnvironmentBasePtr penv, uint64_t timeout)
+inline std::shared_ptr<EnvironmentMutex::scoped_try_lock> LockEnvironmentWithTimeout(EnvironmentBasePtr penv, uint64_t timeout)
 {
     // try to acquire the lock
 #if BOOST_VERSION >= 103500
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(penv->GetMutex(),boost::defer_lock_t()));
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(penv->GetMutex(),boost::defer_lock_t()));
 #else
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(penv->GetMutex(),false));
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(penv->GetMutex(),false));
 #endif
     uint64_t basetime = utils::GetMicroTime();
     while(utils::GetMicroTime()-basetime<timeout ) {

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2009 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
@@ -53,8 +53,8 @@ static EnvironmentBasePtr s_penv;
 static ViewerBasePtr s_pviewer; ///< static viewer created by the main thread. need to quit from its main loop
 
 //static std::shared_ptr<boost::thread> s_mainThread;
-static string s_sceneFile;
-static string s_saveScene; // if not NULL, saves the scene and exits
+static std::string s_sceneFile;
+static std::string s_saveScene; // if not NULL, saves the scene and exits
 static std::shared_ptr<string> s_viewerName;
 
 static list< pair<string, string> > s_listModules; // modules to initially create
@@ -76,11 +76,11 @@ int main(int argc, char ** argv)
     g_argc = argc;
     g_argv = argv;
 
-    int nServPort = 4765;
+    int service_port = 4765;
 
     DebugLevel debuglevel = Level_Info;
-    list<string> listLoadPlugins;
-    string collisionchecker, physicsengine, servername;//="textserver";
+	std::list<std::string> listLoadPlugins;
+	std::string collisionchecker, physicsengine, servername;//="textserver";
     bool bListPlugins = false;
 
     std::set<std::string> geometryextensions;
@@ -90,8 +90,14 @@ int main(int argc, char ** argv)
 
     // parse command line arguments
     int i = 1;
-    while(i < argc) {
-        if((_stricmp(argv[i], "-h") == 0)||(_stricmp(argv[i], "-?") == 0)||(_stricmp(argv[i], "/?") == 0)||(_stricmp(argv[i], "--help") == 0)||(_stricmp(argv[i], "-help") == 0)) {
+    while(i < argc) 
+	{
+        if((_stricmp(argv[i], "-h") == 0)
+			||(_stricmp(argv[i], "-?") == 0)
+			||(_stricmp(argv[i], "/?") == 0)
+			||(_stricmp(argv[i], "--help") == 0)
+			||(_stricmp(argv[i], "-help") == 0))
+		{
             printf("OpenRAVE Usage\n"
                          "--nogui             Run without a GUI (does not initialize the graphics engine nor communicate with any window manager)\n"
                          "--hidegui           Run with a hidden GUI, this allows 3D rendering and images to be captured\n"
@@ -111,61 +117,84 @@ int main(int argc, char ** argv)
                          "-f [scene]         Load a openrave environment file\n\n");
             return 0;
         }
-        else if((_stricmp(argv[i], "--loadplugin") == 0)||(_stricmp(argv[i], "-loadplugin") == 0)) {
+        else if((_stricmp(argv[i], "--loadplugin") == 0)
+			||(_stricmp(argv[i], "-loadplugin") == 0)) 
+		{
             listLoadPlugins.push_back(argv[i+1]);
             i += 2;
         }
-        else if((_stricmp(argv[i], "--listplugins") == 0)||(_stricmp(argv[i], "-listplugins") == 0)) {
+        else if((_stricmp(argv[i], "--listplugins") == 0)
+			||(_stricmp(argv[i], "-listplugins") == 0)) 
+		{
             bListPlugins = true;
             i++;
         }
-        else if( _stricmp(argv[i], "--version") == 0 ) {
+        else if( _stricmp(argv[i], "--version") == 0 ) 
+		{
             printf("%s\n",OPENRAVE_VERSION_STRING);
             return 0;
         }
-        else if( _stricmp(argv[i], "-f") == 0 ) {
+        else if( _stricmp(argv[i], "-f") == 0 ) 
+		{
             s_sceneFile = argv[i+1];
             i += 2;
         }
-        else if( _stricmp(argv[i], "-save") == 0 ) {
+        else if( _stricmp(argv[i], "-save") == 0 ) 
+		{
             s_saveScene = argv[i+1];
             i += 2;
         }
-        else if((_stricmp(argv[i], "--collision") == 0)||(_stricmp(argv[i], "-collision") == 0)) {
+        else if((_stricmp(argv[i], "--collision") == 0)
+			||(_stricmp(argv[i], "-collision") == 0)) 
+		{
             collisionchecker = argv[i+1];
             i += 2;
         }
-        else if((_stricmp(argv[i], "--viewer") == 0)||(_stricmp(argv[i], "-viewer") == 0)) {
+        else if((_stricmp(argv[i], "--viewer") == 0)
+			||(_stricmp(argv[i], "-viewer") == 0)) 
+		{
             s_viewerName.reset(new string(argv[i+1]));
             i += 2;
         }
-        else if((_stricmp(argv[i], "--physics") == 0)||(_stricmp(argv[i], "-physics") == 0)) {
+        else if((_stricmp(argv[i], "--physics") == 0)
+			||(_stricmp(argv[i], "-physics") == 0))
+		{
             physicsengine = argv[i+1];
             i += 2;
         }
-        else if((_stricmp(argv[i],"--server") == 0)||(_stricmp(argv[i],"-server") == 0)) {
+        else if((_stricmp(argv[i],"--server") == 0)
+			||(_stricmp(argv[i],"-server") == 0))
+		{
             servername = argv[i+1];
             i += 2;
         }
-        else if((_stricmp(argv[i], "--module") == 0)||(_stricmp(argv[i], "-problem") == 0)) {
+        else if((_stricmp(argv[i], "--module") == 0)
+			||(_stricmp(argv[i], "-problem") == 0)) 
+		{
             s_listModules.emplace_back(argv[i+1], "");
             i += 2;
 
-            if((i < argc)&&(argv[i][0] != '-')) {
+            if((i < argc)&&(argv[i][0] != '-')) 
+			{
                 // set the args
                 s_listModules.back().second = argv[i];
                 i++;
             }
         }
-        else if((_stricmp(argv[i], "--nogui") == 0)||(_stricmp(argv[i], "-nogui") == 0)) {
+        else if((_stricmp(argv[i], "--nogui") == 0)
+			||(_stricmp(argv[i], "-nogui") == 0)) 
+		{
             bDisplayGUI = false;
             i++;
         }
-        else if((_stricmp(argv[i], "--hidegui") == 0)||(_stricmp(argv[i], "-hidegui") == 0)) {
+        else if((_stricmp(argv[i], "--hidegui") == 0)
+			||(_stricmp(argv[i], "-hidegui") == 0)) 
+		{
             bShowGUI = false;
             i++;
         }
-        else if( _stricmp(argv[i], "-d") == 0 ) {
+        else if( _stricmp(argv[i], "-d") == 0 ) 
+		{
             debuglevel = (DebugLevel)atoi(argv[i+1]);
             i += 2;
         }
@@ -181,7 +210,7 @@ int main(int argc, char ** argv)
             i += 3;
         }
         else if((_stricmp(argv[i], "--serverport") == 0)||(_stricmp(argv[i], "-serverport") == 0)) {
-            nServPort = atoi(argv[i+1]);
+            service_port = atoi(argv[i+1]);
             i += 2;
         }
         else {
@@ -250,11 +279,11 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    if((servername.size() > 0)&&(nServPort > 0)) {
+    if((servername.size() > 0)&&(service_port > 0)) {
         ModuleBasePtr pserver = RaveCreateModule(s_penv, servername);
         if( !!pserver ) {
             stringstream ss;
-            ss << nServPort;
+            ss << service_port;
             if( s_penv->AddModule(pserver,ss.str()) != 0 )
                 RAVELOG_WARN("failed to load server\n");
         }

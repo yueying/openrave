@@ -118,12 +118,12 @@ public:
         {
             if( !!_pcurreader ) {
                 if( _pcurreader->endElement(name) ) {
-                    xmlreaders::TrajectoryReaderPtr ptrajreader = boost::dynamic_pointer_cast<xmlreaders::TrajectoryReader>(_pcurreader);
+                    xmlreaders::TrajectoryReaderPtr ptrajreader = std::dynamic_pointer_cast<xmlreaders::TrajectoryReader>(_pcurreader);
                     if( !!ptrajreader ) {
                         _cmdata->_trajfollow = ptrajreader->GetTrajectory();
                     }
                     else {
-                        xmlreaders::GeometryInfoReaderPtr pgeomreader = boost::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(_pcurreader);
+                        xmlreaders::GeometryInfoReaderPtr pgeomreader = std::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(_pcurreader);
                         if( !!pgeomreader ) {
                             _cmdata->_listGeometries.push_back(*pgeomreader->GetGeometryInfo());
                         }
@@ -222,7 +222,7 @@ protected:
     virtual void _ComputeInternalInformation()
     {
         // create extra joints for each conveyor joint
-        ConveyorInfoPtr cmdata = boost::dynamic_pointer_cast<ConveyorInfo>(GetReadableInterface("conveyorjoint"));
+        ConveyorInfoPtr cmdata = std::dynamic_pointer_cast<ConveyorInfo>(GetReadableInterface("conveyorjoint"));
         if( !!cmdata && !cmdata->_bCreated ) {
             if( !_pController ) {
                 _pController = RaveCreateController(GetEnv(), "IdealVelocityController");

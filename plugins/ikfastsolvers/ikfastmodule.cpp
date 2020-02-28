@@ -311,10 +311,10 @@ private:
     };
 
     inline std::shared_ptr<IkFastModule> shared_problem() {
-        return boost::static_pointer_cast<IkFastModule>(shared_from_this());
+        return std::static_pointer_cast<IkFastModule>(shared_from_this());
     }
     inline std::shared_ptr<IkFastModule const> shared_problem_const() const {
-        return boost::static_pointer_cast<IkFastModule const>(shared_from_this());
+        return std::static_pointer_cast<IkFastModule const>(shared_from_this());
     }
 
 public:

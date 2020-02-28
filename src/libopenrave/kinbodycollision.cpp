@@ -79,7 +79,7 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
 
     // check all grabbed bodies with (TODO: support CO_ActiveDOFs option)
     FOREACH(itgrabbed, _vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
         if( !pbody ) {
             RAVELOG_WARN_FORMAT("grabbed body on %s has already been destroyed, ignoring.", GetName());
@@ -131,7 +131,7 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
         // Instead, we will compare each of the body's links with every other
         if( _vGrabbedBodies.size() > 1 ) {
             FOREACHC(itgrabbed2, _vGrabbedBodies) {
-                GrabbedConstPtr pgrabbed2 = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
+                GrabbedConstPtr pgrabbed2 = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
                 KinBodyPtr pbody2 = pgrabbed2->_pgrabbedbody.lock();
                 if( !pbody2 ) {
                     RAVELOG_WARN_FORMAT("grabbed body on %s has already been destroyed, so ignoring.", GetName());
@@ -235,7 +235,7 @@ bool KinBody::CheckLinkCollision(int ilinkindex, const Transform& tlinktrans, Co
     std::vector<KinBodyConstPtr> vbodyexcluded;
     std::vector<KinBody::LinkConstPtr> vlinkexcluded;
     FOREACHC(itgrabbed,_vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         if( pgrabbed->_plinkrobot == plink ) {
             KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
             if( !!pbody ) {
@@ -243,7 +243,7 @@ bool KinBody::CheckLinkCollision(int ilinkindex, const Transform& tlinktrans, Co
                 vbodyexcluded.push_back(shared_kinbody_const());
                 FOREACHC(itgrabbed2,_vGrabbedBodies) {
                     if( itgrabbed2 != itgrabbed ) {
-                        GrabbedConstPtr pgrabbed2 = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
+                        GrabbedConstPtr pgrabbed2 = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
                         KinBodyPtr pbody2 = pgrabbed2->_pgrabbedbody.lock();
                         if( !!pbody2 ) {
                             vbodyexcluded.push_back(pbody2);
@@ -289,7 +289,7 @@ bool KinBody::CheckLinkCollision(int ilinkindex, CollisionReportPtr report)
     std::vector<KinBodyConstPtr> vbodyexcluded;
     std::vector<KinBody::LinkConstPtr> vlinkexcluded;
     FOREACHC(itgrabbed,_vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         if( pgrabbed->_plinkrobot == plink ) {
             KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
             if( !!pbody ) {
@@ -297,7 +297,7 @@ bool KinBody::CheckLinkCollision(int ilinkindex, CollisionReportPtr report)
                 vbodyexcluded.push_back(shared_kinbody_const());
                 FOREACHC(itgrabbed2,_vGrabbedBodies) {
                     if( itgrabbed2 != itgrabbed ) {
-                        GrabbedConstPtr pgrabbed2 = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
+                        GrabbedConstPtr pgrabbed2 = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed2);
                         KinBodyPtr pbody2 = pgrabbed2->_pgrabbedbody.lock();
                         if( !!pbody2 ) {
                             vbodyexcluded.push_back(pbody2);
@@ -344,7 +344,7 @@ bool KinBody::CheckLinkSelfCollision(int ilinkindex, CollisionReportPtr report)
     std::vector<KinBodyConstPtr> vbodyexcluded;
     std::vector<KinBody::LinkConstPtr> vlinkexcluded;
     FOREACHC(itgrabbed,_vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         if( pgrabbed->_plinkrobot == plink ) {
             KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
             if( !!pbody ) {
@@ -395,7 +395,7 @@ bool KinBody::CheckLinkSelfCollision(int ilinkindex, const Transform& tlinktrans
     std::vector<KinBodyConstPtr> vbodyexcluded;
     std::vector<KinBody::LinkConstPtr> vlinkexcluded;
     FOREACHC(itgrabbed,_vGrabbedBodies) {
-        GrabbedConstPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
+        GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         if( pgrabbed->_plinkrobot == plink ) {
             KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
             if( !!pbody ) {

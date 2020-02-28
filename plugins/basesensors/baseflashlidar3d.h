@@ -123,7 +123,7 @@ public:
 public:
     static BaseXMLReaderPtr CreateXMLReader(InterfaceBasePtr ptr, const AttributesList& atts)
     {
-        return BaseXMLReaderPtr(new BaseFlashLidar3DXMLReader(boost::dynamic_pointer_cast<BaseFlashLidar3DSensor>(ptr)));
+        return BaseXMLReaderPtr(new BaseFlashLidar3DXMLReader(std::dynamic_pointer_cast<BaseFlashLidar3DSensor>(ptr)));
     }
 
     BaseFlashLidar3DSensor(EnvironmentBasePtr penv) : SensorBase(penv)
@@ -322,7 +322,7 @@ public:
     {
         if( psensordata->GetType() == ST_Laser ) {
             boost::mutex::scoped_lock lock(_mutexdata);
-            *boost::dynamic_pointer_cast<LaserSensorData>(psensordata) = *_pdata;
+            *std::dynamic_pointer_cast<LaserSensorData>(psensordata) = *_pdata;
             return true;
         }
         return false;
@@ -358,7 +358,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         SensorBase::Clone(preference,cloningoptions);
-        std::shared_ptr<BaseFlashLidar3DSensor const> r = boost::dynamic_pointer_cast<BaseFlashLidar3DSensor const>(preference);
+        std::shared_ptr<BaseFlashLidar3DSensor const> r = std::dynamic_pointer_cast<BaseFlashLidar3DSensor const>(preference);
         *_pgeom = *r->_pgeom;
         _vColor = r->_vColor;
         std::copy(&r->_iKK[0],&r->_iKK[4],&_iKK[0]);

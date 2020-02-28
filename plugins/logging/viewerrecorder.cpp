@@ -81,10 +81,10 @@ static std::shared_ptr<VideoGlobalState> s_pVideoGlobalState;
 class ViewerRecorder : public ModuleBase
 {
     inline std::shared_ptr<ViewerRecorder> shared_module() {
-        return boost::static_pointer_cast<ViewerRecorder>(shared_from_this());
+        return std::static_pointer_cast<ViewerRecorder>(shared_from_this());
     }
     inline std::shared_ptr<ViewerRecorder const> shared_module_const() const {
-        return boost::static_pointer_cast<ViewerRecorder const>(shared_from_this());
+        return std::static_pointer_cast<ViewerRecorder const>(shared_from_this());
     }
     struct VideoFrame
     {

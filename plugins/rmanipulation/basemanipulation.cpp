@@ -131,10 +131,10 @@ Method wraps the WorkspaceTrajectoryTracker planner. For more details on paramet
 protected:
 
     inline std::shared_ptr<BaseManipulation> shared_problem() {
-        return boost::static_pointer_cast<BaseManipulation>(shared_from_this());
+        return std::static_pointer_cast<BaseManipulation>(shared_from_this());
     }
     inline std::shared_ptr<BaseManipulation const> shared_problem_const() const {
-        return boost::static_pointer_cast<BaseManipulation const>(shared_from_this());
+        return std::static_pointer_cast<BaseManipulation const>(shared_from_this());
     }
 
     bool Traj(ostream& sout, istream& sinput)

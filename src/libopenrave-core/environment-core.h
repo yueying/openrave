@@ -64,7 +64,7 @@ public:
             }
         }
 
-        list<OpenRAVE::GraphHandlePtr> listhandles;
+        std::list<OpenRAVE::GraphHandlePtr> listhandles;
     };
     typedef std::shared_ptr<GraphHandleMulti> GraphHandleMultiPtr;
 
@@ -405,14 +405,14 @@ public:
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         std::shared_ptr<Environment> penv(new Environment());
-        penv->_Clone(boost::static_pointer_cast<Environment const>(shared_from_this()),options,false);
+        penv->_Clone(std::static_pointer_cast<Environment const>(shared_from_this()),options,false);
         return penv;
     }
 
     virtual void Clone(EnvironmentBaseConstPtr preference, int cloningoptions)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        _Clone(boost::static_pointer_cast<Environment const>(preference),cloningoptions,true);
+        _Clone(std::static_pointer_cast<Environment const>(preference),cloningoptions,true);
     }
 
     virtual int AddModule(ModuleBasePtr module, const std::string& cmdargs)
@@ -839,7 +839,7 @@ public:
     virtual UserDataPtr RegisterBodyCallback(const BodyCallbackFn& callback)
     {
         boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
-        BodyCallbackDataPtr pdata(new BodyCallbackData(callback,boost::static_pointer_cast<Environment>(shared_from_this())));
+        BodyCallbackDataPtr pdata(new BodyCallbackData(callback,std::static_pointer_cast<Environment>(shared_from_this())));
         pdata->_iterator = _listRegisteredBodyCallbacks.insert(_listRegisteredBodyCallbacks.end(),pdata);
         return pdata;
     }
@@ -911,7 +911,7 @@ public:
     virtual UserDataPtr RegisterCollisionCallback(const CollisionCallbackFn& callback)
     {
         boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
-        CollisionCallbackDataPtr pdata(new CollisionCallbackData(callback,boost::static_pointer_cast<Environment>(shared_from_this())));
+        CollisionCallbackDataPtr pdata(new CollisionCallbackData(callback,std::static_pointer_cast<Environment>(shared_from_this())));
         pdata->_iterator = _listRegisteredCollisionCallbacks.insert(_listRegisteredCollisionCallbacks.end(),pdata);
         return pdata;
     }
@@ -926,7 +926,7 @@ public:
         boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
         listcallbacks.clear();
         FOREACHC(it, _listRegisteredCollisionCallbacks) {
-            CollisionCallbackDataPtr pdata = boost::dynamic_pointer_cast<CollisionCallbackData>(it->lock());
+            CollisionCallbackDataPtr pdata = std::dynamic_pointer_cast<CollisionCallbackData>(it->lock());
             listcallbacks.push_back(pdata->_callback);
         }
     }
@@ -1495,7 +1495,7 @@ public:
                 return InterfaceBasePtr();
             }
             bool bSuccess = _ParseXMLFile(preader, filename);
-            std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = boost::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
+            std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = std::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
             if( !bSuccess || !preadable || !preadable->_pinterface) {
                 return InterfaceBasePtr();
             }
@@ -1571,7 +1571,7 @@ public:
         }
         else {
             BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), type, pinterface, RaveGetInterfaceName(type), atts);
-            std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = boost::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
+            std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = std::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
             if( !!preadable ) {
                 if( !_ParseXMLFile(preader, filename) ) {
                     return InterfaceBasePtr();
@@ -2664,7 +2664,7 @@ protected:
             listRegisteredBodyCallbacks = _listRegisteredBodyCallbacks;
         }
         FOREACH(it, listRegisteredBodyCallbacks) {
-            BodyCallbackDataPtr pdata = boost::dynamic_pointer_cast<BodyCallbackData>(it->lock());
+            BodyCallbackDataPtr pdata = std::dynamic_pointer_cast<BodyCallbackData>(it->lock());
             if( !!pdata ) {
                 pdata->_callback(pbody, action);
             }

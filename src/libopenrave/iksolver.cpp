@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -99,7 +99,7 @@ typedef std::shared_ptr<IkSolverFinishCallbackData> IkSolverFinishCallbackDataPt
 
 bool CustomIkSolverFilterDataCompare(UserDataPtr data0, UserDataPtr data1)
 {
-    return boost::dynamic_pointer_cast<CustomIkSolverFilterData>(data0)->_priority > boost::dynamic_pointer_cast<CustomIkSolverFilterData>(data1)->_priority;
+    return std::dynamic_pointer_cast<CustomIkSolverFilterData>(data0)->_priority > std::dynamic_pointer_cast<CustomIkSolverFilterData>(data1)->_priority;
 }
 
 bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dReal>& q0, int filteroptions, IkReturnPtr ikreturn)
@@ -169,7 +169,7 @@ UserDataPtr IkSolverBase::RegisterCustomFilter(int32_t priority, const IkSolverB
     CustomIkSolverFilterDataPtr pdata(new CustomIkSolverFilterData(priority,filterfn,shared_iksolver()));
     std::list<UserDataWeakPtr>::iterator it;
     FORIT(it, __listRegisteredFilters) {
-        CustomIkSolverFilterDataPtr pitdata = boost::dynamic_pointer_cast<CustomIkSolverFilterData>(it->lock());
+        CustomIkSolverFilterDataPtr pitdata = std::dynamic_pointer_cast<CustomIkSolverFilterData>(it->lock());
         if( !!pitdata && pdata->_priority > pitdata->_priority ) {
             break;
         }
@@ -213,7 +213,7 @@ IkReturnAction IkSolverBase::_CallFilters(std::vector<dReal>& solution, RobotBas
     }
 
     FOREACHC(it,__listRegisteredFilters) {
-        CustomIkSolverFilterDataPtr pitdata = boost::dynamic_pointer_cast<CustomIkSolverFilterData>(it->lock());
+        CustomIkSolverFilterDataPtr pitdata = std::dynamic_pointer_cast<CustomIkSolverFilterData>(it->lock());
         if( !!pitdata && pitdata->_priority >= minpriority && pitdata->_priority <= maxpriority) {
             IkReturn ret = pitdata->_filterfn(solution,manipulator,param);
             if( ret != IKRA_Success ) {
@@ -264,7 +264,7 @@ bool IkSolverBase::_HasFilterInRange(int32_t minpriority, int32_t maxpriority) c
 {
     // priorities are descending
     FOREACHC(it,__listRegisteredFilters) {
-        CustomIkSolverFilterDataPtr pitdata = boost::dynamic_pointer_cast<CustomIkSolverFilterData>(it->lock());
+        CustomIkSolverFilterDataPtr pitdata = std::dynamic_pointer_cast<CustomIkSolverFilterData>(it->lock());
         if( !!pitdata ) {
             if( pitdata->_priority <= maxpriority && pitdata->_priority >= minpriority ) {
                 return true;
@@ -277,7 +277,7 @@ bool IkSolverBase::_HasFilterInRange(int32_t minpriority, int32_t maxpriority) c
 void IkSolverBase::_CallFinishCallbacks(IkReturnPtr ikreturn, RobotBase::ManipulatorConstPtr pmanip, const IkParameterization& ikparam)
 {
     FOREACH(it, __listRegisteredFinishCallbacks) {
-        IkSolverFinishCallbackDataPtr pitdata = boost::dynamic_pointer_cast<IkSolverFinishCallbackData>(it->lock());
+        IkSolverFinishCallbackDataPtr pitdata = std::dynamic_pointer_cast<IkSolverFinishCallbackData>(it->lock());
         if( !!pitdata ) {
             pitdata->_finishfn(ikreturn, pmanip, ikparam);
         }

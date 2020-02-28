@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -20,7 +20,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "fparsermulti.h"
-
+#define M_PI       3.14159265358979323846   // pi
 namespace OpenRAVE {
 
 KinBody::JointInfo::JointControlInfo_RobotController::JointControlInfo_RobotController() : robotId(-1)
