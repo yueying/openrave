@@ -365,8 +365,8 @@ class RaveGlobal : private boost::noncopyable, public std::enable_shared_from_th
         // is this really necessary? just makes bugs hard to reproduce...
         //srand(GetMilliTime());
         //RaveInitRandomGeneration(GetMilliTime());
-        _nDebugLevel = Level_Info;
-        _nGlobalEnvironmentId = 0;
+        debug_level_ = Level_Info;
+        global_environment_id_ = 0;
         _nDataAccessOptions = 0;
 #ifdef USE_CRLIBM
         _bcrlibmInit = false;
@@ -404,14 +404,16 @@ class RaveGlobal : private boost::noncopyable, public std::enable_shared_from_th
         _mapikparameterization[IKP_TranslationYAxisAngleXNorm4D] = "TranslationYAxisAngleXNorm4D";
         _mapikparameterization[IKP_TranslationZAxisAngleYNorm4D] = "TranslationZAxisAngleYNorm4D";
         BOOST_ASSERT(_mapikparameterization.size()==IKP_NumberOfParameterizations);
-        FOREACH(it,_mapikparameterization) {
+        FOREACH(it,_mapikparameterization) 
+		{
             std::string name = it->second;
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             _mapikparameterizationlower[it->first] = name;
         }
     }
 public:
-    virtual ~RaveGlobal() {
+    virtual ~RaveGlobal()
+	{
         Destroy();
     }
 
@@ -421,21 +423,24 @@ public:
         return _state;
     }
 
-    int Initialize(bool bLoadAllPlugins, int level)
+    int Initialize(bool is_load_all_plugins, int level)
     {
-        if( _IsInitialized() ) {
+        if( _IsInitialized() ) 
+		{
             return 0;     // already initialized
         }
 
         _InitializeLogging(level);
 
 #ifdef USE_CRLIBM
-        if( !_bcrlibmInit ) {
+        if( !_bcrlibmInit ) 
+		{
             _crlibm_fpu_state = crlibm_init();
             _bcrlibmInit = true;
         }
 #endif
-        try {
+        try 
+		{
             // TODO: eventually we should remove this call to set global locale for the process
             // and imbue each stringstream with the correct locale.
 
@@ -443,24 +448,28 @@ public:
             // std::locale::global(std::locale::classic());
             std::locale::global(std::locale(std::locale(""), std::locale::classic(), std::locale::numeric));
         }
-        catch(const std::runtime_error& e) {
+        catch(const std::runtime_error& e) 
+		{
             RAVELOG_WARN("failed to set to C locale: %s\n",e.what());
         }
 
         _pdatabase.reset(new RaveDatabase());
-        if( !_pdatabase->Init(bLoadAllPlugins) ) {
+        if( !_pdatabase->Init(is_load_all_plugins) ) 
+		{
             RAVELOG_FATAL("failed to create the openrave plugin database\n");
         }
 
         char* phomedir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
-        if( phomedir == NULL ) {
+        if( phomedir == NULL ) 
+		{
 #ifndef _WIN32
             _homedirectory = string(getenv("HOME"))+string("/.openrave"); // getenv not thread-safe?
 #else
             _homedirectory = string(getenv("HOMEDRIVE"))+string(getenv("HOMEPATH"))+string("\\.openrave"); // getenv not thread-safe?
 #endif
         }
-        else {
+        else 
+		{
             _homedirectory = phomedir;
         }
 #ifndef _WIN32
@@ -600,12 +609,12 @@ public:
             }
             _logger->setLevel(levelptr);
         }
-        _nDebugLevel = level;
+        debug_level_ = level;
     }
 
     int GetDebugLevel()
     {
-        int level = _nDebugLevel;
+        int level = debug_level_;
         if (_logger != NULL) {
             if (_logger->isEnabledFor(log4cxx::Level::getTrace())) {
                 level = Level_Verbose;
@@ -626,18 +635,18 @@ public:
                 level = Level_Fatal;
             }
         }
-        return level | (_nDebugLevel & ~Level_OutputMask);
+        return level | (debug_level_ & ~Level_OutputMask);
     }
 
 #else
     void SetDebugLevel(int level)
     {
-        _nDebugLevel = level;
+        debug_level_ = level;
     }
 
     int GetDebugLevel()
     {
-        return _nDebugLevel;
+        return debug_level_;
     }
 #endif
 
@@ -707,8 +716,8 @@ protected:
     {
         BOOST_ASSERT(!!_pdatabase);
         boost::mutex::scoped_lock lock(_mutexinternal);
-        _mapenvironments[++_nGlobalEnvironmentId] = penv;
-        return _nGlobalEnvironmentId;
+        _mapenvironments[++global_environment_id_] = penv;
+        return global_environment_id_;
     }
 
     void UnregisterEnvironment(EnvironmentBase* penv)
@@ -1054,7 +1063,7 @@ private:
 
     // state that is initialized/destroyed
     std::shared_ptr<RaveDatabase> _pdatabase;
-    int _nDebugLevel;
+    int debug_level_;
     boost::mutex _mutexinternal;
     std::map<InterfaceType, READERSMAP > _mapreaders;
     std::map<InterfaceType,string> _mapinterfacenames;
@@ -1064,7 +1073,7 @@ private:
     std::string _homedirectory;
     std::string _defaultviewertype; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
     std::vector<std::string> _vdbdirectories;
-    int _nGlobalEnvironmentId;
+    int global_environment_id_;
     SpaceSamplerBasePtr _pdefaultsampler;
 #ifdef USE_CRLIBM
     long long _crlibm_fpu_state;
@@ -1113,16 +1122,6 @@ int RaveGetDebugLevel()
 const std::map<InterfaceType,std::string>& RaveGetInterfaceNamesMap()
 {
     return RaveGlobal::instance()->GetInterfaceNamesMap();
-}
-
-const std::map<IkParameterizationType,std::string>& RaveGetIkParameterizationMap(int alllowercase)
-{
-    return IkParameterization::GetIkParameterizationMap(alllowercase);
-}
-
-IkParameterizationType RaveGetIkTypeFromUniqueId(int uniqueid)
-{
-    return IkParameterization::GetIkTypeFromUniqueId(uniqueid);
 }
 
 const std::string& RaveGetInterfaceName(InterfaceType type)
@@ -1373,256 +1372,6 @@ const std::map<IkParameterizationType,std::string>& IkParameterization::GetIkPar
     return RaveGlobal::instance()->GetIkParameterizationMap(alllowercase);
 }
 
-IkParameterizationType IkParameterization::GetIkTypeFromUniqueId(int uniqueid)
-{
-    uniqueid &= IKP_UniqueIdMask;
-    FOREACHC(it, RaveGlobal::instance()->GetIkParameterizationMap()) {
-        if( (it->first & (IKP_UniqueIdMask&~IKP_VelocityDataBit)) == (uniqueid&(IKP_UniqueIdMask&~IKP_VelocityDataBit)) ) {
-            return static_cast<IkParameterizationType>(it->first|(uniqueid&IKP_VelocityDataBit));
-        }
-    }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("no ik exists of unique id 0x%x"),uniqueid,ORE_InvalidArguments);
-}
-
-ConfigurationSpecification IkParameterization::GetConfigurationSpecification(IkParameterizationType iktype, const std::string& interpolation, const std::string& robotname, const std::string& manipname)
-{
-    ConfigurationSpecification spec;
-    spec._vgroups.resize(1);
-    spec._vgroups[0].offset = 0;
-    spec._vgroups[0].dof = IkParameterization::GetNumberOfValues(iktype);
-    spec._vgroups[0].name = str(boost::format("ikparam_values %d")%iktype);
-    if( robotname.size() > 0 ) {
-        spec._vgroups[0].name += robotname;
-        spec._vgroups[0].name += " ";
-        if( manipname.size() > 0 ) {
-            spec._vgroups[0].name += manipname;
-        }
-    }
-    spec._vgroups[0].interpolation = interpolation;
-
-    // remove any trailing whitespace from missing robot or manipulator names
-    boost::algorithm::trim(spec._vgroups[0].name);
-    return spec;
-}
-
-std::ostream& operator<<(std::ostream& O, const IkParameterization &ikparam)
-{
-    int type = ikparam._type;
-    BOOST_ASSERT( !(type & IKP_CustomDataBit) );
-    if( ikparam._mapCustomData.size() > 0 ) {
-        type |= IKP_CustomDataBit;
-    }
-    O << type << " ";
-    switch(ikparam._type & ~IKP_VelocityDataBit) {
-    case IKP_Transform6D:
-        O << ikparam.GetTransform6D();
-        break;
-    case IKP_Rotation3D:
-        O << ikparam.GetRotation3D();
-        break;
-    case IKP_Translation3D: {
-        Vector v = ikparam.GetTranslation3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_Direction3D: {
-        Vector v = ikparam.GetDirection3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_Ray4D: {
-        RAY r = ikparam.GetRay4D();
-        O << r.dir.x << " " << r.dir.y << " " << r.dir.z << " " << r.pos.x << " " << r.pos.y << " " << r.pos.z << " ";
-        break;
-    }
-    case IKP_Lookat3D: {
-        Vector v = ikparam.GetLookat3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_TranslationDirection5D: {
-        RAY r = ikparam.GetTranslationDirection5D();
-        O << r.dir.x << " " << r.dir.y << " " << r.dir.z << " " << r.pos.x << " " << r.pos.y << " " << r.pos.z << " ";
-        break;
-    }
-    case IKP_TranslationXY2D: {
-        Vector v = ikparam.GetTranslationXY2D();
-        O << v.x << " " << v.y << " ";
-        break;
-    }
-    case IKP_TranslationXYOrientation3D: {
-        Vector v = ikparam.GetTranslationXYOrientation3D();
-        O << v.x << " " << v.y << " " << v.z << " ";
-        break;
-    }
-    case IKP_TranslationLocalGlobal6D: {
-        std::pair<Vector,Vector> p = ikparam.GetTranslationLocalGlobal6D();
-        O << p.first.x << " " << p.first.y << " " << p.first.z << " " << p.second.x << " " << p.second.y << " " << p.second.z << " ";
-        break;
-    }
-    case IKP_TranslationXAxisAngle4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationXAxisAngle4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationYAxisAngle4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationYAxisAngle4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationZAxisAngle4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationZAxisAngle4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationXAxisAngleZNorm4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationXAxisAngleZNorm4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationYAxisAngleXNorm4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationYAxisAngleXNorm4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    case IKP_TranslationZAxisAngleYNorm4D: {
-        std::pair<Vector,dReal> p = ikparam.GetTranslationZAxisAngleYNorm4D();
-        O << p.second << " " << p.first.x << " " << p.first.y << " " << p.first.z << " ";
-        break;
-    }
-    default:
-        throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
-    }
-    if( ikparam._mapCustomData.size() > 0 ) {
-        O << ikparam._mapCustomData.size() << " ";
-        FOREACHC(it, ikparam._mapCustomData) {
-            O << it->first << " " << it->second.size() << " ";
-            FOREACHC(itvalue, it->second) {
-                O << *itvalue << " ";
-            }
-        }
-    }
-    return O;
-}
-
-std::istream& operator>>(std::istream& I, IkParameterization& ikparam)
-{
-    int type=IKP_None;
-    I >> type;
-    ikparam._type = static_cast<IkParameterizationType>(type&~IKP_CustomDataBit);
-    switch(ikparam._type) {
-    case IKP_Transform6D: {
-        Transform t; I >> t;
-        ikparam.SetTransform6D(t);
-        break;
-    }
-    case IKP_Transform6DVelocity:
-        I >> ikparam._transform;
-        break;
-    case IKP_Rotation3D: { Vector v; I >> v; ikparam.SetRotation3D(v); break; }
-    case IKP_Rotation3DVelocity:
-        I >> ikparam._transform.rot;
-        break;
-    case IKP_Translation3D: {
-        Vector v;
-        I >> v.x >> v.y >> v.z;
-        ikparam.SetTranslation3D(v);
-        break;
-    }
-    case IKP_Lookat3DVelocity:
-    case IKP_Translation3DVelocity:
-    case IKP_TranslationXYOrientation3DVelocity:
-        I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
-        break;
-    case IKP_Direction3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetDirection3D(v); break; }
-    case IKP_Direction3DVelocity:
-        I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
-        break;
-    case IKP_Ray4D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetRay4D(r); break; }
-    case IKP_Ray4DVelocity:
-    case IKP_TranslationDirection5DVelocity:
-        I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
-        break;
-    case IKP_Lookat3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetLookat3D(v); break; }
-    case IKP_TranslationDirection5D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetTranslationDirection5D(r); break; }
-    case IKP_TranslationXY2D: { Vector v; I >> v.y >> v.y; ikparam.SetTranslationXY2D(v); break; }
-    case IKP_TranslationXY2DVelocity:
-        I >> ikparam._transform.trans.x >> ikparam._transform.trans.y;
-        break;
-    case IKP_TranslationXYOrientation3D: { Vector v; I >> v.y >> v.y >> v.z; ikparam.SetTranslationXYOrientation3D(v); break; }
-    case IKP_TranslationLocalGlobal6D: { Vector localtrans, trans; I >> localtrans.x >> localtrans.y >> localtrans.z >> trans.x >> trans.y >> trans.z; ikparam.SetTranslationLocalGlobal6D(localtrans,trans); break; }
-    case IKP_TranslationLocalGlobal6DVelocity:
-        I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
-        break;
-    case IKP_TranslationXAxisAngle4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationXAxisAngle4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationYAxisAngle4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationYAxisAngle4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationZAxisAngle4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationZAxisAngle4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationXAxisAngleZNorm4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationXAxisAngleZNorm4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationYAxisAngleXNorm4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationYAxisAngleXNorm4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationZAxisAngleYNorm4D: {
-        Vector trans; dReal angle=0;
-        I >> angle >> trans.x >> trans.y >> trans.z;
-        ikparam.SetTranslationZAxisAngleYNorm4D(trans,angle);
-        break;
-    }
-    case IKP_TranslationXAxisAngle4DVelocity:
-    case IKP_TranslationYAxisAngle4DVelocity:
-    case IKP_TranslationZAxisAngle4DVelocity:
-    case IKP_TranslationXAxisAngleZNorm4DVelocity:
-    case IKP_TranslationYAxisAngleXNorm4DVelocity:
-    case IKP_TranslationZAxisAngleYNorm4DVelocity:
-        I >> ikparam._transform.rot.x >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
-        break;
-    default:
-        throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
-    }
-    ikparam._mapCustomData.clear();
-    if( type & IKP_CustomDataBit ) {
-        size_t numcustom = 0, numvalues=0;
-        std::string name;
-        I >> numcustom;
-        if( !I ) {
-            return I;
-        }
-        for(size_t i = 0; i < numcustom; ++i) {
-            I >> name >> numvalues;
-            if( !I ) {
-                return I;
-            }
-            std::vector<dReal>& v = ikparam._mapCustomData[name];
-            v.resize(numvalues);
-            for(size_t j = 0; j < v.size(); ++j) {
-                I >> v[j];
-            }
-        }
-    }
-    return I;
-}
 
 int RaveGetIndexFromAffineDOF(int affinedofs, DOFAffine _dof)
 {
@@ -1883,52 +1632,7 @@ void RaveGetVelocityFromAffineDOFVelocities(Vector& linearvel, Vector& angularve
     }
 }
 
-OpenRAVEException::OpenRAVEException() 
-	: std::exception(), _s("unknown exception"), _error(ORE_Failed)
-{
-}
 
-OpenRAVEException::OpenRAVEException(const std::string& s, OpenRAVEErrorCode error) 
-	: std::exception()
-{
-    _error = error;
-    _s = "openrave (";
-    _s += RaveGetErrorCodeString(_error);
-    _s += "): ";
-    _s += s;
-}
-
-char const* OpenRAVEException::what() const throw() {
-    return _s.c_str();
-}
-
-const std::string& OpenRAVEException::message() const {
-    return _s;
-}
-
-OpenRAVEErrorCode OpenRAVEException::GetCode() const {
-    return _error;
-}
-
-const char* RaveGetErrorCodeString(OpenRAVEErrorCode error)
-{
-    switch(error) {
-    case ORE_Failed: return "Failed";
-    case ORE_InvalidArguments: return "InvalidArguments";
-    case ORE_EnvironmentNotLocked: return "EnvironmentNotLocked";
-    case ORE_CommandNotSupported: return "CommandNotSupported";
-    case ORE_Assert: return "Assert";
-    case ORE_InvalidPlugin: return "InvalidPlugin";
-    case ORE_InvalidInterfaceHash: return "InvalidInterfaceHash";
-    case ORE_NotImplemented: return "NotImplemented";
-    case ORE_InconsistentConstraints: return "InconsistentConstraints";
-    case ORE_NotInitialized: return "NotInitialized";
-    case ORE_InvalidState: return "InvalidState";
-    case ORE_Timeout: return "Timeout";
-    }
-    // should throw an exception?
-    return "";
-}
 
 void CollisionReport::Reset(int coloptions)
 {
