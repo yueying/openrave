@@ -272,29 +272,6 @@ namespace OpenRAVE
 
 
 
-/// \brief User data for trimesh geometries. Vertices are defined in counter-clockwise order for outward pointing faces.
-class OPENRAVE_API TriMesh
-{
-public:
-    std::vector<Vector> vertices;
-    std::vector<int32_t> indices;
-
-    void ApplyTransform(const Transform& t);
-    void ApplyTransform(const TransformMatrix& t);
-
-    /// append another TRIMESH to this tri mesh
-    void Append(const TriMesh& mesh);
-    void Append(const TriMesh& mesh, const Transform& trans);
-
-    AABB ComputeAABB() const;
-    void serialize(std::ostream& o, int options=0) const;
-
-    friend OPENRAVE_API std::ostream& operator<<(std::ostream& O, const TriMesh &trimesh);
-    friend OPENRAVE_API std::istream& operator>>(std::istream& I, TriMesh& trimesh);
-};
-
-OPENRAVE_API std::ostream& operator<<(std::ostream& O, const TriMesh& trimesh);
-OPENRAVE_API std::istream& operator>>(std::istream& I, TriMesh& trimesh);
 
 /// \brief Selects which DOFs of the affine transformation to include in the active configuration.
 enum DOFAffine
@@ -389,7 +366,7 @@ OPENRAVE_API ConfigurationSpecification RaveGetAffineConfigurationSpecification(
 #include <openrave/trajectory.h>
 #include <openrave/module.h>
 #include <openrave/collisionchecker.h>
-#include <openrave/sensor.h>
+#include <openrave/sensor_base.h>
 #include <openrave/robot.h>
 #include <openrave/iksolver.h>
 #include <openrave/planner.h>
@@ -397,7 +374,7 @@ OPENRAVE_API ConfigurationSpecification RaveGetAffineConfigurationSpecification(
 #include <openrave/physicsengine.h>
 #include <openrave/sensorsystem.h>
 #include <openrave/viewer.h>
-#include <openrave/environment.h>
+#include <openrave/environment_base.h>
 
 namespace OpenRAVE {
 

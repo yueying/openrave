@@ -13,7 +13,9 @@ kinbodygeometry.cpp kinbodygrab.cpp kinbodyjoint.cpp kinbodylink.cpp
 kinbodystatesaver.cpp libopenrave.cpp libopenrave.h openravemathextra.cpp 
 planner.cpp plannerparameters.cpp planningutils.cpp plugindatabase.h 
 robot.cpp robotconnectedbody.cpp robotmanipulator.cpp sensorsystem.cpp 
-trajectory.cpp utils.cpp xmlreaders.cpp openrave_exception.cpp${rave_header_files})
+trajectory.cpp utils.cpp xmlreaders.cpp openrave_exception.cpp
+electric_motor_actuator_info.cpp grabbed.cpp tri_mesh.cpp rave_global.cpp
+environment_base.cpp sensor_base.cpp numerical.cpp${rave_header_files})
 
 check_function_exists(asinh HAS_ASINH)
 check_function_exists(acosh HAS_ACOSH)

@@ -284,4 +284,9 @@ namespace OpenRAVE
 		return I;
 	}
 
+	const std::map<IkParameterizationType, std::string>& IkParameterization::GetIkParameterizationMap(int alllowercase)
+	{
+		return RaveGlobal::instance()->GetIkParameterizationMap(alllowercase);
+	}
+
 }

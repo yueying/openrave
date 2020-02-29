@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -22,9 +22,15 @@
 #ifndef OPENRAVE_SENSOR_H
 #define OPENRAVE_SENSOR_H
 
-namespace OpenRAVE {
+#include <openrave/config.h>
+#include <openrave/interface.h>
+#include <openrave/openrave.h>
 
-/** \brief <b>[interface]</b> A sensor measures physical properties from the environment. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_sensor.
+namespace OpenRAVE 
+{
+
+/** \brief <b>[interface]</b> A sensor measures physical properties from the environment. 
+    <b>If not specified, method is not multi-thread safe.</b> See \ref arch_sensor.
    \ingroup interfaces
  */
 class OPENRAVE_API SensorBase : public InterfaceBase
