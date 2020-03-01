@@ -44,7 +44,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[PT_Controller].push_back("IdealController");
     info.interfacenames[PT_Controller].push_back("IdealVelocityController");

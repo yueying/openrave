@@ -16,13 +16,13 @@
 #ifndef OPENRAVE_CONFIGURATION_SPECIFICATION_H_
 #define OPENRAVE_CONFIGURATION_SPECIFICATION_H_
 
-#include <openrave/xml_process.h>
 #include <vector>
 #include <sstream>
 #include <boost/function.hpp>
 #include <openrave/type.h>
 #include <openrave/numerical.h>
-#include <openrave/openrave.h>
+#include <openrave/xml_process.h>
+
 
 namespace OpenRAVE
 {

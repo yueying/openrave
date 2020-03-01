@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2016 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -20,7 +20,15 @@
 #ifndef OPENRAVE_SERIALIZE_JSON_H
 #define OPENRAVE_SERIALIZE_JSON_H
 
-namespace OpenRAVE {
+#if OPENRAVE_RAPIDJSON
+#include <rapidjson/document.h>
+#endif
+#include <openrave/numerical.h>
+#include <openrave/openrave_exception.h>
+#include <openrave/openrave_macros.h>
+
+namespace OpenRAVE 
+{
 
 #define RAVE_SERIALIZEJSON(value, allocator, ...) rapidjson::Value value; RaveSerializeJSON(value, allocator, ##__VA_ARGS__)
 #define RAVE_SERIALIZEJSON_PUSHBACK(value, allocator, ...) { do { RAVE_SERIALIZEJSON(__v, allocator, ##__VA_ARGS__); (value).PushBack(__v, allocator); } while(false); };

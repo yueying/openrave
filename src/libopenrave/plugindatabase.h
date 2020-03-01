@@ -141,7 +141,7 @@ public:
         const string& GetName() const {
             return ppluginname;
         }
-        bool GetInfo(PLUGININFO& info) {
+        bool GetInfo(PluginInfo& info) {
             info = _infocached;
             return true;
         }
@@ -369,7 +369,7 @@ protected:
         PluginExportFn_DestroyPlugin pfnDestroyPlugin;
         PluginExportFn_OnRaveInitialized pfnOnRaveInitialized;
         PluginExportFn_OnRavePreDestroy pfnOnRavePreDestroy;
-        PLUGININFO _infocached;
+        PluginInfo _infocached;
         boost::mutex _mutex;         ///< locked when library is getting updated, only used when plibrary==NULL
         boost::condition _cond;
         bool _bShutdown;         ///< managed by plugin database
@@ -779,18 +779,18 @@ protected:
         return false;
     }
 
-    void GetPluginInfo(std::list< std::pair<std::string, PLUGININFO> >& plugins) const
+    void GetPluginInfo(std::list< std::pair<std::string, PluginInfo> >& plugins) const
     {
         plugins.clear();
         boost::mutex::scoped_lock lock(_mutex);
         FOREACHC(itplugin, _listplugins) {
-            PLUGININFO info;
+            PluginInfo info;
             if( (*itplugin)->GetInfo(info) ) {
                 plugins.emplace_back((*itplugin)->GetName(),info);
             }
         }
         if( !_listRegisteredInterfaces.empty() ) {
-            plugins.emplace_back("__internal__", PLUGININFO());
+            plugins.emplace_back("__internal__", PluginInfo());
             plugins.back().second.version = OPENRAVE_VERSION;
             FOREACHC(it,_listRegisteredInterfaces) {
                 RegisteredInterfacePtr registration = it->lock();
@@ -812,7 +812,7 @@ protected:
             }
         }
         FOREACHC(itplugin, _listplugins) {
-            PLUGININFO localinfo;
+            PluginInfo localinfo;
             if( !(*itplugin)->GetInfo(localinfo) ) {
                 RAVELOG_WARN(str(boost::format("failed to get plugin info: %s\n")%(*itplugin)->GetName()));
             }

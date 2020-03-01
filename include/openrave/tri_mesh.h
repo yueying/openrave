@@ -39,6 +39,9 @@ namespace OpenRAVE
 		friend OPENRAVE_API std::istream& operator>>(std::istream& I, TriMesh& trimesh);
 	};
 
+	OPENRAVE_API void GenerateSphereTriangulation(TriMesh& tri, int levels);
+	OPENRAVE_API void AppendBoxTriangulation(const Vector& pos, const Vector& ex, TriMesh& tri);
+
 	OPENRAVE_API std::ostream& operator<<(std::ostream& O, const TriMesh& trimesh);
 	OPENRAVE_API std::istream& operator>>(std::istream& I, TriMesh& trimesh);
 }

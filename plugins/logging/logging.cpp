@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
 #ifdef ENABLE_VIDEORECORDING
     info.interfacenames[OpenRAVE::PT_Module].push_back("ViewerRecorder");

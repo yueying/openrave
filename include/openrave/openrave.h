@@ -242,7 +242,7 @@ OPENRAVE_API ConfigurationSpecification RaveGetAffineConfigurationSpecification(
 
 }
 
-#include <openrave/plugininfo.h>
+#include <openrave/plugin_info.h>
 #include <openrave/interface_base.h>
 #include <openrave/space_sampler_base.h>
 #include <openrave/kinbody.h>
@@ -256,7 +256,7 @@ OPENRAVE_API ConfigurationSpecification RaveGetAffineConfigurationSpecification(
 #include <openrave/controller_base.h>
 #include <openrave/physics_engine_base.h>
 #include <openrave/sensorsystem.h>
-#include <openrave/viewer.h>
+#include <openrave/viewer_base.h>
 #include <openrave/environment_base.h>
 #include <openrave/dummy_xml_reader.h>
 #include <openrave/multi_controller_base.h>
@@ -381,7 +381,7 @@ OPENRAVE_API void RaveAddCallbackForDestroy(const std::function<void()>& fn);
 /// \brief Get all the loaded plugins and the interfaces they support.
 ///
 /// \param plugins A list of plugins. Each entry has the plugin name and the interfaces it supports
-OPENRAVE_API void RaveGetPluginInfo(std::list< std::pair<std::string, PLUGININFO> >& plugins);
+OPENRAVE_API void RaveGetPluginInfo(std::list< std::pair<std::string, PluginInfo> >& plugins);
 
 /// \brief Get a list of all the loaded interfaces.
 OPENRAVE_API void RaveGetLoadedInterfaces(std::map<InterfaceType, std::vector<std::string> >& interfacenames);
@@ -559,7 +559,7 @@ typedef InterfaceBasePtr (*PluginExportFn_OpenRAVECreateInterface)(InterfaceType
 
 /// \brief Called to fill information about the plugin, see \ref GetPluginAttributesValidated.
 /// \ingroup plugin_exports
-typedef bool (*PluginExportFn_OpenRAVEGetPluginAttributes)(PLUGININFO* pinfo, int size, const char* infohash);
+typedef bool (*PluginExportFn_OpenRAVEGetPluginAttributes)(PluginInfo* pinfo, int size, const char* infohash);
 
 /// \brief Called before plugin is unloaded from openrave. See \ref DestroyPlugin.
 /// \ingroup plugin_exports
@@ -577,7 +577,7 @@ typedef void (*PluginExportFn_OnRavePreDestroy)();
 typedef InterfaceBasePtr (*PluginExportFn_CreateInterface)(InterfaceType type, const std::string& name, const char* pluginhash, EnvironmentBasePtr env) RAVE_DEPRECATED;
 
 /// \deprecated (12/01/01)
-typedef bool (*PluginExportFn_GetPluginAttributes)(PLUGININFO* pinfo, int size) RAVE_DEPRECATED;
+typedef bool (*PluginExportFn_GetPluginAttributes)(PluginInfo* pinfo, int size) RAVE_DEPRECATED;
 
 
 

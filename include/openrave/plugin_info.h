@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -15,29 +15,33 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /** \file plugininfo.h
-    \brief  Holds the plugin information structure.
+	\brief  Holds the plugin information structure.
 
-    Automatically included with \ref openrave.h
+	Automatically included with \ref openrave.h
  */
-#ifndef OPENRAVE_PLUGIN_INFO
-#define OPENRAVE_PLUGIN_INFO
+#ifndef OPENRAVE_PLUGIN_INFO_
+#define OPENRAVE_PLUGIN_INFO_
 
-namespace OpenRAVE {
+#include <openrave/interface_base.h>
 
-/** \brief Holds all the %OpenRAVE-specific information provided by a plugin.
-
-    \ingroup plugin_exports
-    PLUGININFO has a hash computed for it to validate its size and type before having a plugin fill it.
- */
-class OPENRAVE_API PLUGININFO
+namespace OpenRAVE
 {
-public:
-    PLUGININFO() : version(0) {
-    }
-    std::map<InterfaceType, std::vector<std::string> > interfacenames;     ///< offered interfaces
-    int version;     ///< OPENRAVE_VERSION
-};
+
+	/** \brief Holds all the %OpenRAVE-specific information provided by a plugin.
+
+		\ingroup plugin_exports
+		PluginInfo has a hash computed for it to validate its size and type before having a plugin fill it.
+	 */
+	class OPENRAVE_API PluginInfo
+	{
+	public:
+		PluginInfo() : version(0)
+		{
+		}
+		std::map<InterfaceType, std::vector<std::string> > interfacenames;     ///< offered interfaces
+		int version;     ///< OPENRAVE_VERSION
+	};
 
 }
 
-#endif
+#endif //OPENRAVE_PLUGIN_INFO_

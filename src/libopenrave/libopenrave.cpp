@@ -192,7 +192,7 @@ void RaveGetEnvironments(std::list<EnvironmentBasePtr>& listenvironments)
     RaveGlobal::instance()->GetEnvironments(listenvironments);
 }
 
-void RaveGetPluginInfo(std::list< std::pair<std::string, PLUGININFO> >& plugins)
+void RaveGetPluginInfo(std::list< std::pair<std::string, PluginInfo> >& plugins)
 {
     RaveGlobal::instance()->GetDatabase()->GetPluginInfo(plugins);
 }

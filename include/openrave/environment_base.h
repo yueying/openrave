@@ -25,6 +25,8 @@
 #include <openrave/type.h>
 #include <openrave/interfacehashes.h>
 #include <openrave/tri_mesh.h>
+#include <openrave/kinbody.h>
+#include <openrave/graph_handle.h>
 
 namespace OpenRAVE
 {

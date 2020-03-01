@@ -52,7 +52,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[OpenRAVE::PT_Sensor].push_back("BaseLaser2D");
     info.interfacenames[OpenRAVE::PT_Sensor].push_back("base_laser2d");

@@ -43,7 +43,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[PT_SpaceSampler].push_back("MT19937");
     info.interfacenames[PT_SpaceSampler].push_back("Halton");

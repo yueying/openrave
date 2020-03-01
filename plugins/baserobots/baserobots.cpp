@@ -50,7 +50,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[PT_Robot].push_back("CollisionMapRobot");
     info.interfacenames[PT_Robot].push_back("Conveyor");

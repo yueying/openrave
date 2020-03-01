@@ -120,7 +120,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[PT_Module].push_back("ikfast");
     info.interfacenames[PT_IkSolver].push_back("ikfast");

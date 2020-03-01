@@ -52,7 +52,7 @@ OpenRAVE::InterfaceBasePtr CreateInterfaceValidated(OpenRAVE::InterfaceType type
     Only use when \ref rave/plugin.h is included.
     \param[out] info Holds information on what services this plugin provides.
  */
-void GetPluginAttributesValidated(OpenRAVE::PLUGININFO& info);
+void GetPluginAttributesValidated(OpenRAVE::PluginInfo& info);
 
 /// \brief <b>[export]</b> Definition of a plugin export. Requires \ref CreateInterfaceValidated to be defined.
 /// \ingroup plugin_exports
@@ -77,13 +77,13 @@ OPENRAVE_PLUGIN_API OpenRAVE::InterfaceBasePtr OpenRAVECreateInterface(OpenRAVE:
 
 /// \brief \b <b>[export]</b> Definition of a plugin export. Requires \ref GetPluginAttributesValidated to be defined.
 /// \ingroup plugin_exports
-OPENRAVE_PLUGIN_API void OpenRAVEGetPluginAttributes(OpenRAVE::PLUGININFO* pinfo, int size, const char* infohash)
+OPENRAVE_PLUGIN_API void OpenRAVEGetPluginAttributes(OpenRAVE::PluginInfo* pinfo, int size, const char* infohash)
 {
     if( pinfo == NULL ) {
         throw OPENRAVE_EXCEPTION_FORMAT0("bad data",OpenRAVE::ORE_InvalidArguments);
     }
-    if( size != sizeof(OpenRAVE::PLUGININFO) ) {
-        throw OPENRAVE_EXCEPTION_FORMAT("bad plugin info sizes %d != %d", size%sizeof(OpenRAVE::PLUGININFO),OpenRAVE::ORE_InvalidPlugin);
+    if( size != sizeof(OpenRAVE::PluginInfo) ) {
+        throw OPENRAVE_EXCEPTION_FORMAT("bad plugin info sizes %d != %d", size%sizeof(OpenRAVE::PluginInfo),OpenRAVE::ORE_InvalidPlugin);
     }
     if( strcmp(infohash,OPENRAVE_PLUGININFO_HASH) ) {
         throw OPENRAVE_EXCEPTION_FORMAT0("bad plugin info hash",OpenRAVE::ORE_InvalidPlugin);

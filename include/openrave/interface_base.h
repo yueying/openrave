@@ -27,7 +27,7 @@
 #include <rapidjson/document.h>
 #endif // OPENRAVE_RAPIDJSON
 #include <openrave/xml_process.h>
-#include <openrave/environment_base.h>
+#include <openrave/type.h>
 #include <functional>
 #include <map>
 #include <string>

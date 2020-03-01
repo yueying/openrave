@@ -44,7 +44,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[PT_Module].push_back("BaseManipulation");
     info.interfacenames[PT_Module].push_back("TaskManipulation");

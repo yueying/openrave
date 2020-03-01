@@ -19,35 +19,14 @@
 
     Automatically included with \ref openrave.h
  */
-#ifndef OPENRAVE_VIEWER_H
-#define OPENRAVE_VIEWER_H
+#ifndef OPENRAVE_VIEWER_BASE_H_
+#define OPENRAVE_VIEWER_BASE_H_
+
+#include <openrave/graph_handle.h>
+#include <openrave/interface_base.h>
 
 namespace OpenRAVE 
 {
-
-/** \brief Handle holding the plot from the viewers. The plot will continue to be drawn as long as a reference to this handle is held.
-
-    Designed to be multi-thread safe and destruction and modification of the viewer plot can be done at any time. The viewers
-    internally handle synchronization and threading issues.
- */
-class OPENRAVE_API GraphHandle
-{
-public:
-    virtual ~GraphHandle()
-	{
-    }
-
-    /// \brief Changes the underlying transformation of the plot. <b>[multi-thread safe]</b>
-    ///
-    /// \param t new transformation of the plot
-    virtual void SetTransform(const RaveTransform<float>& t) OPENRAVE_DUMMY_IMPLEMENTATION;
-    /// \brief Shows or hides the plot without destroying its resources. <b>[multi-thread safe]</b>
-    virtual void SetShow(bool bshow) OPENRAVE_DUMMY_IMPLEMENTATION;
-};
-
-typedef std::shared_ptr<GraphHandle> GraphHandlePtr;
-typedef std::shared_ptr<GraphHandle const> GraphHandleConstPtr;
-typedef std::weak_ptr<GraphHandle const> GraphHandleWeakPtr;
 
 /** \brief <b>[interface]</b> Base class for the graphics and gui engine that renders the environment and provides visual sensor information. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_viewer.
     \ingroup interfaces
@@ -233,4 +212,4 @@ private:
 
 } // end namespace OpenRAVE
 
-#endif
+#endif //OPENRAVE_VIEWER_BASE_H_

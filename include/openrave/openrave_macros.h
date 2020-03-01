@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #ifndef OPENRAVE_OPENRAVE_MACROS_H_
 #define OPENRAVE_OPENRAVE_MACROS_H_
 #include <openrave/config.h>
@@ -21,6 +22,33 @@
 #include <sstream> // ostringstream
 #include <stdexcept> // logic_error
 #include <memory>
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include <string>
+
+#define FOREACH(it, v) for(auto it = (v).begin(); it != (v).end(); (it)++)
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
+
+#define FOREACHC FOREACH
+#define FOREACHC_NOINC FOREACH_NOINC
+
+#if OPENRAVE_PRECISION // 1 if double precision
+typedef double dReal;
+#define g_fEpsilon 1e-15
+#else
+typedef float dReal;
+#define g_fEpsilon 2e-7f
+#endif
+
+#define SERIALIZATION_PRECISION 4
+
+#define GTS_M_ICOSAHEDRON_X /* sqrt(sqrt(5)+1)/sqrt(2*sqrt(5)) */ \
+    (dReal)0.850650808352039932181540497063011072240401406
+#define GTS_M_ICOSAHEDRON_Y /* sqrt(2)/sqrt(5+sqrt(5))         */ \
+    (dReal)0.525731112119133606025669084847876607285497935
+#define GTS_M_ICOSAHEDRON_Z (dReal)0.0
 
 // <cmath>
 #ifndef M_PI

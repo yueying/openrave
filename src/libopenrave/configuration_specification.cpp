@@ -17,12 +17,18 @@
 /** \file configurationspecification.cpp
 	\brief All definitions that involve ConfigurationSpecification
  */
-#include "libopenrave.h"
+
+#include <openrave/configuration_specification.h>
+
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/once.hpp>
-#include <openrave/configuration_specification.h>
+
 #include <openrave/ik_parameterization.h>
+#include <openrave/openrave_exception.h>
+#include <openrave/openrave_macros.h>
+
+#include <openrave/openrave.h>
 
 namespace OpenRAVE
 {
@@ -37,11 +43,11 @@ namespace OpenRAVE
 		spec._vgroups[0].interpolation = interpolation;
 		if (!!pbody)
 		{
-			spec._vgroups[0].name = str(boost::format("affine_transform %s %d") % pbody->GetName() % affinedofs);
+			spec._vgroups[0].name = format("affine_transform %s %d", pbody->GetName() , affinedofs);
 		}
 		else
 		{
-			spec._vgroups[0].name = str(boost::format("affine_transform __dummy__ %d") % affinedofs);
+			spec._vgroups[0].name = format("affine_transform __dummy__ %d", affinedofs);
 		}
 		return spec;
 	}
@@ -65,35 +71,45 @@ namespace OpenRAVE
 	int ConfigurationSpecification::GetDOF() const
 	{
 		int maxdof = 0;
-		FOREACHC(it, _vgroups) {
-			maxdof = max(maxdof, it->offset + it->dof);
+		for(auto it: _vgroups) 
+		{
+			maxdof = std::max(maxdof, it.offset + it.dof);
 		}
 		return maxdof;
 	}
 
 	bool ConfigurationSpecification::IsValid() const
 	{
-		vector<uint8_t> occupied(GetDOF(), 0);
-		FOREACHC(it, _vgroups) {
-			if (it->offset < 0 || it->dof <= 0 || it->offset + it->dof >(int)occupied.size()) {
+		std::vector<uint8_t> occupied(GetDOF(), 0);
+		for(auto it: _vgroups) 
+		{
+			if (it.offset < 0 || it.dof <= 0 || it.offset + it.dof >(int)occupied.size()) 
+			{
 				return false;
 			}
-			for (int i = it->offset; i < it->offset + it->dof; ++i) {
-				if (occupied[i]) {
+			for (int i = it.offset; i < it.offset + it.dof; ++i)
+			{
+				if (occupied[i]) 
+				{
 					return false;
 				}
 				occupied[i] = 1;
 			}
 		}
-		FOREACH(it, occupied) {
-			if (*it == 0) {
+		for(auto it: occupied) 
+		{
+			if (it == 0)
+			{
 				return false;
 			}
 		}
 		// check for repeating names
-		FOREACHC(it, _vgroups) {
-			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != _vgroups.end(); ++it2) {
-				if (it->name == it2->name) {
+		for (auto it = _vgroups.begin(); it != _vgroups.end(); (it)++)
+		{
+			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != _vgroups.end(); ++it2) 
+			{
+				if (it->name == it2->name) 
+				{
 					return false;
 				}
 			}
@@ -103,22 +119,27 @@ namespace OpenRAVE
 
 	void ConfigurationSpecification::Validate() const
 	{
-		vector<uint8_t> occupied(GetDOF(), 0);
-		FOREACHC(it, _vgroups) {
-			OPENRAVE_ASSERT_OP(it->offset, >= , 0);
-			OPENRAVE_ASSERT_OP(it->dof, > , 0);
-			OPENRAVE_ASSERT_OP(it->offset + it->dof, <= , (int)occupied.size());
-			for (int i = it->offset; i < it->offset + it->dof; ++i) {
+		std::vector<uint8_t> occupied(GetDOF(), 0);
+		for(auto it: _vgroups) 
+		{
+			OPENRAVE_ASSERT_OP(it.offset, >= , 0);
+			OPENRAVE_ASSERT_OP(it.dof, > , 0);
+			OPENRAVE_ASSERT_OP(it.offset + it.dof, <= , (int)occupied.size());
+			for (int i = it.offset; i < it.offset + it.dof; ++i)
+			{
 				OPENRAVE_ASSERT_FORMAT0(!occupied[i], "ocupied when it shoultn't be", ORE_Assert);
 				occupied[i] = 1;
 			}
 		}
-		FOREACH(it, occupied) {
-			OPENRAVE_ASSERT_OP_FORMAT0(*it, != , 0, "found unocupied index", ORE_Assert);
+		for(auto &it: occupied) 
+		{
+			OPENRAVE_ASSERT_OP_FORMAT0(it, != , 0, "found unocupied index", ORE_Assert);
 		}
 		// check for repeating names
-		FOREACHC(it, _vgroups) {
-			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != _vgroups.end(); ++it2) {
+		for (auto it = _vgroups.begin(); it != _vgroups.end(); (it)++)
+		{
+			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != _vgroups.end(); ++it2) 
+			{
 				OPENRAVE_ASSERT_OP_FORMAT0(it->name, != , it2->name, "repeating names", ORE_Assert);
 			}
 		}
@@ -155,45 +176,54 @@ namespace OpenRAVE
 	const ConfigurationSpecification::Group& ConfigurationSpecification::GetGroupFromName(const std::string& name) const
 	{
 		size_t bestmatch = 0xffffffff;
-		std::vector<Group>::const_iterator itbestgroup;
-		FOREACHC(itgroup, _vgroups) {
-			if (itgroup->name.size() >= name.size()) {
-				if (itgroup->name.size() == name.size()) {
-					if (itgroup->name == name) {
-						return *itgroup;
+		Group bestgroup;
+		for(auto itgroup: _vgroups)
+		{
+			if (itgroup.name.size() >= name.size()) 
+			{
+				if (itgroup.name.size() == name.size())
+				{
+					if (itgroup.name == name) 
+					{
+						return itgroup;
 					}
 				}
-				else {
-					if (itgroup->name.substr(0, name.size()) == name) {
-						size_t match = itgroup->name.size() - name.size();
-						if (match < bestmatch) {
-							itbestgroup = itgroup;
+				else
+				{
+					if (itgroup.name.substr(0, name.size()) == name)
+					{
+						size_t match = itgroup.name.size() - name.size();
+						if (match < bestmatch) 
+						{
+							bestgroup = itgroup;
 							bestmatch = match;
 						}
 					}
 				}
 			}
 		}
-		if (bestmatch == 0xffffffff) {
-			throw OPENRAVE_EXCEPTION_FORMAT(_("failed to find group %s"), name, ORE_InvalidArguments);
+		if (bestmatch == 0xffffffff) 
+		{
+			throw OPENRAVE_EXCEPTION_FORMAT(("failed to find group %s"), name, ORE_InvalidArguments);
 		}
-		return *itbestgroup;
+		return bestgroup;
 	}
 
 	ConfigurationSpecification::Group& ConfigurationSpecification::GetGroupFromName(const std::string& name)
 	{
 		size_t bestmatch = 0xffffffff;
-		vector<Group>::iterator itbestgroup;
-		FOREACH(itgroup, _vgroups) {
-			if (itgroup->name.size() >= name.size()) {
-				if (itgroup->name.size() == name.size()) {
-					if (itgroup->name == name) {
-						return *itgroup;
+		Group itbestgroup;
+		for(auto itgroup: _vgroups) 
+		{
+			if (itgroup.name.size() >= name.size()) {
+				if (itgroup.name.size() == name.size()) {
+					if (itgroup.name == name) {
+						return itgroup;
 					}
 				}
 				else {
-					if (itgroup->name.substr(0, name.size()) == name) {
-						size_t match = itgroup->name.size() - name.size();
+					if (itgroup.name.substr(0, name.size()) == name) {
+						size_t match = itgroup.name.size() - name.size();
 						if (match < bestmatch) {
 							itbestgroup = itgroup;
 							bestmatch = match;
@@ -203,9 +233,9 @@ namespace OpenRAVE
 			}
 		}
 		if (bestmatch == 0xffffffff) {
-			throw OPENRAVE_EXCEPTION_FORMAT(_("failed to find group %s"), name, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(("failed to find group %s"), name, ORE_InvalidArguments);
 		}
-		return *itbestgroup;
+		return itbestgroup;
 	}
 
 	std::vector<ConfigurationSpecification::Group>::const_iterator ConfigurationSpecification::FindCompatibleGroup(const ConfigurationSpecification::Group& g, bool exactmatch) const
@@ -223,12 +253,13 @@ namespace OpenRAVE
 	{
 		std::vector<ConfigurationSpecification::Group>::const_iterator itsemanticmatch = _vgroups.end();
 		uint32_t bestmatchscore = 0;
-		stringstream ss(name);
-		std::vector<std::string> tokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+		std::stringstream ss(name);
+		std::vector<std::string> tokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 		if (tokens.size() == 0) {
 			return _vgroups.end();
 		}
-		FOREACHC(itgroup, _vgroups) {
+		for (auto itgroup = (_vgroups).begin(); itgroup != (_vgroups).end(); (itgroup)++)
+		{
 			if (itgroup->name == name) {
 				return itgroup;
 			}
@@ -237,7 +268,7 @@ namespace OpenRAVE
 			}
 			ss.clear();
 			ss.str(itgroup->name);
-			std::vector<std::string> curtokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+			std::vector<std::string> curtokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 			if (curtokens.size() == 0) {
 				continue;
 			}
@@ -284,30 +315,30 @@ namespace OpenRAVE
 	std::vector<ConfigurationSpecification::Group>::const_iterator ConfigurationSpecification::FindTimeDerivativeGroup(
 		const std::string& name, bool exactmatch) const
 	{
-		string derivativename;
+		std::string derivativename;
 		if (name.size() >= 12 && name.substr(0, 12) == "joint_values") {
-			derivativename = string("joint_velocities") + name.substr(12);
+			derivativename = std::string("joint_velocities") + name.substr(12);
 		}
 		else if (name.size() >= 16 && name.substr(0, 16) == "joint_velocities") {
-			derivativename = string("joint_accelerations") + name.substr(16);
+			derivativename = std::string("joint_accelerations") + name.substr(16);
 		}
 		else if (name.size() >= 19 && name.substr(0, 19) == "joint_accelerations") {
-			derivativename = string("joint_jerks") + name.substr(19);
+			derivativename = std::string("joint_jerks") + name.substr(19);
 		}
 		else if (name.size() >= 11 && name.substr(0, 11) == "joint_jerks") {
-			derivativename = string("joint_snaps") + name.substr(11);
+			derivativename = std::string("joint_snaps") + name.substr(11);
 		}
 		else if (name.size() >= 16 && name.substr(0, 16) == "affine_transform") {
-			derivativename = string("affine_velocities") + name.substr(16);
+			derivativename = std::string("affine_velocities") + name.substr(16);
 		}
 		else if (name.size() >= 17 && name.substr(0, 17) == "affine_velocities") {
-			derivativename = string("affine_accelerations") + name.substr(17);
+			derivativename = std::string("affine_accelerations") + name.substr(17);
 		}
 		else if (name.size() >= 14 && name.substr(0, 14) == "ikparam_values") {
-			derivativename = string("ikparam_velocities") + name.substr(14);
+			derivativename = std::string("ikparam_velocities") + name.substr(14);
 		}
 		else if (name.size() >= 18 && name.substr(0, 18) == "ikparam_velocities") {
-			derivativename = string("ikparam_accelerations") + name.substr(18);
+			derivativename = std::string("ikparam_accelerations") + name.substr(18);
 		}
 		else {
 			return _vgroups.end();
@@ -330,30 +361,30 @@ namespace OpenRAVE
 	std::vector<ConfigurationSpecification::Group>::const_iterator ConfigurationSpecification::FindTimeIntegralGroup(
 		const std::string& name, bool exactmatch) const
 	{
-		string derivativename;
+		std::string derivativename;
 		if (name.size() >= 16 && name.substr(0, 16) == "joint_velocities") {
-			derivativename = string("joint_values") + name.substr(16);
+			derivativename = std::string("joint_values") + name.substr(16);
 		}
 		else if (name.size() >= 19 && name.substr(0, 19) == "joint_accelerations") {
-			derivativename = string("joint_velocities") + name.substr(19);
+			derivativename = std::string("joint_velocities") + name.substr(19);
 		}
 		else if (name.size() >= 11 && name.substr(0, 11) == "joint_jerks") {
-			derivativename = string("joint_accelerations") + name.substr(11);
+			derivativename = std::string("joint_accelerations") + name.substr(11);
 		}
 		else if (name.size() >= 11 && name.substr(0, 11) == "joint_snaps") {
-			derivativename = string("joint_jerks") + name.substr(11);
+			derivativename = std::string("joint_jerks") + name.substr(11);
 		}
 		else if (name.size() >= 17 && name.substr(0, 17) == "affine_velocities") {
-			derivativename = string("affine_transform") + name.substr(17);
+			derivativename = std::string("affine_transform") + name.substr(17);
 		}
 		else if (name.size() >= 20 && name.substr(0, 20) == "affine_accelerations") {
-			derivativename = string("affine_velocities") + name.substr(20);
+			derivativename = std::string("affine_velocities") + name.substr(20);
 		}
 		else if (name.size() >= 18 && name.substr(0, 18) == "ikparam_velocities") {
-			derivativename = string("ikparam_values") + name.substr(18);
+			derivativename = std::string("ikparam_values") + name.substr(18);
 		}
 		else if (name.size() >= 21 && name.substr(0, 21) == "ikparam_accelerations") {
-			derivativename = string("ikparam_velocities") + name.substr(21);
+			derivativename = std::string("ikparam_velocities") + name.substr(21);
 		}
 		else {
 			return _vgroups.end();
@@ -363,11 +394,11 @@ namespace OpenRAVE
 
 	void ConfigurationSpecification::AddDerivativeGroups(int deriv, bool adddeltatime)
 	{
-		static const boost::array<string, 4> s_GroupsJointValues = { 
+		static const boost::array<std::string, 4> s_GroupsJointValues = {
 			{"joint_values","joint_velocities", "joint_accelerations", "joint_jerks"} };
-		static const boost::array<string, 4> s_GroupsAffine = { 
+		static const boost::array<std::string, 4> s_GroupsAffine = {
 			{"affine_transform","affine_velocities","ikparam_accelerations", "affine_jerks"} };
-		static const boost::array<string, 4> s_GroupsIkparam = { 
+		static const boost::array<std::string, 4> s_GroupsIkparam = {
 			{"ikparam_values","ikparam_velocities","affine_accelerations", "ikparam_jerks"} };
 		if (_vgroups.size() == 0) {
 			return;
@@ -376,27 +407,27 @@ namespace OpenRAVE
 		std::list<ConfigurationSpecification::Group> listadd;
 		int offset = GetDOF();
 		bool hasdeltatime = false;
-		FOREACH(itgroup, _vgroups) {
-			string replacename;
+		for(auto& itgroup: _vgroups) {
+			std::string replacename;
 			int offset = -1;
-			if (itgroup->name.size() >= 12 && itgroup->name.substr(0, 12) == "joint_values") {
+			if (itgroup.name.size() >= 12 && itgroup.name.substr(0, 12) == "joint_values") {
 				replacename = s_GroupsJointValues.at(deriv);
 				offset = 12;
 			}
-			else if (itgroup->name.size() >= 16 && itgroup->name.substr(0, 16) == "affine_transform") {
+			else if (itgroup.name.size() >= 16 && itgroup.name.substr(0, 16) == "affine_transform") {
 				replacename = s_GroupsAffine.at(deriv);
 				offset = 16;
 			}
-			else if (itgroup->name.size() >= 14 && itgroup->name.substr(0, 14) == "ikparam_values") {
+			else if (itgroup.name.size() >= 14 && itgroup.name.substr(0, 14) == "ikparam_values") {
 				replacename = s_GroupsIkparam.at(deriv);
 				offset = 14;
 			}
 
 			if (offset > 0) {
 				ConfigurationSpecification::Group g;
-				g.name = replacename + itgroup->name.substr(offset);
-				g.dof = itgroup->dof;
-				g.interpolation = GetInterpolationDerivative(itgroup->interpolation, deriv);
+				g.name = replacename + itgroup.name.substr(offset);
+				g.dof = itgroup.dof;
+				g.interpolation = GetInterpolationDerivative(itgroup.interpolation, deriv);
 				std::vector<ConfigurationSpecification::Group>::const_iterator itcompat = FindCompatibleGroup(g);
 				if (itcompat != _vgroups.end()) {
 					if (itcompat->dof == g.dof) {
@@ -414,21 +445,21 @@ namespace OpenRAVE
 			}
 			else {
 				if (!hasdeltatime) {
-					hasdeltatime = itgroup->name.size() >= 9 && itgroup->name.substr(0, 9) == "deltatime";
+					hasdeltatime = itgroup.name.size() >= 9 && itgroup.name.substr(0, 9) == "deltatime";
 				}
 			}
 		}
 		if (listtoremove.size() > 0) {
-			FOREACH(it, listtoremove) {
-				_vgroups.erase(*it);
+			for(auto& it: listtoremove) {
+				_vgroups.erase(it);
 			}
 			ResetGroupOffsets();
 			offset = GetDOF();
 		}
-		FOREACH(itadd, listadd) {
-			itadd->offset = offset;
-			offset += itadd->dof;
-			_vgroups.push_back(*itadd);
+		for(auto& itadd: listadd) {
+			itadd.offset = offset;
+			offset += itadd.dof;
+			_vgroups.push_back(itadd);
 		}
 		if (!hasdeltatime && adddeltatime) {
 			AddDeltaTimeGroup();
@@ -439,18 +470,18 @@ namespace OpenRAVE
 	{
 		ConfigurationSpecification vspec;
 		vspec._vgroups = _vgroups;
-		FOREACH(itgroup, vspec._vgroups) {
-			if (itgroup->name.size() >= 12 && itgroup->name.substr(0, 12) == "joint_values") {
-				itgroup->name = string("joint_velocities") + itgroup->name.substr(12);
+		for(auto& itgroup: vspec._vgroups) {
+			if (itgroup.name.size() >= 12 && itgroup.name.substr(0, 12) == "joint_values") {
+				itgroup.name = std::string("joint_velocities") + itgroup.name.substr(12);
 			}
-			else if (itgroup->name.size() >= 16 && itgroup->name.substr(0, 16) == "affine_transform") {
-				itgroup->name = string("affine_velocities") + itgroup->name.substr(16);
+			else if (itgroup.name.size() >= 16 && itgroup.name.substr(0, 16) == "affine_transform") {
+				itgroup.name = std::string("affine_velocities") + itgroup.name.substr(16);
 			}
-			else if (itgroup->name.size() >= 14 && itgroup->name.substr(0, 14) == "ikparam_values") {
-				itgroup->name = string("ikparam_velocities") + itgroup->name.substr(14);
+			else if (itgroup.name.size() >= 14 && itgroup.name.substr(0, 14) == "ikparam_values") {
+				itgroup.name = std::string("ikparam_velocities") + itgroup.name.substr(14);
 			}
 
-			itgroup->interpolation = GetInterpolationDerivative(itgroup->interpolation);
+			itgroup.interpolation = GetInterpolationDerivative(itgroup.interpolation);
 		}
 		return vspec;
 	}
@@ -462,8 +493,8 @@ namespace OpenRAVE
 		std::string searchname;
 		derivspec._vgroups = _vgroups;
 		if (timederivative > 0) {
-			FOREACH(itgroup, derivspec._vgroups) {
-				if (itgroup->name.size() >= 12 && itgroup->name.substr(0, 12) == "joint_values") {
+			for(auto& itgroup: derivspec._vgroups) {
+				if (itgroup.name.size() >= 12 && itgroup.name.substr(0, 12) == "joint_values") {
 					switch (timederivative) {
 					case 0: searchname = "joint_values"; break;
 					case 1: searchname = "joint_velocities"; break;
@@ -475,9 +506,9 @@ namespace OpenRAVE
 					default:
 						break;
 					}
-					itgroup->name = searchname + itgroup->name.substr(12);
+					itgroup.name = searchname + itgroup.name.substr(12);
 				}
-				else if (itgroup->name.size() >= 16 && itgroup->name.substr(0, 16) == "affine_transform") {
+				else if (itgroup.name.size() >= 16 && itgroup.name.substr(0, 16) == "affine_transform") {
 					switch (timederivative) {
 					case 0: searchname = "affine_transform"; break;
 					case 1: searchname = "affine_velocities"; break;
@@ -489,9 +520,9 @@ namespace OpenRAVE
 					default:
 						break;
 					}
-					itgroup->name = searchname + itgroup->name.substr(16);
+					itgroup.name = searchname + itgroup.name.substr(16);
 				}
-				else if (itgroup->name.size() >= 14 && itgroup->name.substr(0, 14) == "ikparam_values") {
+				else if (itgroup.name.size() >= 14 && itgroup.name.substr(0, 14) == "ikparam_values") {
 					switch (timederivative) {
 					case 0: searchname = "ikparam_values"; break;
 					case 1: searchname = "ikparam_velocities"; break;
@@ -503,10 +534,10 @@ namespace OpenRAVE
 					default:
 						break;
 					}
-					itgroup->name = searchname + itgroup->name.substr(14);
+					itgroup.name = searchname + itgroup.name.substr(14);
 				}
 
-				itgroup->interpolation = GetInterpolationDerivative(itgroup->interpolation, timederivative);
+				itgroup.interpolation = GetInterpolationDerivative(itgroup.interpolation, timederivative);
 			}
 		}
 		return derivspec;
@@ -515,12 +546,12 @@ namespace OpenRAVE
 	ConfigurationSpecification ConfigurationSpecification::GetTimeDerivativeSpecification(int timederivative) const
 	{
 		ConfigurationSpecification vspec;
-		const boost::array<string, 3> posgroups = { {"joint_values","affine_transform","ikparam_values"} };
-		const boost::array<string, 3> velgroups = { {"joint_velocities","affine_velocities","ikparam_velocities"} };
-		const boost::array<string, 3> accgroups = { {"joint_accelerations","affine_accelerations","ikparam_accelerations"} };
-		const boost::array<string, 3> jerkgroups = { {"joint_jerks","affine_jerks","ikparam_jerks"} };
-		const boost::array<string, 3> snapgroups = { {"joint_snaps","affine_snaps","ikparam_snaps"} };
-		const boost::array<string, 3>* pgroup = NULL;
+		const boost::array<std::string, 3> posgroups = { {"joint_values","affine_transform","ikparam_values"} };
+		const boost::array<std::string, 3> velgroups = { {"joint_velocities","affine_velocities","ikparam_velocities"} };
+		const boost::array<std::string, 3> accgroups = { {"joint_accelerations","affine_accelerations","ikparam_accelerations"} };
+		const boost::array<std::string, 3> jerkgroups = { {"joint_jerks","affine_jerks","ikparam_jerks"} };
+		const boost::array<std::string, 3> snapgroups = { {"joint_snaps","affine_snaps","ikparam_snaps"} };
+		const boost::array<std::string, 3>* pgroup = NULL;
 		if (timederivative == 0) {
 			pgroup = &posgroups;
 		}
@@ -537,14 +568,17 @@ namespace OpenRAVE
 			pgroup = &snapgroups;
 		}
 		else {
-			throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid timederivative"), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT0(("invalid timederivative"), ORE_InvalidArguments);
 		}
 
-		FOREACHC(itgroup, _vgroups) {
-			for (size_t i = 0; i < pgroup->size(); ++i) {
-				const string& name = pgroup->at(i);
-				if (itgroup->name.size() >= name.size() && itgroup->name.substr(0, name.size()) == name) {
-					vspec._vgroups.push_back(*itgroup);
+		for(auto itgroup: _vgroups) 
+		{
+			for (size_t i = 0; i < pgroup->size(); ++i)
+			{
+				const std::string& name = pgroup->at(i);
+				if (itgroup.name.size() >= name.size() && itgroup.name.substr(0, name.size()) == name)
+				{
+					vspec._vgroups.push_back(itgroup);
 					break;
 				}
 			}
@@ -556,9 +590,10 @@ namespace OpenRAVE
 	void ConfigurationSpecification::ResetGroupOffsets()
 	{
 		int offset = 0;
-		FOREACH(it, _vgroups) {
-			it->offset = offset;
-			offset += it->dof;
+		for(auto& it: _vgroups)
+		{
+			it.offset = offset;
+			offset += it.dof;
 		}
 	}
 
@@ -566,7 +601,7 @@ namespace OpenRAVE
 	{
 		int dof = 0;
 		for (size_t i = 0; i < _vgroups.size(); ++i) {
-			dof = max(dof, _vgroups[i].offset + _vgroups[i].dof);
+			dof = std::max(dof, _vgroups[i].offset + _vgroups[i].dof);
 			if (_vgroups[i].name == "deltatime") {
 				return _vgroups[i].offset;
 			}
@@ -582,11 +617,11 @@ namespace OpenRAVE
 	int ConfigurationSpecification::AddGroup(const std::string& name, int dof, const std::string& interpolation)
 	{
 		BOOST_ASSERT(name.size() > 0);
-		stringstream ss(name);
-		std::vector<std::string> tokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+		std::stringstream ss(name);
+		std::vector<std::string> tokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 		int specdof = 0;
 		for (size_t i = 0; i < _vgroups.size(); ++i) {
-			specdof = max(specdof, _vgroups[i].offset + _vgroups[i].dof);
+			specdof = std::max(specdof, _vgroups[i].offset + _vgroups[i].dof);
 			if (_vgroups[i].name == name) {
 				BOOST_ASSERT(_vgroups[i].dof == dof);
 				return _vgroups[i].offset;
@@ -595,10 +630,10 @@ namespace OpenRAVE
 				// first token matches, check if the next token does also
 				ss.clear();
 				ss.str(_vgroups[i].name);
-				std::vector<std::string> newtokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+				std::vector<std::string> newtokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 				if (newtokens.size() >= 2 && tokens.size() >= 2) {
 					if (newtokens[1] == tokens[1]) {
-						throw OPENRAVE_EXCEPTION_FORMAT(_("new group '%s' conflicts with existing group '%s'"), name%_vgroups[i].name, ORE_InvalidArguments);
+						throw OPENRAVE_EXCEPTION_FORMAT(("new group '%s' conflicts with existing group '%s'"), name%_vgroups[i].name, ORE_InvalidArguments);
 					}
 				}
 			}
@@ -643,14 +678,21 @@ namespace OpenRAVE
 	void ConfigurationSpecification::ExtractUsedBodies(EnvironmentBasePtr env, std::vector<KinBodyPtr>& usedbodies) const
 	{
 		usedbodies.resize(0);
-		FOREACHC(itgroup, _vgroups) {
-			if ((itgroup->name.size() >= 6 && itgroup->name.substr(0, 6) == "joint_") || (itgroup->name.size() >= 7 && itgroup->name.substr(0, 7) == "affine_") || (itgroup->name.size() >= 8 && itgroup->name.substr(0, 8) == "grabbody")) {
-				std::stringstream ss(itgroup->name);
+		for(auto itgroup: _vgroups)
+		{
+			if ((itgroup.name.size() >= 6 
+				&& itgroup.name.substr(0, 6) == "joint_") 
+				|| (itgroup.name.size() >= 7 
+					&& itgroup.name.substr(0, 7) == "affine_") 
+				|| (itgroup.name.size() >= 8 
+					&& itgroup.name.substr(0, 8) == "grabbody"))
+			{
+				std::stringstream ss(itgroup.name);
 				std::string type, bodyname;
 				ss >> type >> bodyname;
 				KinBodyPtr pbody = env->GetKinBody(bodyname);
 				if (!!pbody) {
-					if (find(usedbodies.begin(), usedbodies.end(), pbody) == usedbodies.end()) {
+					if (std::find(usedbodies.begin(), usedbodies.end(), pbody) == usedbodies.end()) {
 						usedbodies.push_back(pbody);
 					}
 				}
@@ -686,16 +728,23 @@ namespace OpenRAVE
 		std::stringstream ss;
 		useddofindices.resize(0);
 		usedconfigindices.resize(0);
-		FOREACHC(itgroup, _vgroups) {
+		for(auto itgroup: _vgroups)
+		{
 			ss.clear();
-			ss.str(itgroup->name);
-			std::vector<std::string> curtokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
-			if (curtokens.size() > 2 && s_setBodyGroupNames.find(curtokens.at(0)) != s_setBodyGroupNames.end() && curtokens.at(1) == bodyname) {
-				for (size_t i = 2; i < curtokens.size(); ++i) {
+			ss.str(itgroup.name);
+			std::vector<std::string> curtokens((std::istream_iterator<std::string>(ss)),
+				std::istream_iterator<std::string>());
+			if (curtokens.size() > 2 
+				&& s_setBodyGroupNames.find(curtokens.at(0)) != s_setBodyGroupNames.end()
+				&& curtokens.at(1) == bodyname) 
+			{
+				for (size_t i = 2; i < curtokens.size(); ++i)
+				{
 					int index = boost::lexical_cast<int>(curtokens.at(i));
-					if (find(useddofindices.begin(), useddofindices.end(), index) == useddofindices.end()) {
+					if (find(useddofindices.begin(), useddofindices.end(), index) == useddofindices.end())
+					{
 						useddofindices.push_back(index);
-						usedconfigindices.push_back(itgroup->offset + (i - 2));
+						usedconfigindices.push_back(itgroup.offset + (i - 2));
 					}
 				}
 			}
@@ -710,10 +759,11 @@ namespace OpenRAVE
 	ConfigurationSpecification& ConfigurationSpecification::operator+= (const ConfigurationSpecification& r)
 	{
 		const static boost::array<std::string, 7> s_InterpolationOrder = { {"next","linear","quadratic","cubic","quartic","quintic","sextic"} };
-		list< std::vector<Group>::const_iterator > listaddgroups;
-		stringstream ss;
-		vector<int> vindices;
-		FOREACHC(itrgroup, r._vgroups) {
+		std::list< std::vector<Group>::const_iterator > listaddgroups;
+		std::stringstream ss;
+		std::vector<int> vindices;
+		for (auto itrgroup = (r._vgroups).begin(); itrgroup != (r._vgroups).end(); (itrgroup)++)
+		{
 			std::vector<Group>::const_iterator itcompatgroupconst = FindCompatibleGroup(*itrgroup, false);
 			if (itcompatgroupconst == _vgroups.end()) {
 				listaddgroups.push_back(itrgroup);
@@ -744,10 +794,10 @@ namespace OpenRAVE
 					// have to divide into tokens
 					ss.clear();
 					ss.str(itcompatgroup->name);
-					std::vector<std::string> targettokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+					std::vector<std::string> targettokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 					ss.clear();
 					ss.str(itrgroup->name);
-					std::vector<std::string> sourcetokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+					std::vector<std::string> sourcetokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 
 					if (targettokens.at(0).size() >= 6 && targettokens.at(0).substr(0, 6) == "joint_") {
 						if (targettokens.size() >= 2 && sourcetokens.size() >= 2 && targettokens.at(1) == sourcetokens.at(1)) {
@@ -760,7 +810,7 @@ namespace OpenRAVE
 							for (int i = 0; i < itrgroup->dof; ++i) {
 								int index = boost::lexical_cast<int>(sourcetokens.at(i + 2));
 								if (find(vindices.begin(), vindices.end(), index) == vindices.end()) {
-									itcompatgroup->name += string(" ");
+									itcompatgroup->name += std::string(" ");
 									itcompatgroup->name += sourcetokens.at(i + 2);
 									itcompatgroup->dof += 1;
 									vindices.push_back(index);
@@ -772,7 +822,7 @@ namespace OpenRAVE
 						}
 					}
 					else if (targettokens.at(0).size() >= 13 && targettokens.at(0).substr(0, 13) == "outputSignals") {
-						vector<std::string> vUsedSignals;
+						std::vector<std::string> vUsedSignals;
 						vUsedSignals.resize(itcompatgroup->dof);
 						for (size_t i = 0; i < vUsedSignals.size(); ++i) {
 							vUsedSignals[i] = targettokens.at(i + 1);
@@ -780,7 +830,7 @@ namespace OpenRAVE
 						for (int i = 0; i < itrgroup->dof; ++i) {
 							std::string newSignal = sourcetokens.at(i + 1);
 							if (find(vUsedSignals.begin(), vUsedSignals.end(), newSignal) == vUsedSignals.end()) {
-								itcompatgroup->name += string(" ");
+								itcompatgroup->name += std::string(" ");
 								itcompatgroup->name += newSignal;
 								itcompatgroup->dof += 1;
 								vUsedSignals.push_back(newSignal);
@@ -799,11 +849,11 @@ namespace OpenRAVE
 								targetmask = (targetmask&~DOF_RotationMask) | DOF_Rotation3D;
 							}
 
-							targettokens[2] = boost::lexical_cast<string>(targetmask);
+							targettokens[2] = boost::lexical_cast<std::string>(targetmask);
 							itcompatgroup->dof = RaveGetAffineDOF(targetmask);
 							itcompatgroup->name = targettokens.at(0);
 							for (size_t i = 1; i < targettokens.size(); ++i) {
-								itcompatgroup->name += string(" ");
+								itcompatgroup->name += std::string(" ");
 								itcompatgroup->name += targettokens[i];
 							}
 						}
@@ -826,7 +876,7 @@ namespace OpenRAVE
 							for (int i = 0; i < itrgroup->dof; ++i) {
 								int index = boost::lexical_cast<int>(sourcetokens.at(i + 2));
 								if (find(vindices.begin(), vindices.end(), index) == vindices.end()) {
-									itcompatgroup->name += string(" ");
+									itcompatgroup->name += std::string(" ");
 									itcompatgroup->name += sourcetokens.at(i + 2);
 									itcompatgroup->dof += 1;
 									vindices.push_back(index);
@@ -838,7 +888,7 @@ namespace OpenRAVE
 						}
 					}
 					else {
-						throw OPENRAVE_EXCEPTION_FORMAT(_("do not know how to merge group '%s' into '%s'"), itrgroup->name%itcompatgroup->name, ORE_InvalidArguments);
+						throw OPENRAVE_EXCEPTION_FORMAT(("do not know how to merge group '%s' into '%s'"), itrgroup->name%itcompatgroup->name, ORE_InvalidArguments);
 					}
 				}
 			}
@@ -846,8 +896,9 @@ namespace OpenRAVE
 		if (_vgroups.capacity() < _vgroups.size() + listaddgroups.size()) {
 			_vgroups.reserve(_vgroups.size() + listaddgroups.size());
 		}
-		FOREACH(it, listaddgroups) {
-			_vgroups.push_back(**it);
+		for(auto& it:listaddgroups)
+		{
+			_vgroups.push_back(*it);
 		}
 		ResetGroupOffsets();
 		return *this;
@@ -863,18 +914,18 @@ namespace OpenRAVE
 	bool ConfigurationSpecification::ExtractTransform(Transform& t, std::vector<dReal>::const_iterator itdata, KinBodyConstPtr pbody, int timederivative) const
 	{
 		bool bfound = false;
-		string searchname;
+		std::string searchname;
 		switch (timederivative) {
 		case 0: searchname = "affine_transform"; break;
 		case 1: searchname = "affine_velocities"; break;
 		case 2: searchname = "affine_accelerations"; break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_("bad time derivative %d"), timederivative, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(("bad time derivative %d"), timederivative, ORE_InvalidArguments);
 		}
-		FOREACHC(itgroup, _vgroups) {
-			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
-				stringstream ss(itgroup->name.substr(searchname.size()));
-				string bodyname;
+		for(auto itgroup: _vgroups) {
+			if (itgroup.name.size() >= searchname.size() && itgroup.name.substr(0, searchname.size()) == searchname) {
+				std::stringstream ss(itgroup.name.substr(searchname.size()));
+				std::string bodyname;
 				int affinedofs = 0;
 				ss >> bodyname >> affinedofs;
 				if (!!ss) {
@@ -885,7 +936,7 @@ namespace OpenRAVE
 					if (affinedofs & DOF_RotationAxis) {
 						ss >> vaxis.x >> vaxis.y >> vaxis.z;
 					}
-					RaveGetTransformFromAffineDOFValues(t, itdata + itgroup->offset, affinedofs, vaxis, timederivative == 0);
+					RaveGetTransformFromAffineDOFValues(t, itdata + itgroup.offset, affinedofs, vaxis, timederivative == 0);
 					bfound = true;
 				}
 			}
@@ -893,19 +944,21 @@ namespace OpenRAVE
 		return bfound;
 	}
 
-	bool ConfigurationSpecification::ExtractIkParameterization(IkParameterization& ikparam, std::vector<dReal>::const_iterator itdata, int timederivative, std::string const &robotname, std::string const &manipulatorname) const
+	bool ConfigurationSpecification::ExtractIkParameterization(IkParameterization& ikparam, 
+		std::vector<dReal>::const_iterator itdata, int timederivative, 
+		std::string const &robotname, std::string const &manipulatorname) const
 	{
 		bool bfound = false;
-		string searchname;
+		std::string searchname;
 		switch (timederivative) {
 		case 0: searchname = "ikparam_values"; break;
 		case 1: searchname = "ikparam_velocities"; break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_("bad time derivative %d"), timederivative, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(("bad time derivative %d"), timederivative, ORE_InvalidArguments);
 		}
 		FOREACHC(itgroup, _vgroups) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
-				stringstream ss(itgroup->name.substr(searchname.size()));
+				std::stringstream ss(itgroup->name.substr(searchname.size()));
 				int iktype = IKP_None;
 				ss >> iktype;
 
@@ -978,19 +1031,19 @@ namespace OpenRAVE
 		if (affinedofs == 0) {
 			return false;
 		}
-		string searchname;
+		std::string searchname;
 		switch (timederivative) {
 		case 0: searchname = "affine_values"; break;
 		case 1: searchname = "affine_velocities"; break;
 		case 2: searchname = "affine_accelerations"; break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT0(_("bad time derivative"), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT0(("bad time derivative"), ORE_InvalidArguments);
 		};
 		bool bfound = false;
 		FOREACHC(itgroup, _vgroups) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
-				stringstream ss(itgroup->name.substr(searchname.size()));
-				string bodyname;
+				std::stringstream ss(itgroup->name.substr(searchname.size()));
+				std::string bodyname;
 				int sourceaffinedofs = 0;
 				ss >> bodyname >> sourceaffinedofs;
 				if (!!ss) {
@@ -1013,33 +1066,35 @@ namespace OpenRAVE
 		return bfound;
 	}
 
-	bool ConfigurationSpecification::ExtractJointValues(std::vector<dReal>::iterator itvalues, std::vector<dReal>::const_iterator itdata, KinBodyConstPtr pbody, const std::vector<int>& indices, int timederivative) const
+	bool ConfigurationSpecification::ExtractJointValues(std::vector<dReal>::iterator itvalues, 
+		std::vector<dReal>::const_iterator itdata, KinBodyConstPtr pbody, 
+		const std::vector<int>& indices, int timederivative) const
 	{
 		if (indices.size() == 0) {
 			return false;
 		}
-		string searchname;
+		std::string searchname;
 		switch (timederivative) {
 		case 0: searchname = "joint_values"; break;
 		case 1: searchname = "joint_velocities"; break;
 		case 2: searchname = "joint_accelerations"; break;
 		case 3: searchname = "joint_jerks"; break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT0(_("bad time derivative"), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT0(("bad time derivative"), ORE_InvalidArguments);
 		};
 		bool bfound = false;
 		FOREACHC(itgroup, _vgroups) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
-				stringstream ss(itgroup->name.substr(searchname.size()));
-				string bodyname;
+				std::stringstream ss(itgroup->name.substr(searchname.size()));
+				std::string bodyname;
 				ss >> bodyname;
 				if (!!ss) {
 					if (!!pbody && bodyname != pbody->GetName()) {
 						continue;
 					}
-					vector<int> vgroupindices((istream_iterator<int>(ss)), istream_iterator<int>());
+					std::vector<int> vgroupindices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 					for (size_t i = 0; i < indices.size(); ++i) {
-						std::vector<int>::iterator it = find(vgroupindices.begin(), vgroupindices.end(), indices[i]);
+						std::vector<int>::iterator it = std::find(vgroupindices.begin(), vgroupindices.end(), indices[i]);
 						if (it != vgroupindices.end()) {
 							*(itvalues + i) = *(itdata + itgroup->offset + (it - vgroupindices.begin()));
 						}
@@ -1067,26 +1122,26 @@ namespace OpenRAVE
 		if (indices.size() == 0) {
 			return false;
 		}
-		string searchname;
+		std::string searchname;
 		switch (timederivative) {
 		case 0: searchname = "joint_values"; break;
 		case 1: searchname = "joint_velocities"; break;
 		case 2: searchname = "joint_accelerations"; break;
 		case 3: searchname = "joint_jerks"; break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT0(_("bad time derivative"), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT0(("bad time derivative"), ORE_InvalidArguments);
 		};
 		bool bfound = false;
 		FOREACHC(itgroup, _vgroups) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
-				stringstream ss(itgroup->name.substr(searchname.size()));
-				string bodyname;
+				std::stringstream ss(itgroup->name.substr(searchname.size()));
+				std::string bodyname;
 				ss >> bodyname;
 				if (!!ss) {
 					if (!!pbody && bodyname != pbody->GetName()) {
 						continue;
 					}
-					vector<int> vgroupindices((istream_iterator<int>(ss)), istream_iterator<int>());
+					std::vector<int> vgroupindices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 					for (size_t i = 0; i < vgroupindices.size(); ++i) {
 						std::vector<int>::const_iterator it = find(indices.begin(), indices.end(), vgroupindices[i]);
 						if (it != indices.end()) {
@@ -1167,15 +1222,15 @@ namespace OpenRAVE
 		std::shared_ptr<SetConfigurationStateFn> fn;
 		Validate();
 		std::vector< std::pair<PlannerBase::PlannerParameters::SetStateValuesFn, int> > setstatefns(_vgroups.size());
-		string bodyname;
-		stringstream ss, ssout;
+		std::string bodyname;
+		std::stringstream ss, ssout;
 		// order the groups depending on offset
 		int nMaxDOFForGroup = 0;
 		std::vector< std::pair<int, int> > vgroupoffsets(_vgroups.size());
 		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
 			vgroupoffsets[igroup].first = _vgroups[igroup].offset;
 			vgroupoffsets[igroup].second = igroup;
-			nMaxDOFForGroup = max(nMaxDOFForGroup, _vgroups[igroup].dof);
+			nMaxDOFForGroup = std::max(nMaxDOFForGroup, _vgroups[igroup].dof);
 		}
 		std::sort(vgroupoffsets.begin(), vgroupoffsets.end());
 		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
@@ -1187,7 +1242,7 @@ namespace OpenRAVE
 				BOOST_ASSERT(!!ss);
 				KinBodyPtr pbody = penv->GetKinBody(bodyname);
 				OPENRAVE_ASSERT_FORMAT(!!pbody, "body %s not found", bodyname, ORE_InvalidArguments);
-				std::vector<int> dofindices((istream_iterator<int>(ss)), istream_iterator<int>());
+				std::vector<int> dofindices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 				if (dofindices.size() == 0) {
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
@@ -1200,7 +1255,7 @@ namespace OpenRAVE
 				BOOST_ASSERT(!!ss);
 				KinBodyPtr pbody = penv->GetKinBody(bodyname);
 				OPENRAVE_ASSERT_FORMAT(!!pbody, "body %s not found", bodyname, ORE_InvalidArguments);
-				std::vector<int> dofindices((istream_iterator<int>(ss)), istream_iterator<int>());
+				std::vector<int> dofindices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 				if (dofindices.size() == 0) {
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
@@ -1238,7 +1293,7 @@ namespace OpenRAVE
 			//        else if( g.name.size() >= 4 && g.name.substr(0,4) == "grabbody" ) {
 			//        }
 			else {
-				throw OPENRAVE_EXCEPTION_FORMAT(_("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT(("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
 			}
 		}
 		fn.reset(new SetConfigurationStateFn(std::bind(CallSetStateValuesFns, setstatefns, GetDOF(), nMaxDOFForGroup, std::placeholders::_1, 0)));
@@ -1250,15 +1305,15 @@ namespace OpenRAVE
 		std::shared_ptr<GetConfigurationStateFn> fn;
 		Validate();
 		std::vector< std::pair<GetConfigurationStateFn, int> > getstatefns(_vgroups.size());
-		string bodyname;
-		stringstream ss, ssout;
+		std::string bodyname;
+		std::stringstream ss, ssout;
 		// order the groups depending on offset
 		int nMaxDOFForGroup = 0;
 		std::vector< std::pair<int, int> > vgroupoffsets(_vgroups.size());
 		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
 			vgroupoffsets[igroup].first = _vgroups[igroup].offset;
 			vgroupoffsets[igroup].second = igroup;
-			nMaxDOFForGroup = max(nMaxDOFForGroup, _vgroups[igroup].dof);
+			nMaxDOFForGroup = std::max(nMaxDOFForGroup, _vgroups[igroup].dof);
 		}
 		std::sort(vgroupoffsets.begin(), vgroupoffsets.end());
 		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
@@ -1270,7 +1325,7 @@ namespace OpenRAVE
 				BOOST_ASSERT(!!ss);
 				KinBodyPtr pbody = penv->GetKinBody(bodyname);
 				OPENRAVE_ASSERT_FORMAT(!!pbody, "body %s not found", bodyname, ORE_InvalidArguments);
-				std::vector<int> dofindices((istream_iterator<int>(ss)), istream_iterator<int>());
+				std::vector<int> dofindices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 				if (dofindices.size() == 0) {
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
@@ -1284,7 +1339,7 @@ namespace OpenRAVE
 				BOOST_ASSERT(!!ss);
 				KinBodyPtr pbody = penv->GetKinBody(bodyname);
 				OPENRAVE_ASSERT_FORMAT(!!pbody, "body %s not found", bodyname, ORE_InvalidArguments);
-				std::vector<int> dofindices((istream_iterator<int>(ss)), istream_iterator<int>());
+				std::vector<int> dofindices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 				if (dofindices.size() == 0) {
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
@@ -1323,7 +1378,7 @@ namespace OpenRAVE
 			//        else if( g.name.size() >= 4 && g.name.substr(0,4) == "grabbody" ) {
 			//        }
 			else {
-				throw OPENRAVE_EXCEPTION_FORMAT(_("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT(("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
 			}
 		}
 		fn.reset(new GetConfigurationStateFn(std::bind(CallGetStateFns, getstatefns, GetDOF(), nMaxDOFForGroup, std::placeholders::_1)));
@@ -1393,14 +1448,14 @@ namespace OpenRAVE
 			}
 		}
 		else {
-			stringstream ss(gtarget.name);
-			std::vector<std::string> targettokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+			std::stringstream ss(gtarget.name);
+			std::vector<std::string> targettokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 			ss.clear();
 			ss.str(gsource.name);
-			std::vector<std::string> sourcetokens((istream_iterator<std::string>(ss)), istream_iterator<std::string>());
+			std::vector<std::string> sourcetokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 
 			BOOST_ASSERT(targettokens.at(0) == sourcetokens.at(0));
-			vector<int> vtransferindices; vtransferindices.reserve(gtarget.dof);
+			std::vector<int> vtransferindices; vtransferindices.reserve(gtarget.dof);
 			std::vector<dReal> vdefaultvalues;
 			if (targettokens.at(0).size() >= 6 && targettokens.at(0).substr(0, 6) == "joint_") {
 				std::vector<int> vsourceindices(gsource.dof), vtargetindices(gtarget.dof);
@@ -1676,7 +1731,7 @@ namespace OpenRAVE
 
 				bool bUninitializedData = false;
 				FOREACH(ittargetindex, vtargetindices) {
-					std::vector<int>::iterator it = find(vsourceindices.begin(), vsourceindices.end(), *ittargetindex);
+					std::vector<int>::iterator it = std::find(vsourceindices.begin(), vsourceindices.end(), *ittargetindex);
 					if (it == vsourceindices.end()) {
 						bUninitializedData = true;
 						vtransferindices.push_back(-1);
@@ -1718,19 +1773,19 @@ namespace OpenRAVE
 				ConfigurationSpecification::ConvertGroupData(ittargetdata + targetspec._vgroups[igroup].offset, targetspec.GetDOF(), targetspec._vgroups[igroup], itsourcedata + itcompatgroup->offset, sourcespec.GetDOF(), *itcompatgroup, numpoints, penv, filluninitialized);
 			}
 			else if (filluninitialized) {
-				vector<dReal> vdefaultvalues(targetspec._vgroups[igroup].dof, 0);
-				const string& name = targetspec._vgroups[igroup].name;
+				std::vector<dReal> vdefaultvalues(targetspec._vgroups[igroup].dof, 0);
+				const std::string& name = targetspec._vgroups[igroup].name;
 				if (name.size() >= 12 && name.substr(0, 12) == "joint_values") {
-					string bodyname;
-					stringstream ss(name.substr(12));
+					std::string bodyname;
+					std::stringstream ss(name.substr(12));
 					ss >> bodyname;
 					if (!!ss) {
 						if (!!penv) {
 							KinBodyPtr body = penv->GetKinBody(bodyname);
 							if (!!body) {
-								vector<dReal> values;
+								std::vector<dReal> values;
 								body->GetDOFValues(values);
-								std::vector<int> indices((istream_iterator<int>(ss)), istream_iterator<int>());
+								std::vector<int> indices((std::istream_iterator<int>(ss)), std::istream_iterator<int>());
 								for (size_t i = 0; i < indices.size(); ++i) {
 									vdefaultvalues.at(i) = values.at(indices[i]);
 								}
@@ -1739,9 +1794,9 @@ namespace OpenRAVE
 					}
 				}
 				else if (name.size() >= 16 && name.substr(0, 16) == "affine_transform") {
-					string bodyname;
+					std::string bodyname;
 					int affinedofs;
-					stringstream ss(name.substr(16));
+					std::stringstream ss(name.substr(16));
 					ss >> bodyname >> affinedofs;
 					if (!!ss) {
 						Transform tdefault;
@@ -1804,18 +1859,18 @@ namespace OpenRAVE
 		if (name == "group") {
 			_spec._vgroups.resize(_spec._vgroups.size() + 1);
 			ConfigurationSpecification::Group& g = _spec._vgroups.back();
-			FOREACHC(itatt, atts) {
-				if (itatt->first == "name") {
-					g.name = itatt->second;
+			for(auto& itatt: atts) {
+				if (itatt.first == "name") {
+					g.name = itatt.second;
 				}
-				else if (itatt->first == "interpolation") {
-					g.interpolation = itatt->second;
+				else if (itatt.first == "interpolation") {
+					g.interpolation = itatt.second;
 				}
-				else if (itatt->first == "offset") {
-					g.offset = boost::lexical_cast<int>(itatt->second);
+				else if (itatt.first == "offset") {
+					g.offset = boost::lexical_cast<int>(itatt.second);
 				}
-				else if (itatt->first == "dof") {
-					g.dof = boost::lexical_cast<int>(itatt->second);
+				else if (itatt.first == "dof") {
+					g.dof = boost::lexical_cast<int>(itatt.second);
 				}
 			}
 			return PE_Support;
@@ -1865,23 +1920,23 @@ namespace OpenRAVE
 		}
 		std::sort(vgroupindices.begin(), vgroupindices.end(), std::bind(CompareGroupsOfIndices, boost::ref(spec), std::placeholders::_1, std::placeholders::_2));
 
-		O << "<configuration>" << endl;
-		FOREACH(itgroupindex, vgroupindices) {
-			const ConfigurationSpecification::Group& group = spec._vgroups[*itgroupindex];
+		O << "<configuration>" << std::endl;
+		for(auto&itgroupindex: vgroupindices) {
+			const ConfigurationSpecification::Group& group = spec._vgroups[itgroupindex];
 			O << "<group name=\"" << group.name << "\" offset=\"" << group.offset << "\" dof=\"" << group.dof << "\" interpolation=\"" << group.interpolation << "\"/>" << endl;
 		}
-		O << "</configuration>" << endl;
+		O << "</configuration>" << std::endl;
 		return O;
 	}
 
 	std::istream& operator>>(std::istream& I, ConfigurationSpecification& spec)
 	{
 		if (!!I) {
-			stringbuf buf;
-			stringstream::streampos pos = I.tellg();
+			std::stringbuf buf;
+			std::stringstream::streampos pos = I.tellg();
 			I.get(buf, 0); // get all the data, yes this is inefficient, not sure if there anyway to search in streams
 
-			string pbuf = buf.str();
+			std::string pbuf = buf.str();
 			const char* p = strcasestr(pbuf.c_str(), "</configuration>");
 			int ppsize = -1;
 			if (p != NULL) {
@@ -1890,7 +1945,7 @@ namespace OpenRAVE
 				I.seekg((size_t)pos + ppsize);
 			}
 			else {
-				throw OPENRAVE_EXCEPTION_FORMAT(_("error, failed to find </configuration> in %s"), buf.str(), ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT(("error, failed to find </configuration> in %s"), buf.str(), ORE_InvalidArguments);
 			}
 			ConfigurationSpecification::Reader reader(spec);
 			LocalXML::ParseXMLData(reader, pbuf.c_str(), ppsize);

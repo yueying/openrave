@@ -41,7 +41,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[PT_CollisionChecker].push_back("CacheChecker");
     info.interfacenames[PT_SpaceSampler].push_back("ConfigurationJitterer");

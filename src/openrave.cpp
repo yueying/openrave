@@ -235,8 +235,8 @@ int main(int argc, char ** argv)
 
     if( bListPlugins ) {
 
-        std::list< std::pair<std::string, PLUGININFO> > plugins;
-        std::list< std::pair<std::string, PLUGININFO> >::iterator itplugin;
+        std::list< std::pair<std::string, PluginInfo> > plugins;
+        std::list< std::pair<std::string, PluginInfo> >::iterator itplugin;
         RaveGetPluginInfo(plugins);
 
         // output all the plugins and exit
