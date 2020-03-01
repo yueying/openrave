@@ -267,7 +267,7 @@ public:
 
         list<Node*> _nodes;
         list<Node*> _dead;
-        std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _pDistMetric;
+        boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _pDistMetric;
         dReal _fBestDist;         ///< valid after a call to GetNN
     };
 
@@ -320,9 +320,9 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
         RobotBase::RobotStateSaver savestate(_robot);
 
         if( !parameters->_goalfn )
-            parameters->_goalfn = std::bind(&SimpleGoalMetric::Eval,std::shared_ptr<SimpleGoalMetric>(new SimpleGoalMetric(_robot)),_1);
+            parameters->_goalfn = boost::bind(&SimpleGoalMetric::Eval,std::shared_ptr<SimpleGoalMetric>(new SimpleGoalMetric(_robot)),_1);
         if( !parameters->_costfn )
-            parameters->_costfn = std::bind(&SimpleCostMetric::Eval,std::shared_ptr<SimpleCostMetric>(new SimpleCostMetric(_robot)),_1);
+            parameters->_costfn = boost::bind(&SimpleCostMetric::Eval,std::shared_ptr<SimpleCostMetric>(new SimpleCostMetric(_robot)),_1);
 
         _vSampleConfig.resize(GetDOF());
         _jointIncrement.resize(GetDOF());

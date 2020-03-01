@@ -16,10 +16,20 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OPENRAVE_COLLISION_REPORT_H_
 #define OPENRAVE_COLLISION_REPORT_H_
-#include <openrave/openrave.h>
+#include <openrave/config.h>
+#include <openrave/numerical.h>
+#include <openrave/kinbody.h>
+#include <openrave/openrave_macros.h>
 
 namespace OpenRAVE 
 {
+	/// \brief action to perform whenever a collision is detected between objects
+	enum CollisionAction
+	{
+		CA_DefaultAction = 0, ///< let the physics/collision engine resolve the action
+		CA_Ignore = 1, ///< do nothing
+	};
+	OPENRAVE_CLASS_FORWARD(CollisionReport);
 	/// \brief Holds information about a particular collision that occured.
 	class OPENRAVE_API CollisionReport
 	{
@@ -67,7 +77,8 @@ namespace OpenRAVE
 
 		//KinBody::Link::GeomConstPtr pgeom1, pgeom2; ///< the specified geometries hit for the given links
 	};
-
+	
+	
 }
 
 #endif // OPENRAVE_COLLISION_REPORT_H_

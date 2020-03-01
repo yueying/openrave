@@ -136,9 +136,9 @@ public:
 .. image:: ../../../images/interface_baseflashlidar.jpg\n\
   :width: 400\n\
 ";
-        RegisterCommand("render",std::bind(&BaseFlashLidar3DSensor::_Render,this,_1,_2),
+        RegisterCommand("render",boost::bind(&BaseFlashLidar3DSensor::_Render,this,_1,_2),
                         "Set rendering of the plots (1 or 0).");
-        RegisterCommand("collidingbodies",std::bind(&BaseFlashLidar3DSensor::_CollidingBodies,this,_1,_2),
+        RegisterCommand("collidingbodies",boost::bind(&BaseFlashLidar3DSensor::_CollidingBodies,this,_1,_2),
                         "Returns the ids of the bodies that the laser beams have hit.");
 
         _pgeom.reset(new BaseFlashLidar3DGeom());

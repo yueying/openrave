@@ -16,9 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /** \file utils.h
-    \brief Programming related utilities likes tokenizers, timers, name checkers, etc.
+	\brief Programming related utilities likes tokenizers, timers, name checkers, etc.
 
-    This file is optional and not automatically included with \ref openrave.h . Furthermore, it can be used stand-alone without \ref openrave.h .
+	This file is optional and not automatically included with \ref openrave.h . Furthermore, it can be used stand-alone without \ref openrave.h .
  */
 #ifndef OPENRAVE_UTILS_H
 #define OPENRAVE_UTILS_H
@@ -42,316 +42,340 @@
 #include <windows.h>
 #include <sys/timeb.h>    // ftime(), struct timeb
 inline void usleep(unsigned long microseconds) {
-    Sleep((microseconds+999)/1000);
+	Sleep((microseconds + 999) / 1000);
 }
 #endif
 
 #include <bitset>
 
-namespace OpenRAVE {
-namespace utils {
+namespace OpenRAVE 
+{
+#ifdef _WIN32
+	inline const char *strcasestr(const char *s, const char *find)
+	{
+		register char c, sc;
+		register size_t len;
+
+		if ((c = *find++) != 0) {
+			c = tolower((unsigned char)c);
+			len = strlen(find);
+			do {
+				do {
+					if ((sc = *s++) == 0) {
+						return (NULL);
+					}
+				} while ((char)tolower((unsigned char)sc) != c);
+			} while (_strnicmp(s, find, len) != 0);
+			s--;
+		}
+		return ((char *)s);
+	}
+#endif
+
+	namespace utils 
+	{
 
 #ifdef _WIN32
-inline uint32_t GetMilliTime()
-{
-    LARGE_INTEGER count, freq;
-    QueryPerformanceCounter(&count);
-    QueryPerformanceFrequency(&freq);
-    return (uint32_t)((count.QuadPart * 1000) / freq.QuadPart);
-}
+		inline uint32_t GetMilliTime()
+		{
+			LARGE_INTEGER count, freq;
+			QueryPerformanceCounter(&count);
+			QueryPerformanceFrequency(&freq);
+			return (uint32_t)((count.QuadPart * 1000) / freq.QuadPart);
+		}
 
-inline uint64_t GetMicroTime()
-{
-    LARGE_INTEGER count, freq;
-    QueryPerformanceCounter(&count);
-    QueryPerformanceFrequency(&freq);
-    return (count.QuadPart * 1000000) / freq.QuadPart;
-}
+		inline uint64_t GetMicroTime()
+		{
+			LARGE_INTEGER count, freq;
+			QueryPerformanceCounter(&count);
+			QueryPerformanceFrequency(&freq);
+			return (count.QuadPart * 1000000) / freq.QuadPart;
+		}
 
-inline uint64_t GetNanoTime()
-{
-    LARGE_INTEGER count, freq;
-    QueryPerformanceCounter(&count);
-    QueryPerformanceFrequency(&freq);
-    return (count.QuadPart * 1000000000) / freq.QuadPart;
-}
+		inline uint64_t GetNanoTime()
+		{
+			LARGE_INTEGER count, freq;
+			QueryPerformanceCounter(&count);
+			QueryPerformanceFrequency(&freq);
+			return (count.QuadPart * 1000000000) / freq.QuadPart;
+		}
 
-inline static uint64_t GetNanoPerformanceTime() {
-    return GetNanoTime();
-}
+		inline static uint64_t GetNanoPerformanceTime() {
+			return GetNanoTime();
+		}
 
 #else
 
-inline void GetWallTime(uint32_t& sec, uint32_t& nsec)
-{
+		inline void GetWallTime(uint32_t& sec, uint32_t& nsec)
+		{
 #if defined(CLOCK_GETTIME_FOUND) && (POSIX_TIMERS > 0 || _POSIX_TIMERS > 0)
-    struct timespec start;
-    clock_gettime(CLOCK_REALTIME, &start);
-    sec  = start.tv_sec;
-    nsec = start.tv_nsec;
+			struct timespec start;
+			clock_gettime(CLOCK_REALTIME, &start);
+			sec = start.tv_sec;
+			nsec = start.tv_nsec;
 #else
-    struct timeval timeofday;
-    gettimeofday(&timeofday,NULL);
-    sec  = timeofday.tv_sec;
-    nsec = timeofday.tv_usec * 1000;
+			struct timeval timeofday;
+			gettimeofday(&timeofday, NULL);
+			sec = timeofday.tv_sec;
+			nsec = timeofday.tv_usec * 1000;
 #endif
-}
+		}
 
-inline uint64_t GetNanoTime()
-{
-    uint32_t sec,nsec;
-    GetWallTime(sec,nsec);
-    return (uint64_t)sec*1000000000 + (uint64_t)nsec;
-}
+		inline uint64_t GetNanoTime()
+		{
+			uint32_t sec, nsec;
+			GetWallTime(sec, nsec);
+			return (uint64_t)sec * 1000000000 + (uint64_t)nsec;
+		}
 
-inline uint64_t GetMicroTime()
-{
-    uint32_t sec,nsec;
-    GetWallTime(sec,nsec);
-    return (uint64_t)sec*1000000 + (uint64_t)nsec/1000;
-}
+		inline uint64_t GetMicroTime()
+		{
+			uint32_t sec, nsec;
+			GetWallTime(sec, nsec);
+			return (uint64_t)sec * 1000000 + (uint64_t)nsec / 1000;
+		}
 
-inline uint32_t GetMilliTime()
-{
-    uint32_t sec,nsec;
-    GetWallTime(sec,nsec);
-    return (uint64_t)sec*1000 + (uint64_t)nsec/1000000;
-}
+		inline uint32_t GetMilliTime()
+		{
+			uint32_t sec, nsec;
+			GetWallTime(sec, nsec);
+			return (uint64_t)sec * 1000 + (uint64_t)nsec / 1000000;
+		}
 
-inline uint64_t GetMilliTime64()
-{
-    uint32_t sec,nsec;
-    GetWallTime(sec,nsec);
-    return (uint64_t)sec*1000 + (uint64_t)nsec/1000000;
-}
+		inline uint64_t GetMilliTime64()
+		{
+			uint32_t sec, nsec;
+			GetWallTime(sec, nsec);
+			return (uint64_t)sec * 1000 + (uint64_t)nsec / 1000000;
+		}
 
-inline static uint64_t GetNanoPerformanceTime()
-{
+		inline static uint64_t GetNanoPerformanceTime()
+		{
 #if defined(CLOCK_GETTIME_FOUND) && (POSIX_TIMERS > 0 || _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
-    struct timespec start;
-    uint32_t sec, nsec;
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    sec  = start.tv_sec;
-    nsec = start.tv_nsec;
-    return (uint64_t)sec*1000000000 + (uint64_t)nsec;
+			struct timespec start;
+			uint32_t sec, nsec;
+			clock_gettime(CLOCK_MONOTONIC, &start);
+			sec = start.tv_sec;
+			nsec = start.tv_nsec;
+			return (uint64_t)sec * 1000000000 + (uint64_t)nsec;
 #else
-    return GetNanoTime();
+			return GetNanoTime();
 #endif
-}
+		}
 
 #endif
 
-struct null_deleter
-{
-    void operator()(void const *) const {
-    }
-};
+		struct null_deleter
+		{
+			void operator()(void const *) const {
+			}
+		};
 
-template <class T> std::shared_ptr<T> sptr_from(std::weak_ptr<T> const& wpt)
-{
-    return std::shared_ptr<T>(wpt); // throws on wpt.expired()
-}
+		template <class T> std::shared_ptr<T> sptr_from(std::weak_ptr<T> const& wpt)
+		{
+			return std::shared_ptr<T>(wpt); // throws on wpt.expired()
+		}
 
-template<typename T>
-struct index_cmp
-{
-    index_cmp(const T arr) : arr(arr) {
-    }
-    bool operator()(const size_t a, const size_t b) const
-    {
-        return arr[a] < arr[b];
-    }
-    const T arr;
-};
+		template<typename T>
+		struct index_cmp
+		{
+			index_cmp(const T arr) : arr(arr) {
+			}
+			bool operator()(const size_t a, const size_t b) const
+			{
+				return arr[a] < arr[b];
+			}
+			const T arr;
+		};
 
-/// \brief allow to add different custom deleter funtions to a shared_ptr without touching its original custom deleter
-///
-/// Can specify pre-delete and post-delete functions
-template<class P>
-struct smart_pointer_deleter
-{
-private:
-    P p_;
-    std::function<void(void const*)> _deleterfn;
-    std::function<void()> _postdeleterfn;
-public:
-    smart_pointer_deleter(P const & p, const std::function<void(void const*)>& deleterfn, const std::function<void()>& postdeleterfn = std::function<void()>()) : p_(p), _deleterfn(deleterfn), _postdeleterfn(postdeleterfn)
-    {
-    }
+		/// \brief allow to add different custom deleter funtions to a shared_ptr without touching its original custom deleter
+		///
+		/// Can specify pre-delete and post-delete functions
+		template<class P>
+		struct smart_pointer_deleter
+		{
+		private:
+			P p_;
+			boost::function<void(void const*)> _deleterfn;
+			boost::function<void()> _postdeleterfn;
+		public:
+			smart_pointer_deleter(P const & p, const boost::function<void(void const*)>& deleterfn, const boost::function<void()>& postdeleterfn = boost::function<void()>()) : p_(p), _deleterfn(deleterfn), _postdeleterfn(postdeleterfn)
+			{
+			}
 
-    void operator()(void const * x)
-    {
-        if( !!_deleterfn ) {
-            _deleterfn(x);
-        }
-        p_.reset();
-        if( !!_postdeleterfn ) {
-            _postdeleterfn();
-        }
-    }
+			void operator()(void const * x)
+			{
+				if (!!_deleterfn) {
+					_deleterfn(x);
+				}
+				p_.reset();
+				if (!!_postdeleterfn) {
+					_postdeleterfn();
+				}
+			}
 
-    P const & get() const
-    {
-        return p_;
-    }
-};
+			P const & get() const
+			{
+				return p_;
+			}
+		};
 
-/// \brief returns a lower case version of the string
-inline std::string ConvertToLowerCase(const std::string & s)
-{
-    std::string d = s;
-    std::transform(d.begin(), d.end(), d.begin(), ::tolower);
-    return d;
-}
+		/// \brief returns a lower case version of the string
+		inline std::string ConvertToLowerCase(const std::string & s)
+		{
+			std::string d = s;
+			std::transform(d.begin(), d.end(), d.begin(), ::tolower);
+			return d;
+		}
 
-/** \brief separates the directories from a string and returns them in a vector
+		/** \brief separates the directories from a string and returns them in a vector
 
-    from http://stackoverflow.com/questions/5505965/fast-string-splitting-with-multiple-delimiters
+			from http://stackoverflow.com/questions/5505965/fast-string-splitting-with-multiple-delimiters
 
-   \param skipempty if true, then will skip empty strings. otherwise will insert them. use false when order of parameters is necessary.
-   
-   Usage:
-   \code
-   std::vector<std::string> vstrings;
-   TokenizeString("0.141 0.51411", " \n\t", vstrings);
+		   \param skipempty if true, then will skip empty strings. otherwise will insert them. use false when order of parameters is necessary.
 
-   // store begin and end positions (~8x faster)
-   typedef boost::iterator_range< std::string::const_iterator > string_view;
-   std::vector<string_view> vsv;
-   TokenizeString("0.141 0.51411", " \n\t", vsv);
-   \endcode
+		   Usage:
+		   \code
+		   std::vector<std::string> vstrings;
+		   TokenizeString("0.141 0.51411", " \n\t", vstrings);
 
- */
-template<typename C>
-inline void TokenizeString(std::string const& s, char const* d, C& ret, bool skipempty=true)
-{
-    C output;
-    std::bitset<255> delims;
-    while( *d ) {
-        unsigned char code = *d++;
-        delims[code] = true;
-    }
-    std::string::const_iterator beg;
-    bool in_token = false;
-    for( std::string::const_iterator it = s.begin(), end = s.end(); it != end; ++it ) {
-        if( delims[(unsigned char)*it] ) {
-            if( in_token ) {
-                output.push_back(typename C::value_type(beg, it));
-                in_token = false;
-            }
-            else if( !skipempty ) {
-                output.push_back(typename C::value_type()); // empty
-            }
-        }
-        else if( !in_token ) {
-            beg = it;
-            in_token = true;
-        }
-    }
-    if( in_token ) {
-        output.push_back(typename C::value_type(beg, s.end()));
-    }
-    output.swap(ret);
-}
+		   // store begin and end positions (~8x faster)
+		   typedef boost::iterator_range< std::string::const_iterator > string_view;
+		   std::vector<string_view> vsv;
+		   TokenizeString("0.141 0.51411", " \n\t", vsv);
+		   \endcode
 
-/// \brief gets the string up the next separator and strips it of leading whitespace.
-///
-/// If separator is not present, will return entire string
-OPENRAVE_API std::string GetFilenameUntilSeparator(std::istream& sinput, char separator);
+		 */
+		template<typename C>
+		inline void TokenizeString(std::string const& s, char const* d, C& ret, bool skipempty = true)
+		{
+			C output;
+			std::bitset<255> delims;
+			while (*d) {
+				unsigned char code = *d++;
+				delims[code] = true;
+			}
+			std::string::const_iterator beg;
+			bool in_token = false;
+			for (std::string::const_iterator it = s.begin(), end = s.end(); it != end; ++it) {
+				if (delims[(unsigned char)*it]) {
+					if (in_token) {
+						output.push_back(typename C::value_type(beg, it));
+						in_token = false;
+					}
+					else if (!skipempty) {
+						output.push_back(typename C::value_type()); // empty
+					}
+				}
+				else if (!in_token) {
+					beg = it;
+					in_token = true;
+				}
+			}
+			if (in_token) {
+				output.push_back(typename C::value_type(beg, s.end()));
+			}
+			output.swap(ret);
+		}
 
-/// \brief search and replace strings for all pairs. Internally first checks the longest strings before the shortest
-///
-/// \return returns a reference to the out string
-OPENRAVE_API std::string& SearchAndReplace(std::string& out, const std::string& in, const std::vector< std::pair<std::string, std::string> >& pairs);
+		/// \brief gets the string up the next separator and strips it of leading whitespace.
+		///
+		/// If separator is not present, will return entire string
+		OPENRAVE_API std::string GetFilenameUntilSeparator(std::istream& sinput, char separator);
 
-/// \brief compute the md5 hash of a string
-OPENRAVE_API std::string GetMD5HashString(const std::string& s);
-/// \brief compute the md5 hash of an array
-OPENRAVE_API std::string GetMD5HashString(const std::vector<uint8_t>& v);
+		/// \brief search and replace strings for all pairs. Internally first checks the longest strings before the shortest
+		///
+		/// \return returns a reference to the out string
+		OPENRAVE_API std::string& SearchAndReplace(std::string& out, const std::string& in, const std::vector< std::pair<std::string, std::string> >& pairs);
 
-template<class T>
-inline T ClampOnRange(T value, T min, T max)
-{
-    if (value < min) {
-        return min;
-    }
-    if (value > max) {
-        return max;
-    }
-    return value;
-}
+		/// \brief compute the md5 hash of a string
+		OPENRAVE_API std::string GetMD5HashString(const std::string& s);
+		/// \brief compute the md5 hash of an array
+		OPENRAVE_API std::string GetMD5HashString(const std::vector<uint8_t>& v);
 
-template <typename T>
-inline T NormalizeCircularAngle(T theta, T min, T max)
-{
-    T range = max-min;
-    BOOST_ASSERT(range>0);
-    if (theta < min) {
-        theta += range;
-        while (theta < min) {
-            theta += range;
-        }
-    }
-    else if (theta > max) {
-        theta -= range;
-        while (theta > max) {
-            theta -= range;
-        }
-    }
-    return theta;
-}
+		template<class T>
+		inline T ClampOnRange(T value, T min, T max)
+		{
+			if (value < min) {
+				return min;
+			}
+			if (value > max) {
+				return max;
+			}
+			return value;
+		}
 
-template <typename T>
-inline T SubtractCircularAngle(T f0, T f1)
-{
-    const T PI = T(3.14159265358979323846);
-    return NormalizeCircularAngle(f0-f1, T(-PI), T(PI));
-}
+		template <typename T>
+		inline T NormalizeCircularAngle(T theta, T min, T max)
+		{
+			T range = max - min;
+			BOOST_ASSERT(range > 0);
+			if (theta < min) {
+				theta += range;
+				while (theta < min) {
+					theta += range;
+				}
+			}
+			else if (theta > max) {
+				theta -= range;
+				while (theta > max) {
+					theta -= range;
+				}
+			}
+			return theta;
+		}
 
-template <typename T>
-inline T InterpolateCircularAngle(T start, T end, T fraction, T lowerLimit, T upperLimit)
-{
-    return NormalizeCircularAngle(start + fraction * SubtractCircularAngle(end,start), lowerLimit, upperLimit);
-}
+		template <typename T>
+		inline T SubtractCircularAngle(T f0, T f1)
+		{
+			const T PI = T(3.14159265358979323846);
+			return NormalizeCircularAngle(f0 - f1, T(-PI), T(PI));
+		}
 
-template <typename T>
-inline T Sqr(T t) {
-    return t*t;
-}
+		template <typename T>
+		inline T InterpolateCircularAngle(T start, T end, T fraction, T lowerLimit, T upperLimit)
+		{
+			return NormalizeCircularAngle(start + fraction * SubtractCircularAngle(end, start), lowerLimit, upperLimit);
+		}
 
-/// \brief openrave valid characters to be used in names
-inline bool IsValidCharInName(char c)
-{
-    return c < 0 || c >= 33; //isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/';
-}
+		template <typename T>
+		inline T Sqr(T t) {
+			return t * t;
+		}
 
-/// \brief openrave valid characters to be used in names
-inline bool IsValidName(const std::string& s) 
-{
-    if( s.size() == 0 ) 
-	{
-        return false;
-    }
-    return std::count_if(s.begin(), s.end(), IsValidCharInName) == (int)s.size();
-}
+		/// \brief openrave valid characters to be used in names
+		inline bool IsValidCharInName(char c)
+		{
+			return c < 0 || c >= 33; //isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/';
+		}
 
-/// \brief converts improper characters to _ so the entire name is valid
-inline std::string ConvertToOpenRAVEName(const std::string& name)
-{
-    if( IsValidName(name) )
-	{
-        return name;
-    }
-    std::string newname = name;
-    for(size_t i = 0; i < newname.size(); ++i) {
-        if( !IsValidCharInName(newname[i]) ) {
-            newname[i] = '_';
-        }
-    }
-    return newname;
-}
+		/// \brief openrave valid characters to be used in names
+		inline bool IsValidName(const std::string& s)
+		{
+			if (s.size() == 0)
+			{
+				return false;
+			}
+			return std::count_if(s.begin(), s.end(), IsValidCharInName) == (int)s.size();
+		}
 
-} // utils
+		/// \brief converts improper characters to _ so the entire name is valid
+		inline std::string ConvertToOpenRAVEName(const std::string& name)
+		{
+			if (IsValidName(name))
+			{
+				return name;
+			}
+			std::string newname = name;
+			for (size_t i = 0; i < newname.size(); ++i) {
+				if (!IsValidCharInName(newname[i])) {
+					newname[i] = '_';
+				}
+			}
+			return newname;
+		}
+
+	} // utils
 } // OpenRAVE
 
 #endif

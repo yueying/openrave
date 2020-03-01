@@ -44,4 +44,18 @@ namespace OpenRAVE
 		std::string s(&buffer[0]);
 		return s;
 	}
+
+	const char *RaveGetLocalizedTextForDomain(const std::string& domainname, const char *msgid)
+	{
+#ifndef _WIN32
+		if (_gettextDomainsInitialized.find(domainname) == _gettextDomainsInitialized.end())
+		{
+			bindtextdomain(domainname.c_str(), OPENRAVE_LOCALE_INSTALL_DIR);
+			_gettextDomainsInitialized.insert(domainname);
+		}
+		return dgettext(domainname.c_str(), msgid);
+#else
+		return msgid;
+#endif
+	}
 }

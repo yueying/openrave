@@ -9,7 +9,7 @@
 #define OPENRAVE_DYNAMIC_POINTER_CAST std::dynamic_pointer_cast
 #define OPENRAVE_CONST_POINTER_CAST std::const_pointer_cast
 #define OPENRAVE_MAKE_SHARED std::make_shared
-// std::function does not have "clear" method
-#define OPENRAVE_FUNCTION std::function
+// boost::function does not have "clear" method
+#define OPENRAVE_FUNCTION boost::function
 
 #endif // OPENRAVE_SMART_PTR_H

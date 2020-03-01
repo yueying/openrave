@@ -39,13 +39,13 @@ public:
                           2. ControllerBase::SetDesired is called.\n\n\
                           3. ControllerBase::Reset is called resetting everything\n\n\
                           If SetDesired is called, only joint values will be set at every timestep leaving the transformation alone.\n";
-		RegisterCommand("Pause", std::bind(&IdealController::_Pause, this, _1, _2),
+		RegisterCommand("Pause", boost::bind(&IdealController::_Pause, this, _1, _2),
 			"pauses the controller from reacting to commands ");
-		RegisterCommand("SetCheckCollisions", std::bind(&IdealController::_SetCheckCollisions, this, _1, _2),
+		RegisterCommand("SetCheckCollisions", boost::bind(&IdealController::_SetCheckCollisions, this, _1, _2),
 			"If set, will check if the robot gets into a collision during movement");
-		RegisterCommand("SetThrowExceptions", std::bind(&IdealController::_SetThrowExceptions, this, _1, _2),
+		RegisterCommand("SetThrowExceptions", boost::bind(&IdealController::_SetThrowExceptions, this, _1, _2),
 			"If set, will throw exceptions instead of print warnings. Format is:\n\n  [0/1]");
-		RegisterCommand("SetEnableLogging", std::bind(&IdealController::_SetEnableLogging, this, _1, _2),
+		RegisterCommand("SetEnableLogging", boost::bind(&IdealController::_SetEnableLogging, this, _1, _2),
 			"If set, will write trajectories to disk");
 		_fCommandTime = 0;
 		_fSpeed = 1;
@@ -83,7 +83,7 @@ public:
 				_dofcircular.push_back(pjoint->IsCircular(it - pjoint->GetDOFIndex()));
 			}
 			_cblimits = robot->RegisterChangeCallback(KinBody::Prop_JointLimits | KinBody::Prop_JointAccelerationVelocityTorqueLimits,
-				std::bind(&IdealController::_SetJointLimits, std::bind(&utils::sptr_from<IdealController>, weak_controller())));
+				boost::bind(&IdealController::_SetJointLimits, boost::bind(&utils::sptr_from<IdealController>, weak_controller())));
 			_SetJointLimits();
 
 			if (dof_indices_.size() > 0) {

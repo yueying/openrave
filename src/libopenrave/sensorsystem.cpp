@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -96,10 +96,11 @@ BaseXMLReaderPtr SimpleSensorSystem::CreateXMLReaderId(const string& xmlid, Inte
 
 UserDataPtr SimpleSensorSystem::RegisterXMLReaderId(EnvironmentBasePtr penv, const string& xmlid)
 {
-    return RaveRegisterXMLReader(PT_KinBody,xmlid, std::bind(&SimpleSensorSystem::CreateXMLReaderId,xmlid, _1,_2));
+    return RaveRegisterXMLReader(PT_KinBody,xmlid, 
+		boost::bind(&SimpleSensorSystem::CreateXMLReaderId,xmlid, _1, _2));
 }
 
-SimpleSensorSystem::SimpleSensorSystem(const std::string& xmlid, EnvironmentBasePtr penv) : SensorSystemBase(penv), _expirationtime(2000000), _bShutdown(false), _threadUpdate(std::bind(&SimpleSensorSystem::_UpdateBodiesThread,this))
+SimpleSensorSystem::SimpleSensorSystem(const std::string& xmlid, EnvironmentBasePtr penv) : SensorSystemBase(penv), _expirationtime(2000000), _bShutdown(false), _threadUpdate(boost::bind(&SimpleSensorSystem::_UpdateBodiesThread,this))
 {
     _xmlid = xmlid;
     std::transform(_xmlid.begin(), _xmlid.end(), _xmlid.begin(), ::tolower);

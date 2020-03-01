@@ -27,8 +27,11 @@
 #include <openrave/ik_parameterization.h>
 #include <openrave/openrave_exception.h>
 #include <openrave/openrave_macros.h>
+#include <openrave/xml_process.h>
 
 #include <openrave/openrave.h>
+#include <openrave/utils.h>
+#include "libopenrave.h"
 
 namespace OpenRAVE
 {
@@ -1246,7 +1249,7 @@ namespace OpenRAVE
 				if (dofindices.size() == 0) {
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
-				setstatefns[isavegroup].first = std::bind(SetDOFValuesIndicesParameters, pbody, std::placeholders::_1, dofindices, std::placeholders::_2);
+				setstatefns[isavegroup].first = boost::bind(SetDOFValuesIndicesParameters, pbody, _1, dofindices, _2);
 				setstatefns[isavegroup].second = g.dof;
 			}
 			else if (g.name.size() >= 16 && g.name.substr(0, 16) == "joint_velocities") {
@@ -1259,7 +1262,7 @@ namespace OpenRAVE
 				if (dofindices.size() == 0) {
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
-				setstatefns[isavegroup].first = std::bind(SetDOFVelocitiesIndicesParameters, pbody, std::placeholders::_1, dofindices, std::placeholders::_2);
+				setstatefns[isavegroup].first = boost::bind(SetDOFVelocitiesIndicesParameters, pbody, _1, dofindices, _2);
 				setstatefns[isavegroup].second = g.dof;
 			}
 			else if (g.name.size() >= 16 && g.name.substr(0, 16) == "affine_transform") {
@@ -1273,7 +1276,7 @@ namespace OpenRAVE
 				if (affinedofs & DOF_RotationAxis) {
 					ss >> vaxis.x >> vaxis.y >> vaxis.z;
 				}
-				setstatefns[isavegroup].first = std::bind(SetBodyTransformFromAffineDOFValues, std::placeholders::_1, pbody, affinedofs, vaxis, std::placeholders::_2);
+				setstatefns[isavegroup].first = boost::bind(SetBodyTransformFromAffineDOFValues, _1, pbody, affinedofs, vaxis, _2);
 				setstatefns[isavegroup].second = g.dof;
 			}
 			else if (g.name.size() >= 17 && g.name.substr(0, 17) == "affine_velocities") {
@@ -1287,7 +1290,7 @@ namespace OpenRAVE
 				if (affinedofs & DOF_RotationAxis) {
 					ss >> vaxis.x >> vaxis.y >> vaxis.z;
 				}
-				setstatefns[isavegroup].first = std::bind(SetBodyVelocityFromAffineDOFVelocities, std::placeholders::_1, pbody, affinedofs, vaxis, std::placeholders::_2);
+				setstatefns[isavegroup].first = boost::bind(SetBodyVelocityFromAffineDOFVelocities, _1, pbody, affinedofs, vaxis, _2);
 				setstatefns[isavegroup].second = g.dof;
 			}
 			//        else if( g.name.size() >= 4 && g.name.substr(0,4) == "grabbody" ) {
@@ -1296,7 +1299,7 @@ namespace OpenRAVE
 				throw OPENRAVE_EXCEPTION_FORMAT(("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
 			}
 		}
-		fn.reset(new SetConfigurationStateFn(std::bind(CallSetStateValuesFns, setstatefns, GetDOF(), nMaxDOFForGroup, std::placeholders::_1, 0)));
+		fn.reset(new SetConfigurationStateFn(boost::bind(CallSetStateValuesFns, setstatefns, GetDOF(), nMaxDOFForGroup, _1, 0)));
 		return fn;
 	}
 
@@ -1330,7 +1333,7 @@ namespace OpenRAVE
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
 				void (KinBody::*getdofvaluesptr)(std::vector<dReal>&, const std::vector<int>&) const = &KinBody::GetDOFValues;
-				getstatefns[isavegroup].first = std::bind(getdofvaluesptr, pbody, std::placeholders::_1, dofindices);
+				getstatefns[isavegroup].first = boost::bind(getdofvaluesptr, pbody, _1, dofindices);
 				getstatefns[isavegroup].second = g.dof;
 			}
 			else if (g.name.size() >= 16 && g.name.substr(0, 16) == "joint_velocities") {
@@ -1344,7 +1347,7 @@ namespace OpenRAVE
 					OPENRAVE_ASSERT_OP((int)dofindices.size(), == , pbody->GetDOF());
 				}
 				void (KinBody::*getdofvelocitiesptr)(std::vector<dReal>&, const std::vector<int>&) const = &KinBody::GetDOFVelocities;
-				getstatefns[isavegroup].first = std::bind(getdofvelocitiesptr, pbody, std::placeholders::_1, dofindices);
+				getstatefns[isavegroup].first = boost::bind(getdofvelocitiesptr, pbody, _1, dofindices);
 				getstatefns[isavegroup].second = g.dof;
 			}
 			else if (g.name.size() >= 16 && g.name.substr(0, 16) == "affine_transform") {
@@ -1358,7 +1361,7 @@ namespace OpenRAVE
 				if (affinedofs & DOF_RotationAxis) {
 					ss >> vaxis.x >> vaxis.y >> vaxis.z;
 				}
-				getstatefns[isavegroup].first = std::bind(GetAffineDOFValuesFromBodyTransform, std::placeholders::_1, pbody, affinedofs, vaxis);
+				getstatefns[isavegroup].first = boost::bind(GetAffineDOFValuesFromBodyTransform, _1, pbody, affinedofs, vaxis);
 				getstatefns[isavegroup].second = g.dof;
 			}
 			else if (g.name.size() >= 17 && g.name.substr(0, 17) == "affine_velocities") {
@@ -1372,7 +1375,7 @@ namespace OpenRAVE
 				if (affinedofs & DOF_RotationAxis) {
 					ss >> vaxis.x >> vaxis.y >> vaxis.z;
 				}
-				getstatefns[isavegroup].first = std::bind(GetAffineDOFVelocitiesFromBodyVelocity, std::placeholders::_1, pbody, affinedofs, vaxis);
+				getstatefns[isavegroup].first = boost::bind(GetAffineDOFVelocitiesFromBodyVelocity, _1, pbody, affinedofs, vaxis);
 				getstatefns[isavegroup].second = g.dof;
 			}
 			//        else if( g.name.size() >= 4 && g.name.substr(0,4) == "grabbody" ) {
@@ -1381,7 +1384,7 @@ namespace OpenRAVE
 				throw OPENRAVE_EXCEPTION_FORMAT(("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
 			}
 		}
-		fn.reset(new GetConfigurationStateFn(std::bind(CallGetStateFns, getstatefns, GetDOF(), nMaxDOFForGroup, std::placeholders::_1)));
+		fn.reset(new GetConfigurationStateFn(boost::bind(CallGetStateFns, getstatefns, GetDOF(), nMaxDOFForGroup, _1)));
 		return fn;
 	}
 
@@ -1570,7 +1573,8 @@ namespace OpenRAVE
 						}
 					}
 					else {
-						throw OPENRAVE_EXCEPTION_FORMAT(_("source affine information not present '%s'\n"), gsource.name, ORE_InvalidArguments);
+						throw OPENRAVE_EXCEPTION_FORMAT(("source affine information not present '%s'\n"),
+							gsource.name, ORE_InvalidArguments);
 					}
 				}
 				else {
@@ -1584,7 +1588,8 @@ namespace OpenRAVE
 				}
 				if (vtransferindices.size() == 0) {
 					if (targettokens.size() < 3) {
-						throw OPENRAVE_EXCEPTION_FORMAT(_("target affine information not present '%s'\n"), gtarget.name, ORE_InvalidArguments);
+						throw OPENRAVE_EXCEPTION_FORMAT(("target affine information not present '%s'\n"), 
+							gtarget.name, ORE_InvalidArguments);
 					}
 					else {
 						affinetarget = boost::lexical_cast<int>(targettokens.at(2));
@@ -1599,7 +1604,7 @@ namespace OpenRAVE
 					int commondata = affinesource & affinetarget;
 					int uninitdata = affinetarget & (~commondata);
 					int sourcerotationstart = -1, targetrotationstart = -1, targetrotationend = -1;
-					std::function< void(std::vector<dReal>::iterator, std::vector<dReal>::const_iterator) > rotconverterfn;
+					boost::function< void(std::vector<dReal>::iterator, std::vector<dReal>::const_iterator) > rotconverterfn;
 					if ((uninitdata & DOF_RotationMask) && (affinetarget & DOF_RotationMask) && (affinesource & DOF_RotationMask)) {
 						// both hold rotations, but need to convert
 						uninitdata &= ~DOF_RotationMask;
@@ -1608,15 +1613,15 @@ namespace OpenRAVE
 						targetrotationend = targetrotationstart + RaveGetAffineDOF(affinetarget&DOF_RotationMask);
 						if (affinetarget & DOF_RotationAxis) {
 							if (affinesource & DOF_Rotation3D) {
-								rotconverterfn = std::bind(ConvertDOFRotation_AxisFrom3D, std::placeholders::_1, std::placeholders::_2, targetaxis);
+								rotconverterfn = boost::bind(ConvertDOFRotation_AxisFrom3D, _1, _2, targetaxis);
 							}
 							else if (affinesource & DOF_RotationQuat) {
-								rotconverterfn = std::bind(ConvertDOFRotation_AxisFromQuat, std::placeholders::_1, std::placeholders::_2, targetaxis);
+								rotconverterfn = boost::bind(ConvertDOFRotation_AxisFromQuat, _1, _2, targetaxis);
 							}
 						}
 						else if (affinetarget & DOF_Rotation3D) {
 							if (affinesource & DOF_RotationAxis) {
-								rotconverterfn = std::bind(ConvertDOFRotation_3DFromAxis, std::placeholders::_1, std::placeholders::_2, sourceaxis);
+								rotconverterfn = boost::bind(ConvertDOFRotation_3DFromAxis, _1, _2, sourceaxis);
 							}
 							else if (affinesource & DOF_RotationQuat) {
 								rotconverterfn = ConvertDOFRotation_3DFromQuat;
@@ -1624,7 +1629,7 @@ namespace OpenRAVE
 						}
 						else if (affinetarget & DOF_RotationQuat) {
 							if (affinesource & DOF_RotationAxis) {
-								rotconverterfn = std::bind(ConvertDOFRotation_QuatFromAxis, std::placeholders::_1, std::placeholders::_2, sourceaxis);
+								rotconverterfn = boost::bind(ConvertDOFRotation_QuatFromAxis, _1, _2, sourceaxis);
 							}
 							else if (affinesource & DOF_Rotation3D) {
 								rotconverterfn = ConvertDOFRotation_QuatFrom3D;
@@ -1690,13 +1695,13 @@ namespace OpenRAVE
 					iktypesource = static_cast<IkParameterizationType>(boost::lexical_cast<int>(sourcetokens[1]));
 				}
 				else {
-					throw OPENRAVE_EXCEPTION_FORMAT(_("ikparam type not present '%s'\n"), gsource.name, ORE_InvalidArguments);
+					throw OPENRAVE_EXCEPTION_FORMAT(("ikparam type not present '%s'\n"), gsource.name, ORE_InvalidArguments);
 				}
 				if (targettokens.size() >= 2) {
 					iktypetarget = static_cast<IkParameterizationType>(boost::lexical_cast<int>(targettokens[1]));
 				}
 				else {
-					throw OPENRAVE_EXCEPTION_FORMAT(_("ikparam type not present '%s'\n"), gtarget.name, ORE_InvalidArguments);
+					throw OPENRAVE_EXCEPTION_FORMAT(("ikparam type not present '%s'\n"), gtarget.name, ORE_InvalidArguments);
 				}
 
 				if (iktypetarget == iktypesource) {
@@ -1713,7 +1718,8 @@ namespace OpenRAVE
 			else if (targettokens.at(0) == std::string("grab")) {
 				std::vector<int> vsourceindices(gsource.dof), vtargetindices(gtarget.dof);
 				if ((int)sourcetokens.size() < gsource.dof + 2) {
-					throw OPENRAVE_EXCEPTION_FORMAT(_("source tokens '%s' do not have %d dof indices, guessing...."), gsource.name%gsource.dof, ORE_InvalidArguments);
+					throw OPENRAVE_EXCEPTION_FORMAT(("source tokens '%s' do not have %d dof indices, guessing...."), 
+						gsource.name%gsource.dof, ORE_InvalidArguments);
 				}
 				else {
 					for (int i = 0; i < gsource.dof; ++i) {
@@ -1721,7 +1727,8 @@ namespace OpenRAVE
 					}
 				}
 				if ((int)targettokens.size() < gtarget.dof + 2) {
-					throw OPENRAVE_EXCEPTION_FORMAT(_("target tokens '%s' do not match dof '%d', guessing...."), gtarget.name%gtarget.dof, ORE_InvalidArguments);
+					throw OPENRAVE_EXCEPTION_FORMAT(("target tokens '%s' do not match dof '%d', guessing...."), 
+						gtarget.name%gtarget.dof, ORE_InvalidArguments);
 				}
 				else {
 					for (int i = 0; i < gtarget.dof; ++i) {
@@ -1749,7 +1756,8 @@ namespace OpenRAVE
 				// TODO
 			}
 			else {
-				throw OPENRAVE_EXCEPTION_FORMAT(_("unsupported token conversion: %s"), gtarget.name, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT(("unsupported token conversion: %s"),
+					gtarget.name, ORE_InvalidArguments);
 			}
 
 			for (size_t i = 0; i < numpoints; ++i, itsourcedata += sourcestride, ittargetdata += targetstride) {
@@ -1918,12 +1926,14 @@ namespace OpenRAVE
 		for (int i = 0; i < (int)vgroupindices.size(); ++i) {
 			vgroupindices[i] = i;
 		}
-		std::sort(vgroupindices.begin(), vgroupindices.end(), std::bind(CompareGroupsOfIndices, boost::ref(spec), std::placeholders::_1, std::placeholders::_2));
+		std::sort(vgroupindices.begin(), vgroupindices.end(), boost::bind(CompareGroupsOfIndices,
+			boost::ref(spec), _1, _2));
 
 		O << "<configuration>" << std::endl;
 		for(auto&itgroupindex: vgroupindices) {
 			const ConfigurationSpecification::Group& group = spec._vgroups[itgroupindex];
-			O << "<group name=\"" << group.name << "\" offset=\"" << group.offset << "\" dof=\"" << group.dof << "\" interpolation=\"" << group.interpolation << "\"/>" << endl;
+			O << "<group name=\"" << group.name << "\" offset=\"" << group.offset << "\" dof=\"" 
+				<< group.dof << "\" interpolation=\"" << group.interpolation << "\"/>" << std::endl;
 		}
 		O << "</configuration>" << std::endl;
 		return O;

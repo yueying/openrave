@@ -20,64 +20,7 @@
 #ifndef OPENRAVE_H
 #define OPENRAVE_H
 
-#include <cstdio>
-#include <cstdarg>
-#include <cstring>
-#include <cstdlib>
-#include <cstdint>
 
-#ifdef _MSC_VER
-
-#pragma warning(disable:4251)// needs to have dll-interface to be used by clients of class
-#pragma warning(disable:4190)// C-linkage specified, but returns UDT 'std::shared_ptr<T>' which is incompatible with C
-#pragma warning(disable:4819)//The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss using native typeof
-
-
-#ifndef __PRETTY_FUNCTION__
-#define __PRETTY_FUNCTION__ __FUNCDNAME__
-#endif
-
-#else
-#endif
-
-#include <string>
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
-#include <exception>
-
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <memory>
-
-// QTBUG-22829 alternative workaround
-#ifndef Q_MOC_RUN
-
-#include <boost/version.hpp>
-#include <boost/function.hpp>
-
-#include <boost/tuple/tuple.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/format.hpp>
-#include <boost/array.hpp>
-#include <boost/multi_array.hpp>
-//#include <boost/cstdint.hpp>
-
-#endif
-
-#if defined(__GNUC__)
-#define RAVE_DEPRECATED __attribute__((deprecated))
-#else
-#define RAVE_DEPRECATED
-#endif
 
 
 /// The entire %OpenRAVE library
@@ -100,6 +43,7 @@ namespace OpenRAVE {
 #include <openrave/configuration_specification.h>
 #include <openrave/ik_parameterization.h>
 #include <openrave/openrave_macros.h>
+#include <openrave/multi_controller_base.h>
 
 namespace OpenRAVE 
 {
@@ -376,7 +320,7 @@ OPENRAVE_API void RaveDestroy();
 /// before plugins are unloaded.
 /// Callback is added only for this run-time. Once the run-time is destroyed/swapped, it will have to be re-added.
 /// OpenRAVE runtime is destroyed when \ref RaveDestroy is called or on system exits.
-OPENRAVE_API void RaveAddCallbackForDestroy(const std::function<void()>& fn);
+OPENRAVE_API void RaveAddCallbackForDestroy(const boost::function<void()>& fn);
 
 /// \brief Get all the loaded plugins and the interfaces they support.
 ///
@@ -448,7 +392,7 @@ inline std::shared_ptr<T> RaveClone(std::shared_ptr<T const> preference, int clo
     \return a handle if function is successfully registered. By destroying the handle, the interface will be automatically unregistered.
     \throw OpenRAVEException Will throw with ORE_InvalidInterfaceHash if hashes do not match
  */
-OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
+OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
 
 /** \brief Registers a custom xml reader for a particular interface.
 
@@ -505,14 +449,6 @@ OPENRAVE_API int RaveGetDataAccess();
 
 /// \brief Gets the default viewer type name
 OPENRAVE_API std::string RaveGetDefaultViewerType();
-
-/** \brief Returns the gettext translated string of the given message id
-
-    \param domainname translation domain name
-    \param msgid message id to look for
-    \return if a translation was found, it is converted to the locale's codeset and returned. The resulting string is statically allocated and must not be modified or freed. Otherwise msgid is returned.
- */
-OPENRAVE_API const char *RaveGetLocalizedTextForDomain(const std::string& domainname, const char *msgid);
 
 //@}
 

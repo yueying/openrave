@@ -82,15 +82,15 @@ class GrasperModule : public ModuleBase
 public:
     GrasperModule(EnvironmentBasePtr penv, std::istream& sinput)  : ModuleBase(penv), outfile(NULL), errfile(NULL) {
         description_ = ":Interface Author: Rosen Diankov\n\nUsed to simulate a hand grasping an object by closing its fingers until collision with all links. ";
-        RegisterCommand("Grasp",std::bind(&GrasperModule::_GraspCommand,this,_1,_2),
+        RegisterCommand("Grasp",boost::bind(&GrasperModule::_GraspCommand,this,_1,_2),
                         "Performs a grasp and returns contact points");
-        RegisterCommand("GraspThreaded",std::bind(&GrasperModule::_GraspThreadedCommand,this,_1,_2),
+        RegisterCommand("GraspThreaded",boost::bind(&GrasperModule::_GraspThreadedCommand,this,_1,_2),
                         "Parllelizes the computation of the grasp planning and force closure. Number of threads can be specified with 'numthreads'.");
-        RegisterCommand("ComputeDistanceMap",std::bind(&GrasperModule::_ComputeDistanceMapCommand,this,_1,_2),
+        RegisterCommand("ComputeDistanceMap",boost::bind(&GrasperModule::_ComputeDistanceMapCommand,this,_1,_2),
                         "Computes a distance map around a particular point in space");
-        RegisterCommand("GetStableContacts",std::bind(&GrasperModule::_GetStableContactsCommand,this,_1,_2),
+        RegisterCommand("GetStableContacts",boost::bind(&GrasperModule::_GetStableContactsCommand,this,_1,_2),
                         "Returns the stable contacts as defined by the closing direction");
-        RegisterCommand("ConvexHull",std::bind(&GrasperModule::_ConvexHullCommand,this,_1,_2),
+        RegisterCommand("ConvexHull",boost::bind(&GrasperModule::_ConvexHullCommand,this,_1,_2),
                         "Given a point cloud, returns information about its convex hull like normal planes, vertex indices, and triangle indices. Computed planes point outside the mesh, face indices are not ordered, triangles point outside the mesh (counter-clockwise)");
     }
     virtual ~GrasperModule() {
@@ -829,7 +829,7 @@ public:
         // start worker threads
         vector<std::shared_ptr<boost::thread> > listthreads(numthreads);
         FOREACH(itthread,listthreads) {
-            itthread->reset(new boost::thread(std::bind(&GrasperModule::_WorkerThread,this,worker_params,pcloneenv)));
+            itthread->reset(new boost::thread(boost::bind(&GrasperModule::_WorkerThread,this,worker_params,pcloneenv)));
         }
 
         _listGraspResults.clear();

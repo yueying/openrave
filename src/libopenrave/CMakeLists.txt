@@ -11,14 +11,14 @@ configuration_specification.cpp controller_base.cpp ik_parameterization.cpp
 fparsermulti.h iksolver.cpp interface_base.cpp kinbody.cpp kinbodycollision.cpp
 kinbodygeometry.cpp kinbodygrab.cpp kinbodyjoint.cpp kinbodylink.cpp 
 kinbodystatesaver.cpp libopenrave.cpp libopenrave.h openravemathextra.cpp 
-planner.cpp plannerparameters.cpp planningutils.cpp plugindatabase.h 
+planner.cpp plannerparameters.cpp planningutils.cpp 
 robot.cpp robotconnectedbody.cpp robotmanipulator.cpp sensorsystem.cpp 
 trajectory.cpp utils.cpp xmlreaders.cpp openrave_exception.cpp
 electric_motor_actuator_info.cpp grabbed.cpp tri_mesh.cpp rave_global.cpp
 environment_base.cpp sensor_base.cpp numerical.cpp collision_report.cpp
 multi_controller_base.cpp dummy_xml_reader.cpp custom_sampler_callback_data.cpp
 space_sampler_base.cpp collision_checker_base.cpp physics_engine_base.cpp
-openrave_macros.cpp${rave_header_files})
+openrave_macros.cpp xml_process.cpp${rave_header_files})
 
 check_function_exists(asinh HAS_ASINH)
 check_function_exists(acosh HAS_ACOSH)

@@ -119,6 +119,12 @@ namespace OpenRAVE
 		/// \brief returns a writer for child elements
 		virtual BaseXMLWriterPtr AddChild(const std::string& xmltag, const AttributesList& atts = AttributesList()) = 0;
 	};
+
+	namespace LocalXML
+	{
+		bool ParseXMLData(BaseXMLReader& reader, const char* buffer, int size);
+	}
+
 }
 
 #endif // OPENRAVE_XML_PROCESS_H_

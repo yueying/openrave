@@ -15,12 +15,18 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "libopenrave.h"
+#include <openrave/grabbed.h>
+#include <openrave/openrave_macros.h>
 
-namespace OpenRAVE {
-#define M_PI       3.14159265358979323846   // pi
-RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) : _info(info), __probot(probot) {
+namespace OpenRAVE 
+{
+
+RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) 
+	: _info(info), __probot(probot) 
+{
 }
-RobotBase::Manipulator::~Manipulator() {
+RobotBase::Manipulator::~Manipulator() 
+{
 }
 
 RobotBase::Manipulator::Manipulator(const RobotBase::Manipulator& r)

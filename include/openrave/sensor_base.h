@@ -24,7 +24,8 @@
 
 #include <openrave/config.h>
 #include <openrave/interface_base.h>
-#include <openrave/openrave.h>
+#include <openrave/numerical.h>
+#include <openrave/interfacehashes.h>
 
 namespace OpenRAVE 
 {
@@ -415,7 +416,7 @@ public:
     ///
     /// \param type the sensor type to register for
     /// \param callback the user function to call, note that this might block the thread generating/receiving sensor data
-    virtual UserDataPtr RegisterDataCallback(SensorType type, const std::function<void(SensorDataConstPtr)>& callback) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual UserDataPtr RegisterDataCallback(SensorType type, const boost::function<void(SensorDataConstPtr)>& callback) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \return the name of the sensor
     virtual const std::string& GetName() const {

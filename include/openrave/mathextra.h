@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -33,6 +33,7 @@
 
 #include <cmath>
 #include <climits>
+#include <openrave/openrave_macros.h>
 
 namespace OpenRAVE {
 

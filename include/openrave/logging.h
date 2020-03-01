@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2016 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -23,6 +23,8 @@
 #if OPENRAVE_LOG4CXX
 #include <log4cxx/logger.h>
 #endif
+#include <vector>
+#include <cstdarg>
 
 namespace OpenRAVE {
 

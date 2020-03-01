@@ -343,6 +343,24 @@ namespace OpenRAVE
 	}
 
 
+	/// -1 v1 is smaller than v2
+	// 0 two vectors are equivalent
+	/// +1 v1 is greater than v2
+	inline int CompareRealVectors(const std::vector<dReal> & v1, const std::vector<dReal>& v2, dReal epsilon)
+	{
+		if (v1.size() != v2.size()) {
+			return v1.size() < v2.size() ? -1 : 1;
+		}
+		for (size_t i = 0; i < v1.size(); ++i) {
+			if (v1[i] < v2[i] - epsilon) {
+				return -1;
+			}
+			else if (v1[i] > v2[i] + epsilon) {
+				return 1;
+			}
+		}
+		return 0;
+	}
 
 
 }

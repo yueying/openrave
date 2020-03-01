@@ -27,12 +27,13 @@
 #include <openrave/tri_mesh.h>
 #include <openrave/kinbody.h>
 #include <openrave/graph_handle.h>
+#include <openrave/collision_report.h>
 
+#include <functional>
 namespace OpenRAVE
 {
 
 	typedef boost::recursive_try_mutex EnvironmentMutex;
-
 	/** \brief Maintains a world state, which serves as the gateway to all functions offered through %OpenRAVE.
 	           See \ref arch_environment.
 	 */
@@ -134,7 +135,7 @@ namespace OpenRAVE
 		/// \see CollisionCheckerBase::CheckSelfCollision
 		virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) = 0;
 
-		typedef std::function<CollisionAction(CollisionReportPtr, bool)> CollisionCallbackFn;
+		typedef boost::function<CollisionAction(CollisionReportPtr, bool)> CollisionCallbackFn;
 
 		/// Register a collision callback.
 		///
@@ -434,7 +435,7 @@ namespace OpenRAVE
 		///
 		/// \param body KinBodyPtr
 		/// \param action if 0 body has been removed from the environment (environment id is already reset), if 1 body was just added to environment
-		typedef std::function<void(KinBodyPtr, int)> BodyCallbackFn;
+		typedef boost::function<void(KinBodyPtr, int)> BodyCallbackFn;
 		virtual UserDataPtr RegisterBodyCallback(const BodyCallbackFn& callback) = 0;
 
 		/// \brief Fill an array with all sensors loaded in the environment. <b>[multi-thread safe]</b>
@@ -586,7 +587,7 @@ namespace OpenRAVE
 
 		virtual void AddViewer(ViewerBasePtr pviewer)
 		{
-			Add(pviewer);
+			Add(std::dynamic_pointer_cast<InterfaceBase>(pviewer));
 		}
 		/// \brief Plot a point cloud with one color. <b>[multi-thread safe]</b>
 		///

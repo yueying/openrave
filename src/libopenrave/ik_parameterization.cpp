@@ -18,6 +18,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 #include <openrave/openrave_exception.h>
+#include <openrave/rave_global.h>
 
 namespace OpenRAVE
 {

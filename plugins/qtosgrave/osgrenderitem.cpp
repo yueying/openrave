@@ -231,8 +231,8 @@ KinBodyItem::KinBodyItem(OSGGroupPtr osgSceneRoot, OSGGroupPtr osgFigureRoot, Ki
     _bReload = false;
     _bDrawStateChanged = false;
     _environmentid = pbody->GetEnvironmentId();
-    _geometrycallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkGeometry, std::bind(&KinBodyItem::_HandleGeometryChangedCallback,this));
-    _drawcallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkDraw, std::bind(&KinBodyItem::_HandleDrawChangedCallback,this));
+    _geometrycallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkGeometry, boost::bind(&KinBodyItem::_HandleGeometryChangedCallback,this));
+    _drawcallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkDraw, boost::bind(&KinBodyItem::_HandleDrawChangedCallback,this));
 }
 
 KinBodyItem::~KinBodyItem()

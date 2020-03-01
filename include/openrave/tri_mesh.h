@@ -13,6 +13,9 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#ifndef OPENRAVE_TRI_MESH_H_
+#define OPENRAVE_TRI_MESH_H_
+
 #include <openrave/numerical.h>
 
 namespace OpenRAVE
@@ -45,3 +48,6 @@ namespace OpenRAVE
 	OPENRAVE_API std::ostream& operator<<(std::ostream& O, const TriMesh& trimesh);
 	OPENRAVE_API std::istream& operator>>(std::istream& I, TriMesh& trimesh);
 }
+
+
+#endif // OPENRAVE_TRI_MESH_H_

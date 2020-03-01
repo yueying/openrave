@@ -29,7 +29,7 @@ namespace OpenRAVE {
 class ChangeCallbackData : public UserData
 {
 public:
-    ChangeCallbackData(int properties, const std::function<void()>& callback, KinBodyConstPtr pbody) : _properties(properties), _callback(callback), _pweakbody(pbody) {
+    ChangeCallbackData(int properties, const boost::function<void()>& callback, KinBodyConstPtr pbody) : _properties(properties), _callback(callback), _pweakbody(pbody) {
     }
     virtual ~ChangeCallbackData() {
         KinBodyConstPtr pbody = _pweakbody.lock();
@@ -43,7 +43,7 @@ public:
 
     list< std::pair<uint32_t, list<UserDataWeakPtr>::iterator> > _iterators;
     int _properties;
-    std::function<void()> _callback;
+    boost::function<void()> _callback;
 protected:
     std::weak_ptr<KinBody const> _pweakbody;
 };
@@ -51,14 +51,14 @@ protected:
 class CallFunctionAtDestructor
 {
 public:
-    CallFunctionAtDestructor(const std::function<void()>& fn) : _fn(fn) {
+    CallFunctionAtDestructor(const boost::function<void()>& fn) : _fn(fn) {
     }
     ~CallFunctionAtDestructor() {
         _fn();
     }
 
 protected:
-    std::function<void()> _fn;
+    boost::function<void()> _fn;
 };
 
 typedef std::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
@@ -284,7 +284,7 @@ bool KinBody::InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr
 void KinBody::SetLinkGeometriesFromGroup(const std::string& geomname)
 {
     // need to call _PostprocessChangedParameters at the very end, even if exception occurs
-    CallFunctionAtDestructor callfn(std::bind(&KinBody::_PostprocessChangedParameters, this, Prop_LinkGeometry));
+    CallFunctionAtDestructor callfn(boost::bind(&KinBody::_PostprocessChangedParameters, this, Prop_LinkGeometry));
     FOREACHC(itlink, _veclinks) {
         std::vector<KinBody::GeometryInfoPtr>* pvinfos = NULL;
         if( geomname.size() == 0 ) {
@@ -4694,7 +4694,7 @@ void KinBody::_PostprocessChangedParameters(uint32_t parameters)
 //            FOREACH(itgrabbed, mapcheckcollisions) {
 //                KinBodyPtr pgrabbedbody(itgrabbed->first->_pgrabbedbody);
 //                _RemoveAttachedBody(pgrabbedbody);
-//                CallOnDestruction destructionhook(std::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
+//                CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
 //                FOREACH(itlink, itgrabbed->second) {
 //                    if( pchecker->CheckCollision(*itlink, KinBodyConstPtr(pgrabbedbody)) ) {
 //                        itgrabbed->first->_listNonCollidingLinks.remove(*itlink);
@@ -4820,7 +4820,7 @@ ConfigurationSpecification KinBody::GetConfigurationSpecificationIndices(const s
     return spec;
 }
 
-UserDataPtr KinBody::RegisterChangeCallback(uint32_t properties, const std::function<void()>&callback) const
+UserDataPtr KinBody::RegisterChangeCallback(uint32_t properties, const boost::function<void()>&callback) const
 {
     ChangeCallbackDataPtr pdata(new ChangeCallbackData(properties,callback,shared_kinbody_const()));
     boost::unique_lock< boost::shared_mutex > lock(GetInterfaceMutex());

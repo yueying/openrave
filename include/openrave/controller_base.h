@@ -22,7 +22,9 @@
 #ifndef OPENRAVE_CONTROLLER_H
 #define OPENRAVE_CONTROLLER_H
 
-#include <openrave/openrave.h>
+#include <openrave/interface_base.h>
+#include <openrave/numerical.h>
+#include <openrave/interfacehashes.h>
 
 namespace OpenRAVE
 {

@@ -2361,7 +2361,7 @@ namespace OpenRAVE
 		/// block the thread that made the parameter change.
 		/// \param callback
 		/// \param properties a mask of the \ref KinBodyProperty values that the callback should be called for when they change
-		virtual UserDataPtr RegisterChangeCallback(uint32_t properties, const std::function<void()>& callback) const;
+		virtual UserDataPtr RegisterChangeCallback(uint32_t properties, const boost::function<void()>& callback) const;
 
 		void Serialize(BaseXMLWriterPtr writer, int options = 0) const;
 

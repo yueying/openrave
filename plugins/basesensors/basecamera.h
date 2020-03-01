@@ -172,13 +172,13 @@ public:
 
     BaseCameraSensor(EnvironmentBasePtr penv) : SensorBase(penv) {
         description_ = ":Interface Author: Rosen Diankov\n\nProvides a simulated camera using the standard pinhole projection.";
-        RegisterCommand("power",std::bind(&BaseCameraSensor::_Power,this,_1,_2), "deprecated");
-        RegisterCommand("render",std::bind(&BaseCameraSensor::_Render,this,_1,_2),"deprecated");
-        RegisterCommand("setintrinsic",std::bind(&BaseCameraSensor::_SetIntrinsic,this,_1,_2),
+        RegisterCommand("power",boost::bind(&BaseCameraSensor::_Power,this,_1,_2), "deprecated");
+        RegisterCommand("render",boost::bind(&BaseCameraSensor::_Render,this,_1,_2),"deprecated");
+        RegisterCommand("setintrinsic",boost::bind(&BaseCameraSensor::_SetIntrinsic,this,_1,_2),
                         "Set the intrinsic parameters of the camera (fx,fy,cx,cy).");
-        RegisterCommand("setdims",std::bind(&BaseCameraSensor::_SetDims,this,_1,_2),
+        RegisterCommand("setdims",boost::bind(&BaseCameraSensor::_SetDims,this,_1,_2),
                         "Set the dimensions of the image (width,height)");
-        RegisterCommand("SaveImage",std::bind(&BaseCameraSensor::_SaveImage,this,_1,_2),
+        RegisterCommand("SaveImage",boost::bind(&BaseCameraSensor::_SaveImage,this,_1,_2),
                         "Saves the next camera image to the given filename");
         _pgeom.reset(new CameraGeomData());
         _pdata.reset(new CameraSensorData());

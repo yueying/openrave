@@ -19,7 +19,7 @@
 /// samples rays from the projected OBB and returns true if the test function returns true
 /// for all the rays. Otherwise, returns false
 /// allowableoutliers - specifies the % of allowable outliying rays
-bool SampleProjectedOBBWithTest(const OBB& obb, dReal delta, const std::function<bool(const Vector&)>& testfn,dReal allowableocclusion=0)
+bool SampleProjectedOBBWithTest(const OBB& obb, dReal delta, const boost::function<bool(const Vector&)>& testfn,dReal allowableocclusion=0)
 {
     dReal fscalefactor = 0.95f; // have to make box smaller or else rays might miss
     Vector vpoints[8] = { obb.pos + fscalefactor*(obb.right*obb.extents.x + obb.up*obb.extents.y + obb.dir*obb.extents.z),
@@ -253,7 +253,7 @@ public:
             _ikreturn.reset(new IkReturn(IKRA_Success));
             _bSamplingRays = false;
             if( _vf->_bIgnoreSensorCollision && !!_vf->_sensorrobot ) {
-                _collisionfn = _vf->_targetlink->GetParent()->GetEnv()->RegisterCollisionCallback(std::bind(&VisibilityConstraintFunction::_IgnoreCollisionCallback,this,_1,_2));
+                _collisionfn = _vf->_targetlink->GetParent()->GetEnv()->RegisterCollisionCallback(boost::bind(&VisibilityConstraintFunction::_IgnoreCollisionCallback,this,_1,_2));
             }
         }
 
@@ -366,7 +366,7 @@ public:
             FOREACH(itobb,_vTargetLocalOBBs) {  // itobb is in targetlink coordinates
                 OBB cameraobb = geometry::TransformOBB(tCameraInTargetinv,*itobb);
                 // SampleProjectedOBBWithTest usually quits when first occlusion is found, so just passing occludingbodyandlinkname to _TestRay should return the initial occluding part.
-                if( !SampleProjectedOBBWithTest(cameraobb, _vf->_fSampleRayDensity, std::bind(&VisibilityConstraintFunction::_TestRay, this, _1, boost::ref(tworldcamera), boost::ref(occludingbodyandlinkname)),_vf->_fAllowableOcclusion) ) {
+                if( !SampleProjectedOBBWithTest(cameraobb, _vf->_fSampleRayDensity, boost::bind(&VisibilityConstraintFunction::_TestRay, this, _1, boost::ref(tworldcamera), boost::ref(occludingbodyandlinkname)),_vf->_fAllowableOcclusion) ) {
                     RAVELOG_VERBOSE("box is occluded\n");
                     errormsg = str(boost::format("{\"type\":\"pattern_occluded\", \"bodylinkname\":\"%s\"}")%occludingbodyandlinkname);
                     return true;
@@ -399,7 +399,7 @@ public:
             SampleRaysScope srs(*this);
             FOREACH(itobb,_vTargetLocalOBBs) {
                 OBB cameraobb = geometry::TransformOBB(tcamerainv,*itobb);
-                if( !SampleProjectedOBBWithTest(cameraobb, _vf->_fSampleRayDensity, std::bind(&VisibilityConstraintFunction::_TestRayRigid, this, _1, boost::ref(tworldcamera),boost::ref(vattachedlinks)), 0.0f) ) {
+                if( !SampleProjectedOBBWithTest(cameraobb, _vf->_fSampleRayDensity, boost::bind(&VisibilityConstraintFunction::_TestRayRigid, this, _1, boost::ref(tworldcamera),boost::ref(vattachedlinks)), 0.0f) ) {
                     return true;
                 }
             }
@@ -538,7 +538,7 @@ public:
             }
             RobotBase::RobotStateSaver state(_vf->_robot);
             std::string errormsg;
-            _sphereperms._fn = std::bind(&GoalSampleFunction::SampleWithParameters,this,_1,boost::ref(pNewSample), false, errormsg);
+            _sphereperms._fn = boost::bind(&GoalSampleFunction::SampleWithParameters,this,_1,boost::ref(pNewSample), false, errormsg);
             if( _sphereperms.PermuteContinue() >= 0 ) {
                 return true;
             }
@@ -587,26 +587,26 @@ Visibility computation checks occlusion with other objects using ray sampling in
         _fAllowableOcclusion = 0.1;
         _fRayMinDist = 0.02f;
 
-        RegisterCommand("SetCameraAndTarget",std::bind(&VisualFeedback::SetCameraAndTarget,this,_1,_2),
+        RegisterCommand("SetCameraAndTarget",boost::bind(&VisualFeedback::SetCameraAndTarget,this,_1,_2),
                         "Sets the camera index from the robot and its convex hull");
-        RegisterCommand("ProcessVisibilityExtents",std::bind(&VisualFeedback::ProcessVisibilityExtents,this,_1,_2),
+        RegisterCommand("ProcessVisibilityExtents",boost::bind(&VisualFeedback::ProcessVisibilityExtents,this,_1,_2),
                         "Processes the visibility extents of the target and initializes the camera transforms.\n\
 \n\
 :param sphere: Sets the transforms along a sphere density and the distances\n\
 :param conedirangle: Prunes the currently set transforms along a cone centered at the local target center and directed towards conedirangle with a half-angle of ``|conedirangle|``. Can specify multiple cones for an OR effect. The cone represents the visibility of the pattern, should not represent the field of view of the camera.");
-        RegisterCommand("SetCameraTransforms",std::bind(&VisualFeedback::SetCameraTransforms,this,_1,_2),
+        RegisterCommand("SetCameraTransforms",boost::bind(&VisualFeedback::SetCameraTransforms,this,_1,_2),
                         "Sets new camera transformations. Can optionally choose a minimum distance from all planes of the camera convex hull (includes gripper mask)");
-        RegisterCommand("ComputeVisibility",std::bind(&VisualFeedback::ComputeVisibility,this,_1,_2),
+        RegisterCommand("ComputeVisibility",boost::bind(&VisualFeedback::ComputeVisibility,this,_1,_2),
                         "Computes the visibility of the current robot configuration");
-        RegisterCommand("ComputeVisibleConfiguration",std::bind(&VisualFeedback::ComputeVisibleConfiguration,this,_1,_2),
+        RegisterCommand("ComputeVisibleConfiguration",boost::bind(&VisualFeedback::ComputeVisibleConfiguration,this,_1,_2),
                         "Gives a camera transformation, computes the visibility of the object and returns the robot configuration that takes the camera to its specified position, otherwise returns false");
-        RegisterCommand("SampleVisibilityGoal",std::bind(&VisualFeedback::SampleVisibilityGoal,this,_1,_2),
+        RegisterCommand("SampleVisibilityGoal",boost::bind(&VisualFeedback::SampleVisibilityGoal,this,_1,_2),
                         "Samples a goal with the current manipulator maintaining camera visibility constraints");
-        RegisterCommand("MoveToObserveTarget",std::bind(&VisualFeedback::MoveToObserveTarget,this,_1,_2),
+        RegisterCommand("MoveToObserveTarget",boost::bind(&VisualFeedback::MoveToObserveTarget,this,_1,_2),
                         "Approaches a target object while choosing a goal such that the robot's camera sensor sees the object ");
-        RegisterCommand("VisualFeedbackGrasping",std::bind(&VisualFeedback::VisualFeedbackGrasping,this,_1,_2),
+        RegisterCommand("VisualFeedbackGrasping",boost::bind(&VisualFeedback::VisualFeedbackGrasping,this,_1,_2),
                         "Stochastic greedy grasp planner considering visibility");
-        RegisterCommand("SetParameter",std::bind(&VisualFeedback::SetParameter,this,_1,_2),
+        RegisterCommand("SetParameter",boost::bind(&VisualFeedback::SetParameter,this,_1,_2),
                         "Sets internal parameters of visibility computation");
     }
 
@@ -1357,7 +1357,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         params->SetRobotActiveJoints(_robot);
         _robot->GetActiveDOFValues(params->vinitialconfig);
 
-        params->_samplegoalfn = std::bind(&GoalSampleFunction::Sample,pgoalsampler,_1);
+        params->_samplegoalfn = boost::bind(&GoalSampleFunction::Sample,pgoalsampler,_1);
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
         ptraj->Init(_robot->GetActiveConfigurationSpecification());
         ptraj->Insert(0,params->vinitialconfig);
@@ -1480,7 +1480,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         if( bUseVisibility ) {
             RAVELOG_DEBUG("using visibility constraints\n");
             std::shared_ptr<VisibilityConstraintFunction> pconstraint(new VisibilityConstraintFunction(shared_problem(), params->_checkpathvelocityconstraintsfn));
-            params->_checkpathvelocityconstraintsfn = std::bind(&VisibilityConstraintFunction::Constraint,pconstraint,_1,_2,_3,_4,_5,_6,_7,_8);
+            params->_checkpathvelocityconstraintsfn = boost::bind(&VisibilityConstraintFunction::Constraint,pconstraint,_1,_2,_3,_4,_5,_6,_7,_8);
         }
 
         params->_ptarget = _targetlink->GetParent();

@@ -60,6 +60,8 @@ BOOST_STATIC_ASSERT(sizeof(xmlChar) == 1);
 #include <ivcon.h>
 #endif
 
+#include <openrave/tri_mesh.h>
+
 namespace OpenRAVEXMLParser
 {
 
@@ -1306,8 +1308,8 @@ public:
         return tOrigTrans;
     }
 
-    std::function<string(const std::string&)> _fnGetModelsDir;
-    std::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
+    boost::function<string(const std::string&)> _fnGetModelsDir;
+    boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
     MASS _mass;                            ///< current mass of the object
@@ -1711,8 +1713,8 @@ public:
         }
     }
 
-    std::function<string(const std::string&)> _fnGetModelsDir;
-    std::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
+    boost::function<string(const std::string&)> _fnGetModelsDir;
+    boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
     KinBody::LinkPtr _offsetfrom;         ///< all transforms are relative to this body
@@ -2116,8 +2118,8 @@ public:
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
             std::shared_ptr<LinkXMLReader> plinkreader(new LinkXMLReader(_plink, _pchain, newatts));
             plinkreader->SetMassType(_masstype, _fMassValue, _vMassExtents);
-            plinkreader->_fnGetModelsDir = std::bind(&KinBodyXMLReader::GetModelsDir,this,std::placeholders::_1);
-            plinkreader->_fnGetOffsetFrom = std::bind(&KinBodyXMLReader::GetOffsetFrom,this,std::placeholders::_1);
+            plinkreader->_fnGetModelsDir = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
+            plinkreader->_fnGetOffsetFrom = boost::bind(&KinBodyXMLReader::GetOffsetFrom,this,_1);
             _pcurreader = plinkreader;
             return PE_Support;
         }
@@ -2126,8 +2128,8 @@ public:
             AttributesList newatts = atts;
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
             std::shared_ptr<JointXMLReader> pjointreader(new JointXMLReader(_pjoint,_pchain, atts));
-            pjointreader->_fnGetModelsDir = std::bind(&KinBodyXMLReader::GetModelsDir,this,std::placeholders::_1);
-            pjointreader->_fnGetOffsetFrom = std::bind(&KinBodyXMLReader::GetOffsetFrom,this,std::placeholders::_1);
+            pjointreader->_fnGetModelsDir = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
+            pjointreader->_fnGetOffsetFrom = boost::bind(&KinBodyXMLReader::GetOffsetFrom,this,_1);
             _pcurreader = pjointreader;
             return PE_Support;
         }

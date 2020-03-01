@@ -20,8 +20,10 @@
 
 #include <openrave/openravejson.h>
 #include <openrave/dummy_xml_reader.h>
+#include<openrave/space_sampler_base.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 static std::string s_linearsmoother = "linearsmoother"; //"shortcut_linear";
 
@@ -579,17 +581,17 @@ void PlannerParameters::SetRobotActiveJoints(RobotBasePtr robot)
     }
 
     using namespace planningutils;
-    _distmetricfn = std::bind(&SimpleDistanceMetric::Eval,std::shared_ptr<SimpleDistanceMetric>(new SimpleDistanceMetric(robot)),std::placeholders::_1,std::placeholders::_2);
+    _distmetricfn = boost::bind(&SimpleDistanceMetric::Eval,std::shared_ptr<SimpleDistanceMetric>(new SimpleDistanceMetric(robot)),_1,_2);
     if( robot->GetActiveDOF() == (int)robot->GetActiveDOFIndices().size() ) {
         // only roobt joint indices, so use a more resiliant function
-        _getstatefn = std::bind(&RobotBase::GetDOFValues,robot,std::placeholders::_1,robot->GetActiveDOFIndices());
-        _setstatevaluesfn = std::bind(SetDOFValuesIndicesParameters,robot, std::placeholders::_1, robot->GetActiveDOFIndices(), std::placeholders::_2);
-        _diffstatefn = std::bind(&RobotBase::SubtractDOFValues,robot,std::placeholders::_1,std::placeholders::_2, robot->GetActiveDOFIndices());
+        _getstatefn = boost::bind(&RobotBase::GetDOFValues,robot,_1,robot->GetActiveDOFIndices());
+        _setstatevaluesfn = boost::bind(SetDOFValuesIndicesParameters,robot, _1, robot->GetActiveDOFIndices(), _2);
+        _diffstatefn = boost::bind(&RobotBase::SubtractDOFValues,robot,_1,_2, robot->GetActiveDOFIndices());
     }
     else {
-        _getstatefn = std::bind(&RobotBase::GetActiveDOFValues,robot,std::placeholders::_1);
-        _setstatevaluesfn = std::bind(SetActiveDOFValuesParameters,robot, std::placeholders::_1, std::placeholders::_2);
-        _diffstatefn = std::bind(&RobotBase::SubtractActiveDOFValues,robot,std::placeholders::_1,std::placeholders::_2);
+        _getstatefn = boost::bind(&RobotBase::GetActiveDOFValues,robot,_1);
+        _setstatevaluesfn = boost::bind(SetActiveDOFValuesParameters,robot, _1, _2);
+        _diffstatefn = boost::bind(&RobotBase::SubtractActiveDOFValues,robot,_1,_2);
     }
 
     SpaceSamplerBasePtr pconfigsampler = RaveCreateSpaceSampler(robot->GetEnv(),str(boost::format("robotconfiguration %s")%robot->GetName()));
@@ -597,8 +599,9 @@ void PlannerParameters::SetRobotActiveJoints(RobotBasePtr robot)
     _listInternalSamplers.push_back(pconfigsampler);
 
     std::shared_ptr<SimpleNeighborhoodSampler> defaultsamplefn(new SimpleNeighborhoodSampler(pconfigsampler,_distmetricfn, _diffstatefn));
-    _samplefn = std::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,std::placeholders::_1);
-    _sampleneighfn = std::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,std::placeholders::_1,std::placeholders::_2,std::placeholders::_3);
+    _samplefn = boost::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,_1);
+    _sampleneighfn = boost::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,_1,
+		_2,_3);
 
     robot->GetActiveDOFLimits(_vConfigLowerLimit,_vConfigUpperLimit);
     robot->GetActiveDOFVelocityLimits(_vConfigVelocityLimit);
@@ -608,12 +611,12 @@ void PlannerParameters::SetRobotActiveJoints(RobotBasePtr robot)
     robot->GetActiveDOFVelocities(_vInitialConfigVelocities); // necessary?
     _configurationspecification = robot->GetActiveConfigurationSpecification();
 
-    _neighstatefn = std::bind(AddStatesWithLimitCheck, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, boost::ref(_vConfigLowerLimit), boost::ref(_vConfigUpperLimit)); // probably ok... do we need to clamp limits?
+    _neighstatefn = boost::bind(AddStatesWithLimitCheck, _1, _2, _3, boost::ref(_vConfigLowerLimit), boost::ref(_vConfigUpperLimit)); // probably ok... do we need to clamp limits?
 
     // have to do this last, disable timed constraints for default
     std::list<KinBodyPtr> listCheckCollisions; listCheckCollisions.push_back(robot);
     std::shared_ptr<DynamicsCollisionConstraint> pcollision(new DynamicsCollisionConstraint(shared_parameters(), listCheckCollisions,0xffffffff&~CFO_CheckTimeBasedConstraints));
-    _checkpathvelocityconstraintsfn = std::bind(&DynamicsCollisionConstraint::Check,pcollision,std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, _4, _5, _6, _7, _8);
+    _checkpathvelocityconstraintsfn = boost::bind(&DynamicsCollisionConstraint::Check,pcollision,_1, _2, _3, _4, _5, _6, _7, _8);
 
 }
 
@@ -846,9 +849,9 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
             FOREACH(itf,vweights2) {
                 *itf *= *itf;
             }
-            diffstatefns[isavegroup].first = std::bind(&KinBody::SubtractDOFValues, pbody, std::placeholders::_1, std::placeholders::_2, dofindices);
+            diffstatefns[isavegroup].first = boost::bind(&KinBody::SubtractDOFValues, pbody, _1, _2, dofindices);
             diffstatefns[isavegroup].second = g.dof;
-            distmetricfns[isavegroup].first = std::bind(_EvalJointDOFDistanceMetric, diffstatefns[isavegroup].first, std::placeholders::_1, std::placeholders::_2, vweights2);
+            distmetricfns[isavegroup].first = boost::bind(_EvalJointDOFDistanceMetric, diffstatefns[isavegroup].first, _1, _2, vweights2);
             distmetricfns[isavegroup].second = g.dof;
 
             SpaceSamplerBasePtr pconfigsampler = RaveCreateSpaceSampler(penv,str(boost::format("bodyconfiguration %s")%pbody->GetName()));
@@ -863,17 +866,17 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
                 }
             }
             std::shared_ptr<SimpleNeighborhoodSampler> defaultsamplefn(new SimpleNeighborhoodSampler(pconfigsampler,distmetricfns[isavegroup].first, diffstatefns[isavegroup].first));
-            samplefns[isavegroup].first = std::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,std::placeholders::_1);
+            samplefns[isavegroup].first = boost::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,_1);
             samplefns[isavegroup].second = g.dof;
-            sampleneighfns[isavegroup].first = std::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,std::placeholders::_1,std::placeholders::_2,std::placeholders::_3);
+            sampleneighfns[isavegroup].first = boost::bind(&SimpleNeighborhoodSampler::Sample,defaultsamplefn,_1,_2,_3);
             sampleneighfns[isavegroup].second = g.dof;
-            setstatevaluesfns[isavegroup].first = std::bind(SetDOFValuesIndicesParameters, pbody, std::placeholders::_1, dofindices, std::placeholders::_2);
+            setstatevaluesfns[isavegroup].first = boost::bind(SetDOFValuesIndicesParameters, pbody, _1, dofindices, _2);
             setstatevaluesfns[isavegroup].second = g.dof;
-            getstatefns[isavegroup].first = std::bind(&KinBody::GetDOFValues, pbody, std::placeholders::_1, dofindices);
+            getstatefns[isavegroup].first = boost::bind(&KinBody::GetDOFValues, pbody, _1, dofindices);
             getstatefns[isavegroup].second = g.dof;
             neighstatefns[isavegroup].second = g.dof;
             pbody->GetDOFLimits(v0,v1,dofindices);
-            neighstatefns[isavegroup].first = std::bind(AddStatesWithLimitCheck, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, v0, v1);
+            neighstatefns[isavegroup].first = boost::bind(AddStatesWithLimitCheck, _1, _2, _3, v0, v1);
             std::copy(v0.begin(),v0.end(), vConfigLowerLimit.begin()+g.offset);
             std::copy(v1.begin(),v1.end(), vConfigUpperLimit.begin()+g.offset);
             pbody->GetDOFVelocityLimits(v0,dofindices);
@@ -898,13 +901,13 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
             throw OPENRAVE_EXCEPTION_FORMAT(_("group %s not supported for for planner parameters configuration"),g.name,ORE_InvalidArguments);
         }
     }
-    _diffstatefn = std::bind(_CallDiffStateFns,diffstatefns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1, std::placeholders::_2);
-    _distmetricfn = std::bind(_CallDistMetricFns,distmetricfns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1, std::placeholders::_2);
-    _samplefn = std::bind(_CallSampleFns,samplefns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1);
-    _sampleneighfn = std::bind(_CallSampleNeighFns,sampleneighfns, distmetricfns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    _setstatevaluesfn = std::bind(CallSetStateValuesFns,setstatevaluesfns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1, std::placeholders::_2);
-    _getstatefn = std::bind(CallGetStateFns,getstatefns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1);
-    _neighstatefn = std::bind(_CallNeighStateFns,neighstatefns, spec.GetDOF(), nMaxDOFForGroup, std::placeholders::_1,std::placeholders::_2,std::placeholders::_3);
+    _diffstatefn = boost::bind(_CallDiffStateFns,diffstatefns, spec.GetDOF(), nMaxDOFForGroup, _1, _2);
+    _distmetricfn = boost::bind(_CallDistMetricFns,distmetricfns, spec.GetDOF(), nMaxDOFForGroup, _1, _2);
+    _samplefn = boost::bind(_CallSampleFns,samplefns, spec.GetDOF(), nMaxDOFForGroup, _1);
+    _sampleneighfn = boost::bind(_CallSampleNeighFns,sampleneighfns, distmetricfns, spec.GetDOF(), nMaxDOFForGroup, _1, _2, _3);
+    _setstatevaluesfn = boost::bind(CallSetStateValuesFns,setstatevaluesfns, spec.GetDOF(), nMaxDOFForGroup, _1, _2);
+    _getstatefn = boost::bind(CallGetStateFns,getstatefns, spec.GetDOF(), nMaxDOFForGroup, _1);
+    _neighstatefn = boost::bind(_CallNeighStateFns,neighstatefns, spec.GetDOF(), nMaxDOFForGroup, _1,_2,_3);
     _vConfigLowerLimit.swap(vConfigLowerLimit);
     _vConfigUpperLimit.swap(vConfigUpperLimit);
     _vConfigVelocityLimit.swap(vConfigVelocityLimit);
@@ -914,9 +917,9 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
     _getstatefn(vinitialconfig);
     // have to do this last, disable timed constraints for default
     std::shared_ptr<DynamicsCollisionConstraint> pcollision(new DynamicsCollisionConstraint(shared_parameters(), listCheckCollisions,0xffffffff&~CFO_CheckTimeBasedConstraints));
-    _checkpathvelocityconstraintsfn = std::bind(&DynamicsCollisionConstraint::Check,pcollision,std::placeholders::_1, 
-		std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, 
-		std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8);
+    _checkpathvelocityconstraintsfn = boost::bind(&DynamicsCollisionConstraint::Check,pcollision,_1, 
+		_2, _3, _4, 
+		_5, _6, _7, _8);
 }
 
 void PlannerParameters::Validate() const

@@ -111,7 +111,7 @@ public:
 class SpatialTreeBase
 {
 public:
-    virtual void Init(std::weak_ptr<PlannerBase> planner, int dof, std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)>& distmetricfn, dReal fStepLength, dReal maxdistance) = 0;
+    virtual void Init(std::weak_ptr<PlannerBase> planner, int dof, boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)>& distmetricfn, dReal fStepLength, dReal maxdistance) = 0;
 
     /// inserts a node in the try
     virtual NodeBasePtr InsertNode(NodeBasePtr parent, const vector<dReal>& config, uint32_t userdata) = 0;
@@ -165,7 +165,7 @@ public:
         Reset();
     }
 
-    virtual void Init(std::weak_ptr<PlannerBase> planner, int dof, std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)>& distmetricfn, dReal fStepLength, dReal maxdistance)
+    virtual void Init(std::weak_ptr<PlannerBase> planner, int dof, boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)>& distmetricfn, dReal fStepLength, dReal maxdistance)
     {
         Reset();
         if( !!_pNodesPool ) {
@@ -1045,7 +1045,7 @@ private:
     }
 
 
-    std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _distmetricfn;
+    boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _distmetricfn;
     std::weak_ptr<PlannerBase> _planner;
     dReal _fStepLength;
     int _dof; ///< the number of values of each state

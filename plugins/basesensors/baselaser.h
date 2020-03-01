@@ -129,11 +129,11 @@ public:
 .. image:: ../../../images/interface_baselaser.jpg\n\
   :width: 400\n\
 ";
-        RegisterCommand("render",std::bind(&BaseLaser2DSensor::_Render,this,_1,_2),
+        RegisterCommand("render",boost::bind(&BaseLaser2DSensor::_Render,this,_1,_2),
                         "Set rendering of the plots (1 or 0).");
-        RegisterCommand("collidingbodies",std::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
+        RegisterCommand("collidingbodies",boost::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
                         "Returns the ids of the bodies that the laser beams have hit. The order is the same as the returned laser points.");
-        //        RegisterCommand("GatherData",std::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
+        //        RegisterCommand("GatherData",boost::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
         //                        "Controls whether to gather all laser data, or delete the old one after every new scan.");
         _pgeom.reset(new LaserGeomData());
         _pdata.reset(new LaserSensorData());

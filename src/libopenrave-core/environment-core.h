@@ -2560,7 +2560,7 @@ protected:
     {
         if( !_threadSimulation ) {
             _bShutdownSimulation = false;
-            _threadSimulation.reset(new boost::thread(std::bind(&Environment::_SimulationThread, this)));
+            _threadSimulation.reset(new boost::thread(boost::bind(&Environment::_SimulationThread, this)));
         }
     }
 

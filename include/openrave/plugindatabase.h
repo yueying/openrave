@@ -44,10 +44,10 @@
 
 #endif
 
-//#define INTERFACE_PREDELETER std::bind(&RaveDatabase::_InterfaceDestroyCallbackShared,shared_from_this(),std::placeholders::_1)
+//#define INTERFACE_PREDELETER boost::bind(&RaveDatabase::_InterfaceDestroyCallbackShared,shared_from_this(),_1)
 
-#define INTERFACE_PREDELETER std::function<void(void const*)>()
-#define INTERFACE_POSTDELETER(name, plugin) std::bind(&RaveDatabase::_InterfaceDestroyCallbackSharedPost,shared_from_this(),name, plugin)
+#define INTERFACE_PREDELETER boost::function<void(void const*)>()
+#define INTERFACE_POSTDELETER(name, plugin) boost::bind(&RaveDatabase::_InterfaceDestroyCallbackSharedPost,shared_from_this(),name, plugin)
 
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
@@ -58,6 +58,8 @@ const char s_filesep = '\\';
 const char s_filesep = '/';
 #endif
 
+#include <openrave/utils.h>
+
 namespace OpenRAVE {
 
 /// \brief database of interfaces from plugins
@@ -65,11 +67,17 @@ class RaveDatabase : public std::enable_shared_from_this<RaveDatabase>
 {
     struct RegisteredInterface : public UserData
     {
-        RegisteredInterface(InterfaceType type, const std::string& name, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn, std::shared_ptr<RaveDatabase> database) : _type(type), _name(name), _createfn(createfn), _database(database) {
+        RegisteredInterface(InterfaceType type, const std::string& name, 
+			const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn,
+			std::shared_ptr<RaveDatabase> database)
+			: _type(type), _name(name), _createfn(createfn), _database(database)
+		{
         }
-        virtual ~RegisteredInterface() {
+        virtual ~RegisteredInterface()
+		{
             std::shared_ptr<RaveDatabase> database = _database.lock();
-            if( !!database ) {
+            if( !!database ) 
+			{
                 boost::mutex::scoped_lock lock(database->_mutex);
                 database->_listRegisteredInterfaces.erase(_iterator);
             }
@@ -77,7 +85,7 @@ class RaveDatabase : public std::enable_shared_from_this<RaveDatabase>
 
         InterfaceType _type;
         std::string _name;
-        std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
+        boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
         std::list< std::weak_ptr<RegisteredInterface> >::iterator _iterator;
 protected:
         std::weak_ptr<RaveDatabase> _database;
@@ -88,7 +96,12 @@ public:
     class Plugin : public UserData, public std::enable_shared_from_this<Plugin>
     {
 public:
-        Plugin(std::shared_ptr<RaveDatabase> pdatabase) : _pdatabase(pdatabase), plibrary(NULL), pfnCreate(NULL), pfnCreateNew(NULL), pfnGetPluginAttributes(NULL), pfnGetPluginAttributesNew(NULL), pfnDestroyPlugin(NULL), pfnOnRaveInitialized(NULL), pfnOnRavePreDestroy(NULL), _bShutdown(false), _bInitializing(true), _bHasCalledOnRaveInitialized(false) {
+        Plugin(std::shared_ptr<RaveDatabase> pdatabase) 
+			: _pdatabase(pdatabase), plibrary(NULL), pfnCreate(NULL), 
+			pfnCreateNew(NULL), pfnGetPluginAttributes(NULL), 
+			pfnGetPluginAttributesNew(NULL), pfnDestroyPlugin(NULL),
+			pfnOnRaveInitialized(NULL), pfnOnRavePreDestroy(NULL), 
+			_bShutdown(false), _bInitializing(true), _bHasCalledOnRaveInitialized(false) {
         }
         virtual ~Plugin() {
             Destroy();
@@ -138,7 +151,7 @@ public:
             return !_bShutdown;
         }
 
-        const string& GetName() const {
+        const std::string& GetName() const {
             return ppluginname;
         }
         bool GetInfo(PluginInfo& info) {
@@ -256,7 +269,7 @@ public:
         }
 
 
-        bool HasInterface(InterfaceType type, const string& name)
+        bool HasInterface(InterfaceType type, const std::string& name)
         {
             if( name.size() == 0 ) {
                 return false;
@@ -273,8 +286,10 @@ public:
             return false;
         }
 
-        InterfaceBasePtr CreateInterface(InterfaceType type, const std::string& name, const char* interfacehash, EnvironmentBasePtr penv) {
-            pair< InterfaceType, string> p(type,utils::ConvertToLowerCase(name));
+        InterfaceBasePtr CreateInterface(InterfaceType type, const std::string& name, 
+			const char* interfacehash, EnvironmentBasePtr penv) 
+		{
+            std::pair< InterfaceType, std::string> p(type,utils::ConvertToLowerCase(name));
             if( _setBadInterfaces.find(p) != _setBadInterfaces.end() ) {
                 return InterfaceBasePtr();
             }
@@ -358,8 +373,8 @@ protected:
         }
 
         std::weak_ptr<RaveDatabase> _pdatabase;
-        std::set<pair< InterfaceType, string> > _setBadInterfaces;         ///< interfaces whose hash is wrong and shouldn't be tried for this plugin
-        string ppluginname;
+        std::set<std::pair< InterfaceType, std::string> > _setBadInterfaces;         ///< interfaces whose hash is wrong and shouldn't be tried for this plugin
+        std::string ppluginname;
 
         void* plibrary;         // loaded library (NULL if not loaded)
         PluginExportFn_CreateInterface pfnCreate;
@@ -430,7 +445,7 @@ protected:
 
     virtual bool Init(bool bLoadAllPlugins)
     {
-        _threadPluginLoader.reset(new boost::thread(std::bind(&RaveDatabase::_PluginLoaderThread, this)));
+        _threadPluginLoader.reset(new boost::thread(boost::bind(&RaveDatabase::_PluginLoaderThread, this)));
         std::vector<std::string> vplugindirs;
 #ifdef _WIN32
         const char* delim = ";";
@@ -442,7 +457,7 @@ protected:
             utils::TokenizeString(pOPENRAVE_PLUGINS, delim, vplugindirs);
         }
         bool bExists=false;
-        string installdir = OPENRAVE_PLUGINS_INSTALL_DIR;
+		std::string installdir = OPENRAVE_PLUGINS_INSTALL_DIR;
 #ifdef HAVE_BOOST_FILESYSTEM
         if( !boost::filesystem::is_directory(boost::filesystem::path(installdir)) ) {
 #ifdef _WIN32
@@ -471,7 +486,7 @@ protected:
             }
         }
 #else
-        string pluginsfilename=installdir;
+        std::string pluginsfilename=installdir;
         FOREACH(itname, vplugindirs) {
             if( pluginsfilename == *itname ) {
                 bExists = true;
@@ -553,7 +568,7 @@ protected:
 
         if( !pointer ) {
             size_t nInterfaceNameLength = name.find_first_of(' ');
-            if( nInterfaceNameLength == string::npos ) {
+            if( nInterfaceNameLength == std::string::npos ) {
                 nInterfaceNameLength = name.size();
             }
             if( nInterfaceNameLength == 0 ) {
@@ -563,7 +578,7 @@ protected:
 
             // have to copy in order to allow plugins to register stuff inside their creation methods
             std::list< std::weak_ptr<RegisteredInterface> > listRegisteredInterfaces;
-            list<PluginPtr> listplugins;
+			std::list<PluginPtr> listplugins;
             {
                 boost::mutex::scoped_lock lock(_mutex);
                 listRegisteredInterfaces = _listRegisteredInterfaces;
@@ -597,18 +612,18 @@ protected:
 
             if( !pointer ) {
                 const char* hash = RaveGetInterfaceHash(type);
-                list<PluginPtr>::iterator itplugin = listplugins.begin();
+				std::list<PluginPtr>::iterator itplugin = listplugins.begin();
                 while(itplugin != listplugins.end()) {
                     pointer = (*itplugin)->CreateInterface(type, name, hash, penv);
                     if( !!pointer ) {
                         if( strcmp(pointer->GetHash(), hash) ) {
                             RAVELOG_FATAL(str(boost::format("plugin interface name %s, %s has invalid hash, might be compiled with stale openrave files\n")%name%RaveGetInterfaceName(type)));
-                            (*itplugin)->_setBadInterfaces.insert(make_pair(type,utils::ConvertToLowerCase(name)));
+                            (*itplugin)->_setBadInterfaces.insert(std::make_pair(type,utils::ConvertToLowerCase(name)));
                             pointer.reset();
                         }
                         else if( pointer->GetInterfaceType() != type ) {
                             RAVELOG_FATAL(str(boost::format("plugin interface name %s, type %s, types do not match\n")%name%RaveGetInterfaceName(type)));
-                            (*itplugin)->_setBadInterfaces.insert(make_pair(type,utils::ConvertToLowerCase(name)));
+                            (*itplugin)->_setBadInterfaces.insert(std::make_pair(type,utils::ConvertToLowerCase(name)));
                             pointer.reset();
                         }
                         else {
@@ -654,7 +669,7 @@ protected:
 #ifdef _WIN32
         WIN32_FIND_DATAA FindFileData;
         HANDLE hFind;
-        string strfind = pdir;
+		std::string strfind = pdir;
         strfind += "\\*";
         strfind += PLUGIN_EXT;
 
@@ -666,7 +681,7 @@ protected:
         else  {
             do {
                 RAVELOG_DEBUG("Adding plugin %s\n", FindFileData.cFileName);
-                string strplugin = pdir;
+				std::string strplugin = pdir;
                 strplugin += "\\";
                 strplugin += FindFileData.cFileName;
                 LoadPlugin(strplugin);
@@ -731,7 +746,7 @@ protected:
     {
         boost::mutex::scoped_lock lock(_mutex);
         std::list<PluginPtr>::iterator it = _GetPlugin(pluginname);
-        string newpluginname;
+		std::string newpluginname;
         if( it != _listplugins.end() ) {
             // since we got a match, use the old name and remove the old library
             newpluginname = (*it)->ppluginname;
@@ -760,13 +775,17 @@ protected:
         return true;
     }
 
-    virtual bool HasInterface(InterfaceType type, const string& interfacename)
+    virtual bool HasInterface(InterfaceType type, const std::string& interfacename)
     {
         boost::mutex::scoped_lock lock(_mutex);
-        FOREACHC(it,_listRegisteredInterfaces) {
+        FOREACHC(it,_listRegisteredInterfaces) 
+		{
             RegisteredInterfacePtr registration = it->lock();
-            if( !!registration ) {
-                if(( interfacename.size() >= registration->_name.size()) &&( _strnicmp(interfacename.c_str(),registration->_name.c_str(),registration->_name.size()) == 0) ) {
+            if( !!registration )
+			{
+                if(( interfacename.size() >= registration->_name.size()) 
+					&&( _strnicmp(interfacename.c_str(),registration->_name.c_str(),registration->_name.size()) == 0) )
+				{
                     return true;
                 }
             }
@@ -814,7 +833,7 @@ protected:
         FOREACHC(itplugin, _listplugins) {
             PluginInfo localinfo;
             if( !(*itplugin)->GetInfo(localinfo) ) {
-                RAVELOG_WARN(str(boost::format("failed to get plugin info: %s\n")%(*itplugin)->GetName()));
+                RAVELOG_WARN(boost::str(boost::format("failed to get plugin info: %s\n")%(*itplugin)->GetName()));
             }
             else {
                 // for now just return the cached info (so quering is faster)
@@ -826,7 +845,7 @@ protected:
         }
     }
 
-    UserDataPtr RegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) {
+    UserDataPtr RegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) {
         BOOST_ASSERT(interfacehash != NULL && envhash != NULL);
         BOOST_ASSERT(!!createfn);
         BOOST_ASSERT(name.size()>0);
@@ -889,13 +908,13 @@ protected:
         return _listplugins.end();
     }
 
-    PluginPtr _LoadPlugin(const string& _libraryname)
+    PluginPtr _LoadPlugin(const std::string& _libraryname)
     {
-        string libraryname = _libraryname;
+		std::string libraryname = _libraryname;
         void* plibrary = _SysLoadLibrary(libraryname,OPENRAVE_LAZY_LOADING);
         if( plibrary == NULL ) {
             // check if PLUGIN_EXT is missing
-            if( libraryname.find(PLUGIN_EXT) == string::npos ) {
+            if( libraryname.find(PLUGIN_EXT) == std::string::npos ) {
                 libraryname += PLUGIN_EXT;
                 plibrary = _SysLoadLibrary(libraryname,OPENRAVE_LAZY_LOADING);
             }
@@ -906,19 +925,19 @@ protected:
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
             boost::filesystem::path _librarypath(libraryname);
-            string librarypath = _librarypath.parent_path().string();
-            string libraryfilename = _librarypath.filename().string();
+            std::string librarypath = _librarypath.parent_path().string();
+			std::string libraryfilename = _librarypath.filename().string();
 #else
             boost::filesystem::path _librarypath(libraryname, boost::filesystem::native);
-            string librarypath = _librarypath.parent_path().string();
-            string libraryfilename = _librarypath.filename();
+			std::string librarypath = _librarypath.parent_path().string();
+			std::string libraryfilename = _librarypath.filename();
 #endif
-            if(( libraryfilename.size() > 3) &&( libraryfilename.substr(0,3) != string("lib")) ) {
+            if(( libraryfilename.size() > 3) &&( libraryfilename.substr(0,3) != std::string("lib")) ) {
                 libraryname = librarypath;
                 if( libraryname.size() > 0 ) {
                     libraryname += s_filesep;
                 }
-                libraryname += string("lib");
+                libraryname += std::string("lib");
                 libraryname += libraryfilename;
                 plibrary = _SysLoadLibrary(libraryname.c_str(),OPENRAVE_LAZY_LOADING);
             }
@@ -1000,7 +1019,7 @@ protected:
     static void* _SysLoadLibrary(const std::string& lib, bool bLazy=false)
     {
         // check if file exists first
-        if( !ifstream(lib.c_str()) ) {
+        if( !std::ifstream(lib.c_str()) ) {
             return NULL;
         }
 #ifdef _WIN32
@@ -1085,7 +1104,7 @@ protected:
     void _PluginLoaderThread()
     {
         while(!_bShutdown) {
-            list<PluginPtr> listPluginsToLoad;
+            std::list<PluginPtr> listPluginsToLoad;
             {
                 boost::mutex::scoped_lock lock(_mutexPluginLoader);
                 if( _listPluginsToLoad.empty() ) {
@@ -1114,7 +1133,7 @@ protected:
         }
     }
 
-    list<PluginPtr> _listplugins;
+    std::list<PluginPtr> _listplugins;
     mutable boost::mutex _mutex;     ///< changing plugin database
     std::list<void*> _listDestroyLibraryQueue;
     std::list< std::weak_ptr<RegisteredInterface> > _listRegisteredInterfaces;
@@ -1131,10 +1150,5 @@ protected:
 };
 
 } // end namespace OpenRAVE
-
-#ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-BOOST_TYPEOF_REGISTER_TYPE(RaveDatabase::Plugin)
-#endif
 
 #endif

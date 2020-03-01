@@ -18,6 +18,7 @@
 
 #include <openrave/numerical.h>
 #include <openrave/user_data.h>
+#include <openrave/kinbody.h>
 
 namespace OpenRAVE
 {
@@ -29,7 +30,7 @@ namespace OpenRAVE
 			: _pgrabbedbody(pgrabbedbody), _plinkrobot(plinkrobot) 
 		{
 			_enablecallback = pgrabbedbody->RegisterChangeCallback(KinBody::Prop_LinkEnable,
-				std::bind(&Grabbed::UpdateCollidingLinks, this));
+				boost::bind(&Grabbed::UpdateCollidingLinks, this));
 			_plinkrobot->GetRigidlyAttachedLinks(_vattachedlinks);
 		}
 		virtual ~Grabbed()

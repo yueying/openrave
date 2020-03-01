@@ -19,6 +19,8 @@
 #include <boost/thread/once.hpp>
 #include <map>
 #include <openrave/openrave.h>
+#include <openrave/plugindatabase.h>
+#include <openrave/utils.h>
 
 namespace OpenRAVE
 {
@@ -27,6 +29,7 @@ namespace OpenRAVE
 #else
 	const char s_filesep = '/';
 #endif
+	static boost::once_flag _onceRaveInitialize = BOOST_ONCE_INIT;
 	/// there is only once global openrave state. It is created when openrave
 /// is first used, and destroyed when the program quits or RaveDestroy is called.
 	class RaveGlobal : private boost::noncopyable, public std::enable_shared_from_this<RaveGlobal>, public UserData
@@ -198,7 +201,7 @@ namespace OpenRAVE
 			_mapreaders.clear();
 
 			// process the callbacks
-			std::list<std::function<void()> > listDestroyCallbacks;
+			std::list<boost::function<void()> > listDestroyCallbacks;
 			{
 				boost::mutex::scoped_lock lock(_mutexinternal);
 				listDestroyCallbacks.swap(_listDestroyCallbacks);
@@ -229,7 +232,7 @@ namespace OpenRAVE
 #endif
 		}
 
-		void AddCallbackForDestroy(const std::function<void()>& fn)
+		void AddCallbackForDestroy(const boost::function<void()>& fn)
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
 			_listDestroyCallbacks.push_back(fn);
@@ -251,7 +254,7 @@ namespace OpenRAVE
 				fullfilename += filename;
 #endif
 				if (bRead) {
-					if (!!ifstream(fullfilename.c_str())) {
+					if (!!std::ifstream(fullfilename.c_str())) {
 						return fullfilename;
 					}
 				}
@@ -745,7 +748,7 @@ namespace OpenRAVE
 		std::map<InterfaceType, std::string> _mapinterfacenames;
 		std::map<IkParameterizationType, std::string> _mapikparameterization, _mapikparameterizationlower;
 		std::map<int, EnvironmentBase*> _mapenvironments;
-		std::list<std::function<void()> > _listDestroyCallbacks;
+		std::list<boost::function<void()> > _listDestroyCallbacks;
 		std::string _homedirectory;
 		std::string _defaultviewertype; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
 		std::vector<std::string> _vdbdirectories;
@@ -770,6 +773,6 @@ namespace OpenRAVE
 		friend UserDataPtr RaveGlobalState();
 	};
 
-	static boost::once_flag _onceRaveInitialize = BOOST_ONCE_INIT;
+	
 
 }

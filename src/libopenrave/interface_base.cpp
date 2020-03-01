@@ -26,11 +26,11 @@ namespace OpenRAVE
 		: type_(type), environment_(penv)
 	{
 		RaveInitializeFromState(penv->GlobalState()); // make sure global state is set
-		RegisterCommand("help", std::bind(&InterfaceBase::_GetCommandHelp,
-			this, std::placeholders::_1, std::placeholders::_2), "display help commands.");
+		RegisterCommand("help", boost::bind(&InterfaceBase::_GetCommandHelp,
+			this, _1, _2), "display help commands.");
 #if OPENRAVE_RAPIDJSON
-		RegisterJSONCommand("help", std::bind(&InterfaceBase::_GetJSONCommandHelp,
-			this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), "display help commands.");
+		RegisterJSONCommand("help", boost::bind(&InterfaceBase::_GetJSONCommandHelp,
+			this, _1, _2, _3), "display help commands.");
 #endif // OPENRAVE_RAPIDJSON
 	}
 

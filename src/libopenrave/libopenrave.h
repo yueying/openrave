@@ -172,73 +172,33 @@ private:
 class CallOnDestruction
 {
 public:
-    CallOnDestruction(const std::function<void()>& fn) : _fn(fn) {
+    CallOnDestruction(const boost::function<void()>& fn) : _fn(fn) {
     }
     ~CallOnDestruction() {
         _fn();
     }
 private:
-    std::function<void()> _fn;
+    boost::function<void()> _fn;
 };
 
 
 
-int SetDOFValuesIndicesParameters(KinBodyPtr pbody, const std::vector<dReal>& values, const std::vector<int>& vindices, int options);
-int SetDOFVelocitiesIndicesParameters(KinBodyPtr pbody, const std::vector<dReal>& velocities, const std::vector<int>& vindices, int options);
-int CallSetStateValuesFns(const std::vector< std::pair<PlannerBase::PlannerParameters::SetStateValuesFn, int> >& vfunctions, int nDOF, int nMaxDOFForGroup, const std::vector<dReal>& v, int options);
-
-void CallGetStateFns(const std::vector< std::pair<PlannerBase::PlannerParameters::GetStateFn, int> >& vfunctions, int nDOF, int nMaxDOFForGroup, std::vector<dReal>& v);
 
 void subtractstates(std::vector<dReal>& q1, const std::vector<dReal>& q2);
 
 
 
-/// -1 v1 is smaller than v2
-// 0 two vectors are equivalent
-/// +1 v1 is greater than v2
-inline int CompareRealVectors(const std::vector<dReal> & v1, const std::vector<dReal>& v2, dReal epsilon)
-{
-    if( v1.size() != v2.size() ) {
-        return v1.size() < v2.size() ? -1 : 1;
-    }
-    for(size_t i = 0; i < v1.size(); ++i) {
-        if( v1[i] < v2[i]-epsilon ) {
-            return -1;
-        }
-        else if( v1[i] > v2[i]+epsilon ) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 
-namespace LocalXML
-{
-bool ParseXMLData(BaseXMLReader& reader, const char* buffer, int size);
-}
+int SetDOFValuesIndicesParameters(KinBodyPtr pbody, const std::vector<dReal>& values,
+	const std::vector<int>& vindices, int options);
+int SetDOFVelocitiesIndicesParameters(KinBodyPtr pbody, const std::vector<dReal>& velocities,
+	const std::vector<int>& vindices, int options);
+int CallSetStateValuesFns(const std::vector< std::pair<PlannerBase::PlannerParameters::SetStateValuesFn, int> >& vfunctions,
+	int nDOF, int nMaxDOFForGroup, const std::vector<dReal>& v, int options);
+void CallGetStateFns(const std::vector< std::pair<PlannerBase::PlannerParameters::GetStateFn, int> >& vfunctions,
+	int nDOF, int nMaxDOFForGroup, std::vector<dReal>& v);
 
-#ifdef _WIN32
-inline const char *strcasestr(const char *s, const char *find)
-{
-    register char c, sc;
-    register size_t len;
-
-    if ((c = *find++) != 0) {
-        c = tolower((unsigned char)c);
-        len = strlen(find);
-        do {
-            do {
-                if ((sc = *s++) == 0) {
-                    return (NULL);
-                }
-            } while ((char)tolower((unsigned char)sc) != c);
-        } while (_strnicmp(s, find, len) != 0);
-        s--;
-    }
-    return ((char *) s);
-}
-#endif
 
 } // end OpenRAVE namespace
 
@@ -259,5 +219,5 @@ class Environment;
 using namespace OpenRAVE;
 using namespace std;
 
-#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
+
 #endif

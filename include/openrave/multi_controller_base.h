@@ -14,6 +14,8 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#ifndef OPENRAVE_CONTROLLER_BASE_H_
+#define OPENRAVE_CONTROLLER_BASE_H_
 
 #include <openrave/controller_base.h>
 
@@ -50,3 +52,6 @@ namespace OpenRAVE
 	typedef std::shared_ptr<MultiControllerBase> MultiControllerBasePtr;
 	typedef std::shared_ptr<MultiControllerBase const> MultiControllerBaseConstPtr;
 }
+
+
+#endif // OPENRAVE_CONTROLLER_BASE_H_

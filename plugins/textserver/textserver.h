@@ -248,8 +248,8 @@ private:
     /// \param in is the data passed from the network
     /// \param out is the return data that will be passed to the client
     /// \param std::shared_ptr<void> is a pointer to a void that willl be passed to the worker thread function
-    typedef std::function<bool (istream&, ostream&, std::shared_ptr<void>&)> OpenRaveNetworkFn;
-    typedef std::function<bool (std::shared_ptr<istream>, std::shared_ptr<void>)> OpenRaveWorkerFn;
+    typedef boost::function<bool (istream&, ostream&, std::shared_ptr<void>&)> OpenRaveNetworkFn;
+    typedef boost::function<bool (std::shared_ptr<istream>, std::shared_ptr<void>)> OpenRaveWorkerFn;
 
     /// each network function has a function to intially processes the data on the socket function
     /// and one that is executed on the main worker thread to avoid multithreading data synchronization issues
@@ -272,51 +272,51 @@ public:
         _bWorking = false;
         bDestroying = false;
         description_=":Interface Author: Rosen Diankov\n\nSimple text-based server using sockets.";
-        mapNetworkFns["body_checkcollision"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvCheckCollision, this, _1, _2, _3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["body_getjoints"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyGetJointValues, this,_1, _2, _3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["body_destroy"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyDestroy,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["body_enable"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyEnable,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["body_getaabb"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyGetAABB,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["body_getaabbs"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyGetAABBs,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["body_getlinks"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyGetLinks,this,_1,_2,_3),OpenRaveWorkerFn(), true);
-        mapNetworkFns["body_getdof"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodyGetDOF,this,_1,_2,_3),OpenRaveWorkerFn(), true);
-        mapNetworkFns["body_settransform"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orKinBodySetTransform,this,_1,_2,_3),OpenRaveWorkerFn(), false);
-        mapNetworkFns["body_setjoints"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodySetJointValues,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["body_setjointtorques"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orBodySetJointTorques,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["close"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvClose,this,_1,_2,_3), OpenRaveWorkerFn(),false);
-        mapNetworkFns["createrobot"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvCreateRobot,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["createbody"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvCreateKinBody,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["createmodule"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvCreateModule,this,_1,_2,_3), std::bind(&SimpleTextServer::worEnvCreateModule,this,_1,_2), true);
-        mapNetworkFns["env_dstrprob"] = RAVENETWORKFN(OpenRaveNetworkFn(), std::bind(&SimpleTextServer::worEnvDestroyProblem,this,_1,_2), false);
-        mapNetworkFns["env_getbodies"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvGetBodies,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["env_getrobots"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvGetRobots,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["env_getbody"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvGetBody,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["env_loadplugin"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvLoadPlugin,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["env_raycollision"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvRayCollision,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["env_stepsimulation"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvStepSimulation,this,_1,_2,_3), std::bind(&SimpleTextServer::worEnvStepSimulation,this,_1,_2), false);
-        mapNetworkFns["env_triangulate"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvTriangulate,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["loadscene"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvLoadScene,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["plot"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvPlot,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["problem_sendcmd"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orProblemSendCommand,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_checkselfcollision"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotCheckSelfCollision,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_controllersend"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotControllerSend,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_controllerset"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotControllerSet,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_getactivedof"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotGetActiveDOF,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_getdofvalues"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotGetDOFValues,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_getlimits"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotGetDOFLimits,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_getmanipulators"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotGetManipulators,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_getsensors"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotGetAttachedSensors,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_sensorsend"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotSensorSend,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_sensorconfigure"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotSensorConfigure,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_sensordata"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotSensorData,this,_1,_2,_3), OpenRaveWorkerFn(), true);
-        mapNetworkFns["robot_setactivedofs"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotSetActiveDOFs,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["robot_setactivemanipulator"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotSetActiveManipulator,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["robot_setdof"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orRobotSetDOFValues,this,_1,_2,_3), OpenRaveWorkerFn(), false);
-        mapNetworkFns["robot_traj"] = RAVENETWORKFN(OpenRaveNetworkFn(), std::bind(&SimpleTextServer::worRobotStartActiveTrajectory,this,_1,_2), false);
-        mapNetworkFns["render"] = RAVENETWORKFN(OpenRaveNetworkFn(), std::bind(&SimpleTextServer::worRender,this,_1,_2), false);
-        mapNetworkFns["setoptions"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvSetOptions,this,_1,_2,_3), std::bind(&SimpleTextServer::worSetOptions,this,_1,_2), false);
+        mapNetworkFns["body_checkcollision"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCheckCollision, this, _1, _2, _3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["body_getjoints"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyGetJointValues, this,_1, _2, _3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["body_destroy"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyDestroy,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["body_enable"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyEnable,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["body_getaabb"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyGetAABB,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["body_getaabbs"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyGetAABBs,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["body_getlinks"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyGetLinks,this,_1,_2,_3),OpenRaveWorkerFn(), true);
+        mapNetworkFns["body_getdof"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyGetDOF,this,_1,_2,_3),OpenRaveWorkerFn(), true);
+        mapNetworkFns["body_settransform"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orKinBodySetTransform,this,_1,_2,_3),OpenRaveWorkerFn(), false);
+        mapNetworkFns["body_setjoints"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodySetJointValues,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["body_setjointtorques"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodySetJointTorques,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["close"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvClose,this,_1,_2,_3), OpenRaveWorkerFn(),false);
+        mapNetworkFns["createrobot"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCreateRobot,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["createbody"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCreateKinBody,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["createmodule"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCreateModule,this,_1,_2,_3), boost::bind(&SimpleTextServer::worEnvCreateModule,this,_1,_2), true);
+        mapNetworkFns["env_dstrprob"] = RAVENETWORKFN(OpenRaveNetworkFn(), boost::bind(&SimpleTextServer::worEnvDestroyProblem,this,_1,_2), false);
+        mapNetworkFns["env_getbodies"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvGetBodies,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["env_getrobots"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvGetRobots,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["env_getbody"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvGetBody,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["env_loadplugin"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvLoadPlugin,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["env_raycollision"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvRayCollision,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["env_stepsimulation"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvStepSimulation,this,_1,_2,_3), boost::bind(&SimpleTextServer::worEnvStepSimulation,this,_1,_2), false);
+        mapNetworkFns["env_triangulate"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvTriangulate,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["loadscene"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvLoadScene,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["plot"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvPlot,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["problem_sendcmd"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orProblemSendCommand,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_checkselfcollision"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotCheckSelfCollision,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_controllersend"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotControllerSend,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_controllerset"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotControllerSet,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_getactivedof"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotGetActiveDOF,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_getdofvalues"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotGetDOFValues,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_getlimits"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotGetDOFLimits,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_getmanipulators"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotGetManipulators,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_getsensors"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotGetAttachedSensors,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_sensorsend"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotSensorSend,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_sensorconfigure"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotSensorConfigure,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_sensordata"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotSensorData,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["robot_setactivedofs"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotSetActiveDOFs,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["robot_setactivemanipulator"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotSetActiveManipulator,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["robot_setdof"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orRobotSetDOFValues,this,_1,_2,_3), OpenRaveWorkerFn(), false);
+        mapNetworkFns["robot_traj"] = RAVENETWORKFN(OpenRaveNetworkFn(), boost::bind(&SimpleTextServer::worRobotStartActiveTrajectory,this,_1,_2), false);
+        mapNetworkFns["render"] = RAVENETWORKFN(OpenRaveNetworkFn(), boost::bind(&SimpleTextServer::worRender,this,_1,_2), false);
+        mapNetworkFns["setoptions"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvSetOptions,this,_1,_2,_3), boost::bind(&SimpleTextServer::worSetOptions,this,_1,_2), false);
         mapNetworkFns["test"] = RAVENETWORKFN(OpenRaveNetworkFn(), OpenRaveWorkerFn(), false);
-        mapNetworkFns["wait"] = RAVENETWORKFN(std::bind(&SimpleTextServer::orEnvWait,this,_1,_2,_3), OpenRaveWorkerFn(), true);
+        mapNetworkFns["wait"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvWait,this,_1,_2,_3), OpenRaveWorkerFn(), true);
 
         string logfilename = RaveGetHomeDirectory() + string("/textserver.log");
         flog.open(logfilename.c_str());
@@ -402,8 +402,8 @@ public:
 #endif
 
         RAVELOG_DEBUG("text server listening on port %d\n",_nPort);
-        _servthread.reset(new boost::thread(std::bind(&SimpleTextServer::_listen_threadcb,this)));
-        _workerthread.reset(new boost::thread(std::bind(&SimpleTextServer::_worker_threadcb,this)));
+        _servthread.reset(new boost::thread(boost::bind(&SimpleTextServer::_listen_threadcb,this)));
+        _workerthread.reset(new boost::thread(boost::bind(&SimpleTextServer::_worker_threadcb,this)));
         bInitThread = true;
         return 0;
     }
@@ -489,7 +489,7 @@ private:
         }
     }
 
-    void ScheduleWorker(const std::function<void()>& fn)
+    void ScheduleWorker(const boost::function<void()>& fn)
     {
         boost::mutex::scoped_lock lock(_mutexWorker);
         listWorkers.push_back(fn);
@@ -498,7 +498,7 @@ private:
 
     void _worker_threadcb()
     {
-        list<std::function<void()> > listlocalworkers;
+        list<boost::function<void()> > listlocalworkers;
         while(!bCloseThread) {
             {
                 boost::mutex::scoped_lock lock(_mutexWorker);
@@ -547,7 +547,7 @@ private:
             }
 
             // start a new thread
-            _listReadThreads.push_back(std::shared_ptr<boost::thread>(new boost::thread(std::bind(&SimpleTextServer::_read_threadcb,shared_server(), psocket))));
+            _listReadThreads.push_back(std::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SimpleTextServer::_read_threadcb,shared_server(), psocket))));
             psocket.reset(new Socket());
         }
 
@@ -625,7 +625,7 @@ private:
                         BOOST_ASSERT(!!itfn->second.fnWorker);
                         is->clear();
                         is->seekg(inputpos);
-                        ScheduleWorker(std::bind(itfn->second.fnWorker,is,pdata));
+                        ScheduleWorker(boost::bind(itfn->second.fnWorker,is,pdata));
                     }
                 }
                 else {
@@ -660,7 +660,7 @@ private:
 
     ofstream flog;
 
-    list<std::function<void()> > listWorkers;
+    list<boost::function<void()> > listWorkers;
     map<string, RAVENETWORKFN> mapNetworkFns;
 
     int _nIdIndex;

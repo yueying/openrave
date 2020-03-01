@@ -117,7 +117,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
                     std::shared_ptr<qtosgrave::QtOSGViewerCreator> creator(new qtosgrave::QtOSGViewerCreator(penv, sinput));
                     // post on all of them
                     for(int i = 0; i < widgets.size(); ++i) {
-                        QApplication::postEvent(widgets.at(i), new qtosgrave::MyCallbackEvent(std::bind(&qtosgrave::QtOSGViewerCreator::ProcessEvent, creator)));
+                        QApplication::postEvent(widgets.at(i), new qtosgrave::MyCallbackEvent(boost::bind(&qtosgrave::QtOSGViewerCreator::ProcessEvent, creator)));
                     }
                     uint32_t starttime = utils::GetMilliTime();
                     while(utils::GetMilliTime() - starttime < 5000 ) {

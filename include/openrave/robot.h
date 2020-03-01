@@ -22,7 +22,11 @@
 #ifndef OPENRAVE_ROBOT_H
 #define OPENRAVE_ROBOT_H
 
-namespace OpenRAVE {
+#include <openrave/numerical.h>
+#include <openrave/sensor_base.h>
+
+namespace OpenRAVE 
+{
 
 /** \brief <b>[interface]</b> A robot is a kinematic body that has attached manipulators, sensors, and controllers. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_robot.
     \ingroup interfaces
@@ -36,9 +40,11 @@ public:
     class OPENRAVE_API ManipulatorInfo
     {
 public:
-        ManipulatorInfo() : _vdirection(0,0,1) {
+        ManipulatorInfo() : _vdirection(0,0,1) 
+		{
         }
-        virtual ~ManipulatorInfo() {
+        virtual ~ManipulatorInfo() 
+		{
         }
 
         std::string _name;
@@ -65,7 +71,8 @@ public:
         virtual ~Manipulator();
 
         /// \brief return a serializable info holding everything to initialize a manipulator
-        inline const ManipulatorInfo& GetInfo() const {
+        inline const ManipulatorInfo& GetInfo() const 
+		{
             return _info;
         }
 
@@ -78,22 +85,27 @@ public:
         /// \brief return the linear/angular velocity of the manipulator coordinate system
         virtual std::pair<Vector,Vector> GetVelocity() const;
 
-        virtual Transform GetEndEffectorTransform() const {
+        virtual Transform GetEndEffectorTransform() const
+		{
             return GetTransform();
         }
 
-        virtual const std::string& GetName() const {
+        virtual const std::string& GetName() const 
+		{
             return _info._name;
         }
 
         /// \brief get robot that manipulator belongs to.
         ///
         /// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
-        inline RobotBasePtr GetRobot(bool trylock=false) const {
-            if( trylock ) {
+        inline RobotBasePtr GetRobot(bool trylock=false) const
+		{
+            if( trylock ) 
+			{
                 return __probot.lock();
             }
-            else {
+            else 
+			{
                 return RobotBasePtr(__probot);
             }
         }

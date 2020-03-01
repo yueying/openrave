@@ -19,6 +19,7 @@
 #include <streambuf>
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
+#include <openrave/logging.h>
 
 namespace OpenRAVE
 {

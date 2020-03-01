@@ -14,6 +14,8 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#ifndef OPENRAVE_GRAPH_HANDLE_H_
+#define OPENRAVE_GRAPH_HANDLE_H_
 
 #include <openrave/config.h>
 #include <openrave/geometry.h>
@@ -46,3 +48,5 @@ namespace OpenRAVE
 	typedef std::shared_ptr<GraphHandle const> GraphHandleConstPtr;
 	typedef std::weak_ptr<GraphHandle const> GraphHandleWeakPtr;
 }
+
+#endif // OPENRAVE_GRAPH_HANDLE_H_

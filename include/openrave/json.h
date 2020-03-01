@@ -26,6 +26,8 @@
 #include <openrave/numerical.h>
 #include <openrave/openrave_exception.h>
 #include <openrave/openrave_macros.h>
+#include <openrave/sensor_base.h>
+#include <openrave/ik_parameterization.h>
 
 namespace OpenRAVE 
 {
@@ -237,7 +239,8 @@ inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::Allo
 }
 
 /// \brief serialize an OpenRAVE CameraIntrinsics as json
-inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const SensorBase::CameraIntrinsics& intrinsics)
+inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, 
+	const SensorBase::CameraIntrinsics& intrinsics)
 {
     RAVE_SERIALIZEJSON_CLEAR_OBJECT(value);
     RAVE_SERIALIZEJSON_ADDMEMBER(value, allocator, "fx", intrinsics.fx);

@@ -32,9 +32,9 @@ public:
 :Interface Author:  Rosen Diankov\n\n\
 Uses the Rapidly-Exploring Random Trees Algorithm.\n\
 ";
-        RegisterCommand("GetGoalIndex",std::bind(&RrtPlanner<Node>::GetGoalIndexCommand,this,_1,_2),
+        RegisterCommand("GetGoalIndex",boost::bind(&RrtPlanner<Node>::GetGoalIndexCommand,this,_1,_2),
                         "returns the goal index of the plan");
-        RegisterCommand("GetInitGoalIndices",std::bind(&RrtPlanner<Node>::GetInitGoalIndicesCommand,this,_1,_2),
+        RegisterCommand("GetInitGoalIndices",boost::bind(&RrtPlanner<Node>::GetInitGoalIndicesCommand,this,_1,_2),
                         "returns the start and goal indices");
         _filterreturn.reset(new ConstraintFilterReturn());
     }
@@ -270,7 +270,7 @@ public:
     {
         description_ += "Bi-directional RRTs. See\n\n\
 - J.J. Kuffner and S.M. LaValle. RRT-Connect: An efficient approach to single-query path planning. In Proc. IEEE Int'l Conf. on Robotics and Automation (ICRA'2000), pages 995-1001, San Francisco, CA, April 2000.";
-        RegisterCommand("DumpTree", std::bind(&BirrtPlanner::_DumpTreeCommand,this,_1,_2),
+        RegisterCommand("DumpTree", boost::bind(&BirrtPlanner::_DumpTreeCommand,this,_1,_2),
                         "dumps the source and goal trees to $OPENRAVE_HOME/birrtdump.txt. The first N values are the DOF values, the last value is the parent index.\n\
 Some python code to display data::\n\
 \n\
@@ -666,7 +666,7 @@ public:
         description_ = "Rosen's Basic RRT planner";
         _fGoalBiasProb = dReal(0.05);
         _bOneStep = false;
-        RegisterCommand("DumpTree", std::bind(&BasicRrtPlanner::_DumpTreeCommand,this,_1,_2),
+        RegisterCommand("DumpTree", boost::bind(&BasicRrtPlanner::_DumpTreeCommand,this,_1,_2),
                         "dumps the source and goal trees to $OPENRAVE_HOME/basicrrtdump.txt. The first N values are the DOF values, the last value is the parent index.\n");
     }
     virtual ~BasicRrtPlanner() {

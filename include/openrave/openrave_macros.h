@@ -34,11 +34,14 @@
 #define FOREACHC FOREACH
 #define FOREACHC_NOINC FOREACH_NOINC
 
+namespace OpenRAVE
+{
+
 #if OPENRAVE_PRECISION // 1 if double precision
-typedef double dReal;
+	typedef double dReal;
 #define g_fEpsilon 1e-15
 #else
-typedef float dReal;
+	typedef float dReal;
 #define g_fEpsilon 2e-7f
 #endif
 
@@ -49,7 +52,7 @@ typedef float dReal;
 #define GTS_M_ICOSAHEDRON_Y /* sqrt(2)/sqrt(5+sqrt(5))         */ \
     (dReal)0.525731112119133606025669084847876607285497935
 #define GTS_M_ICOSAHEDRON_Z (dReal)0.0
-
+}
 // <cmath>
 #ifndef M_PI
 #	define M_PI 3.14159265358979323846	// PI
@@ -87,6 +90,16 @@ typedef float dReal;
 namespace OpenRAVE
 {
 	std::string OPENRAVE_API format(const char *fmt, ...);
+
+	/** \brief Returns the gettext translated string of the given message id
+
+	\param domainname translation domain name
+	\param msgid message id to look for
+	\return if a translation was found, it is converted to the locale's codeset and returned. The resulting string is statically allocated and must not be modified or freed. Otherwise msgid is returned.
+ */
+	OPENRAVE_API const char *RaveGetLocalizedTextForDomain(const std::string& domainname, const char *msgid);
 }
+
+#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
 
 #endif // OPENRAVE_OPENRAVE_MACROS_H_

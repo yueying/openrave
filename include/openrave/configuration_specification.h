@@ -26,6 +26,7 @@
 
 namespace OpenRAVE
 {
+
 	/** \brief A configuration specification references values in the environment that then define a configuration-space which can be searched for.
 
 	It is composed of several groups targetting values for individual bodies. It is serialized into XML. The XML syntax is as follows:
@@ -380,8 +381,8 @@ namespace OpenRAVE
 		/// \brief swaps the data between the two configuration specifications as efficiently as possible
 		virtual void Swap(ConfigurationSpecification& spec);
 
-		typedef std::function<int(const std::vector<dReal>&)> SetConfigurationStateFn;
-		typedef std::function<void(std::vector<dReal>&)> GetConfigurationStateFn;
+		typedef boost::function<int(const std::vector<dReal>&)> SetConfigurationStateFn;
+		typedef boost::function<void(std::vector<dReal>&)> GetConfigurationStateFn;
 
 		/// \brief return a function to set the states of the configuration in the environment
 		virtual std::shared_ptr<SetConfigurationStateFn> GetSetFn(EnvironmentBasePtr env) const;

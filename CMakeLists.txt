@@ -391,21 +391,21 @@ add_custom_command(
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/plugininfo.h" OPENRAVE_PLUGININFO_HASH
        > "${interfacehashes_h}"
   DEPENDS cpp-gen-md5-native
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collisionchecker.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface_base.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collision_checker_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/planner.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/kinbody.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensorsystem.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/controller.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/controller_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/module.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/iksolver.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/physicsengine.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/physics_engine_base.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/trajectory.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/spacesampler.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer_base.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/space_sampler_base.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/plugininfo.h)
 
 add_custom_target(interfacehashes_target ALL DEPENDS ${interfacehashes_h} ${EXTRA_MSVC_DEPEND})

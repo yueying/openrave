@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp> // boost::trim
 #include <boost/lexical_cast.hpp>
+#include <openrave/kinbody.h>
 
 #include "fparsermulti.h"
 #define M_PI       3.14159265358979323846   // pi

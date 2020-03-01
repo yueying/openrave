@@ -16,7 +16,51 @@
 
 #include <openrave/config.h>
 #include <openrave/openrave_macros.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
+#include <cstdlib>
+#include <cstdint>
 
+
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
+#include <exception>
+
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <memory>
+
+// QTBUG-22829 alternative workaround
+#ifndef Q_MOC_RUN
+
+#include <boost/version.hpp>
+#include <boost/function.hpp>
+
+#include <boost/tuple/tuple.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/format.hpp>
+#include <boost/array.hpp>
+#include <boost/multi_array.hpp>
+//#include <boost/cstdint.hpp>
+
+#endif
+
+#if defined(__GNUC__)
+#define RAVE_DEPRECATED __attribute__((deprecated))
+#else
+#define RAVE_DEPRECATED
+#endif
 namespace OpenRAVE
 {
 	OPENRAVE_CLASS_FORWARD(CollisionReport);

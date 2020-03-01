@@ -28,6 +28,8 @@
 #endif // OPENRAVE_RAPIDJSON
 #include <openrave/xml_process.h>
 #include <openrave/type.h>
+#include <openrave/openrave_exception.h>
+#include <openrave/openrave_macros.h>
 #include <functional>
 #include <map>
 #include <string>
@@ -174,12 +176,6 @@ namespace OpenRAVE
 		///       <b>[multi-thread safe]</b>
 		virtual XMLReadablePtr SetReadableInterface(const std::string& xmltag, XMLReadablePtr readable);
 
-		/// \deprecated (12/12/11)
-		virtual void SetUserData(UserDataPtr data) RAVE_DEPRECATED 
-		{
-			SetUserData(std::string(), data);
-		}
-
 		/// \brief the URI used to load the interface. <b>[multi-thread safe]</b>
 		///
 		/// Sometimes the URI could hold special markers like "#" like in COLLADA files in order to target objects insides a particular file.
@@ -287,7 +283,7 @@ namespace OpenRAVE
 		/// \param sinput - input of the command
 		/// \param sout - output of the command
 		/// \return If false, there was an error with the command, true if successful
-		typedef std::function<bool(std::ostream&, std::istream&)> InterfaceCommandFn;
+		typedef boost::function<bool(std::ostream&, std::istream&)> InterfaceCommandFn;
 		class OPENRAVE_API InterfaceCommand
 		{
 		public:
@@ -321,7 +317,7 @@ namespace OpenRAVE
 		/// \param input - input of the command
 		/// \param output - output of the command
 		/// \return If false, there was an error with the command, true if successful
-		typedef std::function<void(const rapidjson::Value&, rapidjson::Value&, rapidjson::Document::AllocatorType&)> InterfaceJSONCommandFn;
+		typedef boost::function<void(const rapidjson::Value&, rapidjson::Value&, rapidjson::Document::AllocatorType&)> InterfaceJSONCommandFn;
 		class OPENRAVE_API InterfaceJSONCommand
 		{
 		public:
@@ -404,7 +400,7 @@ namespace OpenRAVE
 		friend class RaveDatabase;
 	};
 
-	typedef std::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
+	typedef boost::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
 
 } // end namespace OpenRAVE
 
