@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@ class WorkspaceTrajectoryTracker : public PlannerBase
 public:
     WorkspaceTrajectoryTracker(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = "\
+        description_ = "\
 :Interface Author:  Rosen Diankov\n\n\
 Given a workspace trajectory of the end effector of a manipulator (active manipulator of the robot), finds a configuration space trajectory that tracks it using analytical inverse kinematics.\n\
 Options can be specified to prioritize trajectory time, trajectory smoothness, and planning time\n\
@@ -235,7 +235,7 @@ Planner Parameters\n\
             poutputtraj->Insert(poutputtraj->GetNumWaypoints(),_parameters->vinitialconfig,_parameters->_configurationspecification);
         }
 
-        UserDataPtr filterhandle = _manip->GetIkSolver()->RegisterCustomFilter(0,boost::bind(&WorkspaceTrajectoryTracker::_ValidateSolution,this,_1,_2,_3));
+        UserDataPtr filterhandle = _manip->GetIkSolver()->RegisterCustomFilter(0,std::bind(&WorkspaceTrajectoryTracker::_ValidateSolution,this,_1,_2,_3));
         vector<dReal> vsolution;
         if( !_parameters->greedysearch ) {
             RAVELOG_ERROR("WorkspaceTrajectoryTracker::PlanPath - do not support non-greedy search\n");

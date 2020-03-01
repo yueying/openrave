@@ -124,7 +124,7 @@ public:
             BasicRRTParametersPtr params(new BasicRRTParameters());
             params->SetRobotActiveJoints(robot);
             params->_nRRTExtentType = 1; // one step
-            params->_goalfn = boost::bind(&MoveUnsync::Eval,pgoalfn,_1);
+            params->_goalfn = std::bind(&MoveUnsync::Eval,pgoalfn,_1);
             params->_nMaxIterations = 5000;
             robot->GetActiveDOFValues(params->vinitialconfig);
             params->_fStepLength = 0.04f;
@@ -324,7 +324,7 @@ public:
             return true;
         }
 
-        boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _distmetricfn;
+        std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _distmetricfn;
 
         // statistics about last run
         int _iter;
@@ -536,7 +536,7 @@ class RandomPermutationExecutor
 public:
     RandomPermutationExecutor() : nextindex(-1) {
     }
-    RandomPermutationExecutor(const boost::function<bool(int)>& fn) : _fn(fn), nextindex(-1) {
+    RandomPermutationExecutor(const std::function<bool(int)>& fn) : _fn(fn), nextindex(-1) {
     }
 
     /// returns the index of the permutation that the function returned true in
@@ -567,7 +567,7 @@ public:
         return -1;
     }
 
-    boost::function<bool(int)> _fn;
+    std::function<bool(int)> _fn;
 
 private:
     std::vector<unsigned int> vpermutation;

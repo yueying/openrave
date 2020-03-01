@@ -1,4 +1,4 @@
-// -*- coding: utf-8 --*
+﻿// -*- coding: utf-8 --*
 // Copyright (C) 2012-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -190,7 +190,7 @@ protected:
     }
 
     Conveyor(EnvironmentBasePtr penv, std::istream& is) : RobotBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nParses conveyor joints as a trajectory and adds child links to form a full conveyor system. Use the <conveyorjoint> tag to specify the conveyor properties.";
+        description_ = ":Interface Author: Rosen Diankov\n\nParses conveyor joints as a trajectory and adds child links to form a full conveyor system. Use the <conveyorjoint> tag to specify the conveyor properties.";
     }
     virtual ~Conveyor() {
     }

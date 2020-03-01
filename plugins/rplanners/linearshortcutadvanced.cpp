@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2018 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ class ShortcutLinearPlanner : public PlannerBase
 public:
     ShortcutLinearPlanner(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\npath optimizer using linear shortcuts.";
+        description_ = ":Interface Author: Rosen Diankov\n\npath optimizer using linear shortcuts.";
         _linearretimer = RaveCreatePlanner(GetEnv(), "LinearTrajectoryRetimer");
     }
     virtual ~ShortcutLinearPlanner() {

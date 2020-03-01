@@ -160,7 +160,7 @@ public:
     class JointAxisBinding
     {
 public:
-        JointAxisBinding(const boost::function<domNodeRef(daeElementRef)>& instantiatenodefn, daeElementRef pvisualtrans, domAxis_constraintRef pkinematicaxis, dReal jointvalue, domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>()) : pvisualtrans(pvisualtrans), pkinematicaxis(pkinematicaxis), jointvalue(jointvalue), kinematics_axis_info(kinematics_axis_info), motion_axis_info(motion_axis_info),_iaxis(0) {
+        JointAxisBinding(const std::function<domNodeRef(daeElementRef)>& instantiatenodefn, daeElementRef pvisualtrans, domAxis_constraintRef pkinematicaxis, dReal jointvalue, domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>()) : pvisualtrans(pvisualtrans), pkinematicaxis(pkinematicaxis), jointvalue(jointvalue), kinematics_axis_info(kinematics_axis_info), motion_axis_info(motion_axis_info),_iaxis(0) {
             _listInstanceScopeAxis = listInstanceScope;
             BOOST_ASSERT( !!pkinematicaxis );
             if( !!pvisualtrans ) {
@@ -1041,7 +1041,7 @@ public:
             }
         }
         if( !!pbody ) {
-            pbody->__struri = struri;
+            pbody->str_uri_ = struri;
         }
 
         std::string strname = strParentName;
@@ -1187,7 +1187,7 @@ public:
                 if( !pbody ) {
                     pbody = RaveCreateRobot(_penv, "");
                 }
-                pbody->__struri = struri;
+                pbody->str_uri_ = struri;
                 _mapJointUnits.clear();
                 _mapJointSids.clear();
             }
@@ -1340,8 +1340,8 @@ public:
             _mapJointUnits.clear();
             _mapJointSids.clear();
         }
-        if( pkinbody->__struri.size() == 0 ) {
-            pkinbody->__struri = ikm->getUrl().str();
+        if( pkinbody->str_uri_.size() == 0 ) {
+            pkinbody->str_uri_ = ikm->getUrl().str();
         }
 
         // check if kmodel has asset/subject, if yes, then set it to the description
@@ -1401,8 +1401,8 @@ public:
         _mapJointUnits.clear();
         _mapJointSids.clear();
         KinBodyPtr pkinbody = RaveCreateKinBody(_penv);
-        if( pkinbody->__struri.size() == 0 ) {
-            pkinbody->__struri = daeURI(*_dae).str();
+        if( pkinbody->str_uri_.size() == 0 ) {
+            pkinbody->str_uri_ = daeURI(*_dae).str();
         }
         string name = !pdomnode->getName() ? "" : _ConvertToOpenRAVEName(pdomnode->getName());
         if( name.size() == 0 ) {
@@ -4389,7 +4389,7 @@ private:
             }
 
             resolveCommon_float_or_param(pelt,kscene, jointvalue);
-            bindings.listAxisBindings.push_back(JointAxisBinding(boost::bind(&ColladaReader::_InstantiateNode, this, _1), pjtarget, pjointaxis, jointvalue, NULL, NULL, listInstanceScope));
+            bindings.listAxisBindings.push_back(JointAxisBinding(std::bind(&ColladaReader::_InstantiateNode, this, _1), pjtarget, pjointaxis, jointvalue, NULL, NULL, listInstanceScope));
         }
     }
 

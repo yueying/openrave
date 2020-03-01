@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2016-2019 Puttichai Lertkultanon & Rosen DianKov
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the
@@ -354,7 +354,7 @@ private:
 public:
     ParabolicSmoother2(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv), _feasibilitychecker(this)
     {
-        __description = "";
+        description_ = "";
         _bmanipconstraints = false;
         _constraintreturn.reset(new ConstraintFilterReturn());
         _logginguniformsampler = RaveCreateSpaceSampler(GetEnv(), "mt19937");

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -117,14 +117,14 @@ class ViewerRecorder : public ModuleBase
 public:
     ViewerRecorder(EnvironmentBasePtr penv, std::istream& sinput) : ModuleBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nRecords the images produced from a viewer into video file. The recordings can be synchronized to real-time or simulation time, by default simulation time is used. Each instance can record only one file at a time. To record multiple files simultaneously, create multiple VideoRecorder instances";
-        RegisterCommand("Start",boost::bind(&ViewerRecorder::_StartCommand,this,_1,_2),
+        description_ = ":Interface Author: Rosen Diankov\n\nRecords the images produced from a viewer into video file. The recordings can be synchronized to real-time or simulation time, by default simulation time is used. Each instance can record only one file at a time. To record multiple files simultaneously, create multiple VideoRecorder instances";
+        RegisterCommand("Start",std::bind(&ViewerRecorder::_StartCommand,this,_1,_2),
                         "Starts recording a file, this will stop all previous recordings and overwrite any previous files stored in this location. Format::\n\n  Start [width] [height] [framerate] codec [codec] timing [simtime/realtime/controlsimtime[=timestepmult]] viewer [name]\\n filename [filename]\\n\n\nBecause the viewer and filenames can have spaces, the names are ready until a newline is encountered");
-        RegisterCommand("Stop",boost::bind(&ViewerRecorder::_StopCommand,this,_1,_2),
+        RegisterCommand("Stop",std::bind(&ViewerRecorder::_StopCommand,this,_1,_2),
                         "Stops recording and saves the file. Format::\n\n  Stop\n\n");
-        RegisterCommand("GetCodecs",boost::bind(&ViewerRecorder::_GetCodecsCommand,this,_1,_2),
+        RegisterCommand("GetCodecs",std::bind(&ViewerRecorder::_GetCodecsCommand,this,_1,_2),
                         "Return all the possible codecs, one codec per line:[video_codec id] [name]");
-        RegisterCommand("SetWatermark",boost::bind(&ViewerRecorder::_SetWatermarkCommand,this,_1,_2),
+        RegisterCommand("SetWatermark",std::bind(&ViewerRecorder::_SetWatermarkCommand,this,_1,_2),
                         "Set a WxHx4 image as a watermark. Each color is an unsigned integer ordered as A|B|G|R. The origin should be the top left corner");
         _nFrameCount = _nVideoWidth = _nVideoHeight = 0;
         _framerate = 0;
@@ -152,7 +152,7 @@ public:
         _picture_size = 0;
         _outbuf_size = 0;
 #endif
-        _threadrecord.reset(new boost::thread(boost::bind(&ViewerRecorder::_RecordThread,this)));
+        _threadrecord.reset(new boost::thread(std::bind(&ViewerRecorder::_RecordThread,this)));
     }
     virtual ~ViewerRecorder()
     {
@@ -250,7 +250,8 @@ protected:
             else {
                 _frametime = (uint64_t)(1000000.0f/_framerate);
             }
-            _callback = pviewer->RegisterViewerImageCallback(boost::bind(&ViewerRecorder::_ViewerImageCallback,shared_module(),_1,_2,_3,_4));
+            _callback = pviewer->RegisterViewerImageCallback(std::bind(&ViewerRecorder::_ViewerImageCallback,shared_module(),
+				std::placeholders::_1, std::placeholders::_2,std::placeholders::_3, std::placeholders::_4));
             BOOST_ASSERT(!!_callback);
             _bStopRecord = false;
             return !!_callback;

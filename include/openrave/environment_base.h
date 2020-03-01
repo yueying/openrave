@@ -132,7 +132,7 @@ namespace OpenRAVE
 		/// \see CollisionCheckerBase::CheckSelfCollision
 		virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) = 0;
 
-		typedef boost::function<CollisionAction(CollisionReportPtr, bool)> CollisionCallbackFn;
+		typedef std::function<CollisionAction(CollisionReportPtr, bool)> CollisionCallbackFn;
 
 		/// Register a collision callback.
 		///
@@ -432,7 +432,7 @@ namespace OpenRAVE
 		///
 		/// \param body KinBodyPtr
 		/// \param action if 0 body has been removed from the environment (environment id is already reset), if 1 body was just added to environment
-		typedef boost::function<void(KinBodyPtr, int)> BodyCallbackFn;
+		typedef std::function<void(KinBodyPtr, int)> BodyCallbackFn;
 		virtual UserDataPtr RegisterBodyCallback(const BodyCallbackFn& callback) = 0;
 
 		/// \brief Fill an array with all sensors loaded in the environment. <b>[multi-thread safe]</b>

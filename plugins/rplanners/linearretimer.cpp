@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@ class LinearTrajectoryRetimer : public TrajectoryRetimer
 public:
     LinearTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryRetimer(penv,sinput)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nLinear trajectory re-timing without modifying any of the points. Overwrites the velocities and timestamps.";
+        description_ = ":Interface Author: Rosen Diankov\n\nLinear trajectory re-timing without modifying any of the points. Overwrites the velocities and timestamps.";
     }
 
 protected:

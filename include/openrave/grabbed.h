@@ -29,7 +29,7 @@ namespace OpenRAVE
 			: _pgrabbedbody(pgrabbedbody), _plinkrobot(plinkrobot) 
 		{
 			_enablecallback = pgrabbedbody->RegisterChangeCallback(KinBody::Prop_LinkEnable,
-				boost::bind(&Grabbed::UpdateCollidingLinks, this));
+				std::bind(&Grabbed::UpdateCollidingLinks, this));
 			_plinkrobot->GetRigidlyAttachedLinks(_vattachedlinks);
 		}
 		virtual ~Grabbed()

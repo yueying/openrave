@@ -336,7 +336,7 @@ protected:
 class OpenRAVEKeyboardEventHandler : public osgGA::GUIEventHandler
 {
 public:
-    OpenRAVEKeyboardEventHandler(const boost::function<bool(const osgGA::GUIEventAdapter&, osgGA::GUIActionAdapter&)>& onKeyDown) : _onKeyDown(onKeyDown) {
+    OpenRAVEKeyboardEventHandler(const std::function<bool(const osgGA::GUIEventAdapter&, osgGA::GUIActionAdapter&)>& onKeyDown) : _onKeyDown(onKeyDown) {
     }
 
     virtual bool handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa)
@@ -352,7 +352,7 @@ public:
     }
 
 private:
-    boost::function<bool(const osgGA::GUIEventAdapter&, osgGA::GUIActionAdapter&)> _onKeyDown; ///< called when key is pressed
+    std::function<bool(const osgGA::GUIEventAdapter&, osgGA::GUIActionAdapter&)> _onKeyDown; ///< called when key is pressed
 };
 
 //void QOSGViewerWidget::_ShowSceneGraph(const std::string& currLevel,OSGNodePtr currNode)
@@ -377,7 +377,7 @@ private:
 //}
 
 QOSGViewerWidget::QOSGViewerWidget(EnvironmentBasePtr penv, const std::string& userdatakey,
-                                   const boost::function<bool(int)>& onKeyDown, double metersinunit,
+                                   const std::function<bool(int)>& onKeyDown, double metersinunit,
                                    QWidget* parent) : QOpenGLWidget(parent), _onKeyDown(onKeyDown)
 {
 
@@ -399,10 +399,10 @@ QOSGViewerWidget::QOSGViewerWidget(EnvironmentBasePtr penv, const std::string& u
                  _CreateHUDCamera(0, 0, 100, 100, metersinunit), _osghudview);
 
     //  Sets pickhandler
-    _picker = new OSGPickHandler(boost::bind(&QOSGViewerWidget::HandleRayPick, this, _1, _2, _3), boost::bind(&QOSGViewerWidget::UpdateFromOSG,this));
+    _picker = new OSGPickHandler(std::bind(&QOSGViewerWidget::HandleRayPick, this, _1, _2, _3), std::bind(&QOSGViewerWidget::UpdateFromOSG,this));
     _osgview->addEventHandler(_picker);
 
-    _keyhandler = new OpenRAVEKeyboardEventHandler(boost::bind(&QOSGViewerWidget::HandleOSGKeyDown, this, _1, _2));
+    _keyhandler = new OpenRAVEKeyboardEventHandler(std::bind(&QOSGViewerWidget::HandleOSGKeyDown, this, _1, _2));
     _osgview->addEventHandler(_keyhandler);
 
     _osgview->addEventHandler( new osgViewer::StatsHandler );

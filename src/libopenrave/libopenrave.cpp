@@ -172,7 +172,7 @@ void RaveDestroy()
     RaveGlobal::instance()->Destroy();
 }
 
-void RaveAddCallbackForDestroy(const boost::function<void()>& fn)
+void RaveAddCallbackForDestroy(const std::function<void()>& fn)
 {
     RaveGlobal::instance()->AddCallbackForDestroy(fn);
 }
@@ -321,7 +321,7 @@ SpaceSamplerBasePtr RaveCreateSpaceSampler(EnvironmentBasePtr penv, const std::s
     return RaveGlobal::instance()->GetDatabase()->CreateSpaceSampler(penv, name);
 }
 
-UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
+UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn)
 {
     return RaveGlobal::instance()->GetDatabase()->RegisterInterface(type, name, interfacehash,envhash,createfn);
 }

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -320,29 +320,29 @@ private:
 public:
     IkFastModule(EnvironmentBasePtr penv, std::istream& sinput) : ModuleBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nAllows dynamic loading and registering of ikfast shared objects to openrave plugins.\nAlso contains several test routines for inverse kinematics.";
-        RegisterCommand("AddIkLibrary",boost::bind(&IkFastModule::AddIkLibrary,this,_1,_2),
+        description_ = ":Interface Author: Rosen Diankov\n\nAllows dynamic loading and registering of ikfast shared objects to openrave plugins.\nAlso contains several test routines for inverse kinematics.";
+        RegisterCommand("AddIkLibrary",std::bind(&IkFastModule::AddIkLibrary,this,_1,_2),
                         "Dynamically adds an ik solver to openrave by loading a shared object (based on ikfast code generation).\n"
                         "Usage::\n\n  AddIkLibrary iksolvername iklibrarypath\n\n"
                         "return the type of inverse kinematics solver (IkParamterization::Type)");
 #ifdef Boost_IOSTREAMS_FOUND
 
 #if OPENRAVE_RAPIDJSON
-        RegisterJSONCommand("LoadIKFastFromXMLId",boost::bind(&IkFastModule::_LoadIKFastFromXMLIdCommand, this, _1, _2, _3), "Loads ikfast module from xmlid");
+        RegisterJSONCommand("LoadIKFastFromXMLId",std::bind(&IkFastModule::_LoadIKFastFromXMLIdCommand, this, _1, _2, _3), "Loads ikfast module from xmlid");
 #endif
 
-        RegisterCommand("LoadIKFastSolver",boost::bind(&IkFastModule::LoadIKFastSolver,this,_1,_2),
+        RegisterCommand("LoadIKFastSolver",std::bind(&IkFastModule::LoadIKFastSolver,this,_1,_2),
                         "Dynamically calls the inversekinematics.py script to generate an ik solver for a robot, or to load an existing one\n"
                         "Usage::\n\n  LoadIKFastSolver robotname iktype_id [free increment]\n\n"
                         "return nothing, but does call the SetIKSolver for the robot");
 #endif
-        RegisterCommand("PerfTiming",boost::bind(&IkFastModule::PerfTiming,this,_1,_2),
+        RegisterCommand("PerfTiming",std::bind(&IkFastModule::PerfTiming,this,_1,_2),
                         "Times the ik call of a given library.\n"
                         "Usage::\n\n  PerfTiming [options] iklibrarypath\n\n"
                         "return the set of time measurements made in nano-seconds");
-        RegisterCommand("IKTest",boost::bind(&IkFastModule::IKtest,this,_1,_2),
+        RegisterCommand("IKTest",std::bind(&IkFastModule::IKtest,this,_1,_2),
                         "Tests for an IK solution if active manipulation has an IK solver attached");
-        RegisterCommand("DebugIK",boost::bind(&IkFastModule::DebugIK,this,_1,_2),
+        RegisterCommand("DebugIK",std::bind(&IkFastModule::DebugIK,this,_1,_2),
                         "Function used for debugging and testing an IK solver. Input parameters are:\n\n\
 * string readfile - file containing joint values to read, starts with number of entries.\n\n\
 * int numtests - if file not specified, number of random tests to perform (defualt is 1000).\n\n\

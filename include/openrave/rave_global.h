@@ -198,7 +198,7 @@ namespace OpenRAVE
 			_mapreaders.clear();
 
 			// process the callbacks
-			std::list<boost::function<void()> > listDestroyCallbacks;
+			std::list<std::function<void()> > listDestroyCallbacks;
 			{
 				boost::mutex::scoped_lock lock(_mutexinternal);
 				listDestroyCallbacks.swap(_listDestroyCallbacks);
@@ -229,7 +229,7 @@ namespace OpenRAVE
 #endif
 		}
 
-		void AddCallbackForDestroy(const boost::function<void()>& fn)
+		void AddCallbackForDestroy(const std::function<void()>& fn)
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
 			_listDestroyCallbacks.push_back(fn);
@@ -745,7 +745,7 @@ namespace OpenRAVE
 		std::map<InterfaceType, std::string> _mapinterfacenames;
 		std::map<IkParameterizationType, std::string> _mapikparameterization, _mapikparameterizationlower;
 		std::map<int, EnvironmentBase*> _mapenvironments;
-		std::list<boost::function<void()> > _listDestroyCallbacks;
+		std::list<std::function<void()> > _listDestroyCallbacks;
 		std::string _homedirectory;
 		std::string _defaultviewertype; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
 		std::vector<std::string> _vdbdirectories;

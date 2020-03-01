@@ -1,4 +1,4 @@
-// -*- coding: utf-8 --*
+﻿// -*- coding: utf-8 --*
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -127,7 +127,7 @@ protected:
     }
 
     CollisionMapRobot(EnvironmentBasePtr penv, std::istream& sinput) : RobotBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nAllows user to specify regions of the robot configuration space that are in self-collision via lookup tables. This is most commonly used when two or more joints are coupled and their joint limits cannot be specified by simple min/max limits. A CollisionMap robot allows the user to specify self-collision regions indexed by the values of two joints.\n\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nAllows user to specify regions of the robot configuration space that are in self-collision via lookup tables. This is most commonly used when two or more joints are coupled and their joint limits cannot be specified by simple min/max limits. A CollisionMap robot allows the user to specify self-collision regions indexed by the values of two joints.\n\n\
 The map will be 1 if the values are in free space (allowed) or 0 if they are in self-collision. If the robot gets into a 0 region, it will get into self-collision.\n\n\
 This is done by first creating a robot of type 'CollisionMapRobot' and using the **<collisionmap>** XML tag. Inside the **<collisionmap>** tag, multiple **<pair>** tags can be specified for coupled joints. For example, to specify a 181x181 2D map for joints J0, J1, J2, J3 where J0,J1 are paired and J2,J3 are paired, do: \n\n\
 .. code-block:: xml\n\n\

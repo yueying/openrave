@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2017 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -67,7 +67,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
         }
         RAVELOG_VERBOSE_FORMAT("Body %s: body %s already grabbed, but transforms differ by %f \n", GetName()%pbody->GetName()%disterror);
         _RemoveAttachedBody(*pbody);
-        CallOnDestruction destructigonhook(boost::bind(&RobotBase::_AttachBody,this,pbody));
+        CallOnDestruction destructigonhook(std::bind(&RobotBase::_AttachBody,this,pbody));
         pPreviousGrabbed->_plinkrobot = plink;
         pPreviousGrabbed->_troot = t.inverse() * tbody;
         pPreviousGrabbed->ProcessCollidingLinks(pPreviousGrabbed->_setRobotLinksToIgnore);
@@ -243,7 +243,7 @@ void KinBody::RegrabAll()
         KinBodyPtr pbody = pgrabbed->_pgrabbedbody.lock();
         if( !!pbody ) {
             _RemoveAttachedBody(*pbody);
-            CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pbody));
+            CallOnDestruction destructionhook(std::bind(&RobotBase::_AttachBody,this,pbody));
             pgrabbed->ProcessCollidingLinks(pgrabbed->_setRobotLinksToIgnore);
         }
     }
@@ -258,7 +258,7 @@ void KinBody::_Regrab(UserDataPtr _pgrabbed)
         CollisionCheckerBasePtr collisionchecker = !!_selfcollisionchecker ? _selfcollisionchecker : GetEnv()->GetCollisionChecker();
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         _RemoveAttachedBody(*pgrabbedbody);
-        CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
+        CallOnDestruction destructionhook(std::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
         pgrabbed->ProcessCollidingLinks(pgrabbed->_setRobotLinksToIgnore);
     }
 }

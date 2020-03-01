@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -29,11 +29,7 @@
 #include <istream>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/function.hpp>
 #include <boost/assert.hpp>
-#include <openrave/smart_ptr.h>
 
 #include <time.h>
 
@@ -176,10 +172,10 @@ struct smart_pointer_deleter
 {
 private:
     P p_;
-    boost::function<void(void const*)> _deleterfn;
-    boost::function<void()> _postdeleterfn;
+    std::function<void(void const*)> _deleterfn;
+    std::function<void()> _postdeleterfn;
 public:
-    smart_pointer_deleter(P const & p, const boost::function<void(void const*)>& deleterfn, const boost::function<void()>& postdeleterfn = boost::function<void()>()) : p_(p), _deleterfn(deleterfn), _postdeleterfn(postdeleterfn)
+    smart_pointer_deleter(P const & p, const std::function<void(void const*)>& deleterfn, const std::function<void()>& postdeleterfn = std::function<void()>()) : p_(p), _deleterfn(deleterfn), _postdeleterfn(postdeleterfn)
     {
     }
 
@@ -324,13 +320,16 @@ inline T Sqr(T t) {
 }
 
 /// \brief openrave valid characters to be used in names
-inline bool IsValidCharInName(char c) {
+inline bool IsValidCharInName(char c)
+{
     return c < 0 || c >= 33; //isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/';
 }
 
 /// \brief openrave valid characters to be used in names
-inline bool IsValidName(const std::string& s) {
-    if( s.size() == 0 ) {
+inline bool IsValidName(const std::string& s) 
+{
+    if( s.size() == 0 ) 
+	{
         return false;
     }
     return std::count_if(s.begin(), s.end(), IsValidCharInName) == (int)s.size();
@@ -339,7 +338,8 @@ inline bool IsValidName(const std::string& s) {
 /// \brief converts improper characters to _ so the entire name is valid
 inline std::string ConvertToOpenRAVEName(const std::string& name)
 {
-    if( IsValidName(name) ) {
+    if( IsValidName(name) )
+	{
         return name;
     }
     std::string newname = name;

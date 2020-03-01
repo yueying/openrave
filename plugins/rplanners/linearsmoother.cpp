@@ -20,7 +20,7 @@ class LinearSmoother : public PlannerBase
 public:
     LinearSmoother(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nPath optimizer using linear shortcuts assuming robot has no constraints and _neighstatefn is just regular addition. Should be faster than shortcut_linear.\n\nIf passing 0 or 1 to the constructor, can enable/disable single-dof smoothing.";
+        description_ = ":Interface Author: Rosen Diankov\n\nPath optimizer using linear shortcuts assuming robot has no constraints and _neighstatefn is just regular addition. Should be faster than shortcut_linear.\n\nIf passing 0 or 1 to the constructor, can enable/disable single-dof smoothing.";
         _linearretimer = RaveCreatePlanner(GetEnv(), "LinearTrajectoryRetimer");
         _nUseSingleDOFSmoothing = 1;
         sinput >> _nUseSingleDOFSmoothing;

@@ -120,11 +120,11 @@ public:
         \param param The paramterization that IK was called with. This is in the manipulator base link's coordinate system (which is not necessarily the world coordinate system).
         \return \ref IkReturn outputs the action to take for the current ik solution and any custom parameters the filter should pass to the user.
      */
-    typedef boost::function<IkReturn(std::vector<dReal>&, RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFilterCallbackFn;
+    typedef std::function<IkReturn(std::vector<dReal>&, RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFilterCallbackFn;
 
     /** \brief gets called when an ik solution is accepted.
      */
-    typedef boost::function<void (IkReturnPtr, RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFinishCallbackFn;
+    typedef std::function<void (IkReturnPtr, RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFinishCallbackFn;
 
     IkSolverBase(EnvironmentBasePtr penv) : InterfaceBase(PT_InverseKinematicsSolver, penv) {
     }

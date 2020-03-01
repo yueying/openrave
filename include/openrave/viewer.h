@@ -119,7 +119,7 @@ public:
     ///
     /// If the function returns true, then the object will be selected. Otherwise, the object remains unselected.
     /// callback(target link,offset,direction)
-    typedef boost::function<bool (KinBody::LinkPtr plink,RaveVector<float>,RaveVector<float>)> ItemSelectionCallbackFn;
+    typedef std::function<bool (KinBody::LinkPtr plink,RaveVector<float>,RaveVector<float>)> ItemSelectionCallbackFn;
 
     /// \brief registers a function with the viewer that gets called everytime mouse button is clicked
     ///
@@ -130,7 +130,7 @@ public:
     /// callback(imagememory,width,height,pixeldepth)
     ///
     /// \param imagememory width x height x pixeldepth RGB image
-    typedef boost::function<void (const uint8_t*,int,int,int)> ViewerImageCallbackFn;
+    typedef std::function<void (const uint8_t*,int,int,int)> ViewerImageCallbackFn;
 
     /// \brief registers a function with the viewer that gets called for every new image rendered.
     ///
@@ -138,7 +138,7 @@ public:
     virtual UserDataPtr RegisterViewerImageCallback(const ViewerImageCallbackFn& fncallback) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \brief callback function for viewer thread
-    typedef boost::function<void ()> ViewerThreadCallbackFn;
+    typedef std::function<void ()> ViewerThreadCallbackFn;
 
     /// \brief registers a function with the viewer that gets called in the viewer's GUI thread for every cycle the viewer refreshes at
     ///

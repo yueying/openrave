@@ -104,32 +104,7 @@ namespace OpenRAVE {
 namespace OpenRAVE 
 {
 
-class OPENRAVE_LOCAL CaseInsensitiveCompare
-{
-public:
-    bool operator() (const std::string & s1, const std::string& s2) const
-    {
-        std::string::const_iterator it1=s1.begin();
-        std::string::const_iterator it2=s2.begin();
 
-        //has the end of at least one of the strings been reached?
-        while ( (it1!=s1.end()) && (it2!=s2.end()) )  {
-            if(::toupper(*it1) != ::toupper(*it2)) {     //letters differ?
-                // return -1 to indicate 'smaller than', 1 otherwise
-                return ::toupper(*it1) < ::toupper(*it2);
-            }
-            //proceed to the next character in each string
-            ++it1;
-            ++it2;
-        }
-        std::size_t size1=s1.size(), size2=s2.size();     // cache lengths
-        //return -1,0 or 1 according to strings' lengths
-        if (size1==size2) {
-            return 0;
-        }
-        return size1<size2;
-    }
-};
 
 /// \brief user data that can serialize/deserialize itself
 class OPENRAVE_API SerializableData : public UserData
@@ -401,7 +376,7 @@ OPENRAVE_API void RaveDestroy();
 /// before plugins are unloaded.
 /// Callback is added only for this run-time. Once the run-time is destroyed/swapped, it will have to be re-added.
 /// OpenRAVE runtime is destroyed when \ref RaveDestroy is called or on system exits.
-OPENRAVE_API void RaveAddCallbackForDestroy(const boost::function<void()>& fn);
+OPENRAVE_API void RaveAddCallbackForDestroy(const std::function<void()>& fn);
 
 /// \brief Get all the loaded plugins and the interfaces they support.
 ///
@@ -473,7 +448,7 @@ inline std::shared_ptr<T> RaveClone(std::shared_ptr<T const> preference, int clo
     \return a handle if function is successfully registered. By destroying the handle, the interface will be automatically unregistered.
     \throw OpenRAVEException Will throw with ORE_InvalidInterfaceHash if hashes do not match
  */
-OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
+OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn);
 
 /** \brief Registers a custom xml reader for a particular interface.
 

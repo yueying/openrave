@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2016 Rosen Diankov, Gustavo Puche, OpenGrasp Team
 //
 // OpenRAVE Qt/OpenSceneGraph Viewer is licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
 
 namespace qtosgrave {
 
-#define ITEM_DELETER boost::bind(DeleteItemCallbackSafe,weak_viewer(),_1)
+#define ITEM_DELETER std::bind(DeleteItemCallbackSafe,weak_viewer(),_1)
 
 void DeleteItemCallbackSafe(QtOSGViewerWeakPtr wpt, Item* pItem)
 {
@@ -131,7 +131,7 @@ QtOSGViewer::QtOSGViewer(EnvironmentBasePtr penv, std::istream& sinput) : QMainW
         statusBar()->showMessage(tr("Status Bar"));
     }
 
-    __description = ":Interface Author: Rosen Diankov, Gustavo Puche\n\nProvides a viewer based on OpenSceneGraph library. Currently tested with v3.4. Usage:\n\n\
+    description_ = ":Interface Author: Rosen Diankov, Gustavo Puche\n\nProvides a viewer based on OpenSceneGraph library. Currently tested with v3.4. Usage:\n\n\
   - ESC to toggle between camera, selection, and joint modes.\n\
   - Left Click to rotate (or select) object.\n\
   - Middle (or Shift+Left, Left+Right) Click to pan.\n\
@@ -141,27 +141,27 @@ QtOSGViewer::QtOSGViewer(EnvironmentBasePtr penv, std::istream& sinput) : QMainW
   - Press 's' and Left click on screen to center camera.\n\
 ";
 
-    RegisterCommand("SetFiguresInCamera",boost::bind(&QtOSGViewer::_SetFiguresInCamera, this, _1, _2),
+    RegisterCommand("SetFiguresInCamera",std::bind(&QtOSGViewer::_SetFiguresInCamera, this, _1, _2),
                     "Accepts 0/1 value that decides whether to render the figure plots in the camera image through GetCameraImage");
-    RegisterCommand("SetItemVisualization",boost::bind(&QtOSGViewer::_SetItemVisualizationCommand, this, _1, _2),
+    RegisterCommand("SetItemVisualization",std::bind(&QtOSGViewer::_SetItemVisualizationCommand, this, _1, _2),
                     "sets the visualization mode of a kinbody/render item in the viewer");
-    RegisterCommand("ShowWorldAxes",boost::bind(&QtOSGViewer::_ShowWorldAxesCommand, this, _1, _2),
+    RegisterCommand("ShowWorldAxes",std::bind(&QtOSGViewer::_ShowWorldAxesCommand, this, _1, _2),
                     "Accepts 0/1 value that decides whether to render the cross hairs");
-    RegisterCommand("SetNearPlane", boost::bind(&QtOSGViewer::_SetNearPlaneCommand, this, _1, _2),
+    RegisterCommand("SetNearPlane", std::bind(&QtOSGViewer::_SetNearPlaneCommand, this, _1, _2),
                     "Sets the near plane for rendering of the image. Useful when tweaking rendering units");
-    RegisterCommand("SetTextureCubeMap", boost::bind(&QtOSGViewer::_SetTextureCubeMap, this, _1, _2),
+    RegisterCommand("SetTextureCubeMap", std::bind(&QtOSGViewer::_SetTextureCubeMap, this, _1, _2),
                     "Sets the skybox with cubemap");
-    RegisterCommand("TrackLink", boost::bind(&QtOSGViewer::_TrackLinkCommand, this, _1, _2),
+    RegisterCommand("TrackLink", std::bind(&QtOSGViewer::_TrackLinkCommand, this, _1, _2),
                     "camera tracks the link maintaining a specific relative transform: robotname, manipname, focalDistance");
-    RegisterCommand("TrackManipulator", boost::bind(&QtOSGViewer::_TrackManipulatorCommand, this, _1, _2),
+    RegisterCommand("TrackManipulator", std::bind(&QtOSGViewer::_TrackManipulatorCommand, this, _1, _2),
                     "camera tracks the manipulator maintaining a specific relative transform: robotname, manipname, focalDistance");
-    RegisterCommand("SetTrackingAngleToUp", boost::bind(&QtOSGViewer::_SetTrackingAngleToUpCommand, this, _1, _2),
+    RegisterCommand("SetTrackingAngleToUp", std::bind(&QtOSGViewer::_SetTrackingAngleToUpCommand, this, _1, _2),
                     "sets a new angle to up");
-    RegisterCommand("StartViewerLoop", boost::bind(&QtOSGViewer::_StartViewerLoopCommand, this, _1, _2),
+    RegisterCommand("StartViewerLoop", std::bind(&QtOSGViewer::_StartViewerLoopCommand, this, _1, _2),
                     "starts the viewer sync loop and shows the viewer. expects someone else will call the qapplication exec fn");
-    RegisterCommand("SetProjectionMode", boost::bind(&QtOSGViewer::_SetProjectionModeCommand, this, _1, _2),
+    RegisterCommand("SetProjectionMode", std::bind(&QtOSGViewer::_SetProjectionModeCommand, this, _1, _2),
                     "sets the viewer projection mode, perspective or orthogonal");
-    RegisterCommand("Zoom", boost::bind(&QtOSGViewer::_ZoomCommand, this, _1, _2),
+    RegisterCommand("Zoom", std::bind(&QtOSGViewer::_ZoomCommand, this, _1, _2),
                     "Set the zooming factor of the view");
     _bLockEnvironment = true;
     _InitGUI(bCreateStatusBar, bCreateMenu);
@@ -208,7 +208,7 @@ void QtOSGViewer::_InitGUI(bool bCreateStatusBar, bool bCreateMenu)
         connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(_ProcessApplicationQuit()));
     }
 
-    _posgWidget = new QOSGViewerWidget(GetEnv(), _userdatakey, boost::bind(&QtOSGViewer::_HandleOSGKeyDown, this, _1), GetEnv()->GetUnit().second, this);
+    _posgWidget = new QOSGViewerWidget(GetEnv(), _userdatakey, std::bind(&QtOSGViewer::_HandleOSGKeyDown, this, _1), GetEnv()->GetUnit().second, this);
 
     setCentralWidget(_posgWidget);
 
@@ -274,7 +274,7 @@ bool QtOSGViewer::_HandleOSGKeyDown(int key)
 //            //RAVELOG_INFO_FORMAT("checked id %d", _pointerTypeGroup->checkedId());
 //            //if( !!_pointerTypeGroup->checkedButton() ) {
 //                //_pointerTypeGroup->checkedButton()->setChecked(false);
-//                _PostToGUIThread(boost::bind(&QAbstractButton::setChecked, _pointerTypeGroup->checkedButton(), false));
+//                _PostToGUIThread(std::bind(&QAbstractButton::setChecked, _pointerTypeGroup->checkedButton(), false));
 //            }
 //            else {
 //                // check one?
@@ -603,7 +603,7 @@ void QtOSGViewer::_ProcessAboutDialog()
 {
     QMessageBox msgBox;
     msgBox.setText("OpenRAVE qtosg plugin");
-    msgBox.setInformativeText(__description.c_str());
+    msgBox.setInformativeText(description_.c_str());
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
@@ -1293,7 +1293,7 @@ bool QtOSGViewer::_SetProjectionModeCommand(ostream& sout, istream& sinput)
 {
     std::string projectionMode = "";
     sinput >> projectionMode;
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_SetProjectionMode, this, projectionMode));
+    _PostToGUIThread(std::bind(&QtOSGViewer::_SetProjectionMode, this, projectionMode));
     return true;
 }
 
@@ -1301,7 +1301,7 @@ bool QtOSGViewer::_ZoomCommand(ostream& sout, istream& sinput)
 {
     float factor = 1.0f;
     sinput >> factor;
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Zoom, this, factor));
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Zoom, this, factor));
     return true;
 }
 
@@ -1359,10 +1359,10 @@ void QtOSGViewer::quitmainloop()
 void QtOSGViewer::Show(int showtype)
 {
     if( showtype ) {
-        _PostToGUIThread(boost::bind(&QtOSGViewer::show, this));
+        _PostToGUIThread(std::bind(&QtOSGViewer::show, this));
     }
     else {
-        _PostToGUIThread(boost::bind(&QtOSGViewer::hide, this));
+        _PostToGUIThread(std::bind(&QtOSGViewer::hide, this));
     }
 //    // have to put this in the message queue
 //    if (showtype ) {
@@ -1418,7 +1418,7 @@ void QtOSGViewer::_SetCamera(RaveTransform<float> trans, float focalDistance)
 
 void QtOSGViewer::SetCamera(const RaveTransform<float>& trans, float focalDistance)
 {
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_SetCamera, this, trans, focalDistance));
+    _PostToGUIThread(std::bind(&QtOSGViewer::_SetCamera, this, trans, focalDistance));
 }
 
 void QtOSGViewer::_SetCameraDistanceToFocus(float focalDistance)
@@ -1501,7 +1501,7 @@ GraphHandlePtr QtOSGViewer::plot3(const float* ppoints, int numPoints, int strid
     }
     osg::ref_ptr<osg::Vec4Array> vcolors = new osg::Vec4Array(1);
     (*vcolors)[0] = osg::Vec4f(color.x, color.y, color.z, color.w);
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::POINTS, new osg::Point(fPointSize),color.w<1)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::POINTS, new osg::Point(fPointSize),color.w<1)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1522,7 +1522,7 @@ GraphHandlePtr QtOSGViewer::plot3(const float* ppoints, int numPoints, int strid
         }
     }
 
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::POINTS, osg::ref_ptr<osg::Point>(new osg::Point(fPointSize)), bhasalpha)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::POINTS, osg::ref_ptr<osg::Point>(new osg::Point(fPointSize)), bhasalpha)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1537,7 +1537,7 @@ GraphHandlePtr QtOSGViewer::drawlinestrip(const float* ppoints, int numPoints, i
     }
     osg::ref_ptr<osg::Vec4Array> vcolors = new osg::Vec4Array(1);
     (*vcolors)[0] = osg::Vec4f(color.x, color.y, color.z, color.w);
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINE_STRIP, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), color.w<1)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINE_STRIP, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), color.w<1)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 GraphHandlePtr QtOSGViewer::drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors)
@@ -1552,7 +1552,7 @@ GraphHandlePtr QtOSGViewer::drawlinestrip(const float* ppoints, int numPoints, i
         (*vcolors)[i] = osg::Vec4f(colors[i * 3 + 0], colors[i * 3 + 1], colors[i * 3 + 2], 1.0f);
     }
 
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINE_STRIP, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), false)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINE_STRIP, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), false)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1566,7 +1566,7 @@ GraphHandlePtr QtOSGViewer::drawlinelist(const float* ppoints, int numPoints, in
     }
     osg::ref_ptr<osg::Vec4Array> vcolors = new osg::Vec4Array(1);
     (*vcolors)[0] = osg::Vec4f(color.x, color.y, color.z, color.w);
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINES, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), color.w<1)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINES, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), color.w<1)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 GraphHandlePtr QtOSGViewer::drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors)
@@ -1581,7 +1581,7 @@ GraphHandlePtr QtOSGViewer::drawlinelist(const float* ppoints, int numPoints, in
         (*vcolors)[i] = osg::Vec4f(colors[i * 3 + 0], colors[i * 3 + 1], colors[i * 3 + 2], 1.0f);
     }
 
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINES, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), false)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Draw, this, handle, vvertices, vcolors, osg::PrimitiveSet::LINES, osg::ref_ptr<osg::LineWidth>(new osg::LineWidth(fwidth)), false)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1615,7 +1615,7 @@ void QtOSGViewer::_DrawBox(OSGSwitchPtr handle, const RaveVector<float>& vpos, c
 GraphHandlePtr QtOSGViewer::drawbox(const RaveVector<float>& vpos, const RaveVector<float>& vextents)
 {
     OSGSwitchPtr handle = _CreateGraphHandle();
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_DrawBox, this, handle, vpos, vextents, false)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_DrawBox, this, handle, vpos, vextents, false)); // copies ref counts
     return GraphHandlePtr();
 }
 
@@ -1697,7 +1697,7 @@ void QtOSGViewer::_DrawPlane(OSGSwitchPtr handle, const RaveTransform<float>& tp
 GraphHandlePtr QtOSGViewer::drawplane(const RaveTransform<float>& tplane, const RaveVector<float>& vextents, const boost::multi_array<float,3>& vtexture)
 {
     OSGSwitchPtr handle = _CreateGraphHandle();
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_DrawPlane, this, handle, tplane, vextents, vtexture)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_DrawPlane, this, handle, tplane, vextents, vtexture)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1762,7 +1762,7 @@ GraphHandlePtr QtOSGViewer::drawtrimesh(const float* ppoints, int stride, const 
     osg::ref_ptr<osg::Vec4Array> osgcolors = new osg::Vec4Array(1);
     (*osgcolors)[0] = osg::Vec4f(color.x, color.y, color.z, color.w);
 
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_DrawTriMesh, this, handle, osgvertices, osgcolors, osgindices, color.w<1)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_DrawTriMesh, this, handle, osgvertices, osgcolors, osgindices, color.w<1)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1797,7 +1797,7 @@ GraphHandlePtr QtOSGViewer::drawtrimesh(const float* ppoints, int stride, const 
     }
 
     OSGSwitchPtr handle = _CreateGraphHandle();
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_DrawTriMesh, this, handle, osgvertices, osgcolors, osgindices, bhasalpha)); // copies ref counts
+    _PostToGUIThread(std::bind(&QtOSGViewer::_DrawTriMesh, this, handle, osgvertices, osgcolors, osgindices, bhasalpha)); // copies ref counts
     return GraphHandlePtr(new PrivateGraphHandle(shared_viewer(), handle));
 }
 
@@ -1813,7 +1813,7 @@ void QtOSGViewer::Reset()
 
 void QtOSGViewer::SetBkgndColor(const RaveVector<float>& color)
 {
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_SetBkgndColor, this, color));
+    _PostToGUIThread(std::bind(&QtOSGViewer::_SetBkgndColor, this, color));
 }
 
 void QtOSGViewer::_SetBkgndColor(const RaveVector<float>& color)
@@ -1832,16 +1832,16 @@ void QtOSGViewer::StopPlaybackTimer()
 
 void QtOSGViewer::SetSize(int w, int h)
 {
-    _PostToGUIThread(boost::bind(&QtOSGViewer::resize, this, w, h));
+    _PostToGUIThread(std::bind(&QtOSGViewer::resize, this, w, h));
 }
 void QtOSGViewer::Move(int x, int y)
 {
-    _PostToGUIThread(boost::bind(&QtOSGViewer::move, this, x, y));
+    _PostToGUIThread(std::bind(&QtOSGViewer::move, this, x, y));
 }
 
 void QtOSGViewer::Zoom(float factor)
 {
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_Zoom, this, factor));
+    _PostToGUIThread(std::bind(&QtOSGViewer::_Zoom, this, factor));
 }
 
 void QtOSGViewer::_Zoom(float factor)
@@ -1851,7 +1851,7 @@ void QtOSGViewer::_Zoom(float factor)
 
 void QtOSGViewer::SetName(const string& name)
 {
-    _PostToGUIThread(boost::bind(&QtOSGViewer::_SetName, this, name));
+    _PostToGUIThread(std::bind(&QtOSGViewer::_SetName, this, name));
 }
 
 void QtOSGViewer::_SetName(const string& name)
@@ -2087,7 +2087,7 @@ void QtOSGViewer::_UpdateEnvironment(float fTimeElapsed)
     }
 }
 
-void QtOSGViewer::_PostToGUIThread(const boost::function<void()>& fn, bool block)
+void QtOSGViewer::_PostToGUIThread(const std::function<void()>& fn, bool block)
 {
     if( _nQuitMainLoop != -1 ) {
         // viewer quit, so anything posted won't get processed

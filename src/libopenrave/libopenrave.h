@@ -172,13 +172,13 @@ private:
 class CallOnDestruction
 {
 public:
-    CallOnDestruction(const boost::function<void()>& fn) : _fn(fn) {
+    CallOnDestruction(const std::function<void()>& fn) : _fn(fn) {
     }
     ~CallOnDestruction() {
         _fn();
     }
 private:
-    boost::function<void()> _fn;
+    std::function<void()> _fn;
 };
 
 #define SERIALIZATION_PRECISION 4

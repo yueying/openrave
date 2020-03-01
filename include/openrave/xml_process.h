@@ -19,16 +19,17 @@
 #include <openrave/user_data.h>
 #include <string>
 #include <list>
+#include <openrave/openrave_macros.h>
 
 namespace OpenRAVE
 {
-	class BaseXMLReader;
-	typedef std::shared_ptr<BaseXMLReader> BaseXMLReaderPtr;
-	typedef std::shared_ptr<BaseXMLReader const> BaseXMLReaderConstPtr;
-	class BaseXMLWriter;
-	typedef std::shared_ptr<BaseXMLWriter> BaseXMLWriterPtr;
-	typedef std::shared_ptr<BaseXMLWriter const> BaseXMLWriterConstPtr;
+	OPENRAVE_CLASS_FORWARD(BaseXMLReader);
+	OPENRAVE_CLASS_FORWARD(BaseXMLWriter);
+	OPENRAVE_CLASS_FORWARD(XMLReadable);
 
+	/// \brief a list of key-value pairs. It is possible for keys to repeat.
+	typedef std::list<std::pair<std::string, std::string> > AttributesList;
+	
 	/// base class for readable interfaces
 	class OPENRAVE_API XMLReadable : public UserData
 	{
@@ -50,12 +51,6 @@ namespace OpenRAVE
 	private:
 		std::string xml_id_;
 	};
-
-	typedef std::shared_ptr<XMLReadable> XMLReadablePtr;
-	typedef std::shared_ptr<XMLReadable const> XMLReadableConstPtr;
-
-	/// \brief a list of key-value pairs. It is possible for keys to repeat.
-	typedef std::list<std::pair<std::string, std::string> > AttributesList;
 
 	/// \brief base class for all xml readers. XMLReaders are used to process data from xml files.
 	///
@@ -101,10 +96,6 @@ namespace OpenRAVE
 		/// XML filename/resource used for this class (can be empty)
 		std::string file_name_;
 	};
-
-	typedef boost::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
-
-
 
 	/// \brief base class for writing to XML files.
 	///

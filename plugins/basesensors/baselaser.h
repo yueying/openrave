@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -124,16 +124,16 @@ public:
     }
 
     BaseLaser2DSensor(EnvironmentBasePtr penv) : SensorBase(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nProvides a simulated 2D laser range finder.\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nProvides a simulated 2D laser range finder.\n\
 \n\
 .. image:: ../../../images/interface_baselaser.jpg\n\
   :width: 400\n\
 ";
-        RegisterCommand("render",boost::bind(&BaseLaser2DSensor::_Render,this,_1,_2),
+        RegisterCommand("render",std::bind(&BaseLaser2DSensor::_Render,this,_1,_2),
                         "Set rendering of the plots (1 or 0).");
-        RegisterCommand("collidingbodies",boost::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
+        RegisterCommand("collidingbodies",std::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
                         "Returns the ids of the bodies that the laser beams have hit. The order is the same as the returned laser points.");
-        //        RegisterCommand("GatherData",boost::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
+        //        RegisterCommand("GatherData",std::bind(&BaseLaser2DSensor::_CollidingBodies,this,_1,_2),
         //                        "Controls whether to gather all laser data, or delete the old one after every new scan.");
         _pgeom.reset(new LaserGeomData());
         _pdata.reset(new LaserSensorData());
@@ -515,7 +515,7 @@ public:
     }
 
     BaseSpinningLaser2DSensor(EnvironmentBasePtr penv) : BaseLaser2DSensor(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nProvides a simulated spinning 2D laser range finder. Includes all the XML parameters from :ref:`sensor-baselaser2d` along with:\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nProvides a simulated spinning 2D laser range finder. Includes all the XML parameters from :ref:`sensor-baselaser2d` along with:\n\
 * spinaxis - the second axis to spin on\n\
 * spinpos - center of rotation of second spin axis\n\
 * spinspeed - how fast to spin in rad/s\n\

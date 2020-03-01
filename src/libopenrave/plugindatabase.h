@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
@@ -44,10 +44,10 @@
 
 #endif
 
-//#define INTERFACE_PREDELETER boost::bind(&RaveDatabase::_InterfaceDestroyCallbackShared,shared_from_this(),_1)
+//#define INTERFACE_PREDELETER std::bind(&RaveDatabase::_InterfaceDestroyCallbackShared,shared_from_this(),std::placeholders::_1)
 
-#define INTERFACE_PREDELETER boost::function<void(void const*)>()
-#define INTERFACE_POSTDELETER(name, plugin) boost::bind(&RaveDatabase::_InterfaceDestroyCallbackSharedPost,shared_from_this(),name, plugin)
+#define INTERFACE_PREDELETER std::function<void(void const*)>()
+#define INTERFACE_POSTDELETER(name, plugin) std::bind(&RaveDatabase::_InterfaceDestroyCallbackSharedPost,shared_from_this(),name, plugin)
 
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
@@ -65,7 +65,7 @@ class RaveDatabase : public std::enable_shared_from_this<RaveDatabase>
 {
     struct RegisteredInterface : public UserData
     {
-        RegisteredInterface(InterfaceType type, const std::string& name, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn, std::shared_ptr<RaveDatabase> database) : _type(type), _name(name), _createfn(createfn), _database(database) {
+        RegisteredInterface(InterfaceType type, const std::string& name, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn, std::shared_ptr<RaveDatabase> database) : _type(type), _name(name), _createfn(createfn), _database(database) {
         }
         virtual ~RegisteredInterface() {
             std::shared_ptr<RaveDatabase> database = _database.lock();
@@ -77,7 +77,7 @@ class RaveDatabase : public std::enable_shared_from_this<RaveDatabase>
 
         InterfaceType _type;
         std::string _name;
-        boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
+        std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
         std::list< std::weak_ptr<RegisteredInterface> >::iterator _iterator;
 protected:
         std::weak_ptr<RaveDatabase> _database;
@@ -430,7 +430,7 @@ protected:
 
     virtual bool Init(bool bLoadAllPlugins)
     {
-        _threadPluginLoader.reset(new boost::thread(boost::bind(&RaveDatabase::_PluginLoaderThread, this)));
+        _threadPluginLoader.reset(new boost::thread(std::bind(&RaveDatabase::_PluginLoaderThread, this)));
         std::vector<std::string> vplugindirs;
 #ifdef _WIN32
         const char* delim = ";";
@@ -540,7 +540,7 @@ protected:
             switch(type) {
             case PT_KinBody: {
                 pointer.reset(new KinBody(PT_KinBody,penv));
-                pointer->__strxmlid = ""; // don't set to KinBody since there's no officially registered interface
+                pointer->str_xml_id_ = ""; // don't set to KinBody since there's no officially registered interface
                 break;
             }
             case PT_PhysicsEngine: name = "GenericPhysicsEngine"; break;
@@ -585,9 +585,9 @@ protected:
                             }
                             else {
                                 pointer = InterfaceBasePtr(pointer.get(), utils::smart_pointer_deleter<InterfaceBasePtr>(pointer,INTERFACE_PREDELETER));
-                                pointer->__strpluginname = "__internal__";
-                                pointer->__strxmlid = name;
-                                //pointer->__plugin; // need to protect resources?
+                                pointer->plugin_name_ = "__internal__";
+                                pointer->str_xml_id_ = name;
+                                //pointer->plugin_; // need to protect resources?
                                 break;
                             }
                         }
@@ -613,9 +613,9 @@ protected:
                         }
                         else {
                             pointer = InterfaceBasePtr(pointer.get(), utils::smart_pointer_deleter<InterfaceBasePtr>(pointer,INTERFACE_PREDELETER, INTERFACE_POSTDELETER(name, *itplugin)));
-                            pointer->__strpluginname = (*itplugin)->ppluginname;
-                            pointer->__strxmlid = name;
-                            pointer->__plugin = *itplugin;
+                            pointer->plugin_name_ = (*itplugin)->ppluginname;
+                            pointer->str_xml_id_ = name;
+                            pointer->plugin_ = *itplugin;
                             break;
                         }
                     }
@@ -826,7 +826,7 @@ protected:
         }
     }
 
-    UserDataPtr RegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) {
+    UserDataPtr RegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const std::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) {
         BOOST_ASSERT(interfacehash != NULL && envhash != NULL);
         BOOST_ASSERT(!!createfn);
         BOOST_ASSERT(name.size()>0);

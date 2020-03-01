@@ -29,7 +29,7 @@ namespace OpenRAVE {
 class ChangeCallbackData : public UserData
 {
 public:
-    ChangeCallbackData(int properties, const boost::function<void()>& callback, KinBodyConstPtr pbody) : _properties(properties), _callback(callback), _pweakbody(pbody) {
+    ChangeCallbackData(int properties, const std::function<void()>& callback, KinBodyConstPtr pbody) : _properties(properties), _callback(callback), _pweakbody(pbody) {
     }
     virtual ~ChangeCallbackData() {
         KinBodyConstPtr pbody = _pweakbody.lock();
@@ -43,7 +43,7 @@ public:
 
     list< std::pair<uint32_t, list<UserDataWeakPtr>::iterator> > _iterators;
     int _properties;
-    boost::function<void()> _callback;
+    std::function<void()> _callback;
 protected:
     std::weak_ptr<KinBody const> _pweakbody;
 };
@@ -51,14 +51,14 @@ protected:
 class CallFunctionAtDestructor
 {
 public:
-    CallFunctionAtDestructor(const boost::function<void()>& fn) : _fn(fn) {
+    CallFunctionAtDestructor(const std::function<void()>& fn) : _fn(fn) {
     }
     ~CallFunctionAtDestructor() {
         _fn();
     }
 
 protected:
-    boost::function<void()> _fn;
+    std::function<void()> _fn;
 };
 
 typedef std::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
@@ -155,7 +155,7 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
         plink->_collision.Append(trimesh);
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_uri_ = uri;
     return true;
 }
 
@@ -197,7 +197,7 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         plink->_collision.Append(trimesh);
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_uri_ = uri;
     return true;
 }
 
@@ -226,7 +226,7 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
         plink->_collision.Append(trimesh);
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_uri_ = uri;
     return true;
 }
 
@@ -248,7 +248,7 @@ bool KinBody::InitFromTrimesh(const TriMesh& trimesh, bool visible, const std::s
     Link::GeometryPtr geom(new Link::Geometry(plink,info));
     plink->_vGeometries.push_back(geom);
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_uri_ = uri;
     return true;
 }
 
@@ -277,14 +277,14 @@ bool KinBody::InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr
         plink->_collision.Append(geom->GetCollisionMesh(),geom->GetTransform());
     }
     _veclinks.push_back(plink);
-    __struri = uri;
+    str_uri_ = uri;
     return true;
 }
 
 void KinBody::SetLinkGeometriesFromGroup(const std::string& geomname)
 {
     // need to call _PostprocessChangedParameters at the very end, even if exception occurs
-    CallFunctionAtDestructor callfn(boost::bind(&KinBody::_PostprocessChangedParameters, this, Prop_LinkGeometry));
+    CallFunctionAtDestructor callfn(std::bind(&KinBody::_PostprocessChangedParameters, this, Prop_LinkGeometry));
     FOREACHC(itlink, _veclinks) {
         std::vector<KinBody::GeometryInfoPtr>* pvinfos = NULL;
         if( geomname.size() == 0 ) {
@@ -341,7 +341,7 @@ bool KinBody::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, cons
         pjoint->_info = *rawinfo;
         _InitAndAddJoint(pjoint);
     }
-    __struri = uri;
+    str_uri_ = uri;
     return true;
 }
 
@@ -4694,7 +4694,7 @@ void KinBody::_PostprocessChangedParameters(uint32_t parameters)
 //            FOREACH(itgrabbed, mapcheckcollisions) {
 //                KinBodyPtr pgrabbedbody(itgrabbed->first->_pgrabbedbody);
 //                _RemoveAttachedBody(pgrabbedbody);
-//                CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
+//                CallOnDestruction destructionhook(std::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
 //                FOREACH(itlink, itgrabbed->second) {
 //                    if( pchecker->CheckCollision(*itlink, KinBodyConstPtr(pgrabbedbody)) ) {
 //                        itgrabbed->first->_listNonCollidingLinks.remove(*itlink);
@@ -4820,7 +4820,7 @@ ConfigurationSpecification KinBody::GetConfigurationSpecificationIndices(const s
     return spec;
 }
 
-UserDataPtr KinBody::RegisterChangeCallback(uint32_t properties, const boost::function<void()>&callback) const
+UserDataPtr KinBody::RegisterChangeCallback(uint32_t properties, const std::function<void()>&callback) const
 {
     ChangeCallbackDataPtr pdata(new ChangeCallbackData(properties,callback,shared_kinbody_const()));
     boost::unique_lock< boost::shared_mutex > lock(GetInterfaceMutex());

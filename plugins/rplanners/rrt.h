@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -28,13 +28,13 @@ public:
 
     RrtPlanner(EnvironmentBasePtr penv) : PlannerBase(penv), _treeForward(0)
     {
-        __description = "\
+        description_ = "\
 :Interface Author:  Rosen Diankov\n\n\
 Uses the Rapidly-Exploring Random Trees Algorithm.\n\
 ";
-        RegisterCommand("GetGoalIndex",boost::bind(&RrtPlanner<Node>::GetGoalIndexCommand,this,_1,_2),
+        RegisterCommand("GetGoalIndex",std::bind(&RrtPlanner<Node>::GetGoalIndexCommand,this,_1,_2),
                         "returns the goal index of the plan");
-        RegisterCommand("GetInitGoalIndices",boost::bind(&RrtPlanner<Node>::GetInitGoalIndicesCommand,this,_1,_2),
+        RegisterCommand("GetInitGoalIndices",std::bind(&RrtPlanner<Node>::GetInitGoalIndicesCommand,this,_1,_2),
                         "returns the start and goal indices");
         _filterreturn.reset(new ConstraintFilterReturn());
     }
@@ -268,9 +268,9 @@ class BirrtPlanner : public RrtPlanner<SimpleNode>
 public:
     BirrtPlanner(EnvironmentBasePtr penv) : RrtPlanner<SimpleNode>(penv), _treeBackward(1)
     {
-        __description += "Bi-directional RRTs. See\n\n\
+        description_ += "Bi-directional RRTs. See\n\n\
 - J.J. Kuffner and S.M. LaValle. RRT-Connect: An efficient approach to single-query path planning. In Proc. IEEE Int'l Conf. on Robotics and Automation (ICRA'2000), pages 995-1001, San Francisco, CA, April 2000.";
-        RegisterCommand("DumpTree", boost::bind(&BirrtPlanner::_DumpTreeCommand,this,_1,_2),
+        RegisterCommand("DumpTree", std::bind(&BirrtPlanner::_DumpTreeCommand,this,_1,_2),
                         "dumps the source and goal trees to $OPENRAVE_HOME/birrtdump.txt. The first N values are the DOF values, the last value is the parent index.\n\
 Some python code to display data::\n\
 \n\
@@ -663,10 +663,10 @@ class BasicRrtPlanner : public RrtPlanner<SimpleNode>
 public:
     BasicRrtPlanner(EnvironmentBasePtr penv) : RrtPlanner<SimpleNode>(penv)
     {
-        __description = "Rosen's Basic RRT planner";
+        description_ = "Rosen's Basic RRT planner";
         _fGoalBiasProb = dReal(0.05);
         _bOneStep = false;
-        RegisterCommand("DumpTree", boost::bind(&BasicRrtPlanner::_DumpTreeCommand,this,_1,_2),
+        RegisterCommand("DumpTree", std::bind(&BasicRrtPlanner::_DumpTreeCommand,this,_1,_2),
                         "dumps the source and goal trees to $OPENRAVE_HOME/basicrrtdump.txt. The first N values are the DOF values, the last value is the parent index.\n");
     }
     virtual ~BasicRrtPlanner() {
@@ -929,7 +929,7 @@ class ExplorationPlanner : public RrtPlanner<SimpleNode>
 {
 public:
     ExplorationPlanner(EnvironmentBasePtr penv) : RrtPlanner<SimpleNode>(penv) {
-        __description = ":Interface Author: Rosen Diankov\n\nRRT-based exploration planner";
+        description_ = ":Interface Author: Rosen Diankov\n\nRRT-based exploration planner";
     }
     virtual ~ExplorationPlanner() {
     }

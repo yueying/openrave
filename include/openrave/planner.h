@@ -212,7 +212,7 @@ private:
     ///
     /// cost = _costfn(config)
     /// \param cost the cost of being in the current state
-    typedef boost::function<dReal(const std::vector<dReal>&)> CostFn;
+    typedef std::function<dReal(const std::vector<dReal>&)> CostFn;
     CostFn _costfn;
 
     /** \brief Goal heuristic function.(optional)
@@ -222,7 +222,7 @@ private:
         Goal is complete when returns 0
         \param distance - distance to closest goal
      */
-    typedef boost::function<dReal(const std::vector<dReal>&)> GoalFn;
+    typedef std::function<dReal(const std::vector<dReal>&)> GoalFn;
     GoalFn _goalfn;
 
     /// \brief Distance metric between configuration spaces (optional)
@@ -230,7 +230,7 @@ private:
     /// distmetric(config1,config2)
     ///
     /// Two configurations are considered the same when function returns 0.
-    typedef boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> DistMetricFn;
+    typedef std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> DistMetricFn;
     DistMetricFn _distmetricfn;
 
     /** \brief Checks that all the constraints are satisfied between two configurations and passes in the velocity at each point.
@@ -254,7 +254,7 @@ private:
         \param filterreturn Optional argument that will hold the output information of the filter.
         \return \ref ConstraintFilterReturn::_returncode, which a combination of ConstraintFilterOptions
      */
-    typedef boost::function<int (const std::vector<dReal>&, const std::vector<dReal>&, const std::vector<dReal>&, const std::vector<dReal>&, dReal, IntervalType, int, ConstraintFilterReturnPtr)> CheckPathVelocityConstraintFn;
+    typedef std::function<int (const std::vector<dReal>&, const std::vector<dReal>&, const std::vector<dReal>&, const std::vector<dReal>&, dReal, IntervalType, int, ConstraintFilterReturnPtr)> CheckPathVelocityConstraintFn;
     CheckPathVelocityConstraintFn _checkpathvelocityconstraintsfn;
 
     /// \brief wrapper function calling _checkpathvelocityconstraintsfn with some default args. Returns true if function doesn't exist.
@@ -271,7 +271,7 @@ private:
         The dimension of the returned sample is the dimension of the configuration space.
         success = samplefn(newsample)
      */
-    typedef boost::function<bool (std::vector<dReal>&)> SampleFn;
+    typedef std::function<bool (std::vector<dReal>&)> SampleFn;
     SampleFn _samplefn;
 
     /** \brief Samples a valid goal configuration (optional).
@@ -281,7 +281,7 @@ private:
         The dimension of the returned sample is the dimension of the configuration space.
         success = samplegoalfn(newsample)
      */
-    typedef boost::function<bool (std::vector<dReal>&)> SampleGoalFn;
+    typedef std::function<bool (std::vector<dReal>&)> SampleGoalFn;
     SampleGoalFn _samplegoalfn;
 
     /** \brief Samples a valid initial configuration (optional).
@@ -291,7 +291,7 @@ private:
         The dimension of the returned sample is the dimension of the configuration space.
         success = sampleinitialfn(newsample)
      */
-    typedef boost::function<bool (std::vector<dReal>&)> SampleInitialFn;
+    typedef std::function<bool (std::vector<dReal>&)> SampleInitialFn;
     SampleInitialFn _sampleinitialfn;
 
     /** \brief Returns a random configuration around a neighborhood (optional).
@@ -303,7 +303,7 @@ private:
                           The distance metric can be arbitrary, but is usually PlannerParameters::pdistmetric.
         \return if sample was successfully generated return true, otherwise false
      */
-    typedef boost::function<bool (std::vector<dReal>&, const std::vector<dReal>&, dReal)> SampleNeighFn;
+    typedef std::function<bool (std::vector<dReal>&, const std::vector<dReal>&, dReal)> SampleNeighFn;
     SampleNeighFn _sampleneighfn;
 
     /** \brief Sets the state values of the robot. Default is active robot joints (mandatory).
@@ -314,14 +314,14 @@ private:
         \param options user-defined options. default is 0
         \return If ret == 0, values were set with no problems. Otherwise a non-zero error code is returned.
      */
-    typedef boost::function<int (const std::vector<dReal>&, int options)> SetStateValuesFn;
+    typedef std::function<int (const std::vector<dReal>&, int options)> SetStateValuesFn;
     SetStateValuesFn _setstatevaluesfn;
 
     /// \brief  calls _setstatevaluesfn. if it doesn't exist, tries calling the deprecated _setstatefn
     int SetStateValues(const std::vector<dReal>& values, int options=0) const;
 
     /// \brief Gets the state of the robot. Default is active robot joints (mandatory).
-    typedef boost::function<void (std::vector<dReal>&)> GetStateFn;
+    typedef std::function<void (std::vector<dReal>&)> GetStateFn;
     GetStateFn _getstatefn;
 
     /** \brief  Computes the difference of two states.
@@ -331,7 +331,7 @@ private:
         An explicit difference function is necessary for correct interpolation when there are circular joints.
         Default is regular subtraction.
      */
-    typedef boost::function<void (std::vector<dReal>&,const std::vector<dReal>&)> DiffStateFn;
+    typedef std::function<void (std::vector<dReal>&,const std::vector<dReal>&)> DiffStateFn;
     DiffStateFn _diffstatefn;
 
     /** \brief Adds a delta state to a curent state, acting like a next-nearest-neighbor function along a given direction.
@@ -587,7 +587,7 @@ public:
 
         \param progress planner progress information
      */
-    typedef boost::function<PlannerAction(const PlannerProgress&)> PlanCallbackFn;
+    typedef std::function<PlannerAction(const PlannerProgress&)> PlanCallbackFn;
 
     /** \brief register a function that is called periodically during the plan loop.
 

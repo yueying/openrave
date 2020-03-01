@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2009 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -267,7 +267,7 @@ public:
 
         list<Node*> _nodes;
         list<Node*> _dead;
-        boost::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _pDistMetric;
+        std::function<dReal(const std::vector<dReal>&, const std::vector<dReal>&)> _pDistMetric;
         dReal _fBestDist;         ///< valid after a call to GetNN
     };
 
@@ -280,7 +280,7 @@ public:
 
     RandomizedAStarPlanner(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nRandomized A*. A continuous version of A*. See:\n\
+        description_ = ":Interface Author: Rosen Diankov\n\nRandomized A*. A continuous version of A*. See:\n\
 Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf. on Intelligent Robots and Systems, October 2007.\"\n";
         bUseGauss = false;
         nIndex = 0;
@@ -320,9 +320,9 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
         RobotBase::RobotStateSaver savestate(_robot);
 
         if( !parameters->_goalfn )
-            parameters->_goalfn = boost::bind(&SimpleGoalMetric::Eval,std::shared_ptr<SimpleGoalMetric>(new SimpleGoalMetric(_robot)),_1);
+            parameters->_goalfn = std::bind(&SimpleGoalMetric::Eval,std::shared_ptr<SimpleGoalMetric>(new SimpleGoalMetric(_robot)),_1);
         if( !parameters->_costfn )
-            parameters->_costfn = boost::bind(&SimpleCostMetric::Eval,std::shared_ptr<SimpleCostMetric>(new SimpleCostMetric(_robot)),_1);
+            parameters->_costfn = std::bind(&SimpleCostMetric::Eval,std::shared_ptr<SimpleCostMetric>(new SimpleCostMetric(_robot)),_1);
 
         _vSampleConfig.resize(GetDOF());
         _jointIncrement.resize(GetDOF());

@@ -432,7 +432,7 @@ public:
     ///
     /// Two functions can be set, one to be called before check collision and one after.
     /// \param bCallAfterCheckCollision if set, function will be called after check collision functions.
-    virtual void SetUserCheckFunction(const boost::function<bool() >& usercheckfn, bool bCallAfterCheckCollision=false);
+    virtual void SetUserCheckFunction(const std::function<bool() >& usercheckfn, bool bCallAfterCheckCollision=false);
 
     /// \brief checks line collision. Uses the constructor's self-collisions
     virtual int Check(const std::vector<dReal>& q0, const std::vector<dReal>& q1, const std::vector<dReal>& dq0, const std::vector<dReal>& dq1, dReal timeelapsed, IntervalType interval, int options = 0xffff, ConstraintFilterReturnPtr filterreturn = ConstraintFilterReturnPtr());
@@ -462,7 +462,7 @@ protected:
     int _filtermask;
     int _torquelimitmode; ///< 1 if should use instantaneous max torque, 0 if should use nominal torque
     dReal _perturbation;
-    boost::array< boost::function<bool() >, 2> _usercheckfns;
+    boost::array< std::function<bool() >, 2> _usercheckfns;
 
     // for dynamics
     ConfigurationSpecification _specvel;
@@ -493,7 +493,7 @@ public:
         }
     }
 
-    inline void SetUserCheckFunction(const boost::function<bool() >& usercheckfn, bool bCallAfterCheckCollision=false) RAVE_DEPRECATED
+    inline void SetUserCheckFunction(const std::function<bool() >& usercheckfn, bool bCallAfterCheckCollision=false) RAVE_DEPRECATED
     {
         _constraint.SetUserCheckFunction(usercheckfn, bCallAfterCheckCollision);
     }

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>, Dmitry Berenson
 //
 // This file is part of OpenRAVE.
@@ -43,7 +43,7 @@ public:
 
     CollisionCheckerPQP(EnvironmentBasePtr penv) : CollisionCheckerBase(penv)
     {
-        __description = ":Interface Authors: Dmitry Berenson, Rosen Diankov\n\nPQP collision checker, slow but allows distance queries to objects.";
+        description_ = ":Interface Authors: Dmitry Berenson, Rosen Diankov\n\nPQP collision checker, slow but allows distance queries to objects.";
         _userdatakey = std::string("pqpcollision") + boost::lexical_cast<std::string>(this);
         _rel_err = 200.0;     //temporary change
         _abs_err = 0.001;       //temporary change
