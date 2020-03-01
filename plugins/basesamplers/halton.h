@@ -1,4 +1,4 @@
-// http://people.sc.fsu.edu/~jburkardt/cpp_src/halton/halton.html
+﻿// http://people.sc.fsu.edu/~jburkardt/cpp_src/halton/halton.html
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,7 @@ class HaltonSampler : public SpaceSamplerBase
 public:
     HaltonSampler(EnvironmentBasePtr penv, std::istream& sinput) : SpaceSamplerBase(penv)
     {
-        __description = ":Interface Author: John Burkardt\n\n\
+		description_ = ":Interface Author: John Burkardt\n\n\
 References:\n\n\
 1. John Halton, On the efficiency of certain quasi-random sequences of points in evaluating multi-dimensional integrals, Numerische Mathematik, Volume 2, 1960, pages 84-90.\n\n\
 2. John Halton, GB Smith, Algorithm 247: Radical-Inverse Quasi-Random Point Sequence, Communications of the ACM, Volume 7, 1964, pages 701-702.\n\n\

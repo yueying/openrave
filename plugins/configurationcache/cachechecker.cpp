@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2014 Alejandro Perez & Rosen Diankov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -150,7 +150,7 @@ public:
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         CollisionCheckerBase::Clone(preference, cloningoptions);
-        std::shared_ptr<CacheCollisionChecker const> clone = OPENRAVE_DYNAMIC_POINTER_CAST<CacheCollisionChecker const> (preference);
+        std::shared_ptr<CacheCollisionChecker const> clone = std::dynamic_pointer_cast<CacheCollisionChecker const> (preference);
 
         DestroyEnvironment();
 
