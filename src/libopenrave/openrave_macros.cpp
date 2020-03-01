@@ -13,29 +13,35 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-#include <openrave/config.h>
 #include <openrave/openrave_macros.h>
+#include <vector>
+#include <cstdarg>
 
 namespace OpenRAVE
 {
-	OPENRAVE_CLASS_FORWARD(CollisionReport);
-	OPENRAVE_CLASS_FORWARD(InterfaceBase);
-	OPENRAVE_CLASS_FORWARD(IkSolverBase);
-	OPENRAVE_CLASS_FORWARD(TrajectoryBase);
-	OPENRAVE_CLASS_FORWARD(ControllerBase);
-	OPENRAVE_CLASS_FORWARD(PlannerBase);
-	OPENRAVE_CLASS_FORWARD(RobotBase);
-	OPENRAVE_CLASS_FORWARD(ModuleBase);
-	OPENRAVE_CLASS_FORWARD(EnvironmentBase);
-	OPENRAVE_CLASS_FORWARD(KinBody);
-	OPENRAVE_CLASS_FORWARD(SensorSystemBase);
-	OPENRAVE_CLASS_FORWARD(PhysicsEngineBase);
-	OPENRAVE_CLASS_FORWARD(SensorBase);
-	OPENRAVE_CLASS_FORWARD(CollisionCheckerBase);
-	OPENRAVE_CLASS_FORWARD(ViewerBase);
-	OPENRAVE_CLASS_FORWARD(SpaceSamplerBase);
-	OPENRAVE_CLASS_FORWARD(IkParameterization);
-	OPENRAVE_CLASS_FORWARD(ConfigurationSpecification);
-	OPENRAVE_CLASS_FORWARD(IkReturn);
+	std::string format(const char *fmt, ...)
+	{
+		if (!fmt) return std::string("");
+
+		int result = -1, length = 2048;
+		std::vector<char> buffer;
+		while (result == -1)
+		{
+			buffer.resize(length + 10);
+
+			va_list args;
+			va_start(args, fmt);
+#if defined(_MSC_VER)
+			result = ::vsnprintf_s(&buffer[0], length, _TRUNCATE, fmt, args);
+#else
+			result = ::vsnprintf(&buffer[0], length, fmt, args);
+#endif
+			va_end(args);
+
+			if (result >= length) result = -1;
+			length *= 2;
+		}
+		std::string s(&buffer[0]);
+		return s;
+	}
 }

@@ -22,6 +22,11 @@
 
 namespace OpenRAVE
 {
+#ifdef _WIN32
+	const char s_filesep = '\\';
+#else
+	const char s_filesep = '/';
+#endif
 	/// there is only once global openrave state. It is created when openrave
 /// is first used, and destroyed when the program quits or RaveDestroy is called.
 	class RaveGlobal : private boost::noncopyable, public std::enable_shared_from_this<RaveGlobal>, public UserData

@@ -23,7 +23,7 @@
 #define OPENRAVE_SENSOR_H
 
 #include <openrave/config.h>
-#include <openrave/interface.h>
+#include <openrave/interface_base.h>
 #include <openrave/openrave.h>
 
 namespace OpenRAVE 
@@ -56,7 +56,8 @@ public:
     class OPENRAVE_API SensorData
     {
 public:
-        virtual ~SensorData() {
+        virtual ~SensorData()
+		{
         }
         virtual SensorType GetType() = 0;
 

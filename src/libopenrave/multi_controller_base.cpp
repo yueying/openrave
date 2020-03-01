@@ -1,4 +1,5 @@
-﻿// Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
+﻿// -*- coding: utf-8 -*-
+// Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -13,9 +14,18 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#include <openrave/rave_global.h>
+
+#include <openrave/multi_controller_base.h>
 
 namespace OpenRAVE
 {
-	std::shared_ptr<RaveGlobal> RaveGlobal::_state;
+	MultiControllerBase::MultiControllerBase(EnvironmentBasePtr penv)
+		: ControllerBase(penv) 
+	{
+	}
+
+	MultiControllerBase::~MultiControllerBase() 
+	{
+	}
+
 }

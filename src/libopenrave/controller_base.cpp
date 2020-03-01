@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -16,19 +16,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "libopenrave.h"
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
-ControllerBase::ControllerBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Controller, penv) {
+ControllerBase::ControllerBase(EnvironmentBasePtr penv) 
+	: InterfaceBase(PT_Controller, penv) 
+{
 }
-ControllerBase::~ControllerBase() {
+ControllerBase::~ControllerBase()
+{
 }
-
-MultiControllerBase::MultiControllerBase(EnvironmentBasePtr penv) : ControllerBase(penv) {
-}
-
-MultiControllerBase::~MultiControllerBase() {
-}
-
 
 //void RobotBase::GetControlMaxTorques(std::vector<dReal>& maxtorques) const
 //{

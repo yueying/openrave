@@ -22,6 +22,7 @@
 #include <boost/function.hpp>
 #include <openrave/type.h>
 #include <openrave/numerical.h>
+#include <openrave/openrave.h>
 
 namespace OpenRAVE
 {

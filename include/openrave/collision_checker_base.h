@@ -22,7 +22,10 @@
 #ifndef OPENRAVE_COLLISIONCHECKER_H
 #define OPENRAVE_COLLISIONCHECKER_H
 
-namespace OpenRAVE {
+#include <openrave/collision_report.h>
+
+namespace OpenRAVE 
+{
 
 /// options for collision checker
 enum CollisionOptions
@@ -50,66 +53,23 @@ enum CollisionAction
     CA_Ignore = 1, ///< do nothing
 };
 
-/// \brief Holds information about a particular collision that occured.
-class OPENRAVE_API CollisionReport
-{
-public:
-    class OPENRAVE_API CONTACT
-    {
-public:
-        CONTACT() : depth(0) {
-        }
-        CONTACT(const Vector &p, const Vector &n, dReal d) : pos(p), norm(n) {
-            depth = d;
-        }
-
-        Vector pos;  ///< where the contact occured
-        Vector norm; ///< the normals of the faces
-        dReal depth; ///< the penetration depth, positive means the surfaces are penetrating, negative means the surfaces are not colliding (used for distance queries)
-    };
-
-    CollisionReport() {
-        nKeepPrevious = 0;
-        Reset();
-    }
-
-    /// \brief resets the report structure for the next collision call
-    ///
-    /// depending on nKeepPrevious will keep previous data.
-    virtual void Reset(int coloptions = 0);
-    virtual std::string __str__() const;
-
-    KinBody::LinkConstPtr plink1, plink2; ///< the colliding links if a collision involves a bodies. Collisions do not always occur with 2 bodies like ray collisions, so these fields can be empty.
-
-    std::vector<std::pair<KinBody::LinkConstPtr, KinBody::LinkConstPtr> > vLinkColliding; ///< all link collision pairs. Set when CO_AllCollisions is enabled.
-
-    std::vector<CONTACT> contacts; ///< the convention is that the normal will be "out" of plink1's surface. Filled if CO_UseContacts option is set.
-
-    int options; ///< the options that the CollisionReport was called with. It is overwritten by the options set on the collision checker writing the report
-
-    dReal minDistance; ///< minimum distance from last query, filled if CO_Distance option is set
-    int numWithinTol; ///< number of objects within tolerance of this object, filled if CO_UseTolerance option is set
-
-    uint8_t nKeepPrevious; ///< if 1, will keep all previous data when resetting the collision checker. otherwise will reset
-
-    //KinBody::Link::GeomConstPtr pgeom1, pgeom2; ///< the specified geometries hit for the given links
-};
-
-typedef CollisionReport COLLISIONREPORT RAVE_DEPRECATED;
-
 /** \brief <b>[interface]</b> Responsible for all collision checking queries of the environment. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_collisionchecker.
     \ingroup interfaces
  */
 class OPENRAVE_API CollisionCheckerBase : public InterfaceBase
 {
 public:
-    CollisionCheckerBase(EnvironmentBasePtr penv) : InterfaceBase(PT_CollisionChecker, penv) {
+    CollisionCheckerBase(EnvironmentBasePtr penv) 
+		: InterfaceBase(PT_CollisionChecker, penv) 
+	{
     }
-    virtual ~CollisionCheckerBase() {
+    virtual ~CollisionCheckerBase() 
+	{
     }
 
     /// \brief return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
+    static inline InterfaceType GetInterfaceTypeStatic() 
+	{
         return PT_CollisionChecker;
     }
 
@@ -162,36 +122,43 @@ public:
     virtual bool CheckCollision(KinBodyConstPtr pbody1, CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief checks collision between two bodies. Attached bodies are respected. If CO_ActiveDOFs is set, will only check affected links of the pbody1.
-    virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, CollisionReportPtr report = CollisionReportPtr())=0;
+    virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, 
+		CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief checks collision of a link and a scene. Attached bodies are ignored. CO_ActiveDOFs option is ignored.
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief checks collision of two links. Attached bodies are ignored. CO_ActiveDOFs option is ignored.
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink1, KinBody::LinkConstPtr plink2, CollisionReportPtr report = CollisionReportPtr())=0;
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink1, KinBody::LinkConstPtr plink2, 
+		CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief checks collision of a link and a body. Attached bodies for pbody are respected. CO_ActiveDOFs option is ignored.
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr())=0;
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink, KinBodyConstPtr pbody, 
+		CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief checks collision of a link and a scene. Attached bodies are ignored. CO_ActiveDOFs option is ignored.
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report = CollisionReportPtr())=0;
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr>& vbodyexcluded,
+		const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief checks collision of a body and a scene. Attached bodies are respected. If CO_ActiveDOFs is set, will only check affected links of pbody.
-    virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report = CollisionReportPtr())=0;
+    virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded,
+		const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report = CollisionReportPtr())=0;
 
     /// \brief Check collision with a link and a ray with a specified length. CO_ActiveDOFs option is ignored.
     ///
     /// \param ray holds the origin and direction. The length of the ray is the length of the direction.
     /// \param plink the link to collide with
     /// \param[out] report [optional] collision report to be filled with data about the collision. If a body was hit, CollisionReport::plink1 contains the hit link pointer.
-    virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr()) = 0;
+    virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink,
+		CollisionReportPtr report = CollisionReportPtr()) = 0;
 
     /// \brief Check collision with a link and a ray with a specified length.
     ///
     /// \param ray holds the origin and direction. The length of the ray is the length of the direction.
     /// \param pbody the link to collide with. If CO_ActiveDOFs is set, will only check affected links of the body.
     /// \param[out] report [optional] collision report to be filled with data about the collision. If a body was hit, CollisionReport::plink1 contains the hit link pointer.
-    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) = 0;
+    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, 
+		CollisionReportPtr report = CollisionReportPtr()) = 0;
 
     /// \brief Check collision with a body and a ray with a specified length. CO_ActiveDOFs option is ignored.
     ///
@@ -205,20 +172,23 @@ public:
     /// \param trimesh Holds a dynamic triangle mesh to check collision with the body.
     /// \param pbody the link to collide with. If CO_ActiveDOFs is set, will only check affected links of the body.
     /// \param[out] report [optional] collision report to be filled with data about the collision. If a body was hit, CollisionReport::plink1 contains the hit link pointer.
-    virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody, 
+		CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \brief Check collision with a triangle mesh and the entire scene
     ///
     /// \param trimesh Holds a dynamic triangle mesh to check collision with the body.
     /// \param[out] report [optional] collision report to be filled with data about the collision. If a body was hit, CollisionReport::plink1 contains the hit link pointer.
-    virtual bool CheckCollision(const TriMesh& trimesh, CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual bool CheckCollision(const TriMesh& trimesh, 
+		CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \brief Check collision with a dummy box and the entire scene
     ///
     /// \param ab box to check collision with. The box is transformed by aabbPose
     /// \param aabbPose the pose of the box
     /// \param[out] report [optional] collision report to be filled with data about the collision. If a body was hit, CollisionReport::plink1 contains the hit link pointer.
-    virtual bool CheckCollision(const AABB& ab, const Transform& aabbPose, CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual bool CheckCollision(const AABB& ab, const Transform& aabbPose,
+		CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \brief Check collision with a dummy box and a list of bodies
     ///
@@ -226,30 +196,36 @@ public:
     /// \param aabbPose the pose of the box
     /// \param bodies vector of bodies to check collision with the dummy AABB
     /// \param[out] report [optional] collision report to be filled with data about the collision. If a body was hit, CollisionReport::plink1 contains the hit link pointer.
-    virtual bool CheckCollision(const AABB& ab, const Transform& aabbPose, const std::vector<KinBodyConstPtr>& vbodies, CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual bool CheckCollision(const AABB& ab, const Transform& aabbPose, 
+		const std::vector<KinBodyConstPtr>& vbodies, 
+		CollisionReportPtr report = CollisionReportPtr()) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \brief Checks self collision only with the links of the passed in body.
     ///
     /// Only checks KinBody::GetNonAdjacentLinks(), Links that are joined together are ignored.
     /// \param[in] pbody The body to check self-collision for
     /// \param[out] report [optional] collision report to be filled with data about the collision.
-    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) = 0;
+    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody,
+		CollisionReportPtr report = CollisionReportPtr()) = 0;
 
     /// \brief Checks self collision of the link with the rest of the links with its parent
     ///
     /// Only checks KinBody::GetNonAdjacentLinks(), Links that are joined together are ignored.
     /// \param[out] report [optional] collision report to be filled with data about the collision.
-    virtual bool CheckStandaloneSelfCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr()) = 0;
+    virtual bool CheckStandaloneSelfCollision(KinBody::LinkConstPtr plink, 
+		CollisionReportPtr report = CollisionReportPtr()) = 0;
 
     /// \deprecated (13/04/09)
-    virtual bool CheckSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) RAVE_DEPRECATED
+    virtual bool CheckSelfCollision(KinBodyConstPtr pbody, 
+		CollisionReportPtr report = CollisionReportPtr()) RAVE_DEPRECATED
     {
         //RAVELOG_WARN("CollisionCheckerBase::CheckSelfCollision has been deprecated, please use CollisionCheckerBase::CheckStandaloneSelfCollision\n");
         return CheckStandaloneSelfCollision(pbody,report);
     }
 
     /// \deprecated (13/04/09)
-    virtual bool CheckSelfCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr()) RAVE_DEPRECATED
+    virtual bool CheckSelfCollision(KinBody::LinkConstPtr plink, 
+		CollisionReportPtr report = CollisionReportPtr()) RAVE_DEPRECATED
     {
         //RAVELOG_WARN("CollisionCheckerBase::CheckSelfCollision has been deprecated, please use CollisionCheckerBase::CheckStandaloneSelfCollision\n");
         return CheckStandaloneSelfCollision(plink,report);
@@ -266,7 +242,8 @@ protected:
     }
 
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_COLLISIONCHECKER_HASH;
     }
 
@@ -307,13 +284,18 @@ typedef std::shared_ptr<CollisionOptionsStateSaver> CollisionOptionsStateSaverPt
 class OPENRAVE_API CollisionReportKeepSaver
 {
 public:
-    CollisionReportKeepSaver(CollisionReportPtr preport) : _report(preport) {
-        if( !!preport ) {
+    CollisionReportKeepSaver(CollisionReportPtr preport) 
+		: _report(preport) 
+	{
+        if( !!preport )
+		{
             _nKeepPrevious = preport->nKeepPrevious;
         }
     }
-    virtual ~CollisionReportKeepSaver() {
-        if( !!_report ) {
+    virtual ~CollisionReportKeepSaver() 
+	{
+        if( !!_report ) 
+		{
             _report->nKeepPrevious = _nKeepPrevious;
         }
     }

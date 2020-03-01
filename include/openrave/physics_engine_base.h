@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -14,15 +14,17 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-/** \file physicsengine.h
+/** \file physics_engine_base.h
     \brief Physics engine related definitions.
 
     Automatically included with \ref openrave.h
  */
 #ifndef OPENRAVE_PHYSICSENGINE_H
 #define OPENRAVE_PHYSICSENGINE_H
+#include <openrave/openrave.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /// basic options for physics engine
 enum PhysicsEngineOptions
@@ -154,7 +156,8 @@ protected:
     }
 
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_PHYSICSENGINE_HASH;
     }
 };

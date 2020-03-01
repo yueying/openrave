@@ -14,29 +14,42 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-/** \file   interface.h
+/** \file   interface_base.h
 	\brief  Base interface definition that all exported interfaces derive from.
 
 	Automatically included with \ref openrave.h
  */
-#ifndef OPENRAVE_INTERFACE_BASE
-#define OPENRAVE_INTERFACE_BASE
+#ifndef OPENRAVE_INTERFACE_BASE_
+#define OPENRAVE_INTERFACE_BASE_
 
 #if OPENRAVE_RAPIDJSON
 #include <rapidjson/document.h>
 #endif // OPENRAVE_RAPIDJSON
+#include <openrave/xml_process.h>
+#include <openrave/environment_base.h>
 
 namespace OpenRAVE
 {
-	class XMLReadable;
-	typedef std::shared_ptr<XMLReadable> XMLReadablePtr;
-	typedef std::shared_ptr<XMLReadable const> XMLReadableConstPtr;
-	class BaseXMLReader;
-	typedef std::shared_ptr<BaseXMLReader> BaseXMLReaderPtr;
-	typedef std::shared_ptr<BaseXMLReader const> BaseXMLReaderConstPtr;
-	class BaseXMLWriter;
-	typedef std::shared_ptr<BaseXMLWriter> BaseXMLWriterPtr;
-	typedef std::shared_ptr<BaseXMLWriter const> BaseXMLWriterConstPtr;
+	/// \brief Enumeration of all the interfaces.
+	enum InterfaceType
+	{
+		PT_Planner = 1, ///< describes \ref PlannerBase interface
+		PT_Robot = 2, ///< describes \ref RobotBase interface
+		PT_SensorSystem = 3, ///< describes \ref SensorSystemBase interface
+		PT_Controller = 4, ///< describes \ref ControllerBase interface
+		PT_Module = 5, ///< describes \ref ModuleBase interface
+		PT_ProblemInstance = 5, ///< describes \ref ModuleBase interface
+		PT_IkSolver = 6, ///< describes \ref IkSolverBase interface
+		PT_InverseKinematicsSolver = 6, ///< describes \ref IkSolverBase interface
+		PT_KinBody = 7, ///< describes \ref KinBody
+		PT_PhysicsEngine = 8, ///< describes \ref PhysicsEngineBase
+		PT_Sensor = 9, ///< describes \ref SensorBase
+		PT_CollisionChecker = 10, ///< describes \ref CollisionCheckerBase
+		PT_Trajectory = 11, ///< describes \ref TrajectoryBase
+		PT_Viewer = 12, ///< describes \ref ViewerBase
+		PT_SpaceSampler = 13, ///< describes \ref SamplerBase
+		PT_NumberOfInterfaces = 13 ///< number of interfaces, do not forget to update
+	};
 
 	/// serialization options for interfaces
 	enum SerializationOptions
@@ -71,23 +84,27 @@ namespace OpenRAVE
 		/// set internally by RaveDatabase <b>[multi-thread safe]</b>
 		/// \return the unique identifier that describes this class type, case is ignored
 		/// should be the same id used to create the object
-		inline const std::string& GetXMLId() const {
+		inline const std::string& GetXMLId() const 
+		{
 			return __strxmlid;
 		}
 
 		/// set internally by RaveDatabase <b>[multi-thread safe]</b>
 		/// \return the pluginname this interface was loaded from
-		inline const std::string& GetPluginName() const {
+		inline const std::string& GetPluginName() const 
+		{
 			return __strpluginname;
 		}
 
 		/// \return The environment that this interface is attached to. <b>[multi-thread safe]</b>
-		inline EnvironmentBasePtr GetEnv() const {
+		inline EnvironmentBasePtr GetEnv() const 
+		{
 			return __penv;
 		}
 
 		/// \brief Returns the raw map reference, this is \b not multithread safe and the GetInterfaceMutex should be locked before using.
-		inline const READERSMAP& GetReadableInterfaces() const {
+		inline const READERSMAP& GetReadableInterfaces() const
+		{
 			return __mapReadableInterfaces;
 		}
 
@@ -98,12 +115,14 @@ namespace OpenRAVE
 		virtual XMLReadablePtr SetReadableInterface(const std::string& xmltag, XMLReadablePtr readable);
 
 		/// \brief Documentation of the interface in reStructuredText format. See \ref writing_plugins_doc. <b>[multi-thread safe]</b>
-		virtual const std::string& GetDescription() const {
+		virtual const std::string& GetDescription() const 
+		{
 			return __description;
 		}
 
 		/// \brief sets a description <b>[multi-thread safe]</b>
-		virtual void SetDescription(const std::string& description) {
+		virtual void SetDescription(const std::string& description)
+		{
 			__description = description;
 		}
 
@@ -119,17 +138,21 @@ namespace OpenRAVE
 		virtual bool RemoveUserData(const std::string& key) const;
 
 		/// \deprecated (12/12/11)
-		virtual void SetUserData(UserDataPtr data) RAVE_DEPRECATED {
+		virtual void SetUserData(UserDataPtr data) RAVE_DEPRECATED 
+		{
 			SetUserData(std::string(), data);
 		}
 
 		/// \brief the URI used to load the interface. <b>[multi-thread safe]</b>
 		///
 		/// Sometimes the URI could hold special markers like "#" like in COLLADA files in order to target objects insides a particular file.
-		virtual const std::string& GetURI() const {
+		virtual const std::string& GetURI() const 
+		{
 			return __struri;
 		}
-		virtual const std::string& GetXMLFilename() const {
+
+		virtual const std::string& GetXMLFilename() const 
+		{
 			return __struri;
 		}
 
@@ -144,7 +167,6 @@ namespace OpenRAVE
 		virtual bool SupportsCommand(const std::string& cmd);
 
 #if OPENRAVE_RAPIDJSON
-
 		/// \brief return true if the command is supported
 		virtual bool SupportsJSONCommand(const std::string& cmd);
 
@@ -169,10 +191,12 @@ namespace OpenRAVE
 		///
 		/// This function should not be overridden by the user, therefore it isn't virtual.
 		/// It is is slower than \ref SendCommand since it has to cast the strings to stringstreams.
-		inline bool SendCommand(std::string& output, const std::string& input) {
+		inline bool SendCommand(std::string& output, const std::string& input)
+		{
 			std::stringstream soutput, sinput(input);
 			bool bSuccess = SendCommand(soutput, sinput);
-			if (bSuccess) {
+			if (bSuccess) 
+			{
 				output = soutput.str();
 			}
 			return bSuccess;
@@ -228,9 +252,13 @@ namespace OpenRAVE
 		class OPENRAVE_API InterfaceCommand
 		{
 		public:
-			InterfaceCommand() {
+			InterfaceCommand() 
+			{
 			}
-			InterfaceCommand(InterfaceCommandFn newfn, const std::string& newhelp) : fn(newfn), help(newhelp) {
+
+			InterfaceCommand(InterfaceCommandFn newfn, const std::string& newhelp)
+				: fn(newfn), help(newhelp) 
+			{
 			}
 			InterfaceCommandFn fn; ///< command function to run
 			std::string help; ///< help string explaining command arguments
@@ -258,9 +286,12 @@ namespace OpenRAVE
 		class OPENRAVE_API InterfaceJSONCommand
 		{
 		public:
-			InterfaceJSONCommand() {
+			InterfaceJSONCommand() 
+			{
 			}
-			InterfaceJSONCommand(InterfaceJSONCommandFn newfn, const std::string& newhelp) : fn(newfn), help(newhelp) {
+			InterfaceJSONCommand(InterfaceJSONCommandFn newfn, const std::string& newhelp)
+				: fn(newfn), help(newhelp) 
+			{
 			}
 			InterfaceJSONCommandFn fn; ///< command function to run
 			std::string help; ///< help string explaining command arguments
@@ -283,7 +314,8 @@ namespace OpenRAVE
 		std::string __description;     /// \see GetDescription()
 		std::string __struri; ///< \see GetURI
 
-		virtual boost::shared_mutex& GetInterfaceMutex() const {
+		virtual boost::shared_mutex& GetInterfaceMutex() const 
+		{
 			return _mutexInterface;
 		}
 
@@ -335,4 +367,4 @@ namespace OpenRAVE
 
 } // end namespace OpenRAVE
 
-#endif
+#endif //OPENRAVE_INTERFACE_BASE_

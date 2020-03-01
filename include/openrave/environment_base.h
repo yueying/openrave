@@ -22,8 +22,9 @@
 #ifndef  OPENRAVE_ENVIRONMENTBASE_H
 #define  OPENRAVE_ENVIRONMENTBASE_H
 
-#include <openrave/tri_mesh.h>
+#include <openrave/type.h>
 #include <openrave/interfacehashes.h>
+#include <openrave/tri_mesh.h>
 
 namespace OpenRAVE
 {

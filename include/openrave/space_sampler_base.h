@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-/** \file spacesampler.h
+/** \file space_sampler_base.h
     \brief Sampling definitions.
 
     Automatically included with \ref openrave.h
@@ -22,11 +22,13 @@
 #ifndef OPENRAVE_SPACESAMPLER_H
 #define OPENRAVE_SPACESAMPLER_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /// \brief The lower sixteen bits specify the boundary confitions of intervals for sampling. The upper sixteen bits
 /// specify interpolation mode (currently specifically for the Check function).
-enum IntervalType {
+enum IntervalType 
+{
     // Interval type (lower sixteen bits)
     IT_Open=0, ///< (a,b)
     IT_OpenStart=1, ///< (a,b]
@@ -39,7 +41,8 @@ enum IntervalType {
     IT_InterpolationMask=0xffff0000,
 };
 
-enum SampleDataType {
+enum SampleDataType 
+{
     SDT_Real=1,
     SDT_Uint32=2,
 };
@@ -52,13 +55,16 @@ typedef boost::function<int (std::vector<dReal>&,const std::vector<dReal>&, int)
 class OPENRAVE_API SpaceSamplerBase :  public InterfaceBase
 {
 public:
-    SpaceSamplerBase(EnvironmentBasePtr penv) : InterfaceBase(PT_SpaceSampler, penv) {
+    SpaceSamplerBase(EnvironmentBasePtr penv) : InterfaceBase(PT_SpaceSampler, penv) 
+	{
     }
-    virtual ~SpaceSamplerBase() {
+    virtual ~SpaceSamplerBase() 
+	{
     }
 
     /// \brief return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
+    static inline InterfaceType GetInterfaceTypeStatic() 
+	{
         return PT_SpaceSampler;
     }
 
@@ -165,10 +171,12 @@ public:
     virtual UserDataPtr RegisterStatusCallback(const StatusCallbackFn& callbackfn);
 
 protected:
-    inline SpaceSamplerBasePtr shared_sampler() {
+    inline SpaceSamplerBasePtr shared_sampler() 
+	{
         return std::static_pointer_cast<SpaceSamplerBase>(shared_from_this());
     }
-    inline SpaceSamplerBaseConstPtr shared_sampler_const() const {
+    inline SpaceSamplerBaseConstPtr shared_sampler_const() const 
+	{
         return std::static_pointer_cast<SpaceSamplerBase const>(shared_from_this());
     }
 
@@ -176,7 +184,8 @@ protected:
     virtual int _CallStatusFunctions(int sampleiteration);
 
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_SPACESAMPLER_HASH;
     }
 

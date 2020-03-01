@@ -104,29 +104,7 @@ namespace OpenRAVE
 
 	typedef boost::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
 
-	/// \brief reads until the tag ends
-	class OPENRAVE_API DummyXMLReader : public BaseXMLReader
-	{
-	public:
-		DummyXMLReader(const std::string& fieldname, const std::string& parentname,
-			std::shared_ptr<std::ostream> osrecord = std::shared_ptr<std::ostream>());
-		virtual ProcessElement startElement(const std::string& name, const AttributesList& atts);
-		virtual bool endElement(const std::string& name);
-		virtual void characters(const std::string& ch);
-		const std::string& GetFieldName() const
-		{
-			return _fieldname;
-		}
-		virtual std::shared_ptr<std::ostream> GetStream() const
-		{
-			return _osrecord;
-		}
-	private:
-		std::string _parentname;     /// XML filename
-		std::string _fieldname;
-		std::shared_ptr<std::ostream> _osrecord;     ///< used to store the xml data
-		std::shared_ptr<BaseXMLReader> _pcurreader;
-	};
+
 
 	/// \brief base class for writing to XML files.
 	///

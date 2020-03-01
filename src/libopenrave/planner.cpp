@@ -19,6 +19,7 @@
 #include <openrave/planningutils.h>
 
 #include <openrave/openravejson.h>
+#include <openrave/dummy_xml_reader.h>
 
 namespace OpenRAVE {
 

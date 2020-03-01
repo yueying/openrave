@@ -21,10 +21,9 @@
 #define OPENRAVE_H
 
 #include <cstdio>
-#include <stdarg.h>
+#include <cstdarg>
 #include <cstring>
 #include <cstdlib>
-
 #include <cstdint>
 
 #ifdef _MSC_VER
@@ -52,13 +51,14 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <memory>
 
 // QTBUG-22829 alternative workaround
 #ifndef Q_MOC_RUN
 
 #include <boost/version.hpp>
 #include <boost/function.hpp>
-#include <memory>
+
 #include <boost/tuple/tuple.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/mutex.hpp>
@@ -79,7 +79,6 @@
 #define RAVE_DEPRECATED
 #endif
 
-#include <openrave/smart_ptr.h>
 
 /// The entire %OpenRAVE library
 namespace OpenRAVE {
@@ -100,6 +99,7 @@ namespace OpenRAVE {
 #include <openrave/xml_process.h>
 #include <openrave/configuration_specification.h>
 #include <openrave/ik_parameterization.h>
+#include <openrave/openrave_macros.h>
 
 namespace OpenRAVE 
 {
@@ -131,8 +131,6 @@ public:
     }
 };
 
-
-
 /// \brief user data that can serialize/deserialize itself
 class OPENRAVE_API SerializableData : public UserData
 {
@@ -151,99 +149,8 @@ typedef std::shared_ptr<SerializableData> SerializableDataPtr;
 typedef std::weak_ptr<SerializableData> SerializableDataWeakPtr;
 
 
-/// \brief Enumeration of all the interfaces.
-enum InterfaceType
-{
-    PT_Planner=1, ///< describes \ref PlannerBase interface
-    PT_Robot=2, ///< describes \ref RobotBase interface
-    PT_SensorSystem=3, ///< describes \ref SensorSystemBase interface
-    PT_Controller=4, ///< describes \ref ControllerBase interface
-    PT_Module=5, ///< describes \ref ModuleBase interface
-    PT_ProblemInstance=5, ///< describes \ref ModuleBase interface
-    PT_IkSolver=6, ///< describes \ref IkSolverBase interface
-    PT_InverseKinematicsSolver=6, ///< describes \ref IkSolverBase interface
-    PT_KinBody=7, ///< describes \ref KinBody
-    PT_PhysicsEngine=8, ///< describes \ref PhysicsEngineBase
-    PT_Sensor=9, ///< describes \ref SensorBase
-    PT_CollisionChecker=10, ///< describes \ref CollisionCheckerBase
-    PT_Trajectory=11, ///< describes \ref TrajectoryBase
-    PT_Viewer=12, ///< describes \ref ViewerBase
-    PT_SpaceSampler=13, ///< describes \ref SamplerBase
-    PT_NumberOfInterfaces=13 ///< number of interfaces, do not forget to update
-};
-
-class CollisionReport;
-class InterfaceBase;
-class IkSolverBase;
-class TrajectoryBase;
-class ControllerBase;
-class PlannerBase;
-class RobotBase;
-class ModuleBase;
-class EnvironmentBase;
-class KinBody;
-class SensorSystemBase;
-class PhysicsEngineBase;
-class SensorBase;
-class CollisionCheckerBase;
-class ViewerBase;
-class SpaceSamplerBase;
 class IkParameterization;
 class ConfigurationSpecification;
-class IkReturn;
-
-typedef std::shared_ptr<CollisionReport> CollisionReportPtr;
-typedef std::shared_ptr<CollisionReport const> CollisionReportConstPtr;
-typedef std::shared_ptr<InterfaceBase> InterfaceBasePtr;
-typedef std::shared_ptr<InterfaceBase const> InterfaceBaseConstPtr;
-typedef std::weak_ptr<InterfaceBase> InterfaceBaseWeakPtr;
-typedef std::shared_ptr<KinBody> KinBodyPtr;
-typedef std::shared_ptr<KinBody const> KinBodyConstPtr;
-typedef std::weak_ptr<KinBody> KinBodyWeakPtr;
-typedef std::shared_ptr<RobotBase> RobotBasePtr;
-typedef std::shared_ptr<RobotBase const> RobotBaseConstPtr;
-typedef std::weak_ptr<RobotBase> RobotBaseWeakPtr;
-typedef std::shared_ptr<CollisionCheckerBase> CollisionCheckerBasePtr;
-typedef std::shared_ptr<CollisionCheckerBase const> CollisionCheckerBaseConstPtr;
-typedef std::weak_ptr<CollisionCheckerBase> CollisionCheckerBaseWeakPtr;
-typedef std::shared_ptr<ControllerBase> ControllerBasePtr;
-typedef std::shared_ptr<ControllerBase const> ControllerBaseConstPtr;
-typedef std::weak_ptr<ControllerBase> ControllerBaseWeakPtr;
-typedef std::shared_ptr<IkSolverBase> IkSolverBasePtr;
-typedef std::shared_ptr<IkSolverBase const> IkSolverBaseConstPtr;
-typedef std::weak_ptr<IkSolverBase> IkSolverBaseWeakPtr;
-typedef std::shared_ptr<PhysicsEngineBase> PhysicsEngineBasePtr;
-typedef std::shared_ptr<PhysicsEngineBase const> PhysicsEngineBaseConstPtr;
-typedef std::weak_ptr<PhysicsEngineBase> PhysicsEngineBaseWeakPtr;
-typedef std::shared_ptr<PlannerBase> PlannerBasePtr;
-typedef std::shared_ptr<PlannerBase const> PlannerBaseConstPtr;
-typedef std::weak_ptr<PlannerBase> PlannerBaseWeakPtr;
-typedef std::shared_ptr<ModuleBase> ModuleBasePtr;
-typedef std::shared_ptr<ModuleBase const> ModuleBaseConstPtr;
-typedef std::weak_ptr<ModuleBase> ModuleBaseWeakPtr;
-typedef std::shared_ptr<SensorBase> SensorBasePtr;
-typedef std::shared_ptr<SensorBase const> SensorBaseConstPtr;
-typedef std::weak_ptr<SensorBase> SensorBaseWeakPtr;
-typedef std::shared_ptr<SensorSystemBase> SensorSystemBasePtr;
-typedef std::shared_ptr<SensorSystemBase const> SensorSystemBaseConstPtr;
-typedef std::weak_ptr<SensorSystemBase> SensorSystemBaseWeakPtr;
-typedef std::shared_ptr<TrajectoryBase> TrajectoryBasePtr;
-typedef std::shared_ptr<TrajectoryBase const> TrajectoryBaseConstPtr;
-typedef std::weak_ptr<TrajectoryBase> TrajectoryBaseWeakPtr;
-typedef std::shared_ptr<ViewerBase> ViewerBasePtr;
-typedef std::shared_ptr<ViewerBase const> ViewerBaseConstPtr;
-typedef std::weak_ptr<ViewerBase> ViewerBaseWeakPtr;
-typedef std::shared_ptr<SpaceSamplerBase> SpaceSamplerBasePtr;
-typedef std::shared_ptr<SpaceSamplerBase const> SpaceSamplerBaseConstPtr;
-typedef std::weak_ptr<SpaceSamplerBase> SpaceSamplerBaseWeakPtr;
-typedef std::shared_ptr<EnvironmentBase> EnvironmentBasePtr;
-typedef std::shared_ptr<EnvironmentBase const> EnvironmentBaseConstPtr;
-typedef std::weak_ptr<EnvironmentBase> EnvironmentBaseWeakPtr;
-
-typedef std::shared_ptr<IkReturn> IkReturnPtr;
-typedef std::shared_ptr<IkReturn const> IkReturnConstPtr;
-typedef std::weak_ptr<IkReturn> IkReturnWeakPtr;
-
 
 
 ///< Cloning Options for interfaces and environments
@@ -341,7 +248,8 @@ OPENRAVE_API void RaveGetAffineDOFValuesFromVelocity(std::vector<dReal>::iterato
     \param[in] axis optional rotation axis if affinedofs specified (vActvAffineRotationAxis of RobotBase) \ref DOF_RotationAxis
     \param[in] normalize if true will normalize rotations, should set to false if extracting velocity data
  */
-OPENRAVE_API void RaveGetTransformFromAffineDOFValues(Transform& t, std::vector<dReal>::const_iterator itvalues, int affinedofs, const Vector& axis=Vector(0,0,1), bool normalize=true);
+OPENRAVE_API void RaveGetTransformFromAffineDOFValues(Transform& t, std::vector<dReal>::const_iterator itvalues, 
+	int affinedofs, const Vector& axis=Vector(0,0,1), bool normalize=true);
 
 /** \brief Converts affine dof velocities into linear and angular velocity vectors
 
@@ -360,21 +268,23 @@ OPENRAVE_API ConfigurationSpecification RaveGetAffineConfigurationSpecification(
 }
 
 #include <openrave/plugininfo.h>
-#include <openrave/interface.h>
-#include <openrave/spacesampler.h>
+#include <openrave/interface_base.h>
+#include <openrave/space_sampler_base.h>
 #include <openrave/kinbody.h>
 #include <openrave/trajectory.h>
 #include <openrave/module.h>
-#include <openrave/collisionchecker.h>
+#include <openrave/collision_checker_base.h>
 #include <openrave/sensor_base.h>
 #include <openrave/robot.h>
 #include <openrave/iksolver.h>
 #include <openrave/planner.h>
-#include <openrave/controller.h>
-#include <openrave/physicsengine.h>
+#include <openrave/controller_base.h>
+#include <openrave/physics_engine_base.h>
 #include <openrave/sensorsystem.h>
 #include <openrave/viewer.h>
 #include <openrave/environment_base.h>
+#include <openrave/dummy_xml_reader.h>
+#include <openrave/multi_controller_base.h>
 
 namespace OpenRAVE {
 
