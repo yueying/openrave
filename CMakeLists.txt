@@ -17,6 +17,7 @@ cmake_policy(SET CMP0002 NEW)
 cmake_policy(SET CMP0003 NEW)
 
 add_definitions(-DNOMINMAX)
+add_definitions(-DBOOST_DISABLE_ASSERTS)
 
 # -std=c++11
 set(CMAKE_CXX_STANDARD 11)
@@ -291,15 +292,19 @@ if( MSVC )
   endif()
   
   # have to install dlls manually
-  if( MSVC70 OR MSVC71 )
-    set(MSVC_PREFIX "vc70")
-  elseif( MSVC80 )
-    set(MSVC_PREFIX "vc80")
-  elseif( MSVC90 )
-    set(MSVC_PREFIX "vc90")
-  else()
-    set(MSVC_PREFIX "vc100")
+if (MSVC)
+  if (${MSVC_VERSION} EQUAL 1600)
+    set(MSVC_PREFIX "vc100") # Visual Studio 2010
+  elseif (${MSVC_VERSION} EQUAL 1700)
+    set(MSVC_PREFIX "vc110") # Visual Studio 2012
+  elseif (${MSVC_VERSION} EQUAL 1800)
+    set(MSVC_PREFIX "vc120") # Visual Studio 2013
+  elseif (${MSVC_VERSION} EQUAL 1900)
+    set(MSVC_PREFIX "vc140") # Visual Studio 2015
+  elseif (${MSVC_VERSION} EQUAL 1910 OR ${MSVC_VERSION} EQUAL 1916)
+    set(MSVC_PREFIX "vc141") # Visual Studio 2017
   endif()
+endif()
   set(OPENRAVE_LIBRARY_SUFFIX "${OPENRAVE_SOVERSION}-${MSVC_PREFIX}-mt" CACHE STRING "Suffix to append to library names")
   
   set(Boost_USE_STATIC_LIBS OFF)
@@ -374,21 +379,21 @@ add_custom_command(
   OUTPUT ${interfacehashes_h}
   COMMAND ${CPPGENMD5}
   ARGS "${OPENRAVE_PRECISION}" "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface.h"
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collisionchecker.h" OPENRAVE_COLLISIONCHECKER_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collision_checker_base.h" OPENRAVE_COLLISIONCHECKER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot.h" OPENRAVE_ROBOT_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/planner.h" OPENRAVE_PLANNER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/kinbody.h" OPENRAVE_KINBODY_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensorsystem.h" OPENRAVE_SENSORSYSTEM_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/controller.h" OPENRAVE_CONTROLLER_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/controller_base.h" OPENRAVE_CONTROLLER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/module.h" OPENRAVE_MODULE_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/iksolver.h" OPENRAVE_IKSOLVER_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/physicsengine.h" OPENRAVE_PHYSICSENGINE_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor.h" OPENRAVE_SENSOR_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/physics_engine_base.h" OPENRAVE_PHYSICSENGINE_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_base.h" OPENRAVE_SENSOR_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/trajectory.h" OPENRAVE_TRAJECTORY_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer.h" OPENRAVE_VIEWER_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/spacesampler.h" OPENRAVE_SPACESAMPLER_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment.h" OPENRAVE_ENVIRONMENT_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/plugininfo.h" OPENRAVE_PLUGININFO_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer_base.h" OPENRAVE_VIEWER_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/space_sampler_base.h" OPENRAVE_SPACESAMPLER_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment_base.h" OPENRAVE_ENVIRONMENT_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/plugin_info.h" OPENRAVE_PLUGININFO_HASH
        > "${interfacehashes_h}"
   DEPENDS cpp-gen-md5-native
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface_base.h
@@ -406,7 +411,7 @@ add_custom_command(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/space_sampler_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment_base.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/plugininfo.h)
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/plugin_info.h)
 
 add_custom_target(interfacehashes_target ALL DEPENDS ${interfacehashes_h} ${EXTRA_MSVC_DEPEND})
 
@@ -571,10 +576,10 @@ if( NOT libpcrecpp_FOUND )
 endif()
 
 if( OPT_COLLADA )
-  if( MSVC )
+  #if( MSVC )
     # MSVC has prepackaged collada libraries
-    set(COLLADA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/msvc_collada)
-  endif()
+    #set(COLLADA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/msvc_collada)
+  #endif()
   #find_package(COLLADA_DOM 2.4 COMPONENTS 1.5 1.4 PATHS ${COLLADA_PATH})
   find_package(COLLADA_DOM 2.3 COMPONENTS 1.5 PATHS ${COLLADA_PATH})
 

@@ -910,7 +910,7 @@ namespace OpenRAVE
 			/// \brief _controlMode specifies how this joint is controlled. For possible control modes, see enum JointControlMode.
 			JointControlMode _controlMode;
 
-			struct JointControlInfo_RobotController
+			struct OPENRAVE_API JointControlInfo_RobotController
 			{
 				JointControlInfo_RobotController();
 				int robotId;
@@ -918,7 +918,7 @@ namespace OpenRAVE
 			};
 			typedef std::shared_ptr<JointControlInfo_RobotController> JointControlInfo_RobotControllerPtr;
 
-			struct JointControlInfo_IO
+			struct OPENRAVE_API JointControlInfo_IO
 			{
 				JointControlInfo_IO();
 				int deviceId;
@@ -930,7 +930,7 @@ namespace OpenRAVE
 			};
 			typedef std::shared_ptr<JointControlInfo_IO> JointControlInfo_IOPtr;
 
-			struct JointControlInfo_ExternalDevice
+			struct OPENRAVE_API JointControlInfo_ExternalDevice
 			{
 				JointControlInfo_ExternalDevice();
 				std::string externalDeviceId; ///< id for the external device

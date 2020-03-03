@@ -1,4 +1,4 @@
-// -*- coding: utf-8 --*
+﻿// -*- coding: utf-8 --*
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -55,9 +55,9 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
         else if( interfacename == "explorationrrt" ) {
             return InterfaceBasePtr(new ExplorationPlanner(penv));
         }
-        else if( interfacename == "graspgradient" ) {
-            return CreateGraspGradientPlanner(penv,sinput);
-        }
+        //else if( interfacename == "graspgradient" ) {
+        //    return CreateGraspGradientPlanner(penv,sinput);
+        //}
         else if( interfacename == "shortcut_linear" ) {
             return CreateShortcutLinearPlanner(penv,sinput);
         }

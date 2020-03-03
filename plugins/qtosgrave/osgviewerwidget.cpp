@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2016 Rosen Diankov, Gustavo Puche, OpenGrasp Team
 //
 // OpenRAVE Qt/OpenSceneGraph Viewer is licensed under the Apache License, Version 2.0 (the "License");
@@ -221,25 +221,25 @@ public:
     virtual bool seekToMousePointer( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
     {
         SetSeekMode(false);
-        if( !isAnimating() ) {
-            // get current transformation
-            osg::Vec3d prevCenter, prevEye, prevUp;
-            getTransformation( prevEye, prevCenter, prevUp );
+        //if( !isAnimating() ) {
+        //    // get current transformation
+        //    osg::Vec3d prevCenter, prevEye, prevUp;
+        //    getTransformation( prevEye, prevCenter, prevUp );
 
-            // center by mouse intersection
-            if( !setCenterByMousePointerIntersection( ea, us ) ) {
-                return false;
-            }
+        //    // center by mouse intersection
+        //    if( !setCenterByMousePointerIntersection( ea, us ) ) {
+        //        return false;
+        //    }
 
-            OpenRAVEAnimationData *ad = dynamic_cast< OpenRAVEAnimationData*>( _animationData.get() );
-            BOOST_ASSERT( !!ad );
+        //    OpenRAVEAnimationData *ad = dynamic_cast< OpenRAVEAnimationData*>( _animationData.get() );
+        //    BOOST_ASSERT( !!ad );
 
-            // setup animation data and restore original transformation
-            ad->_eyemovement = (osg::Vec3d(_center) - prevEye) * 0.5;
-            ad->start( osg::Vec3d(_center) - prevCenter, ea.getTime() );
-            setTransformation( prevEye, prevCenter, prevUp );
-            return true;
-        }
+        //    // setup animation data and restore original transformation
+        //    ad->_eyemovement = (osg::Vec3d(_center) - prevEye) * 0.5;
+        //    ad->start( osg::Vec3d(_center) - prevCenter, ea.getTime() );
+        //    setTransformation( prevEye, prevCenter, prevUp );
+        //    return true;
+        //}
         return false;
     }
 

@@ -682,7 +682,7 @@ void QtOSGViewer::polygonMode()
 
 void QtOSGViewer::_ProcessBoundingBox()
 {
-    _posgWidget->DrawBoundingBox(bboxAct->isChecked());
+   // _posgWidget->DrawBoundingBox(bboxAct->isChecked());
 }
 
 void QtOSGViewer::axes()

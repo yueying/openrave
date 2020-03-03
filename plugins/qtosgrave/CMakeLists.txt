@@ -1,4 +1,4 @@
-#############################
+﻿#############################
 # qtosgrave openrave plugin #
 #############################
 if(APPLE)
@@ -11,7 +11,7 @@ if(NOT OPENGL_FOUND)
 endif()
 
 #include(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSG.cmake)
-find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgGA osgFX osgText osgViewer osgManipulator)
+find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgUtil osgGA osgFX osgText osgViewer osgManipulator)
 
 if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND)
   message(STATUS "Detected Qt/OSG GUI, making plugin")
@@ -57,7 +57,7 @@ if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND 
 
   add_library(qtosgrave SHARED ${QTOSG_SRCS} ${QTOSG_MOC_SRCS} ${QTOSG_RCC_SRCS})
   target_link_libraries (qtosgrave ${extLIBS} libopenrave)
-  target_link_libraries(qtosgrave PRIVATE boost_assertion_failed)
+
 
   #if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   #  # have to turn off optimizations or else qtcoin crashes!!

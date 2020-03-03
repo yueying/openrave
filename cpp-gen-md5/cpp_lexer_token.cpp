@@ -1,8 +1,8 @@
-//
+ï»¿//
 // C++ Lexer token definitions
 //
 // Boost License 1.0
-// Copyright© 2002-2003 Juan Carlos Arevalo-Baeza, All rights reserved
+// Copyright?2002-2003 Juan Carlos Arevalo-Baeza, All rights reserved
 // email: jcab@JCABs-Rumblings.com
 // Created: 8-Nov-2002
 //
@@ -22,6 +22,7 @@ namespace bs = boost::spirit::classic;
 #include <stdint.h> // uint64_t
 #include <vector>
 #include <iostream>
+#include <assert.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // File position tools.

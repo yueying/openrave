@@ -93,6 +93,7 @@ protected:
     typedef std::shared_ptr<RegisteredInterface> RegisteredInterfacePtr;
 
 public:
+	OPENRAVE_CLASS_FORWARD(Plugin)
     class Plugin : public UserData, public std::enable_shared_from_this<Plugin>
     {
 public:
@@ -889,10 +890,10 @@ protected:
         // try matching partial base names without path and extension
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
         boost::filesystem::path pluginpath(pluginname);
-        string stem = pluginpath.stem().string();
+        std::string stem = pluginpath.stem().string();
 #else
         boost::filesystem::path pluginpath(pluginname, boost::filesystem::native);
-        string stem = pluginpath.stem();
+		std::string stem = pluginpath.stem();
 #endif
         FOREACH(it, _listplugins) {
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
@@ -949,7 +950,7 @@ protected:
         if( plibrary == NULL ) {
             // try adding from the current plugin libraries
             FOREACH(itdir,_listplugindirs) {
-                string newlibraryname = boost::filesystem::absolute(libraryname,*itdir).string();
+				std::string newlibraryname = boost::filesystem::absolute(libraryname,*itdir).string();
                 plibrary = _SysLoadLibrary(newlibraryname,OPENRAVE_LAZY_LOADING);
                 if( !!plibrary ) {
                     libraryname = newlibraryname;

@@ -1,4 +1,4 @@
-###########################################
+﻿###########################################
 # grasper openrave plugin
 ###########################################
 if( QHULL_FOUND AND QHULL_INCLUDE_DIR )
@@ -6,7 +6,6 @@ if( QHULL_FOUND AND QHULL_INCLUDE_DIR )
 endif()
 
 add_library(grasper SHARED grasper.cpp graspermodule.cpp grasperplanner.cpp  plugindefs.h)
-target_link_libraries(grasper PRIVATE boost_assertion_failed)
 
 if ( QHULL_FOUND )
   add_definitions(-DQHULL_FOUND)
