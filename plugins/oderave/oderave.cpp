@@ -48,7 +48,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[OpenRAVE::PT_CollisionChecker].push_back("ode");
     info.interfacenames[OpenRAVE::PT_PhysicsEngine].push_back("ode");

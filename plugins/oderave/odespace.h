@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -135,7 +135,7 @@ public:
             std::string bodylinkname; // for debugging purposes
         };
 
-        KinBodyInfo(boost::shared_ptr<ODEResources> ode) : _ode(ode)
+        KinBodyInfo(std::shared_ptr<ODEResources> ode) : _ode(ode)
         {
             jointgroup = dJointGroupCreate(0);
             space = dHashSpaceCreate(_ode->space);
@@ -209,7 +209,7 @@ public:
         KinBodyWeakPtr _pbody;         ///< body associated with this structure
         int nLastStamp;
 
-        vector<boost::shared_ptr<LINK> > vlinks;         ///< if body is disabled, then geom is static (it can't be connected to a joint!)
+        vector<std::shared_ptr<LINK> > vlinks;         ///< if body is disabled, then geom is static (it can't be connected to a joint!)
         vector<OpenRAVE::dReal> _vdofbranches;
 
         ///< the pointer to this Link is the userdata
@@ -222,11 +222,11 @@ public:
         dJointGroupID jointgroup;
 
 private:
-        boost::shared_ptr<ODEResources> _ode;
+        std::shared_ptr<ODEResources> _ode;
     };
 
-    typedef boost::shared_ptr<KinBodyInfo> KinBodyInfoPtr;
-    typedef boost::shared_ptr<KinBodyInfo const> KinBodyInfoConstPtr;
+    typedef std::shared_ptr<KinBodyInfo> KinBodyInfoPtr;
+    typedef std::shared_ptr<KinBodyInfo const> KinBodyInfoConstPtr;
     typedef boost::function<void (KinBodyInfoPtr)> SynchronizeCallbackFn;
 
     ODESpace(EnvironmentBasePtr penv, const std::string& userdatakey, bool bUsingPhysics) : _penv(penv), _userdatakey(userdatakey), _bUsingPhysics(bUsingPhysics)
@@ -284,7 +284,7 @@ private:
     KinBodyInfoPtr InitKinBody(KinBodyConstPtr pbody, KinBodyInfoPtr pinfo = KinBodyInfoPtr(), bool blockode=true)
     {
         EnvironmentMutex::scoped_lock lock(pbody->GetEnv()->GetMutex());
-        boost::shared_ptr<boost::mutex::scoped_lock> lockode;
+        std::shared_ptr<boost::mutex::scoped_lock> lockode;
         if( blockode ) {
             lockode.reset(new boost::mutex::scoped_lock(_ode->_mutex));
         }
@@ -306,7 +306,7 @@ private:
 
         pinfo->vlinks.reserve(pbody->GetLinks().size());
         FOREACHC(itlink, pbody->GetLinks()) {
-            boost::shared_ptr<KinBodyInfo::LINK> link(new KinBodyInfo::LINK());
+            std::shared_ptr<KinBodyInfo::LINK> link(new KinBodyInfo::LINK());
             pinfo->vlinks.push_back(link);
             link->body = dBodyCreate(GetWorld());
 
@@ -498,7 +498,7 @@ private:
             _penv->GetBodies(vbodies);
             FOREACH(itbody, vbodies) {
                 KinBodyConstPtr pbody(*itbody);
-                KinBodyInfoPtr pinfo = boost::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
+                KinBodyInfoPtr pinfo = std::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
                 if( !!pinfo ) {
                     InitKinBody(pbody,pinfo);
                 }
@@ -609,11 +609,11 @@ private:
     JointSetFn _jointset[12];
 
     KinBodyInfoPtr GetInfo(KinBodyConstPtr pbody) {
-        return boost::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
+        return std::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
     }
 
     std::pair<KinBodyInfoPtr, bool> GetCreateInfo(KinBodyConstPtr pbody, bool blockode=true) {
-        KinBodyInfoPtr pinfo = boost::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
+        KinBodyInfoPtr pinfo = std::dynamic_pointer_cast<KinBodyInfo>(pbody->GetUserData(_userdatakey));
         bool bcreated = false;
         if( !pinfo ) {
             pinfo = InitKinBody(pbody, KinBodyInfoPtr(), blockode);
@@ -625,7 +625,7 @@ private:
     }
 
 private:
-    dGeomID _CreateODEGeomFromGeometryInfo(dSpaceID space, boost::shared_ptr<KinBodyInfo::LINK> link, const KinBody::GeometryInfo& info)
+    dGeomID _CreateODEGeomFromGeometryInfo(dSpaceID space, std::shared_ptr<KinBodyInfo::LINK> link, const KinBody::GeometryInfo& info)
     {
         dGeomID odegeom = NULL;
         switch(info._type) {
@@ -686,7 +686,7 @@ private:
     void _Synchronize(KinBodyInfoPtr pinfo, bool block=true)
     {
         if( pinfo->nLastStamp != pinfo->GetBody()->GetUpdateStamp() ) {
-            boost::shared_ptr<boost::mutex::scoped_lock> lockode;
+            std::shared_ptr<boost::mutex::scoped_lock> lockode;
             if( block ) {
                 lockode.reset(new boost::mutex::scoped_lock(_ode->_mutex));
             }
@@ -718,14 +718,14 @@ private:
         std::pair<KinBodyInfoPtr, bool> infocreated = GetCreateInfo(pbody);
         if( !infocreated.second ) {
             // only init if the body was not just created
-            BOOST_ASSERT(boost::shared_ptr<ODESpace>(infocreated.first->_odespace) == shared_from_this());
+            BOOST_ASSERT(std::shared_ptr<ODESpace>(infocreated.first->_odespace) == shared_from_this());
             BOOST_ASSERT(infocreated.first->GetBody()==pbody);
             InitKinBody(pbody,infocreated.first);
         }
     }
 
     EnvironmentBasePtr _penv;
-    boost::shared_ptr<ODEResources> _ode;
+    std::shared_ptr<ODEResources> _ode;
     std::string _userdatakey;
     std::string _geometrygroup;
     SynchronizeCallbackFn _synccallback;

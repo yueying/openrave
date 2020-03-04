@@ -865,7 +865,7 @@ object pyRaveInvertFileLookup(const std::string& filename)
 object RaveGetPluginInfo()
 {
     py::list plugins;
-    std::list< std::pair<std::string, PLUGININFO> > listplugins;
+    std::list< std::pair<std::string, PluginInfo> > listplugins;
     OpenRAVE::RaveGetPluginInfo(listplugins);
     FOREACH(itplugin, listplugins) {
         plugins.append(py::make_tuple(itplugin->first, py::to_object(OPENRAVE_SHARED_PTR<PyPluginInfo>(new PyPluginInfo(itplugin->second)))));
@@ -1489,10 +1489,10 @@ void init_openravepy_global()
 #endif
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyPluginInfo, OPENRAVE_SHARED_PTR<PyPluginInfo> >(m, "PluginInfo", DOXY_CLASS(PLUGININFO))
-    .def(init<const PLUGININFO&>(), "info"_a)
+    class_<PyPluginInfo, OPENRAVE_SHARED_PTR<PyPluginInfo> >(m, "PluginInfo", DOXY_CLASS(PluginInfo))
+    .def(init<const PluginInfo&>(), "info"_a)
 #else
-    class_<PyPluginInfo, OPENRAVE_SHARED_PTR<PyPluginInfo> >("PluginInfo", DOXY_CLASS(PLUGININFO),no_init)
+    class_<PyPluginInfo, OPENRAVE_SHARED_PTR<PyPluginInfo> >("PluginInfo", DOXY_CLASS(PluginInfo),no_init)
 #endif
     .def_readonly("interfacenames",&PyPluginInfo::interfacenames)
     .def_readonly("version",&PyPluginInfo::version)

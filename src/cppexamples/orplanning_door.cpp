@@ -225,12 +225,12 @@ public:
     Transform _tmanipprev, _tmanipmidreal;
     UserDataPtr _ikfilter;
 
-    boost::shared_ptr<planningutils::SimpleDistanceMetric> _robotdistmetric, _doordistmetric;
-    boost::shared_ptr<planningutils::SimpleNeighborhoodSampler> _robotsamplefn, _doorsamplefn;
-    boost::shared_ptr<planningutils::LineCollisionConstraint> _collision;
+    std::shared_ptr<planningutils::SimpleDistanceMetric> _robotdistmetric, _doordistmetric;
+    std::shared_ptr<planningutils::SimpleNeighborhoodSampler> _robotsamplefn, _doorsamplefn;
+    std::shared_ptr<planningutils::LineCollisionConstraint> _collision;
 };
 
-typedef boost::shared_ptr<DoorConfiguration> DoorConfigurationPtr;
+typedef std::shared_ptr<DoorConfiguration> DoorConfigurationPtr;
 
 class PlanningDoorExample : public OpenRAVEExample
 {
