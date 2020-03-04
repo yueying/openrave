@@ -57,11 +57,12 @@ if(USE_PYBIND11_PYTHON_BINDINGS)
         
     # link
     set(OPENRAVEPY_LINKED_LIBRARIES "${STDC_LIBRARY} ${PYTHON_LIBRARIES} ${Boost_THREAD_LIBRARY}")
-	message("----------------------${PYTHON_LIBRARIES}")
+
     if( CLOCK_GETTIME_FOUND )
       set(OPENRAVEPY_LINKED_LIBRARIES ${OPENRAVEPY_LINKED_LIBRARIES} rt)
     endif()
 
+	include_directories(${pybind11_INCLUDE_DIRS})
     ## openrave bindings
     add_library(openravepy_int SHARED ${openravepy_int_cpp_files})
     # stdc++ has to be included before opengl libraries due to some ATI bug (http://wiki.fifengine.de/Segfault_in_cxa_allocate_exception#Workaround)

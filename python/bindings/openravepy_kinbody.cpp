@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -661,7 +661,7 @@ void PyLink::PyGeometry::SetCollisionMesh(object pytrimesh) {
         _pgeometry->SetCollisionMesh(mesh);
     }
     else {
-        throw openrave_exception(_("bad trimesh"));
+        throw OpenRAVEException(_("bad trimesh"));
     }
 }
 
@@ -1277,56 +1277,56 @@ void PyJoint::SetLimits(object olower, object oupper) {
     std::vector<dReal> vlower = ExtractArray<dReal>(olower);
     std::vector<dReal> vupper = ExtractArray<dReal>(oupper);
     if(( vlower.size() != vupper.size()) ||( (int)vlower.size() != _pjoint->GetDOF()) ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetLimits(vlower,vupper);
 }
 void PyJoint::SetVelocityLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetVelocityLimits(vmaxlimits);
 }
 void PyJoint::SetAccelerationLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetAccelerationLimits(vmaxlimits);
 }
 void PyJoint::SetJerkLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetJerkLimits(vmaxlimits);
 }
 void PyJoint::SetHardVelocityLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetHardVelocityLimits(vmaxlimits);
 }
 void PyJoint::SetHardAccelerationLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetHardAccelerationLimits(vmaxlimits);
 }
 void PyJoint::SetHardJerkLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetHardJerkLimits(vmaxlimits);
 }
 void PyJoint::SetTorqueLimits(object omaxlimits) {
     std::vector<dReal> vmaxlimits = ExtractArray<dReal>(omaxlimits);
     if( (int)vmaxlimits.size() != _pjoint->GetDOF() ) {
-        throw openrave_exception(_("limits are wrong dimensions"));
+        throw OpenRAVEException(_("limits are wrong dimensions"));
     }
     _pjoint->SetTorqueLimits(vmaxlimits);
 }
@@ -1594,7 +1594,7 @@ bool PyKinBody::InitFromBoxes(const boost::multi_array<dReal,2>& vboxes, bool bD
     if( vboxes.shape()[1] != 6 )
 #endif
     {
-        throw openrave_exception(_("boxes needs to be a Nx6 vector\n"));
+        throw OpenRAVEException(_("boxes needs to be a Nx6 vector\n"));
     }
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     std::vector<AABB> vaabbs(vboxes.size());
@@ -1620,7 +1620,7 @@ bool PyKinBody::InitFromSpheres(const boost::multi_array<dReal,2>& vspheres, boo
     if( vspheres.shape()[1] != 4 )
 #endif
     {
-        throw openrave_exception(_("spheres needs to be a Nx4 vector\n"));
+        throw OpenRAVEException(_("spheres needs to be a Nx4 vector\n"));
     }
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     std::vector<Vector> vvspheres(vspheres.size());
@@ -1640,7 +1640,7 @@ bool PyKinBody::InitFromTrimesh(object pytrimesh, bool bDraw, const std::string&
         return _pbody->InitFromTrimesh(mesh,bDraw,uri);
     }
     else {
-        throw openrave_exception(_("bad trimesh"));
+        throw OpenRAVEException(_("bad trimesh"));
     }
 }
 
@@ -2210,7 +2210,7 @@ void PyKinBody::SetLinkTransformations(object transforms, object odoflastvalues)
 {
     size_t numtransforms = len(transforms);
     if( numtransforms != _pbody->GetLinks().size() ) {
-        throw openrave_exception(_("number of input transforms not equal to links"));
+        throw OpenRAVEException(_("number of input transforms not equal to links"));
     }
     std::vector<Transform> vtransforms(numtransforms);
     for(size_t i = 0; i < numtransforms; ++i) {
@@ -2419,7 +2419,7 @@ void PyKinBody::SetDOFWeights(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFWeights(values);
 }
@@ -2431,7 +2431,7 @@ void PyKinBody::SetDOFResolutions(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFResolutions(values);
 }
@@ -2444,7 +2444,7 @@ void PyKinBody::SetDOFLimits(object olower, object oupper, object oindices)
     std::vector<dReal> vlower = ExtractArray<dReal>(olower), vupper = ExtractArray<dReal>(oupper);
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
         if( (int)vlower.size() != GetDOF() || (int)vupper.size() != GetDOF() ) {
-            throw openrave_exception(_("values do not equal to body degrees of freedom"));
+            throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
         }
         _pbody->SetDOFLimits(vlower,vupper);
     }
@@ -2464,7 +2464,7 @@ void PyKinBody::SetDOFVelocityLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFVelocityLimits(values);
 }
@@ -2476,7 +2476,7 @@ void PyKinBody::SetDOFAccelerationLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFAccelerationLimits(values);
 }
@@ -2488,7 +2488,7 @@ void PyKinBody::SetDOFJerkLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFJerkLimits(values);
 }
@@ -2500,7 +2500,7 @@ void PyKinBody::SetDOFHardVelocityLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFHardVelocityLimits(values);
 }
@@ -2512,7 +2512,7 @@ void PyKinBody::SetDOFHardAccelerationLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFHardAccelerationLimits(values);
 }
@@ -2524,7 +2524,7 @@ void PyKinBody::SetDOFHardJerkLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFHardJerkLimits(values);
 }
@@ -2536,7 +2536,7 @@ void PyKinBody::SetDOFTorqueLimits(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFTorqueLimits(values);
 }
@@ -2548,7 +2548,7 @@ void PyKinBody::SetDOFValues(object o)
     }
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFValues(values,KinBody::CLA_CheckLimits);
 }
@@ -2560,7 +2560,7 @@ void PyKinBody::SetTransformWithDOFValues(object otrans,object ojoints)
     }
     std::vector<dReal> values = ExtractArray<dReal>(ojoints);
     if( (int)values.size() != GetDOF() ) {
-        throw openrave_exception(_("values do not equal to body degrees of freedom"));
+        throw OpenRAVEException(_("values do not equal to body degrees of freedom"));
     }
     _pbody->SetDOFValues(values,ExtractTransform(otrans),KinBody::CLA_CheckLimits);
 }

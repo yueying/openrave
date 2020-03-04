@@ -301,7 +301,7 @@ public:
                             params->_getstatefn(params->vgoalconfig);
                             break;
                         }
-                        catch(const openrave_exception& ex) {
+                        catch(const OpenRAVEException& ex) {
                             probot->SetTransform(trobotorig);
                         }
                     }
@@ -317,7 +317,7 @@ public:
                         params->_setstatefn(params->vgoalconfig);
                         params->_getstatefn(params->vgoalconfig);
                     }
-                    catch(const openrave_exception& ex) {
+                    catch(const OpenRAVEException& ex) {
                         RAVELOG_WARN("initial set failed\n");
                         continue;
                     }

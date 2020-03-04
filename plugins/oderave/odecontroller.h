@@ -104,7 +104,7 @@ public:
             return _SetVelocities(velocities);
         }
 
-        throw openrave_exception(str(boost::format(_("command %s supported"))%cmd),OpenRAVE::ORE_CommandNotSupported);
+        throw OpenRAVEException(str(boost::format(_("command %s supported"))%cmd),OpenRAVE::ORE_CommandNotSupported);
         return false;
     }
 

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -58,7 +58,7 @@
 #define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
 
 #define CHECK_POINTER(p) { \
-        if( !(p) ) { throw openrave_exception(boost::str(boost::format(_("[%s:%d]: invalid pointer"))%__PRETTY_FUNCTION__%__LINE__)); } \
+        if( !(p) ) { throw OpenRAVEException(boost::str(boost::format(_("[%s:%d]: invalid pointer"))%__PRETTY_FUNCTION__%__LINE__)); } \
 }
 
 using namespace std;
@@ -398,7 +398,7 @@ inline py::object ReturnTransform(T t)
 class OPENRAVEPY_API PyPluginInfo
 {
 public:
-    PyPluginInfo(const PLUGININFO& info)
+    PyPluginInfo(const PluginInfo& info)
     {
         FOREACHC(it, info.interfacenames) {
             py::list names;
