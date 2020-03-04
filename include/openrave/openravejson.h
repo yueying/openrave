@@ -221,6 +221,7 @@ inline void LoadJsonValue(const rapidjson::Value& v, unsigned int& t) {
     }
 }
 
+//#if !defined(__APPLE__)
 //inline void LoadJsonValue(const rapidjson::Value& v, unsigned long long& t) {
 //    if (v.IsUint64()) {
 //        t = v.GetUint64();
@@ -230,6 +231,7 @@ inline void LoadJsonValue(const rapidjson::Value& v, unsigned int& t) {
 //        throw OpenraveJSONException("Cannot convert json value " + GetJsonString(v) + " to Int64", MJE_Failed);
 //    }
 //}
+//#endif
 
 inline void LoadJsonValue(const rapidjson::Value& v, uint64_t& t) {
     if (v.IsUint64()) {
@@ -398,17 +400,21 @@ inline void SaveJsonValue(rapidjson::Value& v, unsigned int t, rapidjson::Docume
     v.SetUint(t);
 }
 
+//#if !defined(__APPLE__)
 //inline void SaveJsonValue(rapidjson::Value& v, long long t, rapidjson::Document::AllocatorType& alloc) {
 //    v.SetInt64(t);
 //}
+//#endif
 
 inline void SaveJsonValue(rapidjson::Value& v, int64_t t, rapidjson::Document::AllocatorType& alloc) {
     v.SetInt64(t);
 }
 
+//#if !defined(__APPLE__)
 //inline void SaveJsonValue(rapidjson::Value& v, unsigned long long t, rapidjson::Document::AllocatorType& alloc) {
 //    v.SetUint64(t);
 //}
+//#endif
 
 inline void SaveJsonValue(rapidjson::Value& v, uint64_t t, rapidjson::Document::AllocatorType& alloc) {
     v.SetUint64(t);

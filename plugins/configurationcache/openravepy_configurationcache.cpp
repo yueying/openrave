@@ -193,7 +193,9 @@ typedef OPENRAVE_SHARED_PTR<PyConfigurationCache> PyConfigurationCachePtr;
 OPENRAVE_PYTHON_MODULE(openravepy_configurationcache)
 {
     using namespace configurationcachepy;
-    import_array();
+#ifndef USE_PYBIND11_PYTHON3_BINDINGS
+    import_array(); // not sure if this is necessary for pybind11
+#endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     m.attr("__doc__") = "The module contains configuration cache bindings for openravepy\n";
 #else

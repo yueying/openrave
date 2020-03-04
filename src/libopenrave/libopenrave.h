@@ -42,7 +42,7 @@
 #define FOREACHC_NOINC(it, v) for(auto it = (v).begin(), __itend__=(v).end(); it != __itend__; )
 #define RAVE_REGISTER_BOOST
 
-#else
+#else // _MSC_VER
 #include <string>
 #include <vector>
 #include <list>
@@ -58,7 +58,7 @@
 #define FOREACHC FOREACH
 #define FOREACHC_NOINC FOREACH_NOINC
 
-#endif
+#endif // _MSC_VER
 
 //template <typename T>
 //class openraveconst_iteratorbegin : public T::const_iterator
@@ -91,7 +91,7 @@
 
 #ifdef USE_CRLIBM
 #include <crlibm.h> // robust/accurate math
-#endif
+#endif // USE_CRLIBM
 
 #define FORIT(it, v) for(it = (v).begin(); it != (v).end(); ++(it))
 
@@ -99,11 +99,10 @@
 #elif defined(__APPLE_CC__)
 #define _strnicmp strncasecmp
 #define _stricmp strcasecmp
-#else
+#else // _WIN32
 #define _strnicmp strncasecmp
 #define _stricmp strcasecmp
-
-#endif
+#endif // _WIN32
 
 #include <boost/bind.hpp>
 #include <boost/version.hpp>
@@ -125,9 +124,9 @@ inline path absolute(const path& p, const path& base)
 }
 }
 }
-#endif
+#endif // !defined(BOOST_FILESYSTEM_VERSION) || BOOST_FILESYSTEM_VERSION <= 2
 
-#endif
+#endif // HAVE_BOOST_FILESYSTEM
 
 namespace OpenRAVE {
 

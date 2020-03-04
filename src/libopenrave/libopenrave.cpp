@@ -25,7 +25,9 @@
 #ifndef _WIN32
 #include <sys/stat.h>
 #include <sys/types.h>
+#if !defined(__APPLE__)
 #include <libintl.h>
+#endif
 #endif
 
 #include <locale>

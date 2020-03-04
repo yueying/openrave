@@ -1,5 +1,6 @@
 include_directories(${OPENRAVE_INCLUDE_LOCAL_DIRS}) # needed since plugins include openrave/openrave.h
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include) # for plugin-specific common files
+include_directories(${CMAKE_INSTALL_PREFIX}/include)
 
 set(PLUGIN_LINK_FLAGS "")
 
@@ -36,6 +37,7 @@ set(CPACK_COMPONENT_${PLUGINS_BASE_UPPER}_DEPENDS ${COMPONENT_PREFIX}base PARENT
 set(PLUGIN_COMPONENTS ${PLUGINS_BASE})
 
 set(PLUGINS basecontrollers baserobots basesamplers basesensors bulletrave mobyrave configurationcache grasper ikfastsolvers logging pqprave rmanipulation rplanners textserver)
+# brew install qt open-scene-graph
 if( OPT_QTOSG_VIEWER )
   set(PLUGINS ${PLUGINS} qtosgrave)
 endif()

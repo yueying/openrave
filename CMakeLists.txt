@@ -177,11 +177,13 @@ if( OPT_PYTHON )
 #      OUTPUT_VARIABLE _python_distpackage OUTPUT_STRIP_TRAILING_WHITESPACE
 #      RESULT_VARIABLE _python_failed1)
     execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print numpy.get_include()"
+      COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
       OUTPUT_VARIABLE _python_numpy_include OUTPUT_STRIP_TRAILING_WHITESPACE
       RESULT_VARIABLE _python_failed0)
     execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; from myrelpath import relpath; print relpath(get_python_lib(1,prefix='${CMAKE_INSTALL_PREFIX}'),'${CMAKE_INSTALL_PREFIX}')"
+      COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib;\
+	  import os;\
+      print(os.path.relpath(get_python_lib(1,prefix='${CMAKE_INSTALL_PREFIX}'), '${CMAKE_INSTALL_PREFIX}'))"
       OUTPUT_VARIABLE OPENRAVE_PYTHON_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       RESULT_VARIABLE _python_failed2)
@@ -329,7 +331,7 @@ if( MSVC )
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /EHc- ")
 
   # untar the source files
-  set(EXTRA_MSVC_DEPEND  msvc_libxml2 msvc_ode msvc_soqt)
+  set(EXTRA_MSVC_DEPEND msvc_boost msvc_collada  msvc_libxml2 msvc_ode msvc_soqt)
   foreach(MSVC_LIBRARY ${EXTRA_MSVC_DEPEND})
     if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}" )
       execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -837,7 +839,7 @@ if(OPT_PYTHON AND PYTHON_EXECUTABLE)
   if( PYTHON_EXECUTABLE )
     # get the sympy version
     execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "import sympy; print sympy.__version__"
+      COMMAND ${PYTHON_EXECUTABLE} -c "import sympy; print(sympy.__version__)"
       OUTPUT_VARIABLE _sympy_version OUTPUT_STRIP_TRAILING_WHITESPACE
       RESULT_VARIABLE _sympy_version_failed)
     if( ${_sympy_version_failed} EQUAL 0 )

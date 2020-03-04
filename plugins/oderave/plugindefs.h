@@ -1,4 +1,4 @@
-// -*- coding: utf-8 --*
+﻿// -*- coding: utf-8 --*
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -89,8 +89,8 @@ using OpenRAVE::InterfaceType;
 using OpenRAVE::InterfaceBase;
 using OpenRAVE::InterfaceBasePtr;
 using OpenRAVE::InterfaceBaseConstPtr;
-using OpenRAVE::PLUGININFO;
-using OpenRAVE::openrave_exception;
+using OpenRAVE::PluginInfo;
+using OpenRAVE::OpenRAVEException;
 using OpenRAVE::EnvironmentMutex;
 using OpenRAVE::RaveFabs;
 using OpenRAVE::ControllerBase;

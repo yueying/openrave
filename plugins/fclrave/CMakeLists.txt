@@ -1,69 +1,50 @@
 ###########################################
 # fclrave openrave plugin
 ###########################################
-find_package(PkgConfig QUIET)
-if(PKG_CONFIG_FOUND)
-  pkg_check_modules(FCL fcl)
-else()
-  message("PackageConfig is supposed to be installed...")
-endif()
 
-if(NARROW_COLLISION_CACHING)
-  add_definitions(-DNARROW_COLLISION_CACHING)
-endif()
-
-
-if(FCL_USE_STATISTICS)
-  add_definitions(-DFCLUSESTATISTICS)
-  if(FCL_STATISTICS_DISPLAY_CONTINUOUSLY)
-    add_definitions(-DFCL_STATISTICS_DISPLAY_CONTINUOUSLY)
-  endif()
-endif()
-
-if(FCLRAVE_USE_COLLISION_STATISTICS)
-  add_definitions(-DFCLRAVE_COLLISION_OBJECTS_STATISTICS)
-endif()
-
-if(FCLRAVE_DEBUG_COLLISION_OBJECTS)
-  add_definitions(-DFCLRAVE_DEBUG_COLLISION_OBJECTS)
-endif()
-
+message(STATUS "Looking for fcl")
+find_package(FCL)
+message(STATUS "FCL_FOUND = ${FCL_FOUND}")
 
 if( FCL_FOUND )
-  STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" FCL_MINOR_VERSION ${FCL_VERSION})
+  #STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" FCL_MINOR_VERSION ${FCL_VERSION})
 
   if(FCL_MINOR_VERSION GREATER "4")
     set(CMAKE_REQUIRED_INCLUDES ${FCL_INCLUDE_DIRS} ${FCL_INCLUDEDIR})
-    set(CMAKE_REQUIRED_FLAGS "${PLUGIN_COMPILE_FLAGS} ${FCL_CFLAGS_OTHER} -std=c++11 ${PLUGIN_LINK_FLAGS} ${FCL_LDFLAGS}")
+    set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+    foreach(FCL_LIBRARIES_DIR ${FCL_LIBRARIES_DIRS})
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -L${FCL_LIBRARIES_DIR}")
+    endforeach()
     set(CMAKE_REQUIRED_LIBRARIES fcl)
     check_cxx_source_compiles("
       #include <fcl/broadphase/broadphase.h>
-
       int main() {
         fcl::NaiveCollisionManager manager;
         manager.replaceObject(nullptr, nullptr, false);
         return 0;
       }"
-      FCL_HAS_REPLACEOBJECT)
+    FCL_HAS_REPLACEOBJECT)
 
     if( FCL_HAS_REPLACEOBJECT )
       add_definitions(-DFCLRAVE_USE_REPLACEOBJECT)
+    else()
+      message(WARNING "FCL_HAS_REPLACEOBJECT = ${FCL_HAS_REPLACEOBJECT}")
     endif()
-
 
     check_cxx_source_compiles("
       #include <fcl/broadphase/broadphase.h>
-
       int main() {
         fcl::DynamicAABBTreeCollisionManager manager;
         std::vector<fcl::CollisionObject*> v;
         manager.update(v, false);
         return 0;
       }"
-      FCL_SUPPORT_BULK_UPDATE)
+    FCL_SUPPORT_BULK_UPDATE)
 
     if( FCL_SUPPORT_BULK_UPDATE )
       add_definitions(-DFCLRAVE_USE_BULK_UPDATE)
+    else()
+      message(WARNING "FCL_SUPPORT_BULK_UPDATE = ${FCL_SUPPORT_BULK_UPDATE}")
     endif()
 
     link_directories(${OPENRAVE_LINK_DIRS} ${FCL_LIBRARY_DIRS})
