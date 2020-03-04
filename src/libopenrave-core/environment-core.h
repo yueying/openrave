@@ -34,32 +34,39 @@
 #define CHECK_COLLISION_BODY(body) { \
         CHECK_INTERFACE(body); \
 }
-
+//namespace OpenRAVE
+//{
 class Environment : public EnvironmentBase
 {
     class GraphHandleMulti : public GraphHandle
     {
 public:
-        GraphHandleMulti() {
+        GraphHandleMulti()
+		{
         }
-        virtual ~GraphHandleMulti() {
+        virtual ~GraphHandleMulti() 
+		{
         }
         void SetTransform(const RaveTransform<float>& t)
         {
-            FOREACH(it,listhandles) {
-                (*it)->SetTransform(t);
+            for(auto& it:listhandles) 
+			{
+                it->SetTransform(t);
             }
         }
 
         void SetShow(bool bshow)
         {
-            FOREACH(it,listhandles) {
-                (*it)->SetShow(bshow);
+            for(auto& it:listhandles) 
+			{
+                it->SetShow(bshow);
             }
         }
 
-        void Add(OpenRAVE::GraphHandlePtr phandle) {
-            if( !!phandle) {
+        void Add(OpenRAVE::GraphHandlePtr phandle)
+		{
+            if( !!phandle) 
+			{
                 listhandles.push_back(phandle);
             }
         }
@@ -71,17 +78,22 @@ public:
     class CollisionCallbackData : public UserData
     {
 public:
-        CollisionCallbackData(const CollisionCallbackFn& callback, std::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
+        CollisionCallbackData(const CollisionCallbackFn& callback, std::shared_ptr<Environment> penv)
+			: _callback(callback), _pweakenv(penv) 
+		{
         }
-        virtual ~CollisionCallbackData() {
+
+        virtual ~CollisionCallbackData() 
+		{
             std::shared_ptr<Environment> penv = _pweakenv.lock();
-            if( !!penv ) {
+            if( !!penv ) 
+			{
                 boost::timed_mutex::scoped_lock lock(penv->_mutexInterfaces);
                 penv->_listRegisteredCollisionCallbacks.erase(_iterator);
             }
         }
 
-        list<UserDataWeakPtr>::iterator _iterator;
+        std::list<UserDataWeakPtr>::iterator _iterator;
         CollisionCallbackFn _callback;
 protected:
         std::weak_ptr<Environment> _pweakenv;
@@ -92,17 +104,20 @@ protected:
     class BodyCallbackData : public UserData
     {
 public:
-        BodyCallbackData(const BodyCallbackFn& callback, std::shared_ptr<Environment> penv) : _callback(callback), _pweakenv(penv) {
+        BodyCallbackData(const BodyCallbackFn& callback, std::shared_ptr<Environment> penv)
+			: _callback(callback), _pweakenv(penv) {
         }
-        virtual ~BodyCallbackData() {
+        virtual ~BodyCallbackData() 
+		{
             std::shared_ptr<Environment> penv = _pweakenv.lock();
-            if( !!penv ) {
+            if( !!penv ) 
+			{
                 boost::timed_mutex::scoped_lock lock(penv->_mutexInterfaces);
                 penv->_listRegisteredBodyCallbacks.erase(_iterator);
             }
         }
 
-        list<UserDataWeakPtr>::iterator _iterator;
+        std::list<UserDataWeakPtr>::iterator _iterator;
         BodyCallbackFn _callback;
 protected:
         std::weak_ptr<Environment> _pweakenv;
@@ -111,33 +126,9 @@ protected:
     typedef std::shared_ptr<BodyCallbackData> BodyCallbackDataPtr;
 
 public:
-    Environment() : EnvironmentBase()
-    {
-        _homedirectory = RaveGetHomeDirectory();
-        RAVELOG_DEBUG_FORMAT("setting openrave home directory to %s", _homedirectory);
+	Environment();
 
-        _nBodiesModifiedStamp = 0;
-        _nEnvironmentIndex = 1;
-
-        _fDeltaSimTime = 0.01f;
-        _nCurSimTime = 0;
-        _nSimStartTime = utils::GetMicroTime();
-        _bRealTime = true;
-        _bInit = false;
-        _bEnableSimulation = true;     // need to start by default
-        _unit = std::make_pair("meter",1.0); //default unit settings
-
-        _handlegenericrobot = RaveRegisterInterface(PT_Robot,"GenericRobot", RaveGetInterfaceHash(PT_Robot), GetHash(), CreateGenericRobot);
-        _handlegenerictrajectory = RaveRegisterInterface(PT_Trajectory,"GenericTrajectory", RaveGetInterfaceHash(PT_Trajectory), GetHash(), CreateGenericTrajectory);
-        _handlemulticontroller = RaveRegisterInterface(PT_Controller,"GenericMultiController", RaveGetInterfaceHash(PT_Controller), GetHash(), CreateMultiController);
-        _handlegenericphysicsengine = RaveRegisterInterface(PT_PhysicsEngine,"GenericPhysicsEngine", RaveGetInterfaceHash(PT_PhysicsEngine), GetHash(), CreateGenericPhysicsEngine);
-        _handlegenericcollisionchecker = RaveRegisterInterface(PT_CollisionChecker,"GenericCollisionChecker", RaveGetInterfaceHash(PT_CollisionChecker), GetHash(), CreateGenericCollisionChecker);
-    }
-
-    virtual ~Environment()
-    {
-        Destroy();
-    }
+	virtual ~Environment();
 
     virtual void Init(bool bStartSimulationThread=true)
     {
@@ -2822,5 +2813,5 @@ protected:
 
     friend class EnvironmentXMLReader;
 };
-
+//}
 #endif

@@ -1,20 +1,72 @@
-﻿cmake_minimum_required (VERSION 2.6.3) # using import/export targets, 2.6.3 for open scene graph cmake files
-project(OpenRAVE)
+﻿include(cmake/OpenRAVEMinDepVersions.cmake)
+
+if(CMAKE_GENERATOR MATCHES Xcode AND XCODE_VERSION VERSION_GREATER 4.3)
+  cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+elseif(CMAKE_SYSTEM_NAME MATCHES WindowsPhone OR CMAKE_SYSTEM_NAME MATCHES WindowsStore)
+  cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+  #Required to resolve linker error issues due to incompatibility with CMake v3.0+ policies.
+  #CMake fails to find _fseeko() which leads to subsequent linker error.
+  #See details here: http://www.cmake.org/Wiki/CMake/Policies
+  cmake_policy(VERSION 2.8)
+else()
+  cmake_minimum_required(VERSION "${MIN_VER_CMAKE}" FATAL_ERROR)
+endif()
+message(STATUS "Using cmake version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" )
+
+#
+# Configure CMake policies
+#
+if(POLICY CMP0026)
+  cmake_policy(SET CMP0026 NEW)
+endif()
+
+if(POLICY CMP0042)
+  cmake_policy(SET CMP0042 NEW)  # CMake 3.0+ (2.8.12): MacOS "@rpath" in target's install name
+endif()
+
+if(POLICY CMP0046)
+  cmake_policy(SET CMP0046 NEW)  # warn about non-existed dependencies
+endif()
+
+if(POLICY CMP0051)
+  cmake_policy(SET CMP0051 NEW)
+endif()
+
+if(POLICY CMP0054)  # CMake 3.1: Only interpret if() arguments as variables or keywords when unquoted.
+  cmake_policy(SET CMP0054 NEW)
+endif()
+
+if(POLICY CMP0056)
+  cmake_policy(SET CMP0056 NEW)  # try_compile(): link flags
+endif()
+
+if(POLICY CMP0067)
+  cmake_policy(SET CMP0067 NEW)  # CMake 3.8: try_compile(): honor language standard variables (like C++11)
+endif()
+
+if(POLICY CMP0068)
+  cmake_policy(SET CMP0068 NEW)  # CMake 3.9+: `RPATH` settings on macOS do not affect `install_name`.
+endif()
+
+if(POLICY CMP0075)
+  cmake_policy(SET CMP0075 NEW)  # CMake 3.12+: Include file check macros honor `CMAKE_REQUIRED_LIBRARIES`
+endif()
+
+if(POLICY CMP0077)
+  cmake_policy(SET CMP0077 NEW)  # CMake 3.13+: option() honors normal variables.
+endif()
+
+project(OpenRAVE LANGUAGES C CXX)
+
 set( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE )
 
 # Define here the needed parameters
-set (OPENRAVE_VERSION_MAJOR 0)
-set (OPENRAVE_VERSION_MINOR 30)
-set (OPENRAVE_VERSION_PATCH 0)
-set (OPENRAVE_VERSION ${OPENRAVE_VERSION_MAJOR}.${OPENRAVE_VERSION_MINOR}.${OPENRAVE_VERSION_PATCH})
-set (OPENRAVE_SOVERSION ${OPENRAVE_VERSION_MAJOR}.${OPENRAVE_VERSION_MINOR})
+include(cmake/OpenRAVEVersion.cmake)
 message(STATUS "Compiling OpenRAVE Version ${OPENRAVE_VERSION}, soversion=${OPENRAVE_SOVERSION}")
 
-message(STATUS "Using cmake version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" )
-# http://www.cmake.org/cmake/help/cmake-2.6.html#policy:CMP0002
-cmake_policy(SET CMP0002 NEW)
-# http://www.cmake.org/cmake/help/cmake-2.6.html#policy:CMP0003
-cmake_policy(SET CMP0003 NEW)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake") # Directory for CMake scripts
+
+
 
 add_definitions(-DNOMINMAX)
 add_definitions(-DBOOST_DISABLE_ASSERTS)
@@ -85,8 +137,14 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSourceRuns)
 include(CheckCXXCompilerFlag)
 include(CheckTypeSize)
-include(InstallSymlink)
+#include(InstallSymlink)
 #include(FindIntl)
+
+
+# Save libs and executables in the same place
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Output directory for applications")
+
+
 
 find_package(PkgConfig) # pkg_check_modules
 
@@ -271,7 +329,7 @@ if( MSVC )
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /EHc- ")
 
   # untar the source files
-  set(EXTRA_MSVC_DEPEND msvc_boost msvc_collada msvc_libxml2 msvc_ode msvc_soqt)
+  set(EXTRA_MSVC_DEPEND  msvc_libxml2 msvc_ode msvc_soqt)
   foreach(MSVC_LIBRARY ${EXTRA_MSVC_DEPEND})
     if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}" )
       execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -380,16 +438,16 @@ add_custom_command(
   COMMAND ${CPPGENMD5}
   ARGS "${OPENRAVE_PRECISION}" "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface.h"
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collision_checker_base.h" OPENRAVE_COLLISIONCHECKER_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot.h" OPENRAVE_ROBOT_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot_base.h" OPENRAVE_ROBOT_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/planner.h" OPENRAVE_PLANNER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/kinbody.h" OPENRAVE_KINBODY_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensorsystem.h" OPENRAVE_SENSORSYSTEM_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_system_base.h" OPENRAVE_SENSORSYSTEM_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/controller_base.h" OPENRAVE_CONTROLLER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/module.h" OPENRAVE_MODULE_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/iksolver.h" OPENRAVE_IKSOLVER_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/ik_solver_base.h" OPENRAVE_IKSOLVER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/physics_engine_base.h" OPENRAVE_PHYSICSENGINE_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_base.h" OPENRAVE_SENSOR_HASH
-       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/trajectory.h" OPENRAVE_TRAJECTORY_HASH
+       "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/trajectory_base.h" OPENRAVE_TRAJECTORY_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer_base.h" OPENRAVE_VIEWER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/space_sampler_base.h" OPENRAVE_SPACESAMPLER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment_base.h" OPENRAVE_ENVIRONMENT_HASH
@@ -398,16 +456,16 @@ add_custom_command(
   DEPENDS cpp-gen-md5-native
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collision_checker_base.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/planner.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/kinbody.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensorsystem.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_system_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/controller_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/module.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/iksolver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/ik_solver_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/physics_engine_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_base.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/trajectory.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/trajectory_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/viewer_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/space_sampler_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/environment_base.h
@@ -503,9 +561,9 @@ if( CLOCK_GETTIME_FOUND )
 endif()
 
 find_package(RapidJSON)
-if( RAPIDJSON_FOUND )
+if( RapidJSON_FOUND )
   set(OPENRAVE_RAPIDJSON 1)
-  include_directories(${RapidJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIR} "D:/Program Files (x86)/RapidJSON/include")
+  include_directories(${RapidJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIR})
 else()
   set(OPENRAVE_RAPIDJSON 0)
   message(WARNING "rapidjson library not found")
@@ -751,6 +809,7 @@ if( OPT_LOG4CXX )
   endif()
 endif()
 
+include_directories(${RAPIDJSON_INCLUDES})
 link_directories(${OPENRAVE_LINK_DIRS})
 
 message(STATUS "compiling local convexdecomposition library")
@@ -898,7 +957,7 @@ install(FILES COPYING LICENSE.lgpl LICENSE.apache DESTINATION ${OPENRAVE_SHARE_D
 #install(EXPORT openrave-targets DESTINATION lib/cmake/openrave-${OPENRAVE_VERSION_MAJOR}.${OPENRAVE_VERSION_MINOR})
 
 # add make uninstall capability
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/modules-cmake/cmake_uninstall.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
+#configure_file("${CMAKE_CURRENT_SOURCE_DIR}/modules-cmake/cmake_uninstall.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 if(CMAKE_CPACK_COMMAND AND UNIX AND OPT_BUILD_PACKAGES)

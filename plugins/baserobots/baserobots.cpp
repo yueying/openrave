@@ -1,4 +1,4 @@
-// -*- coding: utf-8 --*
+﻿// -*- coding: utf-8 --*
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -27,20 +27,25 @@ void RegisterConveyorReaders(std::list< UserDataPtr >& listRegisteredReaders);
 
 static std::list< UserDataPtr >* s_listRegisteredReaders = NULL; ///< have to make it a pointer in order to prevent static object destruction from taking precedence
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename,
+	std::istream& sinput, EnvironmentBasePtr penv)
 {
-    if( !s_listRegisteredReaders ) {
-        s_listRegisteredReaders = new list< UserDataPtr >();
+    if( !s_listRegisteredReaders ) 
+	{
+        s_listRegisteredReaders = new std::list< UserDataPtr >();
         RegisterCollisionMapRobotReaders(*s_listRegisteredReaders);
         RegisterConveyorReaders(*s_listRegisteredReaders);
     }
 
-    switch(type) {
+    switch(type) 
+	{
     case PT_Robot:
-        if( interfacename == "collisionmaprobot") {
+        if( interfacename == "collisionmaprobot") 
+		{
             return CreateCollisionMapRobot(penv,sinput);
         }
-        else if( interfacename == "conveyor" ) {
+        else if( interfacename == "conveyor" ) 
+		{
             return CreateConveyorRobot(penv,sinput);
         }
         break;

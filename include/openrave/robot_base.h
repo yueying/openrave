@@ -24,6 +24,7 @@
 
 #include <openrave/numerical.h>
 #include <openrave/sensor_base.h>
+#include <openrave/kinbody.h>
 
 namespace OpenRAVE 
 {
@@ -1155,7 +1156,7 @@ private:
 #endif
     friend class ColladaWriter;
     friend class ColladaReader;
-    friend class RaveDatabase;
+    friend class PluginDatabase;
     friend class Grabbed;
 };
 

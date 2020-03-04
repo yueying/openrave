@@ -31,7 +31,7 @@
 #include <locale>
 #include <set>
 
-#include <openrave/plugindatabase.h>
+#include <openrave/plugin_database.h>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
@@ -146,14 +146,15 @@ int RaveInitialize(bool bLoadAllPlugins, int level)
 
 void RaveInitializeFromState(UserDataPtr globalstate)
 {
-    RaveGlobal::_state = std::dynamic_pointer_cast<RaveGlobal>(globalstate);
+    RaveGlobal::global_state_ = std::dynamic_pointer_cast<RaveGlobal>(globalstate);
 }
 
 UserDataPtr RaveGlobalState()
 {
     // only return valid pointer if initialized!
-    std::shared_ptr<RaveGlobal> state = RaveGlobal::_state;
-    if( !!state && state->_IsInitialized() ) {
+    std::shared_ptr<RaveGlobal> state = RaveGlobal::global_state_;
+    if( !!state && state->_IsInitialized() ) 
+	{
         return state;
     }
     return UserDataPtr();

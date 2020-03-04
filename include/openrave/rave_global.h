@@ -16,10 +16,10 @@
 #include <openrave/numerical.h>
 #include <openrave/user_data.h>
 #include <boost/utility.hpp>
-#include <boost/thread/once.hpp>
+#include <mutex>
 #include <map>
 #include <openrave/openrave.h>
-#include <openrave/plugindatabase.h>
+#include <openrave/plugin_database.h>
 #include <openrave/utils.h>
 
 namespace OpenRAVE
@@ -29,74 +29,23 @@ namespace OpenRAVE
 #else
 	const char s_filesep = '/';
 #endif
-	static boost::once_flag _onceRaveInitialize = BOOST_ONCE_INIT;
 	/// there is only once global openrave state. It is created when openrave
 /// is first used, and destroyed when the program quits or RaveDestroy is called.
-	class RaveGlobal : private boost::noncopyable, public std::enable_shared_from_this<RaveGlobal>, public UserData
+	class RaveGlobal : public std::enable_shared_from_this<RaveGlobal>, public UserData
 	{
 		typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
 
-		RaveGlobal()
-		{
-			// is this really necessary? just makes bugs hard to reproduce...
-			//srand(GetMilliTime());
-			//RaveInitRandomGeneration(GetMilliTime());
-			debug_level_ = Level_Info;
-			global_environment_id_ = 0;
-			_nDataAccessOptions = 0;
-#ifdef USE_CRLIBM
-			_bcrlibmInit = false;
-#endif
-
-			_mapinterfacenames[PT_Planner] = "planner";
-			_mapinterfacenames[PT_Robot] = "robot";
-			_mapinterfacenames[PT_SensorSystem] = "sensorsystem";
-			_mapinterfacenames[PT_Controller] = "controller";
-			_mapinterfacenames[PT_Module] = "module";
-			_mapinterfacenames[PT_IkSolver] = "iksolver";
-			_mapinterfacenames[PT_KinBody] = "kinbody";
-			_mapinterfacenames[PT_PhysicsEngine] = "physicsengine";
-			_mapinterfacenames[PT_Sensor] = "sensor";
-			_mapinterfacenames[PT_CollisionChecker] = "collisionchecker";
-			_mapinterfacenames[PT_Trajectory] = "trajectory";
-			_mapinterfacenames[PT_Viewer] = "viewer";
-			_mapinterfacenames[PT_SpaceSampler] = "spacesampler";
-			BOOST_ASSERT(_mapinterfacenames.size() == PT_NumberOfInterfaces);
-
-			_mapikparameterization[IKP_Transform6D] = "Transform6D";
-			_mapikparameterization[IKP_Rotation3D] = "Rotation3D";
-			_mapikparameterization[IKP_Translation3D] = "Translation3D";
-			_mapikparameterization[IKP_Direction3D] = "Direction3D";
-			_mapikparameterization[IKP_Ray4D] = "Ray4D";
-			_mapikparameterization[IKP_Lookat3D] = "Lookat3D";
-			_mapikparameterization[IKP_TranslationDirection5D] = "TranslationDirection5D";
-			_mapikparameterization[IKP_TranslationXY2D] = "TranslationXY2D";
-			_mapikparameterization[IKP_TranslationXYOrientation3D] = "TranslationXYOrientation3D";
-			_mapikparameterization[IKP_TranslationLocalGlobal6D] = "TranslationLocalGlobal6D";
-			_mapikparameterization[IKP_TranslationXAxisAngle4D] = "TranslationXAxisAngle4D";
-			_mapikparameterization[IKP_TranslationYAxisAngle4D] = "TranslationYAxisAngle4D";
-			_mapikparameterization[IKP_TranslationZAxisAngle4D] = "TranslationZAxisAngle4D";
-			_mapikparameterization[IKP_TranslationXAxisAngleZNorm4D] = "TranslationXAxisAngleZNorm4D";
-			_mapikparameterization[IKP_TranslationYAxisAngleXNorm4D] = "TranslationYAxisAngleXNorm4D";
-			_mapikparameterization[IKP_TranslationZAxisAngleYNorm4D] = "TranslationZAxisAngleYNorm4D";
-			BOOST_ASSERT(_mapikparameterization.size() == IKP_NumberOfParameterizations);
-			for(auto it: _mapikparameterization)
-			{
-				std::string name = it.second;
-				std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-				_mapikparameterizationlower[it.first] = name;
-			}
-		}
 	public:
-		virtual ~RaveGlobal()
-		{
-			Destroy();
-		}
+		virtual ~RaveGlobal();
 
 		static std::shared_ptr<RaveGlobal>& instance()
 		{
-			boost::call_once(_create, _onceRaveInitialize);
-			return _state;
+			static std::once_flag s_flag;
+			std::call_once(s_flag, [&]() {
+				global_state_.reset(new RaveGlobal);
+			});
+
+			return global_state_;
 		}
 
 		int Initialize(bool is_load_all_plugins, int level)
@@ -129,7 +78,7 @@ namespace OpenRAVE
 				RAVELOG_WARN("failed to set to C locale: %s\n", e.what());
 			}
 
-			_pdatabase.reset(new RaveDatabase());
+			_pdatabase.reset(new PluginDatabase());
 			if (!_pdatabase->Init(is_load_all_plugins))
 			{
 				RAVELOG_FATAL("failed to create the openrave plugin database\n");
@@ -365,7 +314,7 @@ namespace OpenRAVE
 			return it->second(pinterface, atts);
 		}
 
-		std::shared_ptr<RaveDatabase> GetDatabase() const {
+		std::shared_ptr<PluginDatabase> GetDatabase() const {
 			return _pdatabase;
 		}
 		const std::map<InterfaceType, std::string>& GetInterfaceNamesMap() const {
@@ -538,7 +487,7 @@ namespace OpenRAVE
 			}
 
 			// get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
-			std::shared_ptr<RaveDatabase> pdatabase = _pdatabase;
+			std::shared_ptr<PluginDatabase> pdatabase = _pdatabase;
 			if (!!pdatabase) {
 				if (pdatabase->HasInterface(PT_Viewer, "qtosg")) {
 					return std::string("qtosg");
@@ -562,14 +511,8 @@ namespace OpenRAVE
 		}
 
 	protected:
-		static void _create()
+		bool _IsInitialized() const
 		{
-			if (!_state) {
-				_state.reset(new RaveGlobal());
-			}
-		}
-
-		bool _IsInitialized() const {
 			return !!_pdatabase;
 		}
 
@@ -618,9 +561,9 @@ namespace OpenRAVE
 			}
 #else
 			std::string datafilename = installdir;
-			for(auto itname: _vdatadirs) 
+			for (auto itname : _vdatadirs)
 			{
-				if (itname == installdir) 
+				if (itname == installdir)
 				{
 					bExists = true;
 					break;
@@ -630,7 +573,7 @@ namespace OpenRAVE
 			if (!bExists) {
 				_vdatadirs.push_back(installdir);
 			}
-			for(auto itdir: _vdatadirs)
+			for (auto itdir : _vdatadirs)
 			{
 				RAVELOG_VERBOSE(str(boost::format("data dir: %s") % itdir));
 			}
@@ -735,13 +678,17 @@ namespace OpenRAVE
 #endif
 			SetDebugLevel(level);
 		}
+	private:
+		RaveGlobal();
+		RaveGlobal(const RaveGlobal&) = delete;
+		RaveGlobal& operator=(const RaveGlobal&) = delete;
 
 	private:
-		static std::shared_ptr<RaveGlobal> _state;
+		static std::shared_ptr<RaveGlobal> global_state_;
 		// state that is always present
 
 		// state that is initialized/destroyed
-		std::shared_ptr<RaveDatabase> _pdatabase;
+		std::shared_ptr<PluginDatabase> _pdatabase;
 		int debug_level_;
 		boost::mutex _mutexinternal;
 		std::map<InterfaceType, READERSMAP > _mapreaders;
@@ -773,6 +720,6 @@ namespace OpenRAVE
 		friend UserDataPtr RaveGlobalState();
 	};
 
-	
+
 
 }

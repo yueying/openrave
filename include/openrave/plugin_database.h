@@ -44,10 +44,10 @@
 
 #endif
 
-//#define INTERFACE_PREDELETER boost::bind(&RaveDatabase::_InterfaceDestroyCallbackShared,shared_from_this(),_1)
+//#define INTERFACE_PREDELETER boost::bind(&PluginDatabase::_InterfaceDestroyCallbackShared,shared_from_this(),_1)
 
 #define INTERFACE_PREDELETER boost::function<void(void const*)>()
-#define INTERFACE_POSTDELETER(name, plugin) boost::bind(&RaveDatabase::_InterfaceDestroyCallbackSharedPost,shared_from_this(),name, plugin)
+#define INTERFACE_POSTDELETER(name, plugin) boost::bind(&PluginDatabase::_InterfaceDestroyCallbackSharedPost,shared_from_this(),name, plugin)
 
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
@@ -60,22 +60,23 @@ const char s_filesep = '/';
 
 #include <openrave/utils.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 /// \brief database of interfaces from plugins
-class RaveDatabase : public std::enable_shared_from_this<RaveDatabase>
+class PluginDatabase : public std::enable_shared_from_this<PluginDatabase>
 {
     struct RegisteredInterface : public UserData
     {
         RegisteredInterface(InterfaceType type, const std::string& name, 
 			const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn,
-			std::shared_ptr<RaveDatabase> database)
+			std::shared_ptr<PluginDatabase> database)
 			: _type(type), _name(name), _createfn(createfn), _database(database)
 		{
         }
         virtual ~RegisteredInterface()
 		{
-            std::shared_ptr<RaveDatabase> database = _database.lock();
+            std::shared_ptr<PluginDatabase> database = _database.lock();
             if( !!database ) 
 			{
                 boost::mutex::scoped_lock lock(database->_mutex);
@@ -88,7 +89,7 @@ class RaveDatabase : public std::enable_shared_from_this<RaveDatabase>
         boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
         std::list< std::weak_ptr<RegisteredInterface> >::iterator _iterator;
 protected:
-        std::weak_ptr<RaveDatabase> _database;
+        std::weak_ptr<PluginDatabase> _database;
     };
     typedef std::shared_ptr<RegisteredInterface> RegisteredInterfacePtr;
 
@@ -97,7 +98,7 @@ public:
     class Plugin : public UserData, public std::enable_shared_from_this<Plugin>
     {
 public:
-        Plugin(std::shared_ptr<RaveDatabase> pdatabase) 
+        Plugin(std::shared_ptr<PluginDatabase> pdatabase) 
 			: _pdatabase(pdatabase), plibrary(NULL), pfnCreate(NULL), 
 			pfnCreateNew(NULL), pfnGetPluginAttributes(NULL), 
 			pfnGetPluginAttributesNew(NULL), pfnDestroyPlugin(NULL),
@@ -115,7 +116,7 @@ public:
                         // NOTE: for some reason, closing the lazy loaded library can make the system crash, so instead keep the memory around, and create a new one with RTLD_NOW if necessary
                     }
                     else {
-                        RaveDatabase::_SysCloseLibrary(plibrary);
+                        PluginDatabase::_SysCloseLibrary(plibrary);
                     }
                     plibrary = NULL;
                 }
@@ -127,11 +128,11 @@ public:
                 boost::mutex::scoped_lock lock(_mutex);
                 // do some more checking here, there still might be instances of robots, planners, and sensors out there
                 if (plibrary) {
-                    RAVELOG_DEBUG("RaveDatabase: closing plugin %s\n", ppluginname.c_str());        // Sleep(10);
+                    RAVELOG_DEBUG("PluginDatabase: closing plugin %s\n", ppluginname.c_str());        // Sleep(10);
                     if( pfnDestroyPlugin != NULL ) {
                         pfnDestroyPlugin();
                     }
-                    std::shared_ptr<RaveDatabase> pdatabase = _pdatabase.lock();
+                    std::shared_ptr<PluginDatabase> pdatabase = _pdatabase.lock();
                     if( !!pdatabase ) {
                         pdatabase->_QueueLibraryDestruction(plibrary);
                     }
@@ -373,7 +374,7 @@ protected:
             }
         }
 
-        std::weak_ptr<RaveDatabase> _pdatabase;
+        std::weak_ptr<PluginDatabase> _pdatabase;
         std::set<std::pair< InterfaceType, std::string> > _setBadInterfaces;         ///< interfaces whose hash is wrong and shouldn't be tried for this plugin
         std::string ppluginname;
 
@@ -392,61 +393,74 @@ protected:
         bool _bInitializing; ///< still in the initialization phase
         bool _bHasCalledOnRaveInitialized; ///< if true, then OnRaveInitialized has been called and does not need to call it again.
 
-        friend class RaveDatabase;
+        friend class PluginDatabase;
     };
     typedef std::shared_ptr<Plugin> PluginPtr;
     typedef std::shared_ptr<Plugin const> PluginConstPtr;
     friend class Plugin;
 
-    RaveDatabase() : _bShutdown(false) {
+    PluginDatabase() : _bShutdown(false) {
     }
-    virtual ~RaveDatabase() {
+    virtual ~PluginDatabase() {
         Destroy();
     }
 
-    RobotBasePtr CreateRobot(EnvironmentBasePtr penv, const std::string& name) {
+    RobotBasePtr CreateRobot(EnvironmentBasePtr penv, const std::string& name) 
+	{
         return RaveInterfaceCast<RobotBase>(Create(penv, PT_Robot, name));
     }
-    KinBodyPtr CreateKinBody(EnvironmentBasePtr penv, const std::string& name) {
+    KinBodyPtr CreateKinBody(EnvironmentBasePtr penv, const std::string& name) 
+	{
         return RaveInterfaceCast<KinBody>(Create(penv, PT_KinBody, name));
     }
-    PlannerBasePtr CreatePlanner(EnvironmentBasePtr penv, const std::string& name) {
+    PlannerBasePtr CreatePlanner(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<PlannerBase>(Create(penv, PT_Planner, name));
     }
-    SensorSystemBasePtr CreateSensorSystem(EnvironmentBasePtr penv, const std::string& name) {
+    SensorSystemBasePtr CreateSensorSystem(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<SensorSystemBase>(Create(penv, PT_SensorSystem, name));
     }
-    ControllerBasePtr CreateController(EnvironmentBasePtr penv, const std::string& name) {
+    ControllerBasePtr CreateController(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<ControllerBase>(Create(penv, PT_Controller, name));
     }
-    ModuleBasePtr CreateModule(EnvironmentBasePtr penv, const std::string& name) {
+    ModuleBasePtr CreateModule(EnvironmentBasePtr penv, const std::string& name) 
+	{
         return RaveInterfaceCast<ModuleBase>(Create(penv, PT_Module, name));
     }
-    IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr penv, const std::string& name) {
+    IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<IkSolverBase>(Create(penv, PT_IkSolver, name));
     }
-    PhysicsEngineBasePtr CreatePhysicsEngine(EnvironmentBasePtr penv, const std::string& name) {
+    PhysicsEngineBasePtr CreatePhysicsEngine(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<PhysicsEngineBase>(Create(penv, PT_PhysicsEngine, name));
     }
-    SensorBasePtr CreateSensor(EnvironmentBasePtr penv, const std::string& name) {
+    SensorBasePtr CreateSensor(EnvironmentBasePtr penv, const std::string& name) 
+	{
         return RaveInterfaceCast<SensorBase>(Create(penv, PT_Sensor, name));
     }
-    CollisionCheckerBasePtr CreateCollisionChecker(EnvironmentBasePtr penv, const std::string& name) {
+    CollisionCheckerBasePtr CreateCollisionChecker(EnvironmentBasePtr penv, const std::string& name) 
+	{
         return RaveInterfaceCast<CollisionCheckerBase>(Create(penv, PT_CollisionChecker, name));
     }
-    ViewerBasePtr CreateViewer(EnvironmentBasePtr penv, const std::string& name) {
+    ViewerBasePtr CreateViewer(EnvironmentBasePtr penv, const std::string& name) 
+	{
         return RaveInterfaceCast<ViewerBase>(Create(penv, PT_Viewer, name));
     }
-    TrajectoryBasePtr CreateTrajectory(EnvironmentBasePtr penv, const std::string& name) {
+    TrajectoryBasePtr CreateTrajectory(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<TrajectoryBase>(Create(penv, PT_Trajectory, name));
     }
-    SpaceSamplerBasePtr CreateSpaceSampler(EnvironmentBasePtr penv, const std::string& name) {
+    SpaceSamplerBasePtr CreateSpaceSampler(EnvironmentBasePtr penv, const std::string& name)
+	{
         return RaveInterfaceCast<SpaceSamplerBase>(Create(penv, PT_SpaceSampler, name));
     }
 
     virtual bool Init(bool bLoadAllPlugins)
     {
-        _threadPluginLoader.reset(new boost::thread(boost::bind(&RaveDatabase::_PluginLoaderThread, this)));
+        _threadPluginLoader.reset(new boost::thread(boost::bind(&PluginDatabase::_PluginLoaderThread, this)));
         std::vector<std::string> vplugindirs;
 #ifdef _WIN32
         const char* delim = ";";
@@ -870,7 +884,7 @@ protected:
     void _CleanupUnusedLibraries()
     {
         FOREACH(it,_listDestroyLibraryQueue) {
-            RaveDatabase::_SysCloseLibrary(*it);
+            PluginDatabase::_SysCloseLibrary(*it);
         }
         _listDestroyLibraryQueue.clear();
     }

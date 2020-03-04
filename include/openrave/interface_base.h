@@ -119,7 +119,7 @@ namespace OpenRAVE
 			return type_;
 		}
 
-		/// set internally by RaveDatabase <b>[multi-thread safe]</b>
+		/// set internally by PluginDatabase <b>[multi-thread safe]</b>
 		/// \return the unique identifier that describes this class type, case is ignored
 		/// should be the same id used to create the object
 		inline const std::string& GetXMLId() const 
@@ -127,7 +127,7 @@ namespace OpenRAVE
 			return str_xml_id_;
 		}
 
-		/// set internally by RaveDatabase <b>[multi-thread safe]</b>
+		/// set internally by PluginDatabase <b>[multi-thread safe]</b>
 		/// \return the pluginname this interface was loaded from
 		inline const std::string& GetPluginName() const 
 		{
@@ -397,7 +397,7 @@ namespace OpenRAVE
 #endif
 #endif
 		friend class ColladaReader;
-		friend class RaveDatabase;
+		friend class PluginDatabase;
 	};
 
 	typedef boost::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;

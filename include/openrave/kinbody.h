@@ -233,7 +233,8 @@ namespace OpenRAVE
 		{
 		public:
 			LinkInfo();
-			virtual ~LinkInfo() {
+			virtual ~LinkInfo()
+			{
 			}
 
 			LinkInfo(const LinkInfo& other);
@@ -855,7 +856,7 @@ namespace OpenRAVE
 		{
 		public:
 			JointInfo();
-			virtual ~JointInfo() 
+			virtual ~JointInfo()
 			{
 			}
 
@@ -2577,6 +2578,10 @@ namespace OpenRAVE
 		/// Can only be called before internal robot hierarchy is initialized
 		virtual void _InitAndAddJoint(JointPtr pjoint);
 
+	public:
+		int _environmentid; ///< \see GetEnvironmentId
+
+	protected:
 		std::string _name; ///< name of body
 		std::vector<JointPtr> _vecjoints; ///< \see GetJoints
 		std::vector<JointPtr> _vTopologicallySortedJoints; ///< \see GetDependencyOrderedJoints
@@ -2607,7 +2612,7 @@ namespace OpenRAVE
 		ConfigurationSpecification _spec;
 		CollisionCheckerBasePtr _selfcollisionchecker; ///< optional checker to use for self-collisions
 
-		int _environmentid; ///< \see GetEnvironmentId
+		
 		mutable int _nUpdateStampId; ///< \see GetUpdateStamp
 		uint32_t _nParametersChanged; ///< set of parameters that changed and need callbacks
 		ManageDataPtr _pManageData;
@@ -2641,7 +2646,7 @@ namespace OpenRAVE
 		friend class CollisionCheckerBase;
 		friend class ViewerBase;
 		friend class SensorSystemBase;
-		friend class RaveDatabase;
+		friend class PluginDatabase;
 		friend class ChangeCallbackData;
 		friend class Grabbed;
 	};

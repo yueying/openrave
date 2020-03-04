@@ -31,11 +31,13 @@ class OPENRAVE_API TrajectoryBase : public InterfaceBase
 {
 public:
     TrajectoryBase(EnvironmentBasePtr penv);
-    virtual ~TrajectoryBase() {
+    virtual ~TrajectoryBase() 
+	{
     }
 
     /// \brief return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
+    static inline InterfaceType GetInterfaceTypeStatic() 
+	{
         return PT_Trajectory;
     }
 

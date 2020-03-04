@@ -87,7 +87,7 @@ class EnvironmentXMLReader;
 }
 
 class Environment;
-class RaveDatabase;
+class PluginDatabase;
 class XFileReader;
 
 #include "openrave-core.h"

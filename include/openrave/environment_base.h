@@ -58,6 +58,7 @@ namespace OpenRAVE
 		{
 			user_data_ = data;
 		}
+
 		/// \brief return the user custom data
 		virtual UserDataPtr GetUserData() const
 		{
