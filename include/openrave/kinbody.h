@@ -25,6 +25,8 @@
 #include <set>
 #include <vector>
 #include <string>
+
+#include <rapidjson/document.h>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
 
@@ -51,7 +53,6 @@ namespace OpenRAVE
 		GT_Container = 5, ///< a container shaped geometry that has inner and outer extents. container opens on +Z. The origin is at the bottom of the base.
 		GT_Cage = 6, ///< a container shaped geometry with removable side walls. The side walls can be on any of the four sides. The origin is at the bottom of the base. The inner volume of the cage is measured from the base to the highest wall.
 	};
-
 
 	/** \brief <b>[interface]</b> A kinematic body of links and joints. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_kinbody.
 		\ingroup interfaces
@@ -152,7 +153,7 @@ namespace OpenRAVE
 
 #if OPENRAVE_RAPIDJSON
 			///< \param multiply all translational values by fUnitScale
-			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const dReal fUnitScale = 1.0, int options = 0);
+			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
 
 			///< \param multiply all translational values by fUnitScale
 			virtual void DeserializeJSON(const rapidjson::Value &value, const dReal fUnitScale = 1);
@@ -239,6 +240,9 @@ namespace OpenRAVE
 
 			LinkInfo(const LinkInfo& other);
 			LinkInfo& operator=(const LinkInfo& other);
+
+			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale = 1.0);
 
 			std::vector<GeometryInfoPtr> _vgeometryinfos;
 			/// extra-purpose geometries like
@@ -812,6 +816,9 @@ namespace OpenRAVE
 		{
 		public:
 			boost::array< std::string, 3>  _equations;         ///< the original equations
+			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
+				dReal fUnitScale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
 		};
 		typedef std::shared_ptr<MimicInfo> MimicInfoPtr;
 		typedef std::shared_ptr<MimicInfo const> MimicInfoConstPtr;
@@ -862,6 +869,11 @@ namespace OpenRAVE
 
 			JointInfo(const JointInfo& other);
 			JointInfo& operator=(const JointInfo& other);
+
+			virtual int GetDOF() const;
+
+			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
 
 			JointType _type; /// The joint type
 			std::string _name;         ///< the unique joint name
@@ -1564,6 +1576,8 @@ namespace OpenRAVE
 			std::string _robotlinkname;  ///< the name of the body link that is grabbing the body
 			Transform _trelative; ///< transform of first link of body relative to _robotlinkname's transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
 			std::set<int> _setRobotLinksToIgnore; ///< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
+			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
 		};
 		typedef std::shared_ptr<GrabbedInfo> GrabbedInfoPtr;
 		typedef std::shared_ptr<GrabbedInfo const> GrabbedInfoConstPtr;
@@ -2612,7 +2626,7 @@ namespace OpenRAVE
 		ConfigurationSpecification _spec;
 		CollisionCheckerBasePtr _selfcollisionchecker; ///< optional checker to use for self-collisions
 
-		
+
 		mutable int _nUpdateStampId; ///< \see GetUpdateStamp
 		uint32_t _nParametersChanged; ///< set of parameters that changed and need callbacks
 		ManageDataPtr _pManageData;

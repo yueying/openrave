@@ -36,4 +36,51 @@ namespace OpenRAVE
 		coloumb_friction = 0;
 		viscous_friction = 0;
 	}
+
+
+	void ElectricMotorActuatorInfo::SerializeJSON(rapidjson::Value& value,
+		rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+	{
+		SetJsonValueByKey(value, "modelType", model_type, allocator);
+		SetJsonValueByKey(value, "assignedPowerRating", assigned_power_rating, allocator);
+		SetJsonValueByKey(value, "maxSpeed", max_speed, allocator);
+		SetJsonValueByKey(value, "noLoadSpeed", no_load_speed, allocator);
+		SetJsonValueByKey(value, "stallTorque", stall_torque, allocator);
+		SetJsonValueByKey(value, "maxInstantaneousTorque", max_instantaneous_torque, allocator);
+		SetJsonValueByKey(value, "nominalSpeedTorquePoints", nominal_speed_torque_points, allocator);
+		SetJsonValueByKey(value, "maxSpeedTorquePoints", max_speed_torque_points, allocator);
+		SetJsonValueByKey(value, "nominalTorque", nominal_torque, allocator);
+		SetJsonValueByKey(value, "rotorInertia", rotor_inertia, allocator);
+		SetJsonValueByKey(value, "torqueConstant", torque_constant, allocator);
+		SetJsonValueByKey(value, "nominalVoltage", nominal_voltage, allocator);
+		SetJsonValueByKey(value, "speedConstant", speed_constant, allocator);
+		SetJsonValueByKey(value, "startingCurrent", starting_current, allocator);
+		SetJsonValueByKey(value, "terminalResistance", terminal_resistance, allocator);
+		SetJsonValueByKey(value, "gearRatio", gear_ratio, allocator);
+		SetJsonValueByKey(value, "coloumbFriction", coloumb_friction, allocator);
+		SetJsonValueByKey(value, "viscousFriction", viscous_friction, allocator);
+	}
+
+	void ElectricMotorActuatorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+	{
+		LoadJsonValueByKey(value, "modelType", model_type);
+		LoadJsonValueByKey(value, "assignedPowerRating", assigned_power_rating);
+		LoadJsonValueByKey(value, "maxSpeed", max_speed);
+		LoadJsonValueByKey(value, "noLoadSpeed", no_load_speed);
+		LoadJsonValueByKey(value, "stallTorque", stall_torque);
+		LoadJsonValueByKey(value, "maxInstantaneousTorque", max_instantaneous_torque);
+		LoadJsonValueByKey(value, "nominalSpeedTorquePoints", nominal_speed_torque_points);
+		LoadJsonValueByKey(value, "maxSpeedTorquePoints", max_speed_torque_points);
+		LoadJsonValueByKey(value, "nominalTorque", nominal_torque);
+		LoadJsonValueByKey(value, "rotorInertia", rotor_inertia);
+		LoadJsonValueByKey(value, "torqueConstant", torque_constant);
+		LoadJsonValueByKey(value, "nominalVoltage", nominal_voltage);
+		LoadJsonValueByKey(value, "speedConstant", speed_constant);
+		LoadJsonValueByKey(value, "startingCurrent", starting_current);
+		LoadJsonValueByKey(value, "terminalResistance", terminal_resistance);
+		LoadJsonValueByKey(value, "gearRatio", gear_ratio);
+		LoadJsonValueByKey(value, "coloumbFriction", coloumb_friction);
+		LoadJsonValueByKey(value, "viscousFriction", viscous_friction);
+	}
+
 }

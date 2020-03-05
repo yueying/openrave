@@ -17,6 +17,7 @@
 #define OPENRAVE_IK_PARAMETERIZATION_H_
 
 #include <openrave/config.h>
+#include <rapidjson/document.h>
 #include <map>
 #include <openrave/type.h>
 #include <openrave/openrave_exception.h>
@@ -1236,6 +1237,10 @@ namespace OpenRAVE
 			std::swap(_type, r._type);
 			_mapCustomData.swap(r._mapCustomData);
 		}
+
+		void SerializeJSON(rapidjson::Value& rIkParameterization, rapidjson::Document::AllocatorType& alloc) const;
+
+		void DeserializeJSON(const rapidjson::Value& rIkParameterization);
 
 	protected:
 		inline static bool _IsValidCharInName(char c) {

@@ -22,7 +22,9 @@
 
 #include "fparsermulti.h"
 #define M_PI       3.14159265358979323846   // pi
+
 namespace OpenRAVE {
+
 
 KinBody::JointInfo::JointControlInfo_RobotController::JointControlInfo_RobotController() : robotId(-1)
 {
@@ -60,6 +62,206 @@ KinBody::JointInfo::JointInfo() : XMLReadable("joint"), _type(JointNone), _bIsAc
 KinBody::JointInfo::JointInfo(const JointInfo& other) : XMLReadable("joint")
 {
     *this = other;
+}
+
+int KinBody::JointInfo::GetDOF() const
+{
+    if(_type & KinBody::JointSpecialBit) {
+        switch(_type) {
+        case KinBody::JointHinge2:
+        case KinBody::JointUniversal: return 2;
+        case KinBody::JointSpherical: return 3;
+        case KinBody::JointTrajectory: return 1;
+        default:
+            throw OPENRAVE_EXCEPTION_FORMAT(_("invalid joint type 0x%x"), _type, ORE_Failed);
+        }
+    }
+    return int(_type & 0xf);
+}
+
+void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    int dof = GetDOF();
+
+    switch (_type) {
+    case JointRevolute:
+        SetJsonValueByKey(value, "type", "revolute", allocator);
+        break;
+    case JointPrismatic:
+        SetJsonValueByKey(value, "type", "prismatic", allocator);
+        break;
+    case JointNone:
+        break;
+    default:
+        SetJsonValueByKey(value, "type", static_cast<int>(_type), allocator);
+        break;
+    }
+
+    dReal fjointmult = fUnitScale;
+    if(_type == JointRevolute)
+    {
+        fjointmult = 1;
+    }
+    else if(_type == JointPrismatic)
+    {
+        fjointmult = fUnitScale;
+    }
+
+    SetJsonValueByKey(value, "name", _name, allocator);
+    SetJsonValueByKey(value, "anchors", _vanchor, allocator);
+    SetJsonValueByKey(value, "parentLinkName", _linkname0, allocator);
+    SetJsonValueByKey(value, "childLinkName", _linkname1, allocator);
+    SetJsonValueByKey(value, "axes", _vaxes, allocator);
+    SetJsonValueByKey(value, "currentValues", _vcurrentvalues, allocator);
+    SetJsonValueByKey(value, "resolutions", _vresolution, allocator, dof);
+
+    boost::array<dReal, 3> newvmaxvel = _vmaxvel;
+    boost::array<dReal, 3> newvmaxaccel = _vmaxaccel;
+    boost::array<dReal, 3> newvlowerlimit = _vlowerlimit;
+    boost::array<dReal, 3> newvupperlimit = _vupperlimit;
+    for(size_t i = 0; i < 3; i++) {
+        newvmaxvel[i] *= fjointmult;
+        newvmaxaccel[i] *= fjointmult;
+        newvlowerlimit[i] *= fjointmult;
+        newvupperlimit[i] *= fjointmult;
+    }
+    SetJsonValueByKey(value, "maxVel", newvmaxvel, allocator, dof);
+    SetJsonValueByKey(value, "hardMaxVel", _vhardmaxvel, allocator, dof);
+    SetJsonValueByKey(value, "maxAccel", newvmaxaccel, allocator, dof);
+    SetJsonValueByKey(value, "hardMaxAccel", _vhardmaxaccel, allocator, dof);
+    SetJsonValueByKey(value, "maxJerk", _vmaxjerk, allocator, dof);
+    SetJsonValueByKey(value, "hardMaxJerk", _vhardmaxjerk, allocator, dof);
+    SetJsonValueByKey(value, "maxTorque", _vmaxtorque, allocator, dof);
+    SetJsonValueByKey(value, "maxInertia", _vmaxinertia, allocator, dof);
+    SetJsonValueByKey(value, "weights", _vweights, allocator, dof);
+    SetJsonValueByKey(value, "offsets", _voffsets, allocator, dof);
+    SetJsonValueByKey(value, "lowerLimit", newvlowerlimit, allocator, dof);
+    SetJsonValueByKey(value, "upperLimit", newvupperlimit, allocator, dof);
+    // TODO: SetJsonValueByKey(value, allocator, "trajfollow", _trajfollow);
+
+    if (_vmimic.size() > 0) {
+        bool bfound = false;
+        for (size_t i = 0; i < _vmimic.size() && i < (size_t)dof; ++i) {
+            if (!!_vmimic[i]) {
+                bfound = true;
+                break;
+            }
+        }
+        if (bfound) {
+            rapidjson::Value mimics;
+            mimics.SetArray();
+            for (size_t i = 0; i < _vmimic.size() && i < (size_t)dof; ++i) {
+                rapidjson::Value mimicValue;
+                _vmimic[i]->SerializeJSON(mimicValue, allocator, fUnitScale);
+                mimics.PushBack(mimicValue, allocator);
+            }
+            value.AddMember("mimics", mimics, allocator);
+        }
+    }
+
+    if(_mapFloatParameters.size() > 0)
+    {
+        SetJsonValueByKey(value, "floatParameters", _mapFloatParameters, allocator);
+    }
+    if(_mapIntParameters.size() > 0)
+    {
+        SetJsonValueByKey(value, "intParameters", _mapIntParameters, allocator);
+    }
+    if(_mapStringParameters.size() > 0)
+    {
+        SetJsonValueByKey(value, "stringParameters", _mapStringParameters, allocator);
+    }
+
+    if (!!_infoElectricMotor) {
+        rapidjson::Value electricMotorInfoValue;
+        electricMotorInfoValue.SetObject();
+        _infoElectricMotor->SerializeJSON(electricMotorInfoValue, allocator, fUnitScale, options);
+        value.AddMember("electricMotorActuator", electricMotorInfoValue, allocator);
+    }
+
+    SetJsonValueByKey(value, "isCircular", _bIsCircular, allocator, dof);
+    SetJsonValueByKey(value, "isActive", _bIsActive, allocator);
+
+}
+
+void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    std::string typestr;
+    LoadJsonValueByKey(value, "type", typestr);
+
+    if (typestr == "revolute")
+    {
+        _type = JointType::JointRevolute;
+    }
+    else if (typestr == "prismatic")
+    {
+        _type = JointType::JointPrismatic;
+    }
+    else
+    {
+        throw OPENRAVE_EXCEPTION_FORMAT("failed to deserialize json, unsupported joint type \"%s\"", typestr, ORE_InvalidArguments);
+    }
+
+    LoadJsonValueByKey(value, "name", _name);
+    LoadJsonValueByKey(value, "parentLinkName", _linkname0);
+    LoadJsonValueByKey(value, "anchors", _vanchor);
+    LoadJsonValueByKey(value, "childLinkName", _linkname1);
+    LoadJsonValueByKey(value, "axes", _vaxes);
+    LoadJsonValueByKey(value, "currentValues", _vcurrentvalues);
+    LoadJsonValueByKey(value, "resolutions", _vresolution);
+    LoadJsonValueByKey(value, "maxVel", _vmaxvel);
+    LoadJsonValueByKey(value, "hardMaxVel", _vhardmaxvel);
+    LoadJsonValueByKey(value, "maxAccel", _vmaxaccel);
+    LoadJsonValueByKey(value, "hardMaxAccel", _vhardmaxaccel);
+    LoadJsonValueByKey(value, "maxJerk", _vmaxjerk);
+    LoadJsonValueByKey(value, "hardMaxJerk", _vhardmaxjerk);
+    LoadJsonValueByKey(value, "maxTorque", _vmaxtorque);
+    LoadJsonValueByKey(value, "maxInertia", _vmaxinertia);
+    LoadJsonValueByKey(value, "weights", _vweights);
+    LoadJsonValueByKey(value, "offsets", _voffsets);
+    LoadJsonValueByKey(value, "lowerLimit", _vlowerlimit);
+    LoadJsonValueByKey(value, "upperLimit", _vupperlimit);
+    LoadJsonValueByKey(value, "isCircular", _bIsCircular);
+    LoadJsonValueByKey(value, "isActive", _bIsActive);
+
+    // multiply fUnitScale on maxVel, maxAccel, lowerLimit, upperLimit
+    dReal fjointmult = fUnitScale;
+    if(_type == JointRevolute)
+    {
+        fjointmult = 1;
+    }
+    else if(_type == JointPrismatic)
+    {
+        fjointmult = fUnitScale;
+    }
+    for(size_t ic = 0; ic < _vaxes.size(); ic++)
+    {
+        _vmaxvel[ic] *= fjointmult;
+        _vmaxaccel[ic] *= fjointmult;
+        _vlowerlimit[ic] *= fjointmult;
+        _vupperlimit[ic] *= fjointmult;
+    }
+
+    boost::array<MimicInfoPtr, 3> newmimic;
+    if (value.HasMember("mimics"))
+    {
+        for (rapidjson::SizeType i = 0; i < value["mimics"].Size(); ++i) {
+            MimicInfoPtr mimicinfo(new MimicInfo());
+            mimicinfo->DeserializeJSON(value["mimics"][i], fUnitScale);
+            newmimic[i] = mimicinfo;
+        }
+    }
+    _vmimic = newmimic;
+
+    LoadJsonValueByKey(value, "floatParameters", _mapFloatParameters);
+    LoadJsonValueByKey(value, "intParameters", _mapIntParameters);
+    LoadJsonValueByKey(value, "stringParameters", _mapStringParameters);
+
+    if (value.HasMember("electricMotorActuator")) {
+        ElectricMotorActuatorInfoPtr info(new ElectricMotorActuatorInfo());
+        info->DeserializeJSON(value["electricMotorActuator"], fUnitScale);
+        _infoElectricMotor = info;
+    }
 }
 
 KinBody::JointInfo& KinBody::JointInfo::operator=(const KinBody::JointInfo& other)
@@ -142,6 +344,9 @@ KinBody::JointInfo& KinBody::JointInfo::operator=(const KinBody::JointInfo& othe
     }
     return *this;
 }
+
+
+
 
 static void fparser_polyroots2(vector<dReal>& rawroots, const vector<dReal>& rawcoeffs)
 {
@@ -229,17 +434,7 @@ KinBody::Joint::~Joint()
 
 int KinBody::Joint::GetDOF() const
 {
-    if( _info._type & KinBody::JointSpecialBit ) {
-        switch(_info._type) {
-        case KinBody::JointHinge2:
-        case KinBody::JointUniversal: return 2;
-        case KinBody::JointSpherical: return 3;
-        case KinBody::JointTrajectory: return 1;
-        default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("invalid joint type 0x%x"), _info._type, ORE_Failed);
-        }
-    }
-    return int(_info._type & 0xf);
+    return _info.GetDOF();
 }
 
 bool KinBody::Joint::IsCircular() const
@@ -1823,6 +2018,16 @@ void KinBody::Joint::serialize(std::ostream& o, int options) const
             SerializeRound(o,_info._vupperlimit[i]);
         }
     }
+}
+
+void KinBody::MimicInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    SetJsonValueByKey(value, "equations", _equations, allocator);
+}
+
+void KinBody::MimicInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    LoadJsonValueByKey(value, "equations", _equations);
 }
 
 }

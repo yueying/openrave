@@ -313,6 +313,22 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
     }
 }
 
+void KinBody::GrabbedInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    SetJsonValueByKey(value, "grabbedName", _grabbedname, allocator);
+    SetJsonValueByKey(value, "robotLinkName", _robotlinkname, allocator);
+    SetJsonValueByKey(value, "transform", _trelative, allocator);
+    SetJsonValueByKey(value, "robotLinksToIgnoreSet", _setRobotLinksToIgnore, allocator);
+}
+
+void KinBody::GrabbedInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    LoadJsonValueByKey(value, "grabbedName", _grabbedname);
+    LoadJsonValueByKey(value, "robotLinkName", _robotlinkname);
+    LoadJsonValueByKey(value, "transform", _trelative);
+    LoadJsonValueByKey(value, "robotLinksToIgnoreSet", _setRobotLinksToIgnore);
+}
+
 void KinBody::ResetGrabbed(const std::vector<KinBody::GrabbedInfoConstPtr>& vgrabbedinfo)
 {
     ReleaseAllGrabbed();

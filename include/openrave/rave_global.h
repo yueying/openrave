@@ -48,88 +48,13 @@ namespace OpenRAVE
 			return global_state_;
 		}
 
-		int Initialize(bool is_load_all_plugins, int level)
-		{
-			if (_IsInitialized())
-			{
-				return 0;     // already initialized
-			}
-
-			_InitializeLogging(level);
-
-#ifdef USE_CRLIBM
-			if (!_bcrlibmInit)
-			{
-				_crlibm_fpu_state = crlibm_init();
-				_bcrlibmInit = true;
-			}
-#endif
-			try
-			{
-				// TODO: eventually we should remove this call to set global locale for the process
-				// and imbue each stringstream with the correct locale.
-
-				// set to the classic locale so that number serialization/hashing works correctly
-				// std::locale::global(std::locale::classic());
-				std::locale::global(std::locale(std::locale(""), std::locale::classic(), std::locale::numeric));
-			}
-			catch (const std::runtime_error& e)
-			{
-				RAVELOG_WARN("failed to set to C locale: %s\n", e.what());
-			}
-
-			_pdatabase.reset(new PluginDatabase());
-			if (!_pdatabase->Init(is_load_all_plugins))
-			{
-				RAVELOG_FATAL("failed to create the openrave plugin database\n");
-			}
-
-			char* phomedir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
-			if (phomedir == NULL)
-			{
-#ifndef _WIN32
-				_homedirectory = std::string(getenv("HOME")) + std::string("/.openrave"); // getenv not thread-safe?
-#else
-				_homedirectory = std::string(getenv("HOMEDRIVE")) + std::string(getenv("HOMEPATH")) + std::string("\\.openrave"); // getenv not thread-safe?
-#endif
-			}
-			else
-			{
-				_homedirectory = phomedir;
-			}
-#ifndef _WIN32
-			mkdir(_homedirectory.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_IRWXU);
-#else
-			CreateDirectory(_homedirectory.c_str(), NULL);
-#endif
-
-#ifdef _WIN32
-			const char* delim = ";";
-#else
-			const char* delim = ":";
-#endif
-			_vdbdirectories.clear();
-			char* pOPENRAVE_PLUGINS = getenv("OPENRAVE_DATABASE"); // getenv not thread-safe?
-			if (pOPENRAVE_PLUGINS != NULL) {
-				utils::TokenizeString(pOPENRAVE_PLUGINS, delim, _vdbdirectories);
-			}
-			_vdbdirectories.push_back(_homedirectory);
-
-			_defaultviewertype.clear();
-			const char* pOPENRAVE_DEFAULT_VIEWER = std::getenv("OPENRAVE_DEFAULT_VIEWER");
-			if (!!pOPENRAVE_DEFAULT_VIEWER && strlen(pOPENRAVE_DEFAULT_VIEWER) > 0) {
-				_defaultviewertype = std::string(pOPENRAVE_DEFAULT_VIEWER);
-			}
-
-			_UpdateDataDirs();
-			return 0;
-		}
+		int Initialize(bool is_load_all_plugins, int level);
 
 		void Destroy()
 		{
-			if (!!_pdatabase) {
+			if (!!plugin_database_) {
 				// notify all plugins that about to destroy
-				_pdatabase->OnRavePreDestroy();
+				plugin_database_->OnRavePreDestroy();
 			}
 
 			// don't use any log statements since global instance might be null
@@ -160,19 +85,19 @@ namespace OpenRAVE
 			}
 			listDestroyCallbacks.clear();
 
-			if (!!_pdatabase) {
+			if (!!plugin_database_) {
 				// force destroy in case some one is holding a pointer to it
-				_pdatabase->Destroy();
-				_pdatabase.reset();
+				plugin_database_->Destroy();
+				plugin_database_.reset();
 			}
 #ifdef USE_CRLIBM
 
 #ifdef HAS_FENV_H
 			feclearexcept(-1); // clear any cached exceptions
 #endif
-			if (_bcrlibmInit) {
+			if (is_crlibm_init_) {
 				crlibm_exit(_crlibm_fpu_state);
-				_bcrlibmInit = false;
+				is_crlibm_init_ = false;
 			}
 #endif
 
@@ -315,22 +240,22 @@ namespace OpenRAVE
 		}
 
 		std::shared_ptr<PluginDatabase> GetDatabase() const {
-			return _pdatabase;
+			return plugin_database_;
 		}
 		const std::map<InterfaceType, std::string>& GetInterfaceNamesMap() const {
-			return _mapinterfacenames;
+			return interface_names_map_;
 		}
 		const std::map<IkParameterizationType, std::string>& GetIkParameterizationMap(int alllowercase = 0) {
 			if (alllowercase) {
-				return _mapikparameterizationlower;
+				return ik_parameterization_lower_map_;
 			}
-			return _mapikparameterization;
+			return ik_parameterization_map_;
 		}
 
 		const std::string& GetInterfaceName(InterfaceType type)
 		{
-			std::map<InterfaceType, std::string>::const_iterator it = _mapinterfacenames.find(type);
-			if (it == _mapinterfacenames.end()) {
+			std::map<InterfaceType, std::string>::const_iterator it = interface_names_map_.find(type);
+			if (it == interface_names_map_.end()) {
 				throw OPENRAVE_EXCEPTION_FORMAT(_("Invalid type %d specified"), type, ORE_Failed);
 			}
 			return it->second;
@@ -339,7 +264,7 @@ namespace OpenRAVE
 		// have to take in pointer instead of shared_ptr since method will be called in EnvironmentBase constructor
 		int RegisterEnvironment(EnvironmentBase* penv)
 		{
-			BOOST_ASSERT(!!_pdatabase);
+			BOOST_ASSERT(!!plugin_database_);
 			boost::mutex::scoped_lock lock(_mutexinternal);
 			_mapenvironments[++global_environment_id_] = penv;
 			return global_environment_id_;
@@ -473,21 +398,24 @@ namespace OpenRAVE
 			return false;
 		}
 
-		void SetDataAccess(int options) {
+		void SetDataAccess(int options) 
+		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			_nDataAccessOptions = options;
+			data_access_options_ = options;
 		}
-		int GetDataAccess() {
+		int GetDataAccess() 
+		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			return _nDataAccessOptions;
+			return data_access_options_;
 		}
+
 		std::string GetDefaultViewerType() {
 			if (_defaultviewertype.size() > 0) {
 				return _defaultviewertype;
 			}
 
 			// get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
-			std::shared_ptr<PluginDatabase> pdatabase = _pdatabase;
+			std::shared_ptr<PluginDatabase> pdatabase = plugin_database_;
 			if (!!pdatabase) {
 				if (pdatabase->HasInterface(PT_Viewer, "qtosg")) {
 					return std::string("qtosg");
@@ -513,7 +441,7 @@ namespace OpenRAVE
 	protected:
 		bool _IsInitialized() const
 		{
-			return !!_pdatabase;
+			return !!plugin_database_;
 		}
 
 		void _UpdateDataDirs()
@@ -635,7 +563,7 @@ namespace OpenRAVE
 				return false;
 			}
 
-			if (_nDataAccessOptions & 1) {
+			if (data_access_options_ & 1) {
 				// check if filename is within _vBoostDataDirs
 				boost::filesystem::path fullfilename = boost::filesystem::absolute(filename, curdir.empty() ? boost::filesystem::current_path() : curdir);
 				_CustomNormalizePath(fullfilename);
@@ -662,7 +590,8 @@ namespace OpenRAVE
 
 #endif
 
-		void _InitializeLogging(int level) {
+		void _InitializeLogging(int level) 
+		{
 #if OPENRAVE_LOG4CXX
 			_logger = log4cxx::Logger::getLogger("openrave");
 
@@ -684,16 +613,16 @@ namespace OpenRAVE
 		RaveGlobal& operator=(const RaveGlobal&) = delete;
 
 	private:
-		static std::shared_ptr<RaveGlobal> global_state_;
-		// state that is always present
+		static std::shared_ptr<RaveGlobal> global_state_; //!< state that is always present
+		
 
 		// state that is initialized/destroyed
-		std::shared_ptr<PluginDatabase> _pdatabase;
+		std::shared_ptr<PluginDatabase> plugin_database_;
 		int debug_level_;
 		boost::mutex _mutexinternal;
 		std::map<InterfaceType, READERSMAP > _mapreaders;
-		std::map<InterfaceType, std::string> _mapinterfacenames;
-		std::map<IkParameterizationType, std::string> _mapikparameterization, _mapikparameterizationlower;
+		std::map<InterfaceType, std::string> interface_names_map_;
+		std::map<IkParameterizationType, std::string> ik_parameterization_map_, ik_parameterization_lower_map_;
 		std::map<int, EnvironmentBase*> _mapenvironments;
 		std::list<boost::function<void()> > _listDestroyCallbacks;
 		std::string _homedirectory;
@@ -703,9 +632,9 @@ namespace OpenRAVE
 		SpaceSamplerBasePtr _pdefaultsampler;
 #ifdef USE_CRLIBM
 		long long _crlibm_fpu_state;
-		bool _bcrlibmInit; ///< true if crlibm is initialized
+		bool is_crlibm_init_; ///< true if crlibm is initialized
 #endif
-		int _nDataAccessOptions;
+		int data_access_options_;
 
 		std::vector<std::string> _vdatadirs;
 #ifdef HAVE_BOOST_FILESYSTEM

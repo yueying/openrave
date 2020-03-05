@@ -623,6 +623,43 @@ void RaveGetVelocityFromAffineDOFVelocities(Vector& linearvel, Vector& angularve
 
 
 
+void SensorBase::SensorGeometry::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    if(hardware_id.size() > 0) {
+        SetJsonValueByKey(value, "hardwareId", hardware_id, allocator);
+    }
+}
+
+void SensorBase::SensorGeometry::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    LoadJsonValueByKey(value, "hardwareId", hardware_id);
+}
+
+void SensorBase::CameraGeomData::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    SensorBase::SensorGeometry::SerializeJSON(value, allocator, fUnitScale, options);
+    SetJsonValueByKey(value, "sensorReference", sensor_reference, allocator);
+    SetJsonValueByKey(value, "targetRegion", target_region, allocator);
+    SetJsonValueByKey(value, "intrinstics", intrinsics, allocator);
+    SetJsonValueByKey(value, "width", width, allocator);
+    SetJsonValueByKey(value, "height", height, allocator);
+    SetJsonValueByKey(value, "measurementTime", measurement_time, allocator);
+    SetJsonValueByKey(value, "gain", gain, allocator);
+}
+
+void SensorBase::CameraGeomData::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    SensorBase::SensorGeometry::DeserializeJSON(value, fUnitScale);
+    LoadJsonValueByKey(value, "sensorReference", sensor_reference);
+    LoadJsonValueByKey(value, "targetRegion", target_region);
+    LoadJsonValueByKey(value, "intrinstics", intrinsics);
+    LoadJsonValueByKey(value, "width", width);
+    LoadJsonValueByKey(value, "height", height);
+    LoadJsonValueByKey(value, "measurementTime", measurement_time);
+    LoadJsonValueByKey(value, "gain", gain);
+}
+
+
 
 void RaveInitRandomGeneration(uint32_t seed)
 {
@@ -650,6 +687,76 @@ double RaveRandomDouble(IntervalType interval)
     return double(sample.at(0));
 }
 
+
+
+
+void IkParameterization::SerializeJSON(rapidjson::Value& rIkParameterization, rapidjson::Document::AllocatorType& alloc) const
+{
+    rIkParameterization.SetObject();
+    SetJsonValueByKey(rIkParameterization, "type", GetName(), alloc);
+    switch(_type) {
+    case IKP_Transform6D:
+        SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
+        SetJsonValueByKey(rIkParameterization, "translate", _transform.trans, alloc);
+        break;
+    case IKP_TranslationDirection5D:
+        SetJsonValueByKey(rIkParameterization, "direction", _transform.rot, alloc);
+        SetJsonValueByKey(rIkParameterization, "translate", _transform.trans, alloc);
+        break;
+    default:
+        // in the worst case, save the data
+        SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
+        SetJsonValueByKey(rIkParameterization, "translate", _transform.trans, alloc);
+        break;
+    }
+    if (_mapCustomData.size() > 0) {
+        SetJsonValueByKey(rIkParameterization, "customData", _mapCustomData, alloc);
+    }
+}
+
+void IkParameterization::DeserializeJSON(const rapidjson::Value& rIkParameterization)
+{
+    if (!rIkParameterization.IsObject()) {
+        throw OpenRAVEJSONException("Cannot load value of non-object to IkParameterization.", ORJE_InvalidArguments);
+    }
+    _type = IKP_None;
+    if( rIkParameterization.HasMember("type") ) {
+        const char* ptype =  rIkParameterization["type"].GetString();
+        if( !!ptype ) {
+            if (strcmp(ptype, "Transform6D") == 0 ) {
+                _type = IKP_Transform6D;
+            }
+            else if (strcmp(ptype, "TranslationDirection5D") == 0 ) {
+                _type = IKP_TranslationDirection5D;
+            }
+            else {
+                const std::map<IkParameterizationType,std::string>::const_iterator itend = RaveGetIkParameterizationMap().end();
+                for(std::map<IkParameterizationType,std::string>::const_iterator it = RaveGetIkParameterizationMap().begin(); it != itend; ++it) {
+                    if( strcmp(ptype, it->second.c_str()) == 0 ) {
+                        _type = it->first;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (_type == IKP_Transform6D ) {
+        LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
+        LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+    }
+    else if (_type == IKP_TranslationDirection5D ) {
+        LoadJsonValueByKey(rIkParameterization, "direction", _transform.rot);
+        LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+    }
+    else {
+        LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
+        LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+    }
+
+    _mapCustomData.clear();
+    LoadJsonValueByKey(rIkParameterization, "customData", _mapCustomData);
+}
 
 
 } // end namespace OpenRAVE

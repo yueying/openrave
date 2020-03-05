@@ -24,17 +24,15 @@
 
 
 /// The entire %OpenRAVE library
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 #include <openrave/config.h>
 #include <openrave/interfacehashes.h>
 
 }
 
-#if OPENRAVE_RAPIDJSON
 #include <rapidjson/document.h>
-#endif
-
 #include <openrave/logging.h>
 #include <openrave/openrave_exception.h>
 #include <openrave/numerical.h>
@@ -47,8 +45,6 @@ namespace OpenRAVE {
 
 namespace OpenRAVE 
 {
-
-
 
 /// \brief user data that can serialize/deserialize itself
 class OPENRAVE_API SerializableData : public UserData
@@ -72,6 +68,7 @@ class IkParameterization;
 class ConfigurationSpecification;
 
 
+
 ///< Cloning Options for interfaces and environments
 enum CloningOptions 
 {
@@ -86,18 +83,12 @@ enum CloningOptions
 };
 
 
+
 } // end namespace OpenRAVE
 
 
 namespace OpenRAVE 
 {
-
-
-
-
-
-
-
 
 /// \brief Selects which DOFs of the affine transformation to include in the active configuration.
 enum DOFAffine
@@ -519,9 +510,6 @@ typedef bool (*PluginExportFn_GetPluginAttributes)(PluginInfo* pinfo, int size) 
 
 } // end namespace OpenRAVE
 
-#if OPENRAVE_RAPIDJSON
-#include <openrave/json.h>
-#endif
 
 BOOST_STATIC_ASSERT(OPENRAVE_VERSION_MAJOR>=0&&OPENRAVE_VERSION_MAJOR<=255);
 BOOST_STATIC_ASSERT(OPENRAVE_VERSION_MINOR>=0&&OPENRAVE_VERSION_MINOR<=255);

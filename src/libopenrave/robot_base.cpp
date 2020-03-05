@@ -15,10 +15,34 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "libopenrave.h"
-
 #define CHECK_INTERNAL_COMPUTATION OPENRAVE_ASSERT_FORMAT(_nHierarchyComputed == 2, "robot %s internal structures need to be computed, current value is %d. Are you sure Environment::AddRobot/AddKinBody was called?", GetName()%_nHierarchyComputed, ORE_NotInitialized);
 
 namespace OpenRAVE {
+
+void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    SetJsonValueByKey(value, "name", _name, allocator);
+    SetJsonValueByKey(value, "linkName", _linkname, allocator);
+    SetJsonValueByKey(value, "transform", _trelative, allocator);
+    SetJsonValueByKey(value, "type", _sensorname, allocator);
+
+    rapidjson::Value sensorGeometryValue;
+    if(!!_sensorgeometry)
+    {
+        _sensorgeometry->SerializeJSON(sensorGeometryValue, allocator, fUnitScale, options);
+    }
+    SetJsonValueByKey(value, "sensorGeometry", sensorGeometryValue, allocator);
+}
+
+void RobotBase::AttachedSensorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    LoadJsonValueByKey(value, "name", _name);
+    LoadJsonValueByKey(value, "linkName", _linkname);
+    LoadJsonValueByKey(value, "transform", _trelative);
+    LoadJsonValueByKey(value, "type", _sensorname);
+
+    // desrialization of sensorGeometry is handled by json reader
+}
 
 RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot) : _probot(probot)
 {
@@ -67,6 +91,8 @@ RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot, const RobotBase::
 RobotBase::AttachedSensor::~AttachedSensor()
 {
 }
+
+
 
 //void RobotBase::AttachedSensor::_ComputeInternalInformation()
 //{

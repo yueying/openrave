@@ -438,7 +438,7 @@ set(interfacehashes_h ${CMAKE_CURRENT_BINARY_DIR}/include/openrave/interfacehash
 add_custom_command(
   OUTPUT ${interfacehashes_h}
   COMMAND ${CPPGENMD5}
-  ARGS "${OPENRAVE_PRECISION}" "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface.h"
+  ARGS "${OPENRAVE_PRECISION}" "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface_base.h"
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collision_checker_base.h" OPENRAVE_COLLISIONCHECKER_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot_base.h" OPENRAVE_ROBOT_HASH
        "${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/planner.h" OPENRAVE_PLANNER_HASH
@@ -564,11 +564,9 @@ endif()
 
 find_package(RapidJSON)
 if( RapidJSON_FOUND )
-  set(OPENRAVE_RAPIDJSON 1)
   include_directories(${RapidJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIR})
 else()
-  set(OPENRAVE_RAPIDJSON 0)
-  message(WARNING "rapidjson library not found")
+  message(FATAL_ERROR "rapidjson library not found")
 endif()
 
 find_package(LibXml2)

@@ -17,9 +17,32 @@
 #include "libopenrave.h"
 #include <openrave/grabbed.h>
 #include <openrave/openrave_macros.h>
-
 namespace OpenRAVE 
+
 {
+void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    SetJsonValueByKey(value, "name", _name, allocator);
+    SetJsonValueByKey(value, "transform", _tLocalTool, allocator);
+    SetJsonValueByKey(value, "chuckingDirections", _vChuckingDirection, allocator);
+    SetJsonValueByKey(value, "direction", _vdirection, allocator);
+    SetJsonValueByKey(value, "baseLInkName", _sBaseLinkName, allocator);
+    SetJsonValueByKey(value, "effectorLinkName", _sEffectorLinkName, allocator);
+    SetJsonValueByKey(value, "iksolverType", _sIkSolverXMLId, allocator);
+    SetJsonValueByKey(value, "gripperJointNames", _vGripperJointNames, allocator);
+}
+
+void RobotBase::ManipulatorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+{
+    LoadJsonValueByKey(value, "name", _name);
+    LoadJsonValueByKey(value, "transform", _tLocalTool);
+    LoadJsonValueByKey(value, "chuckingDirections", _vChuckingDirection);
+    LoadJsonValueByKey(value, "direction", _vdirection);
+    LoadJsonValueByKey(value, "baseLInkName", _sBaseLinkName);
+    LoadJsonValueByKey(value, "effectorLinkName", _sEffectorLinkName);
+    LoadJsonValueByKey(value, "iksolverType", _sIkSolverXMLId);
+    LoadJsonValueByKey(value, "gripperJointNames", _vGripperJointNames);
+}
 
 RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) 
 	: _info(info), __probot(probot) 

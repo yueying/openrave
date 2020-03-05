@@ -28,6 +28,110 @@ KinBody::LinkInfo::LinkInfo(const LinkInfo& other) : XMLReadable("link")
     *this = other;
 }
 
+void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+{
+    SetJsonValueByKey(value, "name", _name, allocator);
+
+    Transform tmpTransform {_t};
+    Transform tmpMassTransform {_tMassFrame};
+    tmpTransform.trans *= fUnitScale;
+    tmpMassTransform.trans *= fUnitScale;
+
+    SetJsonValueByKey(value, "transform", tmpTransform, allocator);
+    SetJsonValueByKey(value, "massTransform", tmpMassTransform, allocator);
+    SetJsonValueByKey(value, "mass", _mass, allocator);
+    SetJsonValueByKey(value, "intertialMoments", _vinertiamoments, allocator);
+
+    if (_mapFloatParameters.size() > 0) {
+        SetJsonValueByKey(value, "floatParameters", _mapFloatParameters, allocator);
+    }
+
+    if (_mapIntParameters.size() > 0) {
+        SetJsonValueByKey(value, "intParameters", _mapIntParameters, allocator);
+    }
+
+    if (_mapStringParameters.size() > 0) {
+        SetJsonValueByKey(value, "stringParameters", _mapStringParameters, allocator);
+    }
+
+    if (_vForcedAdjacentLinks.size() > 0) {
+        SetJsonValueByKey(value, "forcedAdjacentLinks", _vForcedAdjacentLinks, allocator);
+    }
+
+    if (_vgeometryinfos.size() > 0) {
+        rapidjson::Value geometriesValue;
+        FOREACHC(it, _vgeometryinfos) {
+            rapidjson::Value geometryValue;
+            (*it)->SerializeJSON(geometryValue, allocator, options);
+            geometriesValue.PushBack(geometryValue, allocator);
+        }
+        value.AddMember("geometries", geometriesValue, allocator);
+    }
+
+    if(_mapExtraGeometries.size() > 0 ) {
+        rapidjson::Value extraGeometriesValue;
+        extraGeometriesValue.SetObject();
+        FOREACHC(im, _mapExtraGeometries) {
+            rapidjson::Value geometriesValue;
+            geometriesValue.SetArray();
+            FOREACHC(iv, im->second){
+                if(!!(*iv))
+                {
+                    rapidjson::Value geometryValue;
+                    (*iv)->SerializeJSON(geometryValue, allocator);
+                    geometriesValue.PushBack(geometryValue, allocator);
+                }
+            }
+            extraGeometriesValue.AddMember(rapidjson::Value(im->first.c_str(), allocator).Move(), geometriesValue, allocator);
+        }
+        value.AddMember("extraGeometries", extraGeometriesValue, allocator);
+    }
+
+    SetJsonValueByKey(value, "isStatic", _bStatic, allocator);
+    SetJsonValueByKey(value, "isEnabled", _bIsEnabled, allocator);
+}
+
+void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale)
+{
+    LoadJsonValueByKey(value, "name", _name);
+    LoadJsonValueByKey(value, "transform", _t);
+    LoadJsonValueByKey(value, "massTransform", _tMassFrame);
+    LoadJsonValueByKey(value, "mass", _mass);
+    LoadJsonValueByKey(value, "intertialMoments", _vinertiamoments);
+    LoadJsonValueByKey(value, "floatParameters", _mapFloatParameters);
+    LoadJsonValueByKey(value, "intParameters", _mapIntParameters);
+    LoadJsonValueByKey(value, "stringParameters", _mapStringParameters);
+    LoadJsonValueByKey(value, "forcedAdjacentLinks", _vForcedAdjacentLinks);
+
+    _t.trans *= fUnitScale;
+    _tMassFrame.trans *= fUnitScale;
+
+    if (value.HasMember("geometries")) {
+        _vgeometryinfos.resize(0);
+        _vgeometryinfos.reserve(value["geometries"].Size());
+        for (size_t i = 0; i < value["geometries"].Size(); ++i) {
+            GeometryInfoPtr pGeometryInfo(new GeometryInfo());
+            pGeometryInfo->DeserializeJSON(value["geometries"][i], fUnitScale);
+            _vgeometryinfos.push_back(pGeometryInfo);
+        }
+    }
+    if (value.HasMember("extraGeometries")) {
+        _mapExtraGeometries.clear();
+        for (rapidjson::Value::ConstMemberIterator it = value["extraGeometries"].MemberBegin(); it != value["extraGeometries"].MemberEnd(); ++it) {
+            _mapExtraGeometries[it->name.GetString()] = std::vector<GeometryInfoPtr>();
+
+            for(rapidjson::Value::ConstValueIterator im = it->value.Begin(); im != it->value.End(); ++im) {
+                GeometryInfoPtr pInfo (new GeometryInfo());
+                pInfo->DeserializeJSON(*im, fUnitScale);
+                _mapExtraGeometries[it->name.GetString()].push_back(pInfo);
+            }
+        }
+    }
+
+    LoadJsonValueByKey(value, "isStatic", _bStatic);
+    LoadJsonValueByKey(value, "isEnabled", _bIsEnabled);
+}
+
 KinBody::LinkInfo& KinBody::LinkInfo::operator=(const KinBody::LinkInfo& other)
 {
     _vgeometryinfos.resize(other._vgeometryinfos.size());
@@ -420,7 +524,7 @@ void KinBody::Link::AddGeometry(KinBody::GeometryInfoPtr pginfo, bool addToGroup
     if( !pginfo ) {
         throw OPENRAVE_EXCEPTION_FORMAT(_("tried to add improper geometry to link %s"), GetName(), ORE_InvalidArguments);
     }
-    
+
     const KinBody::GeometryInfo& ginfo = *pginfo;
     if( ginfo._name.size() > 0 ) {
         // check if similar name exists and throw if it does
@@ -429,7 +533,7 @@ void KinBody::Link::AddGeometry(KinBody::GeometryInfoPtr pginfo, bool addToGroup
                 throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo._name%GetName(), ORE_InvalidArguments);
             }
         }
-        
+
         FOREACH(itgeometryinfo, _info._vgeometryinfos) {
             if( (*itgeometryinfo)->_name == ginfo._name ) {
                 throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo._name%GetName(), ORE_InvalidArguments);
@@ -445,7 +549,7 @@ void KinBody::Link::AddGeometry(KinBody::GeometryInfoPtr pginfo, bool addToGroup
             }
         }
     }
-    
+
     _vGeometries.push_back(GeometryPtr(new Geometry(shared_from_this(),*pginfo)));
     _vGeometries.back()->InitCollisionMesh();
     _info._vgeometryinfos.push_back(pginfo);
@@ -461,7 +565,7 @@ void KinBody::Link::RemoveGeometryByName(const std::string& geometryname, bool r
 {
     OPENRAVE_ASSERT_OP(geometryname.size(),>,0);
     bool bChanged = false;
-    
+
     std::vector<GeometryPtr>::iterator itgeometry = _vGeometries.begin();
     while(itgeometry != _vGeometries.end()) {
         if( (*itgeometry)->GetName() == geometryname ) {
@@ -497,7 +601,7 @@ void KinBody::Link::RemoveGeometryByName(const std::string& geometryname, bool r
             }
         }
     }
-    
+
     if( bChanged ) {
         _Update(true, Prop_LinkGeometryGroup); // have to notify collision checkers that the geometry info they are caching could have changed.
     }
