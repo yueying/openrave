@@ -31,7 +31,7 @@ namespace OpenRAVE
 	typedef std::list<std::pair<std::string, std::string> > AttributesList;
 	
 	/// base class for readable interfaces
-	class OPENRAVE_API XMLReadable : public UserData
+	class OPENRAVE_API XMLReadable :virtual public Readable
 	{
 	public:
 		XMLReadable(const std::string& xmlid) : xml_id_(xmlid)

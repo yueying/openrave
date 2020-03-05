@@ -83,7 +83,6 @@ enum CloningOptions
 };
 
 
-
 } // end namespace OpenRAVE
 
 
@@ -395,6 +394,16 @@ OPENRAVE_API UserDataPtr RaveRegisterInterface(InterfaceType type, const std::st
  */
 OPENRAVE_API UserDataPtr RaveRegisterXMLReader(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn);
 
+/** \brief Registers a custom json reader for a particular interface.
+
+    Once registered, anytime an interface is created through JSON and
+    the id is seen, the function CreateJSONReaderFn will be called to get a reader
+    \param id the id specified is seen in the interface, the the custom reader will be created.
+    \param fn CreateJSONReaderFn(pinterface,atts) - passed in the pointer to the interface where the id was seen along with the list of attributes
+    \return a pointer holding the registration, releasing the pointer will unregister the XML reader
+ */
+OPENRAVE_API UserDataPtr RaveRegisterJSONReader(InterfaceType type, const std::string& id, const CreateJSONReaderFn& fn);
+
 /// \brief return the environment's unique id, returns 0 if environment could not be found or not registered
 OPENRAVE_API int RaveGetEnvironmentId(EnvironmentBaseConstPtr env);
 
@@ -409,6 +418,11 @@ OPENRAVE_API void RaveGetEnvironments(std::list<EnvironmentBasePtr>& listenviron
 ///
 /// \throw OpenRAVEException Will throw with ORE_InvalidArguments if registered function could not be found.
 OPENRAVE_API BaseXMLReaderPtr RaveCallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts);
+
+/// \brief Returns the current registered json reader for the interface type/id
+///
+/// \throw openrave_exception Will throw with ORE_InvalidArguments if registered function could not be found.
+OPENRAVE_API BaseJSONReaderPtr RaveCallJSONReader(InterfaceType type, const std::string& id, InterfaceBasePtr pinterface, const AttributesList& atts);
 
 /** \brief Returns the absolute path of the filename on the local filesystem resolving relative paths from OpenRAVE paths.
 

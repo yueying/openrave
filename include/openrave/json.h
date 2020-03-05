@@ -20,9 +20,8 @@
 #ifndef OPENRAVE_SERIALIZE_JSON_H
 #define OPENRAVE_SERIALIZE_JSON_H
 
-#if OPENRAVE_RAPIDJSON
+
 #include <rapidjson/document.h>
-#endif
 #include <openrave/numerical.h>
 #include <openrave/openrave_exception.h>
 #include <openrave/openrave_macros.h>

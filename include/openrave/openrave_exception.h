@@ -107,25 +107,25 @@ OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] ")%(__PRETTY_FUNCT
 
 #define OPENRAVE_DUMMY_IMPLEMENTATION { throw OPENRAVE_EXCEPTION_FORMAT0("not implemented",ORE_NotImplemented); }
 
+}
 
 #if !defined(OPENRAVE_DISABLE_ASSERT_HANDLER) && (defined(BOOST_ENABLE_ASSERT_HANDLER))
 /// Modifications controlling %boost library behavior.
-	namespace boost
+namespace boost
+{
+	inline void assertion_failed(char const * expr, char const * function, char const * file, long line)
 	{
-		inline void assertion_failed(char const * expr, char const * function, char const * file, long line)
-		{
-			throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] -> %s, expr: %s") % file%line%function%expr), OpenRAVE::ORE_Assert);
-		}
+		throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] -> %s, expr: %s") % file%line%function%expr), OpenRAVE::ORE_Assert);
+	}
 
 #if BOOST_VERSION>104600
-		inline void assertion_failed_msg(char const * expr, char const * msg, char const * function, char const * file, long line)
-		{
-			throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] -> %s, expr: %s, msg: %s") % file%line%function%expr%msg), OpenRAVE::ORE_Assert);
-		}
-#endif
-
+	inline void assertion_failed_msg(char const * expr, char const * msg, char const * function, char const * file, long line)
+	{
+		throw OpenRAVE::OpenRAVEException(boost::str(boost::format("[%s:%d] -> %s, expr: %s, msg: %s") % file%line%function%expr%msg), OpenRAVE::ORE_Assert);
 	}
 #endif
+
 }
+#endif
 
 #endif // OPENRAVE_OPENRAVE_EXCEPTION_H_

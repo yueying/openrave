@@ -64,6 +64,7 @@ protected:
 typedef std::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
 
 
+
 KinBody::KinBody(InterfaceType type, EnvironmentBasePtr penv) : InterfaceBase(type, penv)
 {
     _nHierarchyComputed = 0;

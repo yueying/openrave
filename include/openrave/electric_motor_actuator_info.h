@@ -17,6 +17,7 @@
 #define OPENRAVE_ELECTRIC_MOTOR_ACTUATOR_INFO_H_
 
 #include <openrave/numerical.h>
+#include <rapidjson/document.h>
 
 namespace OpenRAVE
 {

@@ -111,7 +111,7 @@ namespace OpenRAVE
 		/// \brief Describes the properties of a geometric primitive.
 		///
 		/// Contains everything associated with a geometry's appearance and shape
-		class OPENRAVE_API GeometryInfo : public XMLReadable
+		class OPENRAVE_API GeometryInfo
 		{
 		public:
 			GeometryInfo();
@@ -151,13 +151,11 @@ namespace OpenRAVE
 			/// \brief computes the bounding box in the world. tGeometryWorld is for the world transform.
 			AABB ComputeAABB(const Transform& tGeometryWorld) const;
 
-#if OPENRAVE_RAPIDJSON
 			///< \param multiply all translational values by fUnitScale
 			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
 
 			///< \param multiply all translational values by fUnitScale
 			virtual void DeserializeJSON(const rapidjson::Value &value, const dReal fUnitScale = 1);
-#endif
 
 			Transform _t; ///< Local transformation of the geom primitive with respect to the link's coordinate system.
 
@@ -230,7 +228,7 @@ namespace OpenRAVE
 		typedef std::shared_ptr<GeometryInfo const> GeometryInfoConstPtr;
 
 		/// \brief Describes the properties of a link used to initialize it
-		class OPENRAVE_API LinkInfo : public XMLReadable
+		class OPENRAVE_API LinkInfo
 		{
 		public:
 			LinkInfo();
@@ -241,7 +239,8 @@ namespace OpenRAVE
 			LinkInfo(const LinkInfo& other);
 			LinkInfo& operator=(const LinkInfo& other);
 
-			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
+			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator,
+				dReal fUnitScale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale = 1.0);
 
 			std::vector<GeometryInfoPtr> _vgeometryinfos;
@@ -307,7 +306,9 @@ namespace OpenRAVE
 				static const GeometryType GeomTrimesh RAVE_DEPRECATED = OpenRAVE::GT_TriMesh;
 
 				Geometry(std::shared_ptr<Link> parent, const KinBody::GeometryInfo& info);
-				virtual ~Geometry() {
+
+				virtual ~Geometry()
+				{
 				}
 
 				/// \brief get local geometry transform
@@ -859,7 +860,7 @@ namespace OpenRAVE
 		typedef std::shared_ptr<Mimic const> MimicConstPtr;
 
 		/// \brief Describes the properties of a joint used to initialize it
-		class OPENRAVE_API JointInfo : public XMLReadable
+		class OPENRAVE_API JointInfo
 		{
 		public:
 			JointInfo();
@@ -1566,9 +1567,9 @@ namespace OpenRAVE
 			Save_ManipulatorsToolTransform = 0x00100000, ///< [robot only], saves every manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
 		};
 
-		/// \brief holds all user-set attached sensor information used to initialize the AttachedSensor class.
-		///
-		/// This is serializable and independent of environment.
+		/// \brief holds all user-set grabbed object information used to initialize kinbody
+			///
+			/// This is serializable and independent of environment.
 		class OPENRAVE_API GrabbedInfo
 		{
 		public:

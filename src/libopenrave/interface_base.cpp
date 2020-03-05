@@ -28,10 +28,8 @@ namespace OpenRAVE
 		RaveInitializeFromState(penv->GlobalState()); // make sure global state is set
 		RegisterCommand("help", boost::bind(&InterfaceBase::_GetCommandHelp,
 			this, _1, _2), "display help commands.");
-#if OPENRAVE_RAPIDJSON
 		RegisterJSONCommand("help", boost::bind(&InterfaceBase::_GetJSONCommandHelp,
 			this, _1, _2, _3), "display help commands.");
-#endif // OPENRAVE_RAPIDJSON
 	}
 
 	InterfaceBase::~InterfaceBase()
@@ -41,9 +39,7 @@ namespace OpenRAVE
 		user_data_map_.clear();
 		readable_interfaces_map_.clear();
 		environment_.reset();
-#if OPENRAVE_RAPIDJSON
 		json_commands_map_.clear();
-#endif // OPENRAVE_RAPIDJSON
 	}
 
 	void InterfaceBase::SetUserData(const std::string& key, UserDataPtr data) const
@@ -145,9 +141,10 @@ namespace OpenRAVE
 		for (auto it : readable_interfaces_map_)
 		{
 			// sometimes interfaces might be disabled
-			if (!!it.second)
+			XMLReadablePtr pxmlreadable = std::dynamic_pointer_cast<XMLReadable>(it.second);
+			if (!!pxmlreadable)
 			{
-				it.second->Serialize(writer, options);
+				pxmlreadable->Serialize(writer, options);
 			}
 		}
 
@@ -248,8 +245,6 @@ namespace OpenRAVE
 		return true;
 	}
 
-#if OPENRAVE_RAPIDJSON
-
 	bool InterfaceBase::SupportsJSONCommand(const std::string& cmd)
 	{
 		boost::shared_lock< boost::shared_mutex > lock(mutex_interface_);
@@ -313,16 +308,15 @@ namespace OpenRAVE
 		}
 	}
 
-#endif // OPENRAVE_RAPIDJSON
 
-	XMLReadablePtr InterfaceBase::GetReadableInterface(const std::string& xmltag) const
+	ReadablePtr InterfaceBase::GetReadableInterface(const std::string& xmltag) const
 	{
 		boost::shared_lock< boost::shared_mutex > lock(mutex_interface_);
 		READERSMAP::const_iterator it = readable_interfaces_map_.find(xmltag);
-		return it != readable_interfaces_map_.end() ? it->second : XMLReadablePtr();
+		return it != readable_interfaces_map_.end() ? it->second : ReadablePtr();
 	}
 
-	XMLReadablePtr InterfaceBase::SetReadableInterface(const std::string& xmltag, XMLReadablePtr readable)
+	ReadablePtr InterfaceBase::SetReadableInterface(const std::string& xmltag, ReadablePtr readable)
 	{
 		boost::unique_lock< boost::shared_mutex > lock(mutex_interface_);
 		READERSMAP::iterator it = readable_interfaces_map_.find(xmltag);
@@ -332,9 +326,9 @@ namespace OpenRAVE
 			{
 				readable_interfaces_map_[xmltag] = readable;
 			}
-			return XMLReadablePtr();
+			return ReadablePtr();
 		}
-		XMLReadablePtr pprev = it->second;
+		ReadablePtr pprev = it->second;
 		if (!!readable) 
 		{
 			it->second = readable;

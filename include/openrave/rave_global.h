@@ -33,7 +33,8 @@ namespace OpenRAVE
 /// is first used, and destroyed when the program quits or RaveDestroy is called.
 	class RaveGlobal : public std::enable_shared_from_this<RaveGlobal>, public UserData
 	{
-		typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> READERSMAP;
+		typedef std::map<std::string, CreateXMLReaderFn, CaseInsensitiveCompare> XMLREADERSMAP;
+		typedef std::map<std::string, CreateJSONReaderFn, CaseInsensitiveCompare> JSONREADERSMAP;
 
 	public:
 		virtual ~RaveGlobal();
@@ -72,7 +73,8 @@ namespace OpenRAVE
 			mapenvironments.clear();
 			_mapenvironments.clear();
 			_pdefaultsampler.reset();
-			_mapreaders.clear();
+			_mapxmlreaders.clear();
+			_mapjsonreaders.clear();
 
 			// process the callbacks
 			std::list<boost::function<void()> > listDestroyCallbacks;
@@ -206,15 +208,15 @@ namespace OpenRAVE
 			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, std::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
 			{
 				boost::mutex::scoped_lock lock(global->_mutexinternal);
-				_oldfn = global->_mapreaders[_type][_xmltag];
-				global->_mapreaders[_type][_xmltag] = fn;
+				_oldfn = global->_mapxmlreaders[_type][_xmltag];
+				global->_mapxmlreaders[_type][_xmltag] = fn;
 			}
 			virtual ~XMLReaderFunctionData()
 			{
 				std::shared_ptr<RaveGlobal> global = _global.lock();
 				if (!!global) {
 					boost::mutex::scoped_lock lock(global->_mutexinternal);
-					global->_mapreaders[_type][_xmltag] = _oldfn;
+					global->_mapxmlreaders[_type][_xmltag] = _oldfn;
 				}
 			}
 		protected:
@@ -224,6 +226,46 @@ namespace OpenRAVE
 			std::string _xmltag;
 		};
 
+		class JSONReaderFunctionData : public UserData
+		{
+		public:
+			JSONReaderFunctionData(InterfaceType type, const std::string& id, 
+				const CreateJSONReaderFn& fn, std::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _id(id)
+			{
+				boost::mutex::scoped_lock lock(global->_mutexinternal);
+				_oldfn = global->_mapjsonreaders[_type][_id];
+				global->_mapjsonreaders[_type][_id] = fn;
+			}
+			virtual ~JSONReaderFunctionData()
+			{
+				std::shared_ptr<RaveGlobal> global = _global.lock();
+				if (!!global) {
+					boost::mutex::scoped_lock lock(global->_mutexinternal);
+					global->_mapjsonreaders[_type][_id] = _oldfn;
+				}
+			}
+		protected:
+			CreateJSONReaderFn _oldfn;
+			std::weak_ptr<RaveGlobal> _global;
+			InterfaceType _type;
+			std::string _id;
+		};
+
+		UserDataPtr RegisterJSONReader(InterfaceType type, const std::string& id, const CreateJSONReaderFn& fn)
+		{
+			return UserDataPtr(new JSONReaderFunctionData(type, id, fn, shared_from_this()));
+		}
+
+		const BaseJSONReaderPtr CallJSONReader(InterfaceType type, const std::string& id, InterfaceBasePtr pinterface, const AttributesList& atts)
+		{
+			JSONREADERSMAP::iterator it = _mapjsonreaders[type].find(id);
+			if (it == _mapjsonreaders[type].end()) {
+				//throw openrave_exception(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%id),ORE_InvalidArguments);
+				return BaseJSONReaderPtr();
+			}
+			return it->second(pinterface, atts);
+		}
+
 		UserDataPtr RegisterXMLReader(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn)
 		{
 			return UserDataPtr(new XMLReaderFunctionData(type, xmltag, fn, shared_from_this()));
@@ -231,8 +273,8 @@ namespace OpenRAVE
 
 		const BaseXMLReaderPtr CallXMLReader(InterfaceType type, const std::string& xmltag, InterfaceBasePtr pinterface, const AttributesList& atts)
 		{
-			READERSMAP::iterator it = _mapreaders[type].find(xmltag);
-			if (it == _mapreaders[type].end()) {
+			XMLREADERSMAP::iterator it = _mapxmlreaders[type].find(xmltag);
+			if (it == _mapxmlreaders[type].end()) {
 				//throw OpenRAVEException(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
 				return BaseXMLReaderPtr();
 			}
@@ -620,7 +662,8 @@ namespace OpenRAVE
 		std::shared_ptr<PluginDatabase> plugin_database_;
 		int debug_level_;
 		boost::mutex _mutexinternal;
-		std::map<InterfaceType, READERSMAP > _mapreaders;
+		std::map<InterfaceType, XMLREADERSMAP > _mapxmlreaders;
+		std::map<InterfaceType, JSONREADERSMAP > _mapjsonreaders;
 		std::map<InterfaceType, std::string> interface_names_map_;
 		std::map<IkParameterizationType, std::string> ik_parameterization_map_, ik_parameterization_lower_map_;
 		std::map<int, EnvironmentBase*> _mapenvironments;

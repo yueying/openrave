@@ -23,10 +23,9 @@
 #define OPENRAVE_INTERFACE_BASE_
 
 #include <openrave/config.h>
-#if OPENRAVE_RAPIDJSON
 #include <rapidjson/document.h>
-#endif // OPENRAVE_RAPIDJSON
 #include <openrave/xml_process.h>
+#include <openrave/json_process.h>
 #include <openrave/type.h>
 #include <openrave/openrave_exception.h>
 #include <openrave/openrave_macros.h>
@@ -108,7 +107,7 @@ namespace OpenRAVE
 	class OPENRAVE_API InterfaceBase : public std::enable_shared_from_this<InterfaceBase>
 	{
 	public:
-		typedef std::map<std::string, XMLReadablePtr, CaseInsensitiveCompare> READERSMAP;
+		typedef std::map<std::string, ReadablePtr, CaseInsensitiveCompare> READERSMAP;
 
 		InterfaceBase(InterfaceType type, EnvironmentBasePtr penv);
 
@@ -170,11 +169,11 @@ namespace OpenRAVE
 		virtual bool RemoveUserData(const std::string& key) const;
 
 		/// \brief Returns the readable interface. <b>[multi-thread safe]</b>
-		virtual XMLReadablePtr GetReadableInterface(const std::string& xmltag) const;
+		virtual ReadablePtr GetReadableInterface(const std::string& xmltag) const;
 
 		/// \brief Set a new readable interface and return the previously set interface if it exists.
 		///       <b>[multi-thread safe]</b>
-		virtual XMLReadablePtr SetReadableInterface(const std::string& xmltag, XMLReadablePtr readable);
+		virtual ReadablePtr SetReadableInterface(const std::string& xmltag, ReadablePtr readable);
 
 		/// \brief the URI used to load the interface. <b>[multi-thread safe]</b>
 		///
@@ -199,11 +198,8 @@ namespace OpenRAVE
 		/// \brief return true if the command is supported
 		virtual bool SupportsCommand(const std::string& cmd);
 
-#if OPENRAVE_RAPIDJSON
 		/// \brief return true if the command is supported
 		virtual bool SupportsJSONCommand(const std::string& cmd);
-
-#endif // OPENRAVE_RAPIDJSON
 
 		/** \brief Used to send special commands to the interface and receive output.
 
@@ -235,7 +231,6 @@ namespace OpenRAVE
 			return bSuccess;
 		}
 
-#if OPENRAVE_RAPIDJSON
 		/** \brief Used to send special JSON commands to the interface and receive output.
 
 			The command must be registered by \ref RegisterJSONCommand. A special command '\b help' is
@@ -259,7 +254,6 @@ namespace OpenRAVE
 			SendJSONCommand(cmdname, input, output, output.GetAllocator());
 		}
 
-#endif // OPENRAVE_RAPIDJSON
 
 		/** \brief serializes the interface
 
@@ -310,7 +304,6 @@ namespace OpenRAVE
 		/// \brief Unregisters the command. <b>[multi-thread safe]</b>
 		virtual void UnregisterCommand(const std::string& cmdname);
 
-#if OPENRAVE_RAPIDJSON
 
 		/// \brief The function to be executed for every JSON command.
 		///
@@ -343,7 +336,6 @@ namespace OpenRAVE
 		/// \brief Unregisters the command. <b>[multi-thread safe]</b>
 		virtual void UnregisterJSONCommand(const std::string& cmdname);
 
-#endif // OPENRAVE_RAPIDJSON
 
 		virtual const char* GetHash() const = 0;
 		std::string description_;     /// \see GetDescription()
@@ -358,10 +350,8 @@ namespace OpenRAVE
 		/// Write the help commands to an output stream
 		virtual bool _GetCommandHelp(std::ostream& sout, std::istream& sinput) const;
 
-#if OPENRAVE_RAPIDJSON
 		/// Write the help commands to an output stream
 		virtual void _GetJSONCommandHelp(const rapidjson::Value& input, rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator) const;
-#endif // OPENRAVE_RAPIDJSON
 
 		inline InterfaceBase& operator=(const InterfaceBase&r)
 		{
@@ -380,10 +370,9 @@ namespace OpenRAVE
 		typedef std::map<std::string, std::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
 		CMDMAP commands_map_; ///< all registered commands
 
-#if OPENRAVE_RAPIDJSON
 		typedef std::map<std::string, std::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
 		JSONCMDMAP json_commands_map_; ///< all registered commands
-#endif
+
 
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
@@ -401,6 +390,7 @@ namespace OpenRAVE
 	};
 
 	typedef boost::function<BaseXMLReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateXMLReaderFn;
+	typedef boost::function<BaseJSONReaderPtr(InterfaceBasePtr, const AttributesList&)> CreateJSONReaderFn;
 
 } // end namespace OpenRAVE
 
