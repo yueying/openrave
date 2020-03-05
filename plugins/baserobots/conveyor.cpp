@@ -27,7 +27,7 @@ public:
             _info._t = tinernal;
             _info._mass = 0.01; // just an estimate
             _info._vinertiamoments = Vector(1,1,1);
-            _info._name = name;
+            _info.name_ = name;
             _info._bStatic = false;
             _info._bIsEnabled = true;
         }
@@ -37,7 +37,7 @@ public:
     {
 public:
         ConveyorJoint(const std::string& name, TrajectoryBasePtr trajfollow, std::shared_ptr<KinBody::Mimic> mimic, bool bIsCircular, KinBodyPtr parent) : Joint(parent, KinBody::JointTrajectory) {
-            _info._name = name;
+            _info.name_ = name;
             _info._vlowerlimit[0] = 0;
             _info._vupperlimit[0] = trajfollow->GetDuration();
             _vmimic[0] = mimic;

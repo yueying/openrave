@@ -127,7 +127,7 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->_index = 0;
-    plink->_info._name = "base";
+    plink->_info.name_ = "base";
     plink->_info._bStatic = true;
     size_t numvertices=0, numindices=0;
     FOREACHC(itab, vaabbs) {
@@ -164,7 +164,7 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->_index = 0;
-    plink->_info._name = "base";
+    plink->_info.name_ = "base";
     plink->_info._bStatic = true;
     size_t numvertices=0, numindices=0;
     FOREACHC(itobb, vobbs) {
@@ -206,7 +206,7 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->_index = 0;
-    plink->_info._name = "base";
+    plink->_info.name_ = "base";
     plink->_info._bStatic = true;
     TriMesh trimesh;
     FOREACHC(itv, vspheres) {
@@ -235,7 +235,7 @@ bool KinBody::InitFromTrimesh(const TriMesh& trimesh, bool visible, const std::s
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->_index = 0;
-    plink->_info._name = "base";
+    plink->_info.name_ = "base";
     plink->_info._bStatic = true;
     plink->_collision = trimesh;
     GeometryInfo info;
@@ -267,7 +267,7 @@ bool KinBody::InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->_index = 0;
-    plink->_info._name = "base";
+    plink->_info.name_ = "base";
     plink->_info._bStatic = true;
     FOREACHC(itinfo,geometries) {
         Link::GeometryPtr geom(new Link::Geometry(plink,**itinfo));
@@ -347,7 +347,7 @@ bool KinBody::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, cons
 void KinBody::SetName(const std::string& newname)
 {
     OPENRAVE_ASSERT_OP(newname.size(), >, 0);
-    if( _name != newname ) {
+    if( name_ != newname ) {
         // have to replace the 2nd word of all the groups with the robot name
         FOREACH(itgroup, _spec._vgroups) {
             stringstream ss(itgroup->name);
@@ -357,7 +357,7 @@ void KinBody::SetName(const std::string& newname)
             ss.get(buf,0);
             itgroup->name = str(boost::format("%s %s %s")%grouptype%newname%buf.str());
         }
-        _name = newname;
+        name_ = newname;
         _PostprocessChangedParameters(Prop_Name);
     }
 }
@@ -1235,7 +1235,7 @@ void KinBody::GetLinkEnableStates(std::vector<uint8_t>& enablestates) const
 uint64_t KinBody::GetLinkEnableStatesMask() const
 {
     if( _veclinks.size() > 64 ) {
-        RAVELOG_WARN_FORMAT("%s has too many links and will only return enable mask for first 64", _name);
+        RAVELOG_WARN_FORMAT("%s has too many links and will only return enable mask for first 64", name_);
     }
     uint64_t linkstate = 0;
     for(size_t ilink = 0; ilink < _veclinks.size(); ++ilink) {
@@ -4493,7 +4493,7 @@ void KinBody::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     InterfaceBase::Clone(preference,cloningoptions);
     KinBodyConstPtr r = RaveInterfaceConstCast<KinBody>(preference);
 
-    _name = r->_name;
+    name_ = r->name_;
     _nHierarchyComputed = r->_nHierarchyComputed;
     _bMakeJoinedLinksAdjacent = r->_bMakeJoinedLinksAdjacent;
     __hashkinematics = r->__hashkinematics;
@@ -4850,8 +4850,8 @@ void KinBody::_InitAndAddLink(LinkPtr plink)
 
     // check to make sure there are no repeating names in already added links
     FOREACH(itlink, _veclinks) {
-        if( (*itlink)->GetName() == info._name ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("link %s is declared more than once in body %s"), info._name%GetName(), ORE_InvalidArguments);
+        if( (*itlink)->GetName() == info.name_ ) {
+            throw OPENRAVE_EXCEPTION_FORMAT(_("link %s is declared more than once in body %s"), info.name_%GetName(), ORE_InvalidArguments);
         }
     }
 
@@ -4869,7 +4869,7 @@ void KinBody::_InitAndAddLink(LinkPtr plink)
     }
     FOREACHC(itadjacentname, info._vForcedAdjacentLinks) {
         // make sure the same pair isn't added more than once
-        std::pair<std::string, std::string> adjpair = std::make_pair(info._name, *itadjacentname);
+        std::pair<std::string, std::string> adjpair = std::make_pair(info.name_, *itadjacentname);
         if( find(_vForcedAdjacentLinks.begin(), _vForcedAdjacentLinks.end(), adjpair) == _vForcedAdjacentLinks.end() ) {
             _vForcedAdjacentLinks.push_back(adjpair);
         }
@@ -4883,8 +4883,8 @@ void KinBody::_InitAndAddJoint(JointPtr pjoint)
     // check to make sure there are no repeating names in already added links
     JointInfo& info = pjoint->_info;
     FOREACH(itjoint, _vecjoints) {
-        if( (*itjoint)->GetName() == info._name ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("joint %s is declared more than once in body %s"), info._name%GetName(), ORE_InvalidArguments);
+        if( (*itjoint)->GetName() == info.name_ ) {
+            throw OPENRAVE_EXCEPTION_FORMAT(_("joint %s is declared more than once in body %s"), info.name_%GetName(), ORE_InvalidArguments);
         }
     }
 
@@ -4896,20 +4896,20 @@ void KinBody::_InitAndAddJoint(JointPtr pjoint)
     }
     LinkPtr plink0, plink1;
     FOREACHC(itlink, _veclinks) {
-        if( (*itlink)->_info._name == info._linkname0 ) {
+        if( (*itlink)->_info.name_ == info._linkname0 ) {
             plink0 = *itlink;
             if( !!plink1 ) {
                 break;
             }
             }
-        if( (*itlink)->_info._name == info._linkname1 ) {
+        if( (*itlink)->_info.name_ == info._linkname1 ) {
             plink1 = *itlink;
             if( !!plink0 ) {
                 break;
             }
         }
     }
-    OPENRAVE_ASSERT_FORMAT(!!plink0&&!!plink1, "cannot find links '%s' and '%s' of body '%s' joint %s ", info._linkname0%info._linkname1%GetName()%info._name, ORE_Failed);
+    OPENRAVE_ASSERT_FORMAT(!!plink0&&!!plink1, "cannot find links '%s' and '%s' of body '%s' joint %s ", info._linkname0%info._linkname1%GetName()%info.name_, ORE_Failed);
     std::vector<Vector> vaxes(pjoint->GetDOF());
     std::copy(info._vaxes.begin(),info._vaxes.begin()+vaxes.size(), vaxes.begin());
     pjoint->_ComputeInternalInformation(plink0, plink1, info._vanchor, vaxes, info._vcurrentvalues);

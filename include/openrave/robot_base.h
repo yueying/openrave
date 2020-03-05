@@ -29,7 +29,10 @@
 namespace OpenRAVE 
 {
 
-/** \brief <b>[interface]</b> A robot is a kinematic body that has attached manipulators, sensors, and controllers. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_robot.
+/** \brief <b>[interface]</b> 
+    A robot is a kinematic body that has attached manipulators, sensors, and controllers. 
+	<b>If not specified, method is not multi-thread safe.</b> 
+	See \ref arch_robot.
     \ingroup interfaces
  */
 class OPENRAVE_API RobotBase : public KinBody
@@ -51,7 +54,7 @@ public:
         virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale=1.0, int options=0) const;
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale=1.0);
 
-        std::string _name;
+        std::string name_;
         std::string _sBaseLinkName, _sEffectorLinkName; ///< name of the base and effector links of the robot used to determine the chain
         Transform _tLocalTool;
         std::vector<dReal> _vChuckingDirection; ///< the normal direction to move joints for the hand to grasp something
@@ -96,7 +99,7 @@ public:
 
         virtual const std::string& GetName() const 
 		{
-            return _info._name;
+            return _info.name_;
         }
 
         /// \brief get robot that manipulator belongs to.
@@ -442,7 +445,7 @@ public:
         virtual ~AttachedSensorInfo() {
         }
 
-        std::string _name;
+        std::string name_;
         std::string _linkname; ///< the robot link that the sensor is attached to
         Transform _trelative;         ///< relative transform of the sensor with respect to the attached link
         std::string _sensorname; ///< name of the sensor interface to create, in other words the sensor type
@@ -488,7 +491,7 @@ public:
             }
         }
         virtual const std::string& GetName() const {
-            return _info._name;
+            return _info.name_;
         }
 
         /// retrieves the current data from the sensor
@@ -564,7 +567,7 @@ public:
         virtual void DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale=1.0);
 
 
-        std::string _name; ///< the name of the connected body info
+        std::string name_; ///< the name of the connected body info
         std::string _linkname; ///< the robot link that the body is attached to
         std::string _uri;  //< the uri where the connected body came from. this is used when writing back to the filename.
         Transform _trelative;  ///< relative transform of the body with respect to the attached link. The link transforms are multiplied by the transform of _linkname and _trelative to put them on the real robot.
@@ -645,7 +648,7 @@ public:
         }
 
         inline const std::string& GetName() const {
-            return _info._name;
+            return _info.name_;
         }
 
         // virtual void serialize(std::ostream& o, int options) const;

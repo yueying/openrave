@@ -424,17 +424,17 @@ public:
 
     /// \return the name of the sensor
     virtual const std::string& GetName() const {
-        return _name;
+        return name_;
     }
     virtual void SetName(const std::string& newname) {
-        _name = newname;
+        name_ = newname;
     }
 
     /// \brief serialize the sensor geometry and other attributes.
     virtual void Serialize(BaseXMLWriterPtr writer, int options=0) const;
 
 protected:
-    std::string _name;     ///< name of the sensor
+    std::string name_;     ///< name of the sensor
 
 private:
     virtual const char* GetHash() const {

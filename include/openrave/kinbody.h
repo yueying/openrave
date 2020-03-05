@@ -204,7 +204,7 @@ namespace OpenRAVE
 
 			GeometryType _type; ///< the type of geometry primitive
 
-			std::string _name; ///< the name of the geometry
+			std::string name_; ///< the name of the geometry
 
 			/// \brief filename for render model (optional)
 			///
@@ -249,7 +249,7 @@ namespace OpenRAVE
 			std::map< std::string, std::vector<GeometryInfoPtr> > _mapExtraGeometries;
 
 			/// \brief unique link name
-			std::string _name;
+			std::string name_;
 			/// the current transformation of the link with respect to the body coordinate system
 			Transform _t;
 			/// the frame for inertia and center of mass of the link in the link's coordinate system
@@ -370,7 +370,7 @@ namespace OpenRAVE
 					return _info._vAmbientColor;
 				}
 				inline const std::string& GetName() const {
-					return _info._name;
+					return _info.name_;
 				}
 
 				/// \brief returns the local collision mesh
@@ -459,7 +459,7 @@ namespace OpenRAVE
 			typedef Geometry GEOMPROPERTIES RAVE_DEPRECATED;
 
 			inline const std::string& GetName() const {
-				return _info._name;
+				return _info.name_;
 			}
 
 			/// \brief Indicates a static body that does not move with respect to the root link.
@@ -877,7 +877,7 @@ namespace OpenRAVE
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
 
 			JointType _type; /// The joint type
-			std::string _name;         ///< the unique joint name
+			std::string name_;         ///< the unique joint name
 			std::string _linkname0, _linkname1; ///< attaching links, all axes and anchors are defined in the link pointed to by _linkname0 coordinate system. _linkname0 is usually the parent link.
 			Vector _vanchor; ///< the anchor of the rotation axes defined in _linkname0's coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
 			boost::array<Vector, 3> _vaxes;                ///< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
@@ -985,7 +985,7 @@ namespace OpenRAVE
 
 			/// \brief The unique name of the joint
 			inline const std::string& GetName() const {
-				return _info._name;
+				return _info.name_;
 			}
 
 			inline dReal GetMaxVel(int iaxis = 0) const {
@@ -1741,7 +1741,7 @@ namespace OpenRAVE
 
 		/// \brief Unique name of the body.
 		virtual const std::string& GetName() const {
-			return _name;
+			return name_;
 		}
 
 		/// \brief Set the name of the body, notifies the environment and checks for uniqueness.
@@ -2597,7 +2597,7 @@ namespace OpenRAVE
 		int _environmentid; ///< \see GetEnvironmentId
 
 	protected:
-		std::string _name; ///< name of body
+		std::string name_; ///< name of body
 		std::vector<JointPtr> _vecjoints; ///< \see GetJoints
 		std::vector<JointPtr> _vTopologicallySortedJoints; ///< \see GetDependencyOrderedJoints
 		std::vector<JointPtr> _vTopologicallySortedJointsAll; ///< Similar to _vDependencyOrderedJoints except includes _vecjoints and _vPassiveJoints

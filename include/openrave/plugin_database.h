@@ -73,7 +73,7 @@ namespace OpenRAVE
 			RegisteredInterface(InterfaceType type, const std::string& name,
 				const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn,
 				std::shared_ptr<PluginDatabase> database)
-				: type_(type), _name(name), _createfn(createfn), _database(database)
+				: type_(type), name_(name), _createfn(createfn), _database(database)
 			{
 			}
 			virtual ~RegisteredInterface()
@@ -87,7 +87,7 @@ namespace OpenRAVE
 			}
 
 			InterfaceType type_;
-			std::string _name;
+			std::string name_;
 			boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
 			std::list< std::weak_ptr<RegisteredInterface> >::iterator _iterator;
 		protected:
@@ -566,9 +566,9 @@ namespace OpenRAVE
 			listplugins = _listplugins;
 		}
 
-		InterfaceBasePtr Create(EnvironmentBasePtr penv, InterfaceType type, const std::string& _name)
+		InterfaceBasePtr Create(EnvironmentBasePtr penv, InterfaceType type, const std::string& interface_name)
 		{
-			std::string name = _name;
+			std::string name = interface_name;
 			InterfaceBasePtr pointer;
 			if (name.size() == 0) {
 				switch (type) {
@@ -606,7 +606,7 @@ namespace OpenRAVE
 				FOREACH(it, listRegisteredInterfaces) {
 					RegisteredInterfacePtr registration = it->lock();
 					if (!!registration) {
-						if ((nInterfaceNameLength >= registration->_name.size()) && (_strnicmp(name.c_str(), registration->_name.c_str(), registration->_name.size()) == 0)) {
+						if ((nInterfaceNameLength >= registration->name_.size()) && (_strnicmp(name.c_str(), registration->name_.c_str(), registration->name_.size()) == 0)) {
 							std::stringstream sinput(name);
 							std::string interfacename;
 							sinput >> interfacename;
@@ -802,8 +802,8 @@ namespace OpenRAVE
 				RegisteredInterfacePtr registration = it->lock();
 				if (!!registration)
 				{
-					if ((interfacename.size() >= registration->_name.size())
-						&& (_strnicmp(interfacename.c_str(), registration->_name.c_str(), registration->_name.size()) == 0))
+					if ((interfacename.size() >= registration->name_.size())
+						&& (_strnicmp(interfacename.c_str(), registration->name_.c_str(), registration->name_.size()) == 0))
 					{
 						return true;
 					}
@@ -833,7 +833,7 @@ namespace OpenRAVE
 				FOREACHC(it, registered_interfaces_list_) {
 					RegisteredInterfacePtr registration = it->lock();
 					if (!!registration) {
-						plugins.back().second.interfacenames[registration->type_].push_back(registration->_name);
+						plugins.back().second.interfacenames[registration->type_].push_back(registration->name_);
 					}
 				}
 			}
@@ -846,7 +846,7 @@ namespace OpenRAVE
 			FOREACHC(it, registered_interfaces_list_) {
 				RegisteredInterfacePtr registration = it->lock();
 				if (!!registration) {
-					interfacenames[registration->type_].push_back(registration->_name);
+					interfacenames[registration->type_].push_back(registration->name_);
 				}
 			}
 			FOREACHC(itplugin, _listplugins) {

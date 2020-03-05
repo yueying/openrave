@@ -1541,15 +1541,18 @@ public:
     }
 
     /// sinput holds the freeindices and other run-time configuraiton parameters
-    static IkSolverBasePtr CreateIkSolver(const string& _name, const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv)
+    static IkSolverBasePtr CreateIkSolver(const std::string& name, 
+		const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv)
     {
-        string name; name.resize(_name.size());
-        std::transform(_name.begin(), _name.end(), name.begin(), ::tolower);
+        std::string lower_name; 
+		lower_name.resize(name.size());
+        std::transform(name.begin(), name.end(), lower_name.begin(), ::tolower);
         /// start from the newer libraries
         boost::mutex::scoped_lock lock(GetLibraryMutex());
-        for(list< std::shared_ptr<IkLibrary> >::reverse_iterator itlib = GetLibraries()->rbegin(); itlib != GetLibraries()->rend(); ++itlib) {
+        for(std::list< std::shared_ptr<IkLibrary> >::reverse_iterator itlib = GetLibraries()->rbegin();
+			itlib != GetLibraries()->rend(); ++itlib) {
             FOREACHC(itikname,(*itlib)->GetIkNames()) {
-                if( name == *itikname ) {
+                if(lower_name == *itikname ) {
                     return (*itlib)->CreateSolver(penv,vfreeinc,ikthreshold);
                 }
             }
@@ -1571,7 +1574,8 @@ void DestroyIkFastLibraries() {
     IkFastModule::GetLibraries() = NULL;
 }
 
-IkSolverBasePtr CreateIkSolverFromName(const string& _name, const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv)
+IkSolverBasePtr CreateIkSolverFromName(const std::string& name, 
+	const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv)
 {
-    return IkFastModule::CreateIkSolver(_name,vfreeinc,ikthreshold, penv);
+    return IkFastModule::CreateIkSolver(name,vfreeinc,ikthreshold, penv);
 }

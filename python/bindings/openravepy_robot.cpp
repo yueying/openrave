@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -64,7 +64,7 @@ PyManipulatorInfo::PyManipulatorInfo(const RobotBase::ManipulatorInfo& info) {
 }
 
 void PyManipulatorInfo::_Update(const RobotBase::ManipulatorInfo& info) {
-    _name = ConvertStringToUnicode(info._name);
+    name_ = ConvertStringToUnicode(info.name_);
     _sBaseLinkName = ConvertStringToUnicode(info._sBaseLinkName);
     _sEffectorLinkName = ConvertStringToUnicode(info._sEffectorLinkName);
     _tLocalTool = ReturnTransform(info._tLocalTool);
@@ -81,7 +81,7 @@ void PyManipulatorInfo::_Update(const RobotBase::ManipulatorInfo& info) {
 RobotBase::ManipulatorInfoPtr PyManipulatorInfo::GetManipulatorInfo() const
 {
     RobotBase::ManipulatorInfoPtr pinfo(new RobotBase::ManipulatorInfo());
-    pinfo->_name = py::extract<std::string>(_name);
+    pinfo->name_ = py::extract<std::string>(name_);
     pinfo->_sBaseLinkName = py::extract<std::string>(_sBaseLinkName);
     pinfo->_sEffectorLinkName = py::extract<std::string>(_sEffectorLinkName);
     pinfo->_tLocalTool = ExtractTransform(_tLocalTool);
@@ -122,7 +122,7 @@ PyAttachedSensorInfo::PyAttachedSensorInfo(const RobotBase::AttachedSensorInfo& 
 }
 
 void PyAttachedSensorInfo::_Update(const RobotBase::AttachedSensorInfo& info) {
-    _name = ConvertStringToUnicode(info._name);
+    name_ = ConvertStringToUnicode(info.name_);
     _linkname = ConvertStringToUnicode(info._linkname);
     _trelative = ReturnTransform(info._trelative);
     _sensorname = ConvertStringToUnicode(info._sensorname);
@@ -132,7 +132,7 @@ void PyAttachedSensorInfo::_Update(const RobotBase::AttachedSensorInfo& info) {
 RobotBase::AttachedSensorInfoPtr PyAttachedSensorInfo::GetAttachedSensorInfo() const
 {
     RobotBase::AttachedSensorInfoPtr pinfo(new RobotBase::AttachedSensorInfo());
-    pinfo->_name = py::extract<std::string>(_name);
+    pinfo->name_ = py::extract<std::string>(name_);
     pinfo->_linkname = py::extract<std::string>(_linkname);
     pinfo->_trelative = ExtractTransform(_trelative);
     pinfo->_sensorname = py::extract<std::string>(_sensorname);
@@ -173,7 +173,7 @@ PyConnectedBodyInfo::PyConnectedBodyInfo(const RobotBase::ConnectedBodyInfo& inf
 
 void PyConnectedBodyInfo::_Update(const RobotBase::ConnectedBodyInfo& info)
 {
-    _name = ConvertStringToUnicode(info._name);
+    name_ = ConvertStringToUnicode(info.name_);
     _linkname = ConvertStringToUnicode(info._linkname);
     _trelative = ReturnTransform(info._trelative);
     _uri = ConvertStringToUnicode(info._uri);
@@ -206,7 +206,7 @@ void PyConnectedBodyInfo::_Update(const RobotBase::ConnectedBodyInfo& info)
 RobotBase::ConnectedBodyInfoPtr PyConnectedBodyInfo::GetConnectedBodyInfo() const
 {
     RobotBase::ConnectedBodyInfoPtr pinfo(new RobotBase::ConnectedBodyInfo());
-    pinfo->_name = py::extract<std::string>(_name);
+    pinfo->name_ = py::extract<std::string>(name_);
     pinfo->_linkname = py::extract<std::string>(_linkname);
     pinfo->_trelative = ExtractTransform(_trelative);
     pinfo->_uri = py::extract<std::string>(_uri);
@@ -1637,10 +1637,10 @@ class ManipulatorInfo_pickle_suite
 public:
     static py::tuple getstate(const PyManipulatorInfo& r)
     {
-        return py::make_tuple(r._name, r._sBaseLinkName, r._sEffectorLinkName, r._tLocalTool, r._vChuckingDirection, r._vdirection, r._sIkSolverXMLId, r._vGripperJointNames);
+        return py::make_tuple(r.name_, r._sBaseLinkName, r._sEffectorLinkName, r._tLocalTool, r._vChuckingDirection, r._vdirection, r._sIkSolverXMLId, r._vGripperJointNames);
     }
     static void setstate(PyManipulatorInfo& r, py::tuple state) {
-        r._name = state[0];
+        r.name_ = state[0];
         r._sBaseLinkName = state[1];
         r._sEffectorLinkName = state[2];
         r._tLocalTool = state[3];
@@ -1754,7 +1754,7 @@ void init_openravepy_robot()
 #else
     object manipulatorinfo = class_<PyManipulatorInfo, OPENRAVE_SHARED_PTR<PyManipulatorInfo> >("ManipulatorInfo", DOXY_CLASS(RobotBase::ManipulatorInfo))
 #endif
-                             .def_readwrite("_name",&PyManipulatorInfo::_name)
+                             .def_readwrite("_name",&PyManipulatorInfo::name_)
                              .def_readwrite("_sBaseLinkName",&PyManipulatorInfo::_sBaseLinkName)
                              .def_readwrite("_sEffectorLinkName",&PyManipulatorInfo::_sEffectorLinkName)
                              .def_readwrite("_tLocalTool",&PyManipulatorInfo::_tLocalTool)
@@ -1803,7 +1803,7 @@ void init_openravepy_robot()
 #else
     object attachedsensorinfo = class_<PyAttachedSensorInfo, OPENRAVE_SHARED_PTR<PyAttachedSensorInfo> >("AttachedSensorInfo", DOXY_CLASS(RobotBase::AttachedSensorInfo))
 #endif
-                                .def_readwrite("_name", &PyAttachedSensorInfo::_name)
+                                .def_readwrite("_name", &PyAttachedSensorInfo::name_)
                                 .def_readwrite("_linkname", &PyAttachedSensorInfo::_linkname)
                                 .def_readwrite("_trelative", &PyAttachedSensorInfo::_trelative)
                                 .def_readwrite("_sensorname", &PyAttachedSensorInfo::_sensorname)
@@ -1831,7 +1831,7 @@ void init_openravepy_robot()
 #else
     object connectedbodyinfo = class_<PyConnectedBodyInfo, OPENRAVE_SHARED_PTR<PyConnectedBodyInfo> >("ConnectedBodyInfo", DOXY_CLASS(RobotBase::ConnectedBodyInfo))
 #endif
-                               .def_readwrite("_name", &PyConnectedBodyInfo::_name)
+                               .def_readwrite("_name", &PyConnectedBodyInfo::name_)
                                .def_readwrite("_linkname", &PyConnectedBodyInfo::_linkname)
                                .def_readwrite("_trelative", &PyConnectedBodyInfo::_trelative)
                                .def_readwrite("_uri", &PyConnectedBodyInfo::_uri)

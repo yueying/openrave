@@ -877,7 +877,7 @@ public:
             _plink.reset(new KinBody::Link(pparent));
         }
         if( linkname.size() > 0 ) {
-            _plink->_info._name = linkname;
+            _plink->_info.name_ = linkname;
         }
         if( bStaticSet ) {
             _plink->_info._bStatic = bStatic;
@@ -1346,7 +1346,7 @@ public:
 
         FOREACHC(itatt,atts) {
             if( itatt->first == "name" ) {
-                _pjoint->_info._name = itatt->second;
+                _pjoint->_info.name_ = itatt->second;
             }
             else if( itatt->first == "type" ) {
                 if( _stricmp(itatt->second.c_str(), "hinge") == 0 ) {
@@ -1548,7 +1548,7 @@ public:
             }
 
             if( !attachedbodies[index] && bQuery ) {
-                RAVELOG_WARN(str(boost::format("Failed to find body %s for joint %s\n")%linkname%_pjoint->_info._name));
+                RAVELOG_WARN(str(boost::format("Failed to find body %s for joint %s\n")%linkname%_pjoint->_info.name_));
                 GetXMLErrorCount()++;
             }
         }
@@ -2307,15 +2307,15 @@ public:
                 //RAVELOG_INFO("write prefix: links: %d-%d, 0x%x\n",rootoffset,(int)_pchain->_veclinks.size(),this);
                 BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_pchain->_veclinks.size());
                 for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->_veclinks.begin()+rootoffset; itlink != _pchain->_veclinks.end(); ++itlink) {
-                    (*itlink)->_info._name = _prefix + (*itlink)->_info._name;
+                    (*itlink)->_info.name_ = _prefix + (*itlink)->_info.name_;
                 }
                 BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_pchain->_vecjoints.size());
                 for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->_vecjoints.begin()+rootjoffset; itjoint != _pchain->_vecjoints.end(); ++itjoint) {
-                    (*itjoint)->_info._name = _prefix +(*itjoint)->_info._name;
+                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
                 }
                 BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_pchain->_vPassiveJoints.size());
                 for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->_vPassiveJoints.begin()+rootjpoffset; itjoint != _pchain->_vPassiveJoints.end(); ++itjoint) {
-                    (*itjoint)->_info._name = _prefix +(*itjoint)->_info._name;
+                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
                 }
             }
 
@@ -2477,7 +2477,7 @@ public:
         _vScaleGeometry = Vector(1,1,1);
         FOREACHC(itatt,atts) {
             if( itatt->first == "name" ) {
-                _manipinfo._name = itatt->second;
+                _manipinfo.name_ = itatt->second;
             }
         }
         _probot = probot;
@@ -2708,7 +2708,7 @@ public:
             }
         }
 
-        _psensor->_info._name = name;
+        _psensor->_info.name_ = name;
         _probot = _psensor->GetRobot();
     }
 
@@ -3012,7 +3012,7 @@ public:
                 BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_probot->_veclinks.size());
                 vector<KinBody::LinkPtr>::iterator itlink = _probot->_veclinks.begin()+rootoffset;
                 while(itlink != _probot->_veclinks.end()) {
-                    (*itlink)->_info._name = _prefix + (*itlink)->_info._name;
+                    (*itlink)->_info.name_ = _prefix + (*itlink)->_info.name_;
                     ++itlink;
                 }
                 std::vector< std::pair<std::string, std::string> > jointnamepairs;
@@ -3021,16 +3021,16 @@ public:
                 vector<KinBody::JointPtr>::iterator itjoint = _probot->_vecjoints.begin()+rootjoffset;
                 list<KinBody::JointPtr> listjoints;
                 while(itjoint != _probot->_vecjoints.end()) {
-                    jointnamepairs.emplace_back((*itjoint)->_info._name,  _prefix +(*itjoint)->_info._name);
-                    (*itjoint)->_info._name = _prefix +(*itjoint)->_info._name;
+                    jointnamepairs.emplace_back((*itjoint)->_info.name_,  _prefix +(*itjoint)->_info.name_);
+                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
                     listjoints.push_back(*itjoint);
                     ++itjoint;
                 }
                 BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_probot->_vPassiveJoints.size());
                 itjoint = _probot->_vPassiveJoints.begin()+rootjpoffset;
                 while(itjoint != _probot->_vPassiveJoints.end()) {
-                    jointnamepairs.emplace_back((*itjoint)->_info._name,  _prefix +(*itjoint)->_info._name);
-                    (*itjoint)->_info._name = _prefix +(*itjoint)->_info._name;
+                    jointnamepairs.emplace_back((*itjoint)->_info.name_,  _prefix +(*itjoint)->_info.name_);
+                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
                     listjoints.push_back(*itjoint);
                     ++itjoint;
                 }
@@ -3048,12 +3048,12 @@ public:
                 }
                 FOREACH(itsensor, _probot->GetAttachedSensors()) {
                     if( _setInitialSensors.find(*itsensor) == _setInitialSensors.end() ) {
-                        (*itsensor)->_info._name = _prefix + (*itsensor)->_info._name;
+                        (*itsensor)->_info.name_ = _prefix + (*itsensor)->_info.name_;
                     }
                 }
                 FOREACH(itmanip,_probot->GetManipulators()) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
-                        (*itmanip)->_info._name = _prefix + (*itmanip)->_info._name;
+                        (*itmanip)->_info.name_ = _prefix + (*itmanip)->_info.name_;
                         (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
                         (*itmanip)->_info._sEffectorLinkName = _prefix + (*itmanip)->_info._sEffectorLinkName;
                         FOREACH(itgrippername,(*itmanip)->_info._vGripperJointNames) {

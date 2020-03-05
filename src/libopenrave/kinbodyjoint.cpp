@@ -107,7 +107,7 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
         fjointmult = fUnitScale;
     }
 
-    openravejson::SetJsonValueByKey(value, "name", _name, allocator);
+    openravejson::SetJsonValueByKey(value, "name", name_, allocator);
     openravejson::SetJsonValueByKey(value, "anchors", _vanchor, allocator);
     openravejson::SetJsonValueByKey(value, "parentLinkName", _linkname0, allocator);
     openravejson::SetJsonValueByKey(value, "childLinkName", _linkname1, allocator);
@@ -202,7 +202,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fU
         throw OPENRAVE_EXCEPTION_FORMAT("failed to deserialize json, unsupported joint type \"%s\"", typestr, ORE_InvalidArguments);
     }
 
-    openravejson::LoadJsonValueByKey(value, "name", _name);
+    openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "parentLinkName", _linkname0);
     openravejson::LoadJsonValueByKey(value, "anchors", _vanchor);
     openravejson::LoadJsonValueByKey(value, "childLinkName", _linkname1);
@@ -267,7 +267,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fU
 KinBody::JointInfo& KinBody::JointInfo::operator=(const KinBody::JointInfo& other)
 {
     _type = other._type;
-    _name = other._name;
+    name_ = other.name_;
     _linkname0 = other._linkname0;
     _linkname1 = other._linkname1;
     _vanchor = other._vanchor;
@@ -866,11 +866,11 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
 {
     OPENRAVE_ASSERT_OP_FORMAT(!!plink0,&&,!!plink1, "one or more attached _attachedbodies are invalid for joint %s", GetName(),ORE_InvalidArguments);
     for(int i = 0; i < GetDOF(); ++i) {
-        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxvel[i], >=, 0, "joint %s[%d] max velocity is invalid",_info._name%i, ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxaccel[i], >=, 0, "joint %s[%d] max acceleration is invalid",_info._name%i, ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxjerk[i], >=, 0, "joint %s[%d] max jerk is invalid",_info._name%i, ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxtorque[i], >=, 0, "joint %s[%d] max torque is invalid",_info._name%i, ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxinertia[i], >=, 0, "joint %s[%d] max inertia is invalid",_info._name%i, ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxvel[i], >=, 0, "joint %s[%d] max velocity is invalid",_info.name_%i, ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxaccel[i], >=, 0, "joint %s[%d] max acceleration is invalid",_info.name_%i, ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxjerk[i], >=, 0, "joint %s[%d] max jerk is invalid",_info.name_%i, ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxtorque[i], >=, 0, "joint %s[%d] max torque is invalid",_info.name_%i, ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP_FORMAT(_info._vmaxinertia[i], >=, 0, "joint %s[%d] max inertia is invalid",_info.name_%i, ORE_InvalidArguments);
     }
 
     KinBodyPtr parent(_parent);
@@ -1789,7 +1789,7 @@ void KinBody::Joint::SetMimicEquations(int iaxis, const std::string& poseq, cons
             size_t nameendindex = sequation.find(' ');
             string varname;
             if( nameendindex == std::string::npos ) {
-                RAVELOG_WARN(str(boost::format("invalid equation syntax '%s' for joint %s")%sequation%_info._name));
+                RAVELOG_WARN(str(boost::format("invalid equation syntax '%s' for joint %s")%sequation%_info.name_));
                 varname = sequation;
                 sequation = "0";
             }
@@ -1811,7 +1811,7 @@ void KinBody::Joint::SetMimicEquations(int iaxis, const std::string& poseq, cons
         for(size_t j = 0; j < resultVars.size(); ++j) {
             if( !vfns[j] ) {
                 // print a message instead of throwing an exception since it might be common for only position equations to be specified
-                RAVELOG_WARN(str(boost::format("SetMimicEquations: missing variable %s from partial derivatives of joint %s!")%mapinvnames[resultVars[j]]%_info._name));
+                RAVELOG_WARN(str(boost::format("SetMimicEquations: missing variable %s from partial derivatives of joint %s!")%mapinvnames[resultVars[j]]%_info.name_));
                 vfns[j] = CreateJointFunctionParser();
                 vfns[j]->Parse("0","");
             }
@@ -1835,7 +1835,7 @@ void KinBody::Joint::_ComputePartialVelocities(std::vector<std::pair<int,dReal> 
         vpartials.emplace_back(dofindex+iaxis, 1.0);
         return;
     }
-    OPENRAVE_ASSERT_FORMAT(!!_vmimic.at(iaxis), "cannot compute partial velocities of joint %s", _info._name, ORE_Failed);
+    OPENRAVE_ASSERT_FORMAT(!!_vmimic.at(iaxis), "cannot compute partial velocities of joint %s", _info.name_, ORE_Failed);
     KinBodyConstPtr parent(_parent);
     MIMIC::DOFFormat thisdofformat;
     thisdofformat.dofindex = -1; // always -1 since it is mimiced

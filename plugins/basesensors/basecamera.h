@@ -281,7 +281,7 @@ public:
             // does not exist yet
             SensorBasePtr psensor_reference = GetEnv()->GetSensor(pgeom->sensor_reference);
             if( !psensor_reference ) {
-                RAVELOG_VERBOSE_FORMAT("could not find sensor reference %s of sensor %s", pgeom->sensor_reference%_name);
+                RAVELOG_VERBOSE_FORMAT("could not find sensor reference %s of sensor %s", pgeom->sensor_reference%name_);
             }
 //            else {
 //                _psensor_reference = psensor_reference;
@@ -448,8 +448,8 @@ public:
             SensorBasePtr psensor_reference = _psensor_reference.lock();
             if( !psensor_reference ) {
                 // HACK for collada: check if pgeom->sensor_reference is in robotname:sensorname and that matches with the current sensor name's robot. If it does, then most likely robot is changing its name and sensor_reference is part of the same changing robot, so have to update sensor_reference! The only way to resolve this issue is to introduce unique IDs in openrave, slated for openrave JSON format.
-                if( newname.find(':') != std::string::npos && _name.find(':') != std::string::npos && pgeom->sensor_reference.find(':') != std::string::npos) {
-                    std::string oldrobotname = _name.substr(0, _name.find(':'));
+                if( newname.find(':') != std::string::npos && name_.find(':') != std::string::npos && pgeom->sensor_reference.find(':') != std::string::npos) {
+                    std::string oldrobotname = name_.substr(0, name_.find(':'));
                     std::string newrobotname = newname.substr(0, newname.find(':'));
                     std::string oldreferencerobotname = pgeom->sensor_reference.substr(0, pgeom->sensor_reference.find(':'));
                     
@@ -463,7 +463,7 @@ public:
                         }
                     }
                 }
-                //RAVELOG_WARN_FORMAT("could not find sensor reference %s of sensor %s", pgeom->sensor_reference%_name);
+                //RAVELOG_WARN_FORMAT("could not find sensor reference %s of sensor %s", pgeom->sensor_reference%name_);
             }
         }
 

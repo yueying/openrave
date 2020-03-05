@@ -851,7 +851,7 @@ public:
                 _AddPrefixForKinBody(probot,_prefix);
                 FOREACH(itmanip,probot->_vecManipulators) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
-                        (*itmanip)->_info._name = _prefix + (*itmanip)->_info._name;
+                        (*itmanip)->_info.name_ = _prefix + (*itmanip)->_info.name_;
                         (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
                         (*itmanip)->_info._sEffectorLinkName = _prefix + (*itmanip)->_info._sEffectorLinkName;
                         FOREACH(itgrippername,(*itmanip)->_info._vGripperJointNames) {
@@ -861,7 +861,7 @@ public:
                 }
                 FOREACH(itsensor, probot->_vecAttachedSensors) {
                     if( _setInitialSensors.find(*itsensor) == _setInitialSensors.end() ) {
-                        (*itsensor)->_info._name = _prefix + (*itsensor)->_info._name;
+                        (*itsensor)->_info.name_ = _prefix + (*itsensor)->_info.name_;
                     }
                 }
             }
@@ -964,22 +964,22 @@ public:
     {
         FOREACH(itlink,pbody->_veclinks) {
             if( _setInitialLinks.find(*itlink) == _setInitialLinks.end()) {
-                (*itlink)->_info._name = prefix + (*itlink)->_info._name;
+                (*itlink)->_info.name_ = prefix + (*itlink)->_info.name_;
             }
         }
         std::list<KinBody::JointPtr> listprocessjoints;
         std::vector< std::pair<std::string, std::string> > jointnamepairs; jointnamepairs.reserve(listprocessjoints.size());
         FOREACH(itjoint,pbody->_vecjoints) {
             if( _setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
-                jointnamepairs.emplace_back((*itjoint)->_info._name,  prefix +(*itjoint)->_info._name);
-                (*itjoint)->_info._name = prefix + (*itjoint)->_info._name;
+                jointnamepairs.emplace_back((*itjoint)->_info.name_,  prefix +(*itjoint)->_info.name_);
+                (*itjoint)->_info.name_ = prefix + (*itjoint)->_info.name_;
                 listprocessjoints.push_back(*itjoint);
             }
         }
         FOREACH(itjoint,pbody->_vPassiveJoints) {
             if( _setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
-                jointnamepairs.emplace_back((*itjoint)->_info._name,  prefix +(*itjoint)->_info._name);
-                (*itjoint)->_info._name = prefix + (*itjoint)->_info._name;
+                jointnamepairs.emplace_back((*itjoint)->_info.name_,  prefix +(*itjoint)->_info.name_);
+                (*itjoint)->_info.name_ = prefix + (*itjoint)->_info.name_;
                 listprocessjoints.push_back(*itjoint);
             }
         }
@@ -1409,7 +1409,7 @@ public:
             name = _ConvertToOpenRAVEName(pdomnode->getID());
         }
         KinBody::LinkPtr plink(new KinBody::Link(pkinbody));
-        plink->_info._name = name;
+        plink->_info.name_ = name;
         plink->_info._mass = 1.0;
         plink->_info._bStatic = false;
         plink->_info._t = getNodeParentTransform(pdomnode) * _ExtractFullTransform(pdomnode);
@@ -1787,7 +1787,7 @@ public:
         KinBody::LinkPtr plink = pkinbody->GetLink(linkname);
         if( !plink ) {
             plink.reset(new KinBody::Link(pkinbody));
-            plink->_info._name = linkname;
+            plink->_info.name_ = linkname;
             plink->_info._mass = 1e-10;
             plink->_info._vinertiamoments = Vector(1e-7,1e-7,1e-7);
             plink->_info._bStatic = false;
@@ -2013,17 +2013,17 @@ public:
                     pjoint->dofindex = pkinbody->GetDOF();
                 }
                 if( !!pdomjoint->getName() ) {
-                    pjoint->_info._name = _ConvertToOpenRAVEName(pdomjoint->getName());
+                    pjoint->_info.name_ = _ConvertToOpenRAVEName(pdomjoint->getName());
                 }
                 else {
-                    pjoint->_info._name = str(boost::format("dummy%d")%pjoint->jointindex);
+                    pjoint->_info.name_ = str(boost::format("dummy%d")%pjoint->jointindex);
                 }
 
                 if( pjoint->_info._bIsActive ) {
                     pkinbody->_vecjoints.push_back(pjoint);
                 }
                 else {
-                    RAVELOG_VERBOSE(str(boost::format("joint %s is passive\n")%pjoint->_info._name));
+                    RAVELOG_VERBOSE(str(boost::format("joint %s is passive\n")%pjoint->_info.name_));
                     pkinbody->_vPassiveJoints.push_back(pjoint);
                 }
 
@@ -2036,7 +2036,7 @@ public:
                     _mapJointSids[jointsidref.substr(lastJointSidIndex+1)] = pjoint;
                 }
 
-                RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)")%pjoint->_info._name%pjoint->jointindex%pjoint->dofindex));
+                RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)")%pjoint->_info.name_%pjoint->jointindex%pjoint->dofindex));
 
                 KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->_info._t * tatt, vdomjoints, bindings);
 
@@ -2044,10 +2044,10 @@ public:
                     RAVELOG_WARN(str(boost::format("Link '%s' has no child link, creating dummy link\n")%plink->GetName()));
                     // create dummy child link
                     stringstream ss;
-                    ss << plink->_info._name;
+                    ss << plink->_info.name_;
                     ss <<"_dummy" << pkinbody->_veclinks.size();
                     pchildlink.reset(new KinBody::Link(pkinbody));
-                    pchildlink->_info._name = ss.str();
+                    pchildlink->_info.name_ = ss.str();
                     pchildlink->_info._bStatic = false;
                     pchildlink->_index = (int)pkinbody->_veclinks.size();
                     pkinbody->_veclinks.push_back(pchildlink);
@@ -3073,7 +3073,7 @@ public:
                     }
                     if( bfoundgeom ) {
                         FillGeometryColor(_ExtractFirstMaterial(domgeom,mapmaterials),geominfo);
-                        geominfo._name = geomname;
+                        geominfo.name_ = geomname;
                         listGeometryInfos.push_back(geominfo);
                         return true;
                     }
@@ -3087,28 +3087,28 @@ public:
             for (size_t tg = 0; tg<meshRef->getTriangles_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTriangles_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
-                listGeometryInfos.back()._name = geomname;
+                listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
                 listGeometryInfos.back()._bVisible = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getTrifans_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTrifans_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
-                listGeometryInfos.back()._name = geomname;
+                listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
                 listGeometryInfos.back()._bVisible = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getTristrips_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTristrips_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
-                listGeometryInfos.back()._name = geomname;
+                listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
                 listGeometryInfos.back()._bVisible = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getPolylist_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getPolylist_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
-                listGeometryInfos.back()._name = geomname;
+                listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
                 listGeometryInfos.back()._bVisible = bgeomvisible;
             }
@@ -3168,7 +3168,7 @@ public:
 
             if( vconvexhull.size()> 0 ) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
-                listGeometryInfos.back()._name = geomname;
+                listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._type = GT_TriMesh;
                 listGeometryInfos.back()._t = tlocalgeom;
                 listGeometryInfos.back()._bVisible = bgeomvisible;
@@ -3195,7 +3195,7 @@ public:
                 domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
                 if( !!tec ) {
                     RobotBase::ManipulatorInfo manipinfo;
-                    manipinfo._name = _ConvertToOpenRAVEName(name);
+                    manipinfo.name_ = _ConvertToOpenRAVEName(name);
                     daeElementRef pframe_origin = tec->getChild("frame_origin");
                     daeElementRef pframe_tip = tec->getChild("frame_tip");
                     if( !!pframe_origin ) {
@@ -3240,7 +3240,7 @@ public:
                                 manipinfo._vdirection /= RaveSqrt(dirlen2);
                             }
                             else {
-                                RAVELOG_WARN_FORMAT("invalid direction specified for manip %s, using [0,0,1]", manipinfo._name);
+                                RAVELOG_WARN_FORMAT("invalid direction specified for manip %s, using [0,0,1]", manipinfo.name_);
                                 manipinfo._vdirection = Vector(0,0,1);
                             }
 
@@ -3277,7 +3277,7 @@ public:
                                 }
                                 continue;
                             }
-                            RAVELOG_WARN(str(boost::format("could not find manipulator '%s' gripper joint '%s'\n")%manipinfo._name%pmanipchild->getAttribute("joint")));
+                            RAVELOG_WARN(str(boost::format("could not find manipulator '%s' gripper joint '%s'\n")%manipinfo.name_%pmanipchild->getAttribute("joint")));
                         }
                         else if( pmanipchild->getElementName() == string("iksolver") ) {
                             InterfaceTypePtr pinterfacetype = _ExtractInterfaceType(pmanipchild);
@@ -3291,14 +3291,14 @@ public:
                             }
                         }
                         else if((pmanipchild->getElementName() != string("frame_origin"))&&(pmanipchild->getElementName() != string("frame_tip"))) {
-                            RAVELOG_WARN(str(boost::format("unrecognized tag <%s> in manipulator '%s'")%pmanipchild->getElementName()%manipinfo._name));
+                            RAVELOG_WARN(str(boost::format("unrecognized tag <%s> in manipulator '%s'")%pmanipchild->getElementName()%manipinfo.name_));
                         }
                     }
 
                     // check if a previous manipulator exists with the same name
                     RobotBase::ManipulatorPtr pnewmanip(new RobotBase::Manipulator(probot,manipinfo));
                     FOREACH(itmanip,probot->_vecManipulators) {
-                        if( (*itmanip)->GetName() == manipinfo._name ) {
+                        if( (*itmanip)->GetName() == manipinfo.name_ ) {
                             *itmanip = pnewmanip;
                             pnewmanip.reset();
                             break;
@@ -3335,7 +3335,7 @@ public:
                 domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
                 if( !!tec ) {
                     RobotBase::AttachedSensorPtr pattachedsensor(new RobotBase::AttachedSensor(probot));
-                    pattachedsensor->_info._name = _ConvertToOpenRAVEName(name);
+                    pattachedsensor->_info.name_ = _ConvertToOpenRAVEName(name);
                     daeElementRef pframe_origin = tec->getChild("frame_origin");
                     if( !!pframe_origin ) {
                         domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
@@ -3493,7 +3493,7 @@ public:
                 resolveCommon_bool_or_param(pactive,tec,connectedBodyInfo._bIsActive);
             }
 
-            connectedBodyInfo._name = _ConvertToOpenRAVEName(name);
+            connectedBodyInfo.name_ = _ConvertToOpenRAVEName(name);
 
             daeElementRef pframe_origin = tec->getChild("frame_origin");
             if (!!pframe_origin) {
@@ -3533,7 +3533,7 @@ public:
                     }
                 }
                 else {
-                    RAVELOG_WARN_FORMAT("Could not load uri %s for connected body %s", uri%connectedBodyInfo._name);
+                    RAVELOG_WARN_FORMAT("Could not load uri %s for connected body %s", uri%connectedBodyInfo.name_);
                 }
 
                 if (!!pbody) {

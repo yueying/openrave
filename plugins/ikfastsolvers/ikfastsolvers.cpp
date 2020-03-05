@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,9 @@ namespace ik_schunk_lwa3 { IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr, st
 namespace ik_katana5d { IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr, std::istream& sinput, const std::vector<dReal>&vfreeinc); }
 namespace ik_katana5d_trans { IkSolverBasePtr CreateIkSolver(EnvironmentBasePtr, std::istream& sinput, const std::vector<dReal>&vfreeinc); }
 
-IkSolverBasePtr CreateIkSolverFromName(const string& _name, const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv);
+IkSolverBasePtr CreateIkSolverFromName(const std::string& name, 
+	const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv);
+
 ModuleBasePtr CreateIkFastModule(EnvironmentBasePtr penv, std::istream& sinput);
 void DestroyIkFastLibraries();
 

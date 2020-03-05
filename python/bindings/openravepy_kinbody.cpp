@@ -97,7 +97,7 @@ PyGeometryInfo::PyGeometryInfo() {
     _vAmbientColor = toPyVector3(Vector(0,0,0));
     _meshcollision = py::none_();
     _type = GT_None;
-    _name = py::none_();
+    name_ = py::none_();
     _filenamerender = py::none_();
     _filenamecollision = py::none_();
     _vRenderScale = toPyVector3(Vector(1,1,1));
@@ -128,7 +128,7 @@ void PyGeometryInfo::Init(const KinBody::GeometryInfo& info) {
     _vAmbientColor = toPyVector3(info._vAmbientColor);
     _meshcollision = toPyTriMesh(info._meshcollision);
     _type = info._type;
-    _name = ConvertStringToUnicode(info._name);
+    name_ = ConvertStringToUnicode(info.name_);
     _filenamerender = ConvertStringToUnicode(info._filenamerender);
     _filenamecollision = ConvertStringToUnicode(info._filenamecollision);
     _vRenderScale = toPyVector3(info._vRenderScale);
@@ -193,8 +193,8 @@ KinBody::GeometryInfoPtr PyGeometryInfo::GetGeometryInfo() {
         ExtractTriMesh(_meshcollision,info._meshcollision);
     }
     info._type = _type;
-    if( !IS_PYTHONOBJECT_NONE(_name) ) {
-        info._name = py::extract<std::string>(_name);
+    if( !IS_PYTHONOBJECT_NONE(name_) ) {
+        info.name_ = py::extract<std::string>(name_);
     }
     if( !IS_PYTHONOBJECT_NONE(_filenamerender) ) {
         info._filenamerender = py::extract<std::string>(_filenamerender);
@@ -221,7 +221,7 @@ void PyLinkInfo::_Update(const KinBody::LinkInfo& info) {
     FOREACHC(itgeominfo, info._vgeometryinfos) {
         _vgeometryinfos.append(PyGeometryInfoPtr(new PyGeometryInfo(**itgeominfo)));
     }
-    _name = ConvertStringToUnicode(info._name);
+    _name = ConvertStringToUnicode(info.name_);
     _t = ReturnTransform(info._t);
     _tMassFrame = ReturnTransform(info._tMassFrame);
     _mass = info._mass;
@@ -274,7 +274,7 @@ KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
         info._vgeometryinfos[i] = pygeom->GetGeometryInfo();
     }
     if( !IS_PYTHONOBJECT_NONE(_name) ) {
-        info._name = py::extract<std::string>(_name);
+        info.name_ = py::extract<std::string>(_name);
     }
     info._t = ExtractTransform(_t);
     info._tMassFrame = ExtractTransform(_tMassFrame);
@@ -673,7 +673,7 @@ PyJointInfo::PyJointInfo(const KinBody::JointInfo& info) {
 
 void PyJointInfo::_Update(const KinBody::JointInfo& info) {
     _type = info._type;
-    _name = ConvertStringToUnicode(info._name);
+    _name = ConvertStringToUnicode(info.name_);
     _linkname0 = ConvertStringToUnicode(info._linkname0);
     _linkname1 = ConvertStringToUnicode(info._linkname1);
     _vanchor = toPyVector3(info._vanchor);
@@ -762,7 +762,7 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
     KinBody::JointInfo& info = *pinfo;
     info._type = _type;
     if( !IS_PYTHONOBJECT_NONE(_name) ) {
-        info._name = py::extract<std::string>(_name);
+        info.name_ = py::extract<std::string>(_name);
     }
     if( !IS_PYTHONOBJECT_NONE(_linkname0) ) {
         info._linkname0 = py::extract<std::string>(_linkname0);
@@ -3458,7 +3458,7 @@ class GeometryInfo_pickle_suite
 public:
     static py::tuple getstate(const PyGeometryInfo& r)
     {
-        return py::make_tuple(r._t, py::make_tuple(r._vGeomData, r._vGeomData2, r._vGeomData3, r._vGeomData4), r._vDiffuseColor, r._vAmbientColor, r._meshcollision, (int)r._type, py::make_tuple(r._name, r._filenamerender, r._filenamecollision), r._vRenderScale, r._vCollisionScale, r._fTransparency, r._bVisible, r._bModifiable);
+        return py::make_tuple(r._t, py::make_tuple(r._vGeomData, r._vGeomData2, r._vGeomData3, r._vGeomData4), r._vDiffuseColor, r._vAmbientColor, r._meshcollision, (int)r._type, py::make_tuple(r.name_, r._filenamerender, r._filenamecollision), r._vRenderScale, r._vCollisionScale, r._fTransparency, r._bVisible, r._bModifiable);
     }
     static void setstate(PyGeometryInfo& r, py::tuple state) {
         //int num = len(state);
@@ -3479,7 +3479,7 @@ public:
             // old format
             r._filenamerender = state[6];
             r._filenamecollision = state[7];
-            r._name = py::none_();
+            r.name_ = py::none_();
             r._vRenderScale = state[8];
             r._vCollisionScale = state[9];
             r._fTransparency = py::extract<float>(state[10]);
@@ -3488,7 +3488,7 @@ public:
         }
         else {
             // new format
-            r._name = state[6][0];
+            r.name_ = state[6][0];
             r._filenamerender = state[6][1];
             r._filenamecollision = state[6][2];
             r._vRenderScale = state[7];
@@ -3928,7 +3928,7 @@ void init_openravepy_kinbody()
                           .def_readwrite("_vAmbientColor",&PyGeometryInfo::_vAmbientColor)
                           .def_readwrite("_meshcollision",&PyGeometryInfo::_meshcollision)
                           .def_readwrite("_type",&PyGeometryInfo::_type)
-                          .def_readwrite("_name",&PyGeometryInfo::_name)
+                          .def_readwrite("name_",&PyGeometryInfo::name_)
                           .def_readwrite("_filenamerender",&PyGeometryInfo::_filenamerender)
                           .def_readwrite("_filenamecollision",&PyGeometryInfo::_filenamecollision)
                           .def_readwrite("_vRenderScale",&PyGeometryInfo::_vRenderScale)

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -33,7 +33,7 @@ public:
     object SerializeJSON(dReal fUnitScale=1.0, object options=py::none_());
     void DeserializeJSON(object obj, dReal fUnitScale=1.0);
 
-    object _name = py::none_();
+    object name_ = py::none_();
     object _sBaseLinkName = py::none_();
     object _sEffectorLinkName = py::none_();
     object _tLocalTool = py::none_();
@@ -56,7 +56,7 @@ public:
     object SerializeJSON(dReal fUnitScale=1.0, object options=py::none_());
     void DeserializeJSON(object obj, dReal fUnitScale=1.0);
 
-    object _name = py::none_();
+    object name_ = py::none_();
     object _linkname = py::none_();
     object _trelative = py::none_();
     object _sensorname = py::none_();
@@ -76,7 +76,7 @@ public:
     object SerializeJSON(dReal fUnitScale=1.0, object options=py::none_());
     void DeserializeJSON(object obj, dReal fUnitScale=1.0);
 
-    object _name = py::none_();
+    object name_ = py::none_();
     object _linkname = py::none_();
     object _trelative = py::none_();
     object _uri = py::none_();

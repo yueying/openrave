@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -207,7 +207,7 @@ GeometryInfoReader::GeometryInfoReader(KinBody::GeometryInfoPtr pgeom, const Att
     }
 
     _pgeom.reset(new KinBody::GeometryInfo());
-    _pgeom->_name = name;
+    _pgeom->name_ = name;
     if( _stricmp(type.c_str(), "none") == 0 ) {
         _pgeom->_type = GT_None;
     }
@@ -354,7 +354,7 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
         _ss >> _pgeom->_fTransparency;
     }
     else if( xmlname == "name" ) {
-        _ss >> _pgeom->_name;
+        _ss >> _pgeom->name_;
     }
     else {
         // could be type specific features

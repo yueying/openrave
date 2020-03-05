@@ -2444,7 +2444,7 @@ protected:
                     }
                     if( !pnewrobot ) {
                         pnewrobot = RaveCreateRobot(shared_from_this(), (*itrobot)->GetXMLId());
-                        pnewrobot->_name = (*itrobot)->_name; // at least copy the names
+                        pnewrobot->name_ = (*itrobot)->name_; // at least copy the names
                         listToClone.push_back(*itrobot);
                     }
                     else {
@@ -2478,7 +2478,7 @@ protected:
                     }
                     if( !pnewbody ) {
                         pnewbody.reset(new KinBody(PT_KinBody,shared_from_this()));
-                        pnewbody->_name = (*itbody)->_name; // at least copy the names
+                        pnewbody->name_ = (*itbody)->name_; // at least copy the names
                         listToClone.push_back(*itbody);
                     }
                     else {

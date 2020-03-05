@@ -24,7 +24,7 @@ namespace OpenRAVE {
 void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value,
 	rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
 {
-    openravejson::SetJsonValueByKey(value, "name", _name, allocator);
+    openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 	openravejson::SetJsonValueByKey(value, "linkName", _linkname, allocator);
 	openravejson::SetJsonValueByKey(value, "transform", _trelative, allocator);
 	openravejson::SetJsonValueByKey(value, "type", _sensorname, allocator);
@@ -39,7 +39,7 @@ void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value,
 
 void RobotBase::AttachedSensorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
 {
-	openravejson::LoadJsonValueByKey(value, "name", _name);
+	openravejson::LoadJsonValueByKey(value, "name", name_);
 	openravejson::LoadJsonValueByKey(value, "linkName", _linkname);
 	openravejson::LoadJsonValueByKey(value, "transform", _trelative);
 	openravejson::LoadJsonValueByKey(value, "type", _sensorname);
@@ -72,7 +72,7 @@ RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot, const AttachedSen
     if( (cloningoptions&Clone_Sensors) && !!sensor._psensor ) {
         _psensor = RaveCreateSensor(probot->GetEnv(), sensor._psensor->GetXMLId());
         if( !!_psensor ) {
-            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%_info._name)); // need a unique targettable name
+            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%_info.name_)); // need a unique targettable name
             _psensor->Clone(sensor._psensor,cloningoptions);
             if( !!_psensor ) {
                 pdata = _psensor->CreateSensorData();
@@ -93,7 +93,7 @@ RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot, const RobotBase::
     if( !!probot ) {
         _psensor = RaveCreateSensor(probot->GetEnv(), _info._sensorname);
         if( !!_psensor ) {
-            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%_info._name)); // need a unique targettable name
+            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%_info.name_)); // need a unique targettable name
             if(!!_info._sensorgeometry) {
                 _psensor->SetSensorGeometry(_info._sensorgeometry);
             }
@@ -116,7 +116,7 @@ RobotBase::AttachedSensor::~AttachedSensor()
 //    if( !!probot ) {
 //        _psensor = RaveCreateSensor(probot->GetEnv(), _info._sensorname);
 //        if( !!_psensor ) {
-//            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%_info._name)); // need a unique targettable name
+//            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%_info.name_)); // need a unique targettable name
 //            if(!!_info._sensorgeometry) {
 //                _psensor->SetSensorGeometry(_info._sensorgeometry);
 //            }
@@ -451,7 +451,7 @@ bool RobotBase::SetController(ControllerBasePtr controller, const std::vector<in
 
 void RobotBase::SetName(const std::string& newname)
 {
-    if( _name != newname ) {
+    if( name_ != newname ) {
         // have to replace the 2nd word of all the groups with the robot name
         FOREACH(itgroup, _activespec._vgroups) {
             stringstream ss(itgroup->name);
@@ -466,7 +466,7 @@ void RobotBase::SetName(const std::string& newname)
         FOREACH(itattached, _vecAttachedSensors) {
             AttachedSensorPtr pattached = *itattached;
             if( !!pattached->_psensor ) {
-                pattached->_psensor->SetName(str(boost::format("%s:%s")%newname%pattached->_info._name)); // need a unique targettable name
+                pattached->_psensor->SetName(str(boost::format("%s:%s")%newname%pattached->_info.name_)); // need a unique targettable name
             }
             else {
 
@@ -1702,16 +1702,16 @@ RobotBase::ManipulatorConstPtr RobotBase::GetActiveManipulator() const
 
 RobotBase::ManipulatorPtr RobotBase::AddManipulator(const RobotBase::ManipulatorInfo& manipinfo, bool removeduplicate)
 {
-    OPENRAVE_ASSERT_OP(manipinfo._name.size(),>,0);
+    OPENRAVE_ASSERT_OP(manipinfo.name_.size(),>,0);
     int iremoveindex = -1;
     for(int imanip = 0; imanip < (int)_vecManipulators.size(); ++imanip) {
-        if( _vecManipulators[imanip]->GetName() == manipinfo._name ) {
+        if( _vecManipulators[imanip]->GetName() == manipinfo.name_ ) {
             if( removeduplicate ) {
                 iremoveindex = imanip;
                 break;
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator with name %s already exists"),manipinfo._name,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator with name %s already exists"),manipinfo.name_,ORE_InvalidArguments);
             }
         }
     }
@@ -1745,16 +1745,16 @@ bool RobotBase::RemoveManipulator(ManipulatorPtr manip)
 
 RobotBase::AttachedSensorPtr RobotBase::AddAttachedSensor(const RobotBase::AttachedSensorInfo& attachedsensorinfo, bool removeduplicate)
 {
-    OPENRAVE_ASSERT_OP(attachedsensorinfo._name.size(),>,0);
+    OPENRAVE_ASSERT_OP(attachedsensorinfo.name_.size(),>,0);
     int iremoveindex = -1;
     for(int iasensor = 0; iasensor < (int)_vecAttachedSensors.size(); ++iasensor) {
-        if( _vecAttachedSensors[iasensor]->GetName() == attachedsensorinfo._name ) {
+        if( _vecAttachedSensors[iasensor]->GetName() == attachedsensorinfo.name_ ) {
             if( removeduplicate ) {
                 iremoveindex = iasensor;
                 break;
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("attached sensor with name %s already exists"),attachedsensorinfo._name,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_("attached sensor with name %s already exists"),attachedsensorinfo.name_,ORE_InvalidArguments);
             }
         }
     }
@@ -1839,11 +1839,11 @@ void RobotBase::_ComputeInternalInformation()
 
     int manipindex=0;
     FOREACH(itmanip,_vecManipulators) {
-        if( (*itmanip)->_info._name.size() == 0 ) {
+        if( (*itmanip)->_info.name_.size() == 0 ) {
             stringstream ss;
             ss << "manip" << manipindex;
             RAVELOG_WARN(str(boost::format("robot %s has a manipulator with no name, setting to %s\n")%GetName()%ss.str()));
-            (*itmanip)->_info._name = ss.str();
+            (*itmanip)->_info.name_ = ss.str();
         }
         (*itmanip)->_ComputeInternalInformation();
         vector<ManipulatorPtr>::iterator itmanip2 = itmanip; ++itmanip2;
@@ -1883,7 +1883,7 @@ void RobotBase::_ComputeInternalInformation()
             stringstream ss;
             ss << "sensor" << sensorindex;
             RAVELOG_WARN(str(boost::format("robot %s has a sensor with no name, setting to %s\n")%GetName()%ss.str()));
-            (*itsensor)->_info._name = ss.str();
+            (*itsensor)->_info.name_ = ss.str();
         }
         else if( !utils::IsValidName((*itsensor)->GetName()) ) {
             throw OPENRAVE_EXCEPTION_FORMAT(_("sensor name \"%s\" is not valid"), (*itsensor)->GetName(), ORE_Failed);

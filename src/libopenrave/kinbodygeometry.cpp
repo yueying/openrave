@@ -327,7 +327,7 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 	rapidjson::Document::AllocatorType& allocator, const dReal fUnitScale, int options) const
 {
     // RAVE_SERIALIZEJSON_ADDMEMBER(allocator, "sid", sid);
-    openravejson::SetJsonValueByKey(value, "name", _name, allocator);
+    openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
     Transform tscaled = _t;
     tscaled.trans *= fUnitScale;
@@ -399,7 +399,7 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 
 	void KinBody::GeometryInfo::DeserializeJSON(const rapidjson::Value &value, const dReal fUnitScale)
 	{
-    openravejson::LoadJsonValueByKey(value, "name", _name);
+    openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "transform", _t);
 
 		_t.trans *= fUnitScale;
@@ -872,7 +872,7 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 	void KinBody::Link::Geometry::SetName(const std::string& name)
 	{
 		LinkPtr parent(_parent);
-		_info._name = name;
+		_info.name_ = name;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkGeometry);
 
 	}

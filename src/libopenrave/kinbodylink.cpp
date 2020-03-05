@@ -30,7 +30,7 @@ KinBody::LinkInfo::LinkInfo(const LinkInfo& other)
 
 void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
 {
-    openravejson::SetJsonValueByKey(value, "name", _name, allocator);
+    openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
     Transform tmpTransform {_t};
     Transform tmpMassTransform {_tMassFrame};
@@ -93,7 +93,7 @@ void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Docume
 
 void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale)
 {
-    openravejson::LoadJsonValueByKey(value, "name", _name);
+    openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "transform", _t);
     openravejson::LoadJsonValueByKey(value, "massTransform", _tMassFrame);
     openravejson::LoadJsonValueByKey(value, "mass", _mass);
@@ -156,7 +156,7 @@ KinBody::LinkInfo& KinBody::LinkInfo::operator=(const KinBody::LinkInfo& other)
         }
     }
 
-    _name = other._name;
+    name_ = other.name_;
     _t = other._t;
     _tMassFrame = other._tMassFrame;
     _mass = other._mass;
@@ -527,24 +527,24 @@ void KinBody::Link::AddGeometry(KinBody::GeometryInfoPtr pginfo, bool addToGroup
     }
 
     const KinBody::GeometryInfo& ginfo = *pginfo;
-    if( ginfo._name.size() > 0 ) {
+    if( ginfo.name_.size() > 0 ) {
         // check if similar name exists and throw if it does
         FOREACH(itgeometry, _vGeometries) {
-            if( (*itgeometry)->GetName() == ginfo._name ) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo._name%GetName(), ORE_InvalidArguments);
+            if( (*itgeometry)->GetName() == ginfo.name_ ) {
+                throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo.name_%GetName(), ORE_InvalidArguments);
             }
         }
 
         FOREACH(itgeometryinfo, _info._vgeometryinfos) {
-            if( (*itgeometryinfo)->_name == ginfo._name ) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo._name%GetName(), ORE_InvalidArguments);
+            if( (*itgeometryinfo)->name_ == ginfo.name_ ) {
+                throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo.name_%GetName(), ORE_InvalidArguments);
             }
         }
         if( addToGroups ) {
             FOREACH(itgeometrygroup, _info._mapExtraGeometries) {
                 FOREACH(itgeometryinfo, itgeometrygroup->second) {
-                    if( (*itgeometryinfo)->_name == ginfo._name ) {
-                        throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s for group %s has conflicting name for link %s"), ginfo._name%itgeometrygroup->first%GetName(), ORE_InvalidArguments);
+                    if( (*itgeometryinfo)->name_ == ginfo.name_ ) {
+                        throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s for group %s has conflicting name for link %s"), ginfo.name_%itgeometrygroup->first%GetName(), ORE_InvalidArguments);
                     }
                 }
             }
@@ -579,7 +579,7 @@ void KinBody::Link::RemoveGeometryByName(const std::string& geometryname, bool r
     }
     std::vector<KinBody::GeometryInfoPtr>::iterator itgeometryinfo = _info._vgeometryinfos.begin();
     while(itgeometryinfo != _info._vgeometryinfos.end()) {
-        if( (*itgeometryinfo)->_name == geometryname ) {
+        if( (*itgeometryinfo)->name_ == geometryname ) {
             itgeometryinfo = _info._vgeometryinfos.erase(itgeometryinfo);
             bChanged = true;
         }
@@ -592,7 +592,7 @@ void KinBody::Link::RemoveGeometryByName(const std::string& geometryname, bool r
         FOREACH(itgeometrygroup, _info._mapExtraGeometries) {
             std::vector<KinBody::GeometryInfoPtr>::iterator itgeometryinfo2 = itgeometrygroup->second.begin();
             while(itgeometryinfo2 != itgeometrygroup->second.end()) {
-                if( (*itgeometryinfo2)->_name == geometryname ) {
+                if( (*itgeometryinfo2)->name_ == geometryname ) {
                     itgeometryinfo2 = itgeometrygroup->second.erase(itgeometryinfo2);
                     bChanged = true;
                 }
@@ -627,7 +627,7 @@ bool KinBody::Link::ValidateContactNormal(const Vector& position, Vector& normal
         return _vGeometries.front()->ValidateContactNormal(position,normal);
     }
     else if( _vGeometries.size() > 1 ) {
-        RAVELOG_VERBOSE(str(boost::format("cannot validate normal when there is more than one geometry in link '%s(%d)' (do not know colliding geometry)")%_info._name%GetIndex()));
+        RAVELOG_VERBOSE(str(boost::format("cannot validate normal when there is more than one geometry in link '%s(%d)' (do not know colliding geometry)")%_info.name_%GetIndex()));
     }
     return false;
 }

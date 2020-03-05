@@ -23,7 +23,7 @@ namespace OpenRAVE
 void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
 {
 
-    openravejson::SetJsonValueByKey(value, "name", _name, allocator);
+    openravejson::SetJsonValueByKey(value, "name", name_, allocator);
     openravejson::SetJsonValueByKey(value, "transform", _tLocalTool, allocator);
     openravejson::SetJsonValueByKey(value, "chuckingDirections", _vChuckingDirection, allocator);
     openravejson::SetJsonValueByKey(value, "direction", _vdirection, allocator);
@@ -35,7 +35,7 @@ void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjso
 
 void RobotBase::ManipulatorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
 {
-    openravejson::LoadJsonValueByKey(value, "name", _name);
+    openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "transform", _tLocalTool);
     openravejson::LoadJsonValueByKey(value, "chuckingDirections", _vChuckingDirection);
     openravejson::LoadJsonValueByKey(value, "direction", _vdirection);
@@ -133,10 +133,10 @@ void RobotBase::Manipulator::SetName(const std::string& name)
     RobotBasePtr probot=GetRobot();
     FOREACHC(itmanip,probot->GetManipulators()) {
         if( *itmanip != shared_from_this() && name == (*itmanip)->GetName() ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator name change '%s'->'%s' is colliding with other manipulator"), _info._name%name, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator name change '%s'->'%s' is colliding with other manipulator"), _info.name_%name, ORE_InvalidArguments);
         }
     }
-    _info._name=name;
+    _info.name_=name;
     probot->_PostprocessChangedParameters(Prop_RobotManipulatorName);
 }
 
@@ -1629,7 +1629,7 @@ const std::string& RobotBase::Manipulator::GetInverseKinematicsStructureHash(IkP
 
 void RobotBase::Manipulator::_ComputeInternalInformation()
 {
-    if( !utils::IsValidName(_info._name) ) {
+    if( !utils::IsValidName(_info.name_) ) {
         throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator name \"%s\" is not valid"), GetName(), ORE_Failed);
     }
     RobotBasePtr probot(__probot);
