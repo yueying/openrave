@@ -1,4 +1,4 @@
-/** \example ikfastloader.cpp
+﻿/** \example ikfastloader.cpp
     \author Rosen Diankov
 
     Usage:
@@ -26,17 +26,17 @@
 #include <boost/format.hpp>
 
 using namespace OpenRAVE;
-using namespace std;
 
 int main(int argc, char ** argv)
 {
-    if( argc < 3 ) {
+    if( argc < 3 ) 
+	{
         RAVELOG_INFO("ikloader robot iktype\n");
         return 1;
     }
 
-    string robotname = argv[1];
-    string iktype = argv[2];
+    std::string robotname = argv[1];
+	std::string iktype = argv[2];
     RaveInitialize(true); // start openrave core
 
     EnvironmentBasePtr penv = RaveCreateEnvironment(); // create the main environment
@@ -46,7 +46,8 @@ int main(int argc, char ** argv)
         EnvironmentMutex::scoped_lock lock(penv->GetMutex());
         // load the scene
         RobotBasePtr probot = penv->ReadRobotXMLFile(robotname);
-        if( !probot ) {
+        if( !probot ) 
+		{
             penv->Destroy();
             return 2;
         }
@@ -54,34 +55,39 @@ int main(int argc, char ** argv)
 
         ModuleBasePtr pikfast = RaveCreateModule(penv,"ikfast");
         penv->Add(pikfast,true,"");
-        stringstream ssin,ssout;
+        std::stringstream ssin,ssout;
         ssin << "LoadIKFastSolver " << probot->GetName() << " " << iktype;
         // if necessary, add free inc for degrees of freedom
         //ssin << " " << 0.04f;
         // get the active manipulator
         RobotBase::ManipulatorPtr pmanip = probot->GetActiveManipulator();
-        if( !pikfast->SendCommand(ssout,ssin) ) {
+        if( !pikfast->SendCommand(ssout,ssin) ) 
+		{
             RAVELOG_ERROR("failed to load iksolver\n");
             penv->Destroy();
             return 1;
         }
 
         RAVELOG_INFO("testing random ik\n");
-        while(1) {
+        while(1) 
+		{
             Transform trans;
             trans.rot = quatFromAxisAngle(Vector(RaveRandomFloat()-0.5,RaveRandomFloat()-0.5,RaveRandomFloat()-0.5));
             trans.trans = Vector(RaveRandomFloat()-0.5,RaveRandomFloat()-0.5,RaveRandomFloat()-0.5)*2;
 
-            vector<dReal> vsolution;
-            if( pmanip->FindIKSolution(IkParameterization(trans),vsolution,IKFO_CheckEnvCollisions) ) {
-                stringstream ss; ss << "solution is: ";
-                for(size_t i = 0; i < vsolution.size(); ++i) {
+            std::vector<dReal> vsolution;
+            if( pmanip->FindIKSolution(IkParameterization(trans),vsolution,IKFO_CheckEnvCollisions) ) 
+			{
+                std::stringstream ss; ss << "solution is: ";
+                for(size_t i = 0; i < vsolution.size(); ++i) 
+				{
                     ss << vsolution[i] << " ";
                 }
-                ss << endl;
+                ss << std::endl;
                 RAVELOG_INFO(ss.str());
             }
-            else {
+            else 
+			{
                 // could fail due to collisions, etc
             }
         }

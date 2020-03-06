@@ -19,9 +19,7 @@
 
 #include <errno.h>
 
-#ifdef HAVE_BOOST_FILESYSTEM
 #include <boost/filesystem.hpp>
-#endif
 #include <boost/version.hpp>
 
 #ifdef _WIN32
@@ -60,6 +58,9 @@ const char s_filesep = '/';
 
 #include <openrave/utils.h>
 #include <openrave/openrave_macros.h>
+#include <openrave/user_data.h>
+#include <openrave/interface_base.h>
+#include <openrave/openrave.h>
 
 namespace OpenRAVE
 {
@@ -96,28 +97,35 @@ namespace OpenRAVE
 		typedef std::shared_ptr<RegisteredInterface> RegisteredInterfacePtr;
 
 	public:
-		
+		/**\brief specific plugin */
 		class Plugin : public UserData, public std::enable_shared_from_this<Plugin>
 		{
 		public:
 			Plugin(std::shared_ptr<PluginDatabase> pdatabase)
-				: _pdatabase(pdatabase), plibrary(NULL), pfnCreate(NULL),
+				: plugin_database_(pdatabase), plibrary(NULL), pfnCreate(NULL),
 				pfnCreateNew(NULL), pfnGetPluginAttributes(NULL),
 				pfnGetPluginAttributesNew(NULL), pfnDestroyPlugin(NULL),
 				pfnOnRaveInitialized(NULL), pfnOnRavePreDestroy(NULL),
-				_bShutdown(false), _bInitializing(true), _bHasCalledOnRaveInitialized(false) {
+				_bShutdown(false), is_initializing_(true), _bHasCalledOnRaveInitialized(false)
+			{
 			}
-			virtual ~Plugin() {
+			virtual ~Plugin() 
+			{
 				Destroy();
 			}
 
-			virtual void Destroy() {
-				if (_bInitializing) {
-					if (plibrary) {
-						if (OPENRAVE_LAZY_LOADING) {
+			virtual void Destroy()
+			{
+				if (is_initializing_) 
+				{
+					if (plibrary) 
+					{
+						if (OPENRAVE_LAZY_LOADING)
+						{
 							// NOTE: for some reason, closing the lazy loaded library can make the system crash, so instead keep the memory around, and create a new one with RTLD_NOW if necessary
 						}
-						else {
+						else 
+						{
 							PluginDatabase::_SysCloseLibrary(plibrary);
 						}
 						plibrary = NULL;
@@ -134,7 +142,7 @@ namespace OpenRAVE
 						if (pfnDestroyPlugin != NULL) {
 							pfnDestroyPlugin();
 						}
-						std::shared_ptr<PluginDatabase> pdatabase = _pdatabase.lock();
+						std::shared_ptr<PluginDatabase> pdatabase = plugin_database_.lock();
 						if (!!pdatabase) {
 							pdatabase->_QueueLibraryDestruction(plibrary);
 						}
@@ -349,9 +357,11 @@ namespace OpenRAVE
 
 			void OnRavePreDestroy()
 			{
-				if (Load_OnRavePreDestroy()) {
+				if (Load_OnRavePreDestroy()) 
+				{
 					// always call destroy regardless of initialization state (safest)
-					if (!!pfnOnRavePreDestroy) {
+					if (!!pfnOnRavePreDestroy) 
+					{
 						pfnOnRavePreDestroy();
 						_bHasCalledOnRaveInitialized = false;
 					}
@@ -365,7 +375,7 @@ namespace OpenRAVE
 				// first test the library before locking
 				if (plibrary == NULL) {
 					boost::mutex::scoped_lock lock(_mutex);
-					_pdatabase.lock()->_AddToLoader(shared_from_this());
+					plugin_database_.lock()->_AddToLoader(shared_from_this());
 					do {
 						if (plibrary) {
 							return;
@@ -378,7 +388,7 @@ namespace OpenRAVE
 				}
 			}
 
-			std::weak_ptr<PluginDatabase> _pdatabase;
+			std::weak_ptr<PluginDatabase> plugin_database_;
 			std::set<std::pair< InterfaceType, std::string> > _setBadInterfaces;         ///< interfaces whose hash is wrong and shouldn't be tried for this plugin
 			std::string ppluginname;
 
@@ -394,7 +404,7 @@ namespace OpenRAVE
 			boost::mutex _mutex;         ///< locked when library is getting updated, only used when plibrary==NULL
 			boost::condition _cond;
 			bool _bShutdown;         ///< managed by plugin database
-			bool _bInitializing; ///< still in the initialization phase
+			bool is_initializing_; ///< still in the initialization phase
 			bool _bHasCalledOnRaveInitialized; ///< if true, then OnRaveInitialized has been called and does not need to call it again.
 
 			friend class PluginDatabase;
@@ -547,7 +557,7 @@ namespace OpenRAVE
 			}
 			{
 				boost::mutex::scoped_lock lock(_mutex);
-				_listplugins.clear();
+				plugins_list_.clear();
 			}
 			// cannot lock mutex due to __erase_iterator
 			// cannot clear registered_interfaces_list_ since there are destructors that will remove items from the list
@@ -563,18 +573,23 @@ namespace OpenRAVE
 		void GetPlugins(std::list<PluginPtr>& listplugins) const
 		{
 			boost::mutex::scoped_lock lock(_mutex);
-			listplugins = _listplugins;
+			listplugins = plugins_list_;
 		}
 
+		/**\brief the first thing is creating the KinBody.The other class is based on the KinBody
+		*/
 		InterfaceBasePtr Create(EnvironmentBasePtr penv, InterfaceType type, const std::string& interface_name)
 		{
 			std::string name = interface_name;
 			InterfaceBasePtr pointer;
-			if (name.size() == 0) {
-				switch (type) {
-				case PT_KinBody: {
+			if (name.size() == 0) 
+			{
+				switch (type) 
+				{
+				case PT_KinBody: 
+				{
 					pointer.reset(new KinBody(PT_KinBody, penv));
-					pointer->str_xml_id_ = ""; // don't set to KinBody since there's no officially registered interface
+					pointer->xml_str_id_ = ""; // don't set to KinBody since there's no officially registered interface
 					break;
 				}
 				case PT_PhysicsEngine: name = "GenericPhysicsEngine"; break;
@@ -584,43 +599,55 @@ namespace OpenRAVE
 				default: break;
 				}
 			}
-
-			if (!pointer) {
-				size_t nInterfaceNameLength = name.find_first_of(' ');
-				if (nInterfaceNameLength == std::string::npos) {
-					nInterfaceNameLength = name.size();
+			// If the KinBody has not been created,it is created by traversing the registered interface
+			// or reading the plugin.
+			if (!pointer) 
+			{
+				size_t interface_name_length = name.find_first_of(' ');
+				if (interface_name_length == std::string::npos) 
+				{
+					interface_name_length = name.size();
 				}
-				if (nInterfaceNameLength == 0) {
-					RAVELOG_WARN(str(boost::format("interface %s name \"%s\" needs to start with a valid character\n") % RaveGetInterfaceName(type) % name));
+				if (interface_name_length == 0) 
+				{
+					RAVELOG_WARN(str(boost::format("interface %s name \"%s\" needs to start with a valid character\n")
+						% RaveGetInterfaceName(type) % name));
 					return InterfaceBasePtr();
 				}
 
 				// have to copy in order to allow plugins to register stuff inside their creation methods
-				std::list< std::weak_ptr<RegisteredInterface> > listRegisteredInterfaces;
+				std::list< std::weak_ptr<RegisteredInterface> > registered_interfaces_list;
 				std::list<PluginPtr> listplugins;
 				{
 					boost::mutex::scoped_lock lock(_mutex);
-					listRegisteredInterfaces = registered_interfaces_list_;
-					listplugins = _listplugins;
+					registered_interfaces_list = registered_interfaces_list_;
+					listplugins = plugins_list_;
 				}
-				FOREACH(it, listRegisteredInterfaces) {
-					RegisteredInterfacePtr registration = it->lock();
-					if (!!registration) {
-						if ((nInterfaceNameLength >= registration->name_.size()) && (_strnicmp(name.c_str(), registration->name_.c_str(), registration->name_.size()) == 0)) {
+				for(auto& it: registered_interfaces_list)
+				{
+					RegisteredInterfacePtr registration = it.lock();
+					if (!!registration) 
+					{
+						if ((interface_name_length >= registration->name_.size()) 
+							&& (_strnicmp(name.c_str(), registration->name_.c_str(), registration->name_.size()) == 0)) {
 							std::stringstream sinput(name);
 							std::string interfacename;
 							sinput >> interfacename;
 							std::transform(interfacename.begin(), interfacename.end(), interfacename.begin(), ::tolower);
 							pointer = registration->_createfn(penv, sinput);
-							if (!!pointer) {
-								if (pointer->GetInterfaceType() != type) {
-									RAVELOG_FATAL(str(boost::format("plugin interface name %s, type %s, types do not match\n") % name%RaveGetInterfaceName(type)));
+							if (!!pointer) 
+							{
+								if (pointer->GetInterfaceType() != type) 
+								{
+									RAVELOG_FATAL(str(boost::format("plugin interface name %s, type %s, types do not match\n")
+										% name%RaveGetInterfaceName(type)));
 									pointer.reset();
 								}
-								else {
+								else 
+								{
 									pointer = InterfaceBasePtr(pointer.get(), utils::smart_pointer_deleter<InterfaceBasePtr>(pointer, INTERFACE_PREDELETER));
 									pointer->plugin_name_ = "__internal__";
-									pointer->str_xml_id_ = name;
+									pointer->xml_str_id_ = name;
 									//pointer->plugin_; // need to protect resources?
 									break;
 								}
@@ -629,54 +656,71 @@ namespace OpenRAVE
 					}
 				}
 
-				if (!pointer) {
+				if (!pointer) 
+				{
 					const char* hash = RaveGetInterfaceHash(type);
 					std::list<PluginPtr>::iterator itplugin = listplugins.begin();
-					while (itplugin != listplugins.end()) {
+					while (itplugin != listplugins.end()) 
+					{
 						pointer = (*itplugin)->CreateInterface(type, name, hash, penv);
-						if (!!pointer) {
-							if (strcmp(pointer->GetHash(), hash)) {
-								RAVELOG_FATAL(str(boost::format("plugin interface name %s, %s has invalid hash, might be compiled with stale openrave files\n") % name%RaveGetInterfaceName(type)));
+						if (!!pointer) 
+						{
+							if (strcmp(pointer->GetHash(), hash))
+							{
+								RAVELOG_FATAL(str(boost::format("plugin interface name %s, %s has invalid hash,\
+                                might be compiled with stale openrave files\n") % name%RaveGetInterfaceName(type)));
 								(*itplugin)->_setBadInterfaces.insert(std::make_pair(type, utils::ConvertToLowerCase(name)));
 								pointer.reset();
 							}
-							else if (pointer->GetInterfaceType() != type) {
-								RAVELOG_FATAL(str(boost::format("plugin interface name %s, type %s, types do not match\n") % name%RaveGetInterfaceName(type)));
+							else if (pointer->GetInterfaceType() != type) 
+							{
+								RAVELOG_FATAL(str(boost::format("plugin interface name %s, type %s, \
+                                 types do not match\n") % name%RaveGetInterfaceName(type)));
+
 								(*itplugin)->_setBadInterfaces.insert(std::make_pair(type, utils::ConvertToLowerCase(name)));
 								pointer.reset();
 							}
-							else {
+							else 
+							{
 								pointer = InterfaceBasePtr(pointer.get(), utils::smart_pointer_deleter<InterfaceBasePtr>(pointer, INTERFACE_PREDELETER, INTERFACE_POSTDELETER(name, *itplugin)));
 								pointer->plugin_name_ = (*itplugin)->ppluginname;
-								pointer->str_xml_id_ = name;
+								pointer->xml_str_id_ = name;
 								pointer->plugin_ = *itplugin;
 								break;
 							}
 						}
-						if (!(*itplugin)->IsValid()) {
+						if (!(*itplugin)->IsValid())
+						{
 							boost::mutex::scoped_lock lock(_mutex);
-							_listplugins.remove(*itplugin);
+							plugins_list_.remove(*itplugin);
 						}
 						++itplugin;
 					}
 				}
 			}
 
-			if (!!pointer) {
-				if (type == PT_Robot) {
+			if (!!pointer) 
+			{
+				if (type == PT_Robot)
+				{
 					RobotBasePtr probot = RaveInterfaceCast<RobotBase>(pointer);
-					if (strcmp(probot->GetKinBodyHash(), OPENRAVE_KINBODY_HASH)) {
-						RAVELOG_FATAL_FORMAT("plugin interface Robot, name %s has invalid hash, might be compiled with stale openrave files", name);
+					if (strcmp(probot->GetKinBodyHash(), OPENRAVE_KINBODY_HASH)) 
+					{
+						RAVELOG_FATAL_FORMAT("plugin interface Robot, name %s has invalid hash,\
+                         might be compiled with stale openrave files", name);
 						pointer.reset();
 					}
-					if (!probot->IsRobot()) {
+					if (!probot->IsRobot())
+					{
 						RAVELOG_FATAL_FORMAT("interface Robot, name %s should have IsRobot() return true", name);
 						pointer.reset();
 					}
 				}
 			}
-			if (!pointer) {
-				RAVELOG_WARN_FORMAT("env=%d failed to create name %s, interface %s\n", penv->GetId() % name%RaveGetInterfaceNamesMap().find(type)->second);
+			if (!pointer)
+			{
+				RAVELOG_WARN_FORMAT("env=%d failed to create name %s, interface %s\n", 
+					penv->GetId() % name%RaveGetInterfaceNamesMap().find(type)->second);
 			}
 			return pointer;
 		}
@@ -736,7 +780,7 @@ namespace OpenRAVE
 		void ReloadPlugins()
 		{
 			boost::mutex::scoped_lock lock(_mutex);
-			FOREACH(itplugin, _listplugins) {
+			FOREACH(itplugin, plugins_list_) {
 				PluginPtr newplugin = _LoadPlugin((*itplugin)->ppluginname);
 				if (!!newplugin) {
 					*itplugin = newplugin;
@@ -748,16 +792,18 @@ namespace OpenRAVE
 		void OnRaveInitialized()
 		{
 			boost::mutex::scoped_lock lock(_mutex);
-			FOREACH(itplugin, _listplugins) {
-				(*itplugin)->OnRaveInitialized();
+			for(auto& itplugin: plugins_list_) 
+			{
+				itplugin->OnRaveInitialized();
 			}
 		}
 
 		void OnRavePreDestroy()
 		{
 			boost::mutex::scoped_lock lock(_mutex);
-			FOREACH(itplugin, _listplugins) {
-				(*itplugin)->OnRavePreDestroy();
+			for(auto& itplugin: plugins_list_) 
+			{
+				itplugin->OnRavePreDestroy();
 			}
 		}
 
@@ -766,17 +812,17 @@ namespace OpenRAVE
 			boost::mutex::scoped_lock lock(_mutex);
 			std::list<PluginPtr>::iterator it = _GetPlugin(pluginname);
 			std::string newpluginname;
-			if (it != _listplugins.end()) {
+			if (it != plugins_list_.end()) {
 				// since we got a match, use the old name and remove the old library
 				newpluginname = (*it)->ppluginname;
-				_listplugins.erase(it);
+				plugins_list_.erase(it);
 			}
 			else {
 				newpluginname = pluginname;
 			}
 			PluginPtr p = _LoadPlugin(newpluginname);
 			if (!!p) {
-				_listplugins.push_back(p);
+				plugins_list_.push_back(p);
 			}
 			_CleanupUnusedLibraries();
 			return !!p;
@@ -786,10 +832,10 @@ namespace OpenRAVE
 		{
 			boost::mutex::scoped_lock lock(_mutex);
 			std::list<PluginPtr>::iterator it = _GetPlugin(pluginname);
-			if (it == _listplugins.end()) {
+			if (it == plugins_list_.end()) {
 				return false;
 			}
-			_listplugins.erase(it);
+			plugins_list_.erase(it);
 			_CleanupUnusedLibraries();
 			return true;
 		}
@@ -809,7 +855,7 @@ namespace OpenRAVE
 					}
 				}
 			}
-			FOREACHC(itplugin, _listplugins) {
+			FOREACHC(itplugin, plugins_list_) {
 				if ((*itplugin)->HasInterface(type, interfacename)) {
 					return true;
 				}
@@ -821,7 +867,7 @@ namespace OpenRAVE
 		{
 			plugins.clear();
 			boost::mutex::scoped_lock lock(_mutex);
-			FOREACHC(itplugin, _listplugins) {
+			FOREACHC(itplugin, plugins_list_) {
 				PluginInfo info;
 				if ((*itplugin)->GetInfo(info)) {
 					plugins.emplace_back((*itplugin)->GetName(), info);
@@ -849,7 +895,7 @@ namespace OpenRAVE
 					interfacenames[registration->type_].push_back(registration->name_);
 				}
 			}
-			FOREACHC(itplugin, _listplugins) {
+			FOREACHC(itplugin, plugins_list_) {
 				PluginInfo localinfo;
 				if (!(*itplugin)->GetInfo(localinfo)) {
 					RAVELOG_WARN(boost::str(boost::format("failed to get plugin info: %s\n") % (*itplugin)->GetName()));
@@ -899,7 +945,7 @@ namespace OpenRAVE
 		/// the reference count instead of unloading from memory.
 		std::list<PluginPtr>::iterator _GetPlugin(const std::string& pluginname)
 		{
-			FOREACH(it, _listplugins) {
+			FOREACH(it, plugins_list_) {
 				if (pluginname == (*it)->ppluginname) {
 					return it;
 				}
@@ -913,7 +959,7 @@ namespace OpenRAVE
 			boost::filesystem::path pluginpath(pluginname, boost::filesystem::native);
 			std::string stem = pluginpath.stem();
 #endif
-			FOREACH(it, _listplugins) {
+			FOREACH(it, plugins_list_) {
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
 				if (stem == boost::filesystem::path((*it)->ppluginname).stem())
 #else
@@ -924,7 +970,7 @@ namespace OpenRAVE
 				}
 			}
 #endif
-			return _listplugins.end();
+			return plugins_list_.end();
 		}
 
 		PluginPtr _LoadPlugin(const std::string& _libraryname)
@@ -1023,7 +1069,7 @@ namespace OpenRAVE
 			RAVELOG_DEBUG("loading plugin: %s\n", info.dli_fname);
 #endif
 
-			p->_bInitializing = false;
+			p->is_initializing_ = false;
 			if (OPENRAVE_LAZY_LOADING) {
 				// have confirmed that plugin is ok, so reload with no-lazy loading
 				p->plibrary = NULL;     // NOTE: for some reason, closing the lazy loaded library can make the system crash, so instead keep the pointer around, but create a new one with RTLD_NOW
@@ -1152,7 +1198,7 @@ namespace OpenRAVE
 			}
 		}
 
-		std::list<PluginPtr> _listplugins;
+		std::list<PluginPtr> plugins_list_;
 		mutable boost::mutex _mutex;     ///< changing plugin database
 		std::list<void*> _listDestroyLibraryQueue;
 		std::list< std::weak_ptr<RegisteredInterface> > registered_interfaces_list_;

@@ -498,7 +498,9 @@ public:
         _constraint.SetUserCheckFunction(usercheckfn, bCallAfterCheckCollision);
     }
 
-    inline bool Check(PlannerBase::PlannerParametersWeakPtr _params, const std::vector<dReal>& q0, const std::vector<dReal>& q1, IntervalType interval, PlannerBase::ConfigurationListPtr pvCheckedConfigurations) RAVE_DEPRECATED
+    inline bool Check(PlannerBase::PlannerParametersWeakPtr _params, const std::vector<dReal>& q0, 
+		const std::vector<dReal>& q1, IntervalType interval, 
+		PlannerBase::ConfigurationListPtr pvCheckedConfigurations) RAVE_DEPRECATED
     {
         PlannerBase::PlannerParametersPtr params = _params.lock();
         if( !!params ) {

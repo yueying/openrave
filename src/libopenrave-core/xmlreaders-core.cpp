@@ -1081,7 +1081,7 @@ public:
                             *it = tmres * *it;
                         }
                         info->_t.trans *= _vScaleGeometry;
-                        info->_vGeomData *= geomspacescale;
+                        info->geom_data_vec_ *= geomspacescale;
                         _plink->_collision.Append(geom->GetCollisionMesh(), info->_t);
                         _plink->_vGeometries.push_back(geom);
                     }

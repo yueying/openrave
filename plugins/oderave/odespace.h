@@ -19,7 +19,7 @@
 //#include <boost/thread/tss.hpp>
 
 // manages a space of ODE objects
-class ODESpace : public boost::enable_shared_from_this<ODESpace>
+class ODESpace : public std::enable_shared_from_this<ODESpace>
 {
     static void DummySetParam(dJointID id, int param, dReal)
     {
@@ -37,7 +37,7 @@ class ODESpace : public boost::enable_shared_from_this<ODESpace>
     //        }
     //#endif
     //    }
-    inline boost::weak_ptr<ODESpace> weak_space() {
+    inline std::weak_ptr<ODESpace> weak_space() {
         return shared_from_this();
     }
 
@@ -209,14 +209,14 @@ public:
         KinBodyWeakPtr _pbody;         ///< body associated with this structure
         int nLastStamp;
 
-        vector<std::shared_ptr<LINK> > vlinks;         ///< if body is disabled, then geom is static (it can't be connected to a joint!)
-        vector<OpenRAVE::dReal> _vdofbranches;
+		std::vector<std::shared_ptr<LINK> > vlinks;         ///< if body is disabled, then geom is static (it can't be connected to a joint!)
+		std::vector<OpenRAVE::dReal> _vdofbranches;
 
         ///< the pointer to this Link is the userdata
-        vector<dJointID> vjoints;
-        vector<dJointFeedback> vjointfeedback;
+        std::vector<dJointID> vjoints;
+		std::vector<dJointFeedback> vjointfeedback;
         OpenRAVE::UserDataPtr _geometrycallback, _staticcallback;
-        boost::weak_ptr<ODESpace> _odespace;
+        std::weak_ptr<ODESpace> _odespace;
 
         dSpaceID space;                             ///< space that contanis all the collision objects of this chain
         dJointGroupID jointgroup;
@@ -297,7 +297,7 @@ private:
             pinfo.reset(new KinBodyInfo(_ode));
         }
         pinfo->Reset();
-        pinfo->_pbody = boost::const_pointer_cast<KinBody>(pbody);
+        pinfo->_pbody = std::const_pointer_cast<KinBody>(pbody);
         pinfo->_odespace = weak_space();
         pinfo->vlinks.reserve(pbody->GetLinks().size());
         pinfo->vjoints.reserve(pbody->GetJoints().size()+pbody->GetPassiveJoints().size());
@@ -478,9 +478,9 @@ private:
             }
         }
 
-        pinfo->_geometrycallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkGeometry, boost::bind(&ODESpace::_ResetKinBodyCallback,boost::bind(&OpenRAVE::utils::sptr_from<ODESpace>, weak_space()),boost::weak_ptr<KinBody const>(pbody)));
+        pinfo->_geometrycallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkGeometry, boost::bind(&ODESpace::_ResetKinBodyCallback,boost::bind(&OpenRAVE::utils::sptr_from<ODESpace>, weak_space()),std::weak_ptr<KinBody const>(pbody)));
         if( _bUsingPhysics ) {
-            pinfo->_staticcallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkStatic|KinBody::Prop_LinkDynamics, boost::bind(&ODESpace::_ResetKinBodyCallback,boost::bind(&OpenRAVE::utils::sptr_from<ODESpace>, weak_space()),boost::weak_ptr<KinBody const>(pbody)));
+            pinfo->_staticcallback = pbody->RegisterChangeCallback(KinBody::Prop_LinkStatic|KinBody::Prop_LinkDynamics, boost::bind(&ODESpace::_ResetKinBodyCallback,boost::bind(&OpenRAVE::utils::sptr_from<ODESpace>, weak_space()),std::weak_ptr<KinBody const>(pbody)));
         }
 
         pbody->SetUserData(_userdatakey, pinfo);
@@ -632,13 +632,13 @@ private:
         case OpenRAVE::GT_None:
             break;
         case OpenRAVE::GT_Box:
-            odegeom = dCreateBox(0,info._vGeomData.x*2.0f,info._vGeomData.y*2.0f,info._vGeomData.z*2.0f);
+            odegeom = dCreateBox(0,info.geom_data_vec_.x*2.0f,info.geom_data_vec_.y*2.0f,info.geom_data_vec_.z*2.0f);
             break;
         case OpenRAVE::GT_Sphere:
-            odegeom = dCreateSphere(0,info._vGeomData.x);
+            odegeom = dCreateSphere(0,info.geom_data_vec_.x);
             break;
         case OpenRAVE::GT_Cylinder:
-            odegeom = dCreateCylinder(0,info._vGeomData.x,info._vGeomData.y);
+            odegeom = dCreateCylinder(0,info.geom_data_vec_.x,info.geom_data_vec_.y);
             break;
         case OpenRAVE::GT_Container:
         case OpenRAVE::GT_Cage:
@@ -712,7 +712,7 @@ private:
         }
     }
 
-    void _ResetKinBodyCallback(boost::weak_ptr<KinBody const> _pbody)
+    void _ResetKinBodyCallback(std::weak_ptr<KinBody const> _pbody)
     {
         KinBodyConstPtr pbody(_pbody);
         std::pair<KinBodyInfoPtr, bool> infocreated = GetCreateInfo(pbody);

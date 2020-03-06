@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2011 Rosen Diankov <rosen.diankov@gmail.com>, Juan Gonzalez
+﻿// Copyright (c) 2008-2011 Rosen Diankov <rosen.diankov@gmail.com>, Juan Gonzalez
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ class ODEVelocityController : public ControllerBase
 public:
     ODEVelocityController(EnvironmentBasePtr penv) : ControllerBase(penv)
     {
-        __description = ":Interface Authors: Juan Gonzalez and Rosen Diankov\n\nODE Velocity controller.";
+        description_ = ":Interface Authors: Juan Gonzalez and Rosen Diankov\n\nODE Velocity controller.";
     }
 
     virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int nControlTransformation)

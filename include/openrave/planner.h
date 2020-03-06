@@ -257,7 +257,10 @@ private:
         \param filterreturn Optional argument that will hold the output information of the filter.
         \return \ref ConstraintFilterReturn::_returncode, which a combination of ConstraintFilterOptions
      */
-    typedef boost::function<int (const std::vector<dReal>&, const std::vector<dReal>&, const std::vector<dReal>&, const std::vector<dReal>&, dReal, IntervalType, int, ConstraintFilterReturnPtr)> CheckPathVelocityConstraintFn;
+    typedef boost::function<int (const std::vector<dReal>&, const std::vector<dReal>&,
+		const std::vector<dReal>&, const std::vector<dReal>&, 
+		dReal, IntervalType, int, ConstraintFilterReturnPtr)> CheckPathVelocityConstraintFn;
+
     CheckPathVelocityConstraintFn _checkpathvelocityconstraintsfn;
 
     /// \brief wrapper function calling _checkpathvelocityconstraintsfn with some default args. Returns true if function doesn't exist.

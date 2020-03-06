@@ -79,7 +79,7 @@ int KinBody::JointInfo::GetDOF() const
     return int(_type & 0xf);
 }
 
-void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     int dof = GetDOF();
 
@@ -97,14 +97,14 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
         break;
     }
 
-    dReal fjointmult = fUnitScale;
+    dReal fjointmult = unit_scale;
     if(_type == JointRevolute)
     {
         fjointmult = 1;
     }
     else if(_type == JointPrismatic)
     {
-        fjointmult = fUnitScale;
+        fjointmult = unit_scale;
     }
 
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
@@ -152,7 +152,7 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
             mimics.SetArray();
             for (size_t i = 0; i < _vmimic.size() && i < (size_t)dof; ++i) {
                 rapidjson::Value mimicValue;
-                _vmimic[i]->SerializeJSON(mimicValue, allocator, fUnitScale);
+                _vmimic[i]->SerializeJSON(mimicValue, allocator, unit_scale);
                 mimics.PushBack(mimicValue, allocator);
             }
             value.AddMember("mimics", mimics, allocator);
@@ -175,7 +175,7 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
     if (!!_infoElectricMotor) {
         rapidjson::Value electricMotorInfoValue;
         electricMotorInfoValue.SetObject();
-        _infoElectricMotor->SerializeJSON(electricMotorInfoValue, allocator, fUnitScale, options);
+        _infoElectricMotor->SerializeJSON(electricMotorInfoValue, allocator, unit_scale, options);
         value.AddMember("electricMotorActuator", electricMotorInfoValue, allocator);
     }
 
@@ -184,7 +184,7 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
 
 }
 
-void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
     std::string typestr;
     openravejson::LoadJsonValueByKey(value, "type", typestr);
@@ -224,15 +224,15 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fU
     openravejson::LoadJsonValueByKey(value, "isCircular", _bIsCircular);
     openravejson::LoadJsonValueByKey(value, "isActive", _bIsActive);
 
-    // multiply fUnitScale on maxVel, maxAccel, lowerLimit, upperLimit
-    dReal fjointmult = fUnitScale;
+    // multiply unit_scale on maxVel, maxAccel, lowerLimit, upperLimit
+    dReal fjointmult = unit_scale;
     if(_type == JointRevolute)
     {
         fjointmult = 1;
     }
     else if(_type == JointPrismatic)
     {
-        fjointmult = fUnitScale;
+        fjointmult = unit_scale;
     }
     for(size_t ic = 0; ic < _vaxes.size(); ic++)
     {
@@ -247,7 +247,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fU
     {
         for (rapidjson::SizeType i = 0; i < value["mimics"].Size(); ++i) {
             MimicInfoPtr mimicinfo(new MimicInfo());
-            mimicinfo->DeserializeJSON(value["mimics"][i], fUnitScale);
+            mimicinfo->DeserializeJSON(value["mimics"][i], unit_scale);
             newmimic[i] = mimicinfo;
         }
     }
@@ -259,7 +259,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal fU
 
     if (value.HasMember("electricMotorActuator")) {
         ElectricMotorActuatorInfoPtr info(new ElectricMotorActuatorInfo());
-        info->DeserializeJSON(value["electricMotorActuator"], fUnitScale);
+        info->DeserializeJSON(value["electricMotorActuator"], unit_scale);
         _infoElectricMotor = info;
     }
 }
@@ -2020,12 +2020,12 @@ void KinBody::Joint::serialize(std::ostream& o, int options) const
     }
 }
 
-void KinBody::MimicInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void KinBody::MimicInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     openravejson::SetJsonValueByKey(value, "equations", _equations, allocator);
 }
 
-void KinBody::MimicInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void KinBody::MimicInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
     openravejson::LoadJsonValueByKey(value, "equations", _equations);
 }

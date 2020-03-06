@@ -1,4 +1,4 @@
-/** \example plugincpp.cpp
+﻿/** \example plugincpp.cpp
    \author Rosen Diankov
 
    Every plugin contains a bunch of openrave interfaces, the plugincpp plugin creates a simple OpenRAVE::ModuleBase interface named \b mymodule.
@@ -51,7 +51,7 @@ class MyModule : public ModuleBase
 public:
     MyModule(EnvironmentBasePtr penv) : ModuleBase(penv)
     {
-        __description = "A very simple plugin.";
+        description_ = "A very simple plugin.";
         RegisterCommand("numbodies",boost::bind(&MyModule::NumBodies,this,_1,_2),"returns bodies");
         RegisterCommand("load",boost::bind(&MyModule::Load, this,_1,_2),"loads a given file");
     }

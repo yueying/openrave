@@ -119,49 +119,51 @@ namespace OpenRAVE
 			{
 			}
 
-			/// triangulates the geometry object and initializes collisionmesh. GeomTrimesh types must already be triangulated
-			/// \param fTessellation to control how fine the triangles need to be. 1.0f is the default value
-			bool InitCollisionMesh(float fTessellation = 1);
+			/// triangulates the geometry object and initializes collisionmesh. 
+			/// GeomTrimesh types must already be triangulated
+			/// \param tessellation to control how fine the triangles need to be. 1.0f is the default value
+			bool InitCollisionMesh(float tessellation = 1);
 
 			inline dReal GetSphereRadius() const
 			{
-				return _vGeomData.x;
+				return geom_data_vec_.x;
 			}
 
 			inline dReal GetCylinderRadius() const
 			{
-				return _vGeomData.x;
+				return geom_data_vec_.x;
 			}
 
 			inline dReal GetCylinderHeight() const
 			{
-				return _vGeomData.y;
+				return geom_data_vec_.y;
 			}
 
 			inline const Vector& GetBoxExtents() const
 			{
-				return _vGeomData;
+				return geom_data_vec_;
 			}
 
 			/// \brief compute the inner empty volume in the geometry coordinate system
 			///
-			/// \return bool true if the geometry has a concept of empty volume nad tInnerEmptyVolume/abInnerEmptyVolume are filled
-			bool ComputeInnerEmptyVolume(Transform& tInnerEmptyVolume, Vector& abInnerEmptyExtents) const;
+			/// \return bool true if the geometry has a concept of empty volume nad inner_empty_volume/abInnerEmptyVolume are filled
+			bool ComputeInnerEmptyVolume(Transform& inner_empty_volume, Vector& inner_empty_extents) const;
 
-			/// \brief computes the bounding box in the world. tGeometryWorld is for the world transform.
-			AABB ComputeAABB(const Transform& tGeometryWorld) const;
+			/// \brief computes the bounding box in the world. geometry_world is for the world transform.
+			AABB ComputeAABB(const Transform& geometry_world) const;
 
-			///< \param multiply all translational values by fUnitScale
-			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
+			///< \param multiply all translational values by unit_scale
+			virtual void SerializeJSON(rapidjson::Value &value, 
+				rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
 
-			///< \param multiply all translational values by fUnitScale
-			virtual void DeserializeJSON(const rapidjson::Value &value, const dReal fUnitScale = 1);
+			///< \param multiply all translational values by unit_scale
+			virtual void DeserializeJSON(const rapidjson::Value &value, const dReal unit_scale = 1);
 
 			Transform _t; ///< Local transformation of the geom primitive with respect to the link's coordinate system.
 
 			/// for boxes, first 3 values are half extents. For containers, the first 3 values are the full outer extents.
 			/// For GT_Cage, this is the base box extents with the origin being at the -Z center.
-			Vector _vGeomData;
+			Vector geom_data_vec_;
 
 			///< For GT_Container, the first 3 values are the full inner extents.
 			///< For GT_Cage, if any are non-zero, then force the full inner extents (bottom center) to be this much, starting at the base center top
@@ -240,8 +242,8 @@ namespace OpenRAVE
 			LinkInfo& operator=(const LinkInfo& other);
 
 			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator,
-				dReal fUnitScale = 1.0, int options = 0) const;
-			virtual void DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale = 1.0);
+				dReal unit_scale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value &value, dReal unit_scale = 1.0);
 
 			std::vector<GeometryInfoPtr> _vgeometryinfos;
 			/// extra-purpose geometries like
@@ -288,23 +290,11 @@ namespace OpenRAVE
 			typedef std::shared_ptr<KinBody::GeometryInfo> GeometryInfoPtr RAVE_DEPRECATED;
 			typedef TriMesh TRIMESH RAVE_DEPRECATED;
 			typedef GeometryType GeomType RAVE_DEPRECATED;
-			static const GeometryType GeomNone RAVE_DEPRECATED = OpenRAVE::GT_None;
-			static const GeometryType GeomBox RAVE_DEPRECATED = OpenRAVE::GT_Box;
-			static const GeometryType GeomSphere RAVE_DEPRECATED = OpenRAVE::GT_Sphere;
-			static const GeometryType GeomCylinder RAVE_DEPRECATED = OpenRAVE::GT_Cylinder;
-			static const GeometryType GeomTrimesh RAVE_DEPRECATED = OpenRAVE::GT_TriMesh;
 
 			/// \brief geometry object holding a link parent and wrapping access to a protected geometry info
 			class OPENRAVE_API Geometry
 			{
 			public:
-				/// \deprecated (12/07/16)
-				static const GeometryType GeomNone RAVE_DEPRECATED = OpenRAVE::GT_None;
-				static const GeometryType GeomBox RAVE_DEPRECATED = OpenRAVE::GT_Box;
-				static const GeometryType GeomSphere RAVE_DEPRECATED = OpenRAVE::GT_Sphere;
-				static const GeometryType GeomCylinder RAVE_DEPRECATED = OpenRAVE::GT_Cylinder;
-				static const GeometryType GeomTrimesh RAVE_DEPRECATED = OpenRAVE::GT_TriMesh;
-
 				Geometry(std::shared_ptr<Link> parent, const KinBody::GeometryInfo& info);
 
 				virtual ~Geometry()
@@ -340,19 +330,19 @@ namespace OpenRAVE
 				}
 
 				inline dReal GetSphereRadius() const {
-					return _info._vGeomData.x;
+					return _info.geom_data_vec_.x;
 				}
 				inline dReal GetCylinderRadius() const {
-					return _info._vGeomData.x;
+					return _info.geom_data_vec_.x;
 				}
 				inline dReal GetCylinderHeight() const {
-					return _info._vGeomData.y;
+					return _info.geom_data_vec_.y;
 				}
 				inline const Vector& GetBoxExtents() const {
-					return _info._vGeomData;
+					return _info.geom_data_vec_;
 				}
 				inline const Vector& GetContainerOuterExtents() const {
-					return _info._vGeomData;
+					return _info.geom_data_vec_;
 				}
 				inline const Vector& GetContainerInnerExtents() const {
 					return _info._vGeomData2;
@@ -385,13 +375,13 @@ namespace OpenRAVE
 				/// cage
 				//@{
 				inline const Vector& GetCageBaseExtents() const {
-					return _info._vGeomData;
+					return _info.geom_data_vec_;
 				}
 
 				/// \brief compute the inner empty volume in the parent link coordinate system
 				///
-				/// \return bool true if the geometry has a concept of empty volume nad tInnerEmptyVolume/abInnerEmptyVolume are filled
-				virtual bool ComputeInnerEmptyVolume(Transform& tInnerEmptyVolume, Vector& abInnerEmptyExtents) const;
+				/// \return bool true if the geometry has a concept of empty volume nad inner_empty_volume/abInnerEmptyVolume are filled
+				virtual bool ComputeInnerEmptyVolume(Transform& inner_empty_volume, Vector& inner_empty_extents) const;
 				//@}
 
 				virtual bool InitCollisionMesh(float fTessellation = 1);
@@ -818,8 +808,8 @@ namespace OpenRAVE
 		public:
 			boost::array< std::string, 3>  _equations;         ///< the original equations
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
-				dReal fUnitScale = 1.0, int options = 0) const;
-			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
+				dReal unit_scale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 		};
 		typedef std::shared_ptr<MimicInfo> MimicInfoPtr;
 		typedef std::shared_ptr<MimicInfo const> MimicInfoConstPtr;
@@ -873,8 +863,8 @@ namespace OpenRAVE
 
 			virtual int GetDOF() const;
 
-			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
-			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
+			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 
 			JointType _type; /// The joint type
 			std::string name_;         ///< the unique joint name
@@ -1577,8 +1567,8 @@ namespace OpenRAVE
 			std::string _robotlinkname;  ///< the name of the body link that is grabbing the body
 			Transform _trelative; ///< transform of first link of body relative to _robotlinkname's transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
 			std::set<int> _setRobotLinksToIgnore; ///< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
-			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
-			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
+			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 		};
 		typedef std::shared_ptr<GrabbedInfo> GrabbedInfoPtr;
 		typedef std::shared_ptr<GrabbedInfo const> GrabbedInfoConstPtr;

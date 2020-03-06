@@ -104,10 +104,10 @@ private:
     };
 
     inline std::shared_ptr<ODECollisionChecker> shared_checker() {
-        return boost::static_pointer_cast<ODECollisionChecker>(shared_from_this());
+        return std::static_pointer_cast<ODECollisionChecker>(shared_from_this());
     }
     inline std::shared_ptr<ODECollisionChecker const> shared_checker_const() const {
-        return boost::static_pointer_cast<ODECollisionChecker const>(shared_from_this());
+        return std::static_pointer_cast<ODECollisionChecker const>(shared_from_this());
     }
 
 public:
@@ -118,7 +118,7 @@ public:
         geomray = NULL;
         _nMaxStartContacts = 32;
         _nMaxContacts = 255;     // this is a weird ODE threshold for the new tri-tri collision checker
-        __description = ":Interface Author: Rosen Diankov\n\nOpen Dynamics Engine collision checker (fast, but inaccurate for triangle meshes)";
+        description_ = ":Interface Author: Rosen Diankov\n\nOpen Dynamics Engine collision checker (fast, but inaccurate for triangle meshes)";
         RegisterCommand("SetMaxContacts",boost::bind(&ODECollisionChecker::_SetMaxContactsCommand, this,_1,_2),
                         str(boost::format("sets the maximum contacts that can be returned by the checker (limit is %d)")%_nMaxContacts));
 #ifndef ODE_USE_MULTITHREAD

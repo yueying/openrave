@@ -36,14 +36,19 @@ IkSolverBasePtr CreateIkSolverFromName(const std::string& name,
 ModuleBasePtr CreateIkFastModule(EnvironmentBasePtr penv, std::istream& sinput);
 void DestroyIkFastLibraries();
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
+	const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
 {    
-    switch(type) {
-    case PT_IkSolver: {
-        if( interfacename == "ikfast" ) {
-            string ikfastname;
+    switch(type) 
+	{
+    case PT_IkSolver:
+	{
+        if( interfacename == "ikfast" ) 
+		{
+            std::string ikfastname;
             sinput >> ikfastname;
-            if( !!sinput ) {
+            if( !!sinput ) 
+			{
                 // check if ikthreshold parameter exists
                 dReal ikthreshold=1e-4;
                 vector<dReal> vfreeinc;
@@ -59,7 +64,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
                     }
                 }
                 // have to append any left over numbers
-                vector<dReal> vfreeinctemp((istream_iterator<dReal>(sinput)), istream_iterator<dReal>());
+                std::vector<dReal> vfreeinctemp((std::istream_iterator<dReal>(sinput)), std::istream_iterator<dReal>());
                 vfreeinc.insert(vfreeinc.end(), vfreeinctemp.begin(), vfreeinctemp.end());
                 
                 // look at all the ikfast problem solvers
@@ -70,7 +75,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
             }
         }
         else {
-            vector<dReal> vfreeinc((istream_iterator<dReal>(sinput)), istream_iterator<dReal>());
+			std::vector<dReal> vfreeinc((std::istream_iterator<dReal>(sinput)), std::istream_iterator<dReal>());
             if( interfacename == "wam7ikfast" ) {
                 return ik_barrettwam::CreateIkSolver(penv, sinput, vfreeinc);
             }

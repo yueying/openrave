@@ -22,7 +22,7 @@
 namespace OpenRAVE {
 
 void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value,
-	rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+	rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 	openravejson::SetJsonValueByKey(value, "linkName", _linkname, allocator);
@@ -32,12 +32,12 @@ void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value,
     if(!!_sensorgeometry)
     {
         rapidjson::Value sensorGeometryValue;
-        _sensorgeometry->SerializeJSON(sensorGeometryValue, allocator, fUnitScale, options);
+        _sensorgeometry->SerializeJSON(sensorGeometryValue, allocator, unit_scale, options);
 		openravejson::SetJsonValueByKey(value, "sensorGeometry", sensorGeometryValue, allocator);
     }
 }
 
-void RobotBase::AttachedSensorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void RobotBase::AttachedSensorInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
 	openravejson::LoadJsonValueByKey(value, "name", name_);
 	openravejson::LoadJsonValueByKey(value, "linkName", _linkname);
@@ -47,7 +47,7 @@ void RobotBase::AttachedSensorInfo::DeserializeJSON(const rapidjson::Value& valu
     if (value.HasMember("sensorGeometry")) {
         BaseJSONReaderPtr pReader = RaveCallJSONReader(PT_Sensor, _sensorname, InterfaceBasePtr(), AttributesList());
         if (!!pReader) {
-            pReader->DeserializeJSON(value["sensorGeometry"], fUnitScale);
+            pReader->DeserializeJSON(value["sensorGeometry"], unit_scale);
             JSONReadablePtr pReadable = pReader->GetReadable();
             if (!!pReadable) {
                 _sensorgeometry = std::dynamic_pointer_cast<SensorBase::SensorGeometry>(pReadable);

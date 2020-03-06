@@ -7,7 +7,7 @@ set_target_properties(configurationcache PROPERTIES COMPILE_FLAGS "${PLUGIN_COMP
 install(TARGETS configurationcache DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${PLUGINS_BASE})
 
 # python bindings
-if( HAVE_ALL_PYTHON_HEADERS )
+if( OPT_PYTHON )
   # include
   include_directories(
     ${Python3_INCLUDE_DIR} ${Python3_NUMPY_INCLUDE_DIR}

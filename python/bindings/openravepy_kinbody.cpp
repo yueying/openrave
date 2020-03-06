@@ -114,7 +114,7 @@ PyGeometryInfo::PyGeometryInfo(const KinBody::GeometryInfo& info) {
 
 void PyGeometryInfo::Init(const KinBody::GeometryInfo& info) {
     _t = ReturnTransform(info._t);
-    _vGeomData = toPyVector4(info._vGeomData);
+    _vGeomData = toPyVector4(info.geom_data_vec_);
     _vGeomData2 = toPyVector4(info._vGeomData2);
     _vGeomData3 = toPyVector4(info._vGeomData3);
     _vGeomData4 = toPyVector4(info._vGeomData4);
@@ -140,11 +140,11 @@ void PyGeometryInfo::Init(const KinBody::GeometryInfo& info) {
 
 object PyGeometryInfo::ComputeInnerEmptyVolume()
 {
-    Transform tInnerEmptyVolume;
-    Vector abInnerEmptyExtents;
+    Transform inner_empty_volume;
+    Vector inner_empty_extents;
     KinBody::GeometryInfoPtr pgeominfo = GetGeometryInfo();
-    if( pgeominfo->ComputeInnerEmptyVolume(tInnerEmptyVolume, abInnerEmptyExtents) ) {
-        return py::make_tuple(ReturnTransform(tInnerEmptyVolume), toPyVector3(abInnerEmptyExtents));
+    if( pgeominfo->ComputeInnerEmptyVolume(inner_empty_volume, inner_empty_extents) ) {
+        return py::make_tuple(ReturnTransform(inner_empty_volume), toPyVector3(inner_empty_extents));
     }
     return py::make_tuple(py::none_(), py::none_());
 }
@@ -154,20 +154,20 @@ object PyGeometryInfo::ComputeAABB(object otransform) {
     return toPyAABB(pgeominfo->ComputeAABB(ExtractTransform(otransform)));
 }
 
-object PyGeometryInfo::SerializeJSON(dReal fUnitScale, object options)
+object PyGeometryInfo::SerializeJSON(dReal unit_scale, object options)
 {
     rapidjson::Document doc;
     KinBody::GeometryInfoPtr pgeominfo = GetGeometryInfo();
-    pgeominfo->SerializeJSON(doc, doc.GetAllocator(), fUnitScale, pyGetIntFromPy(options, 0));
+    pgeominfo->SerializeJSON(doc, doc.GetAllocator(), unit_scale, pyGetIntFromPy(options, 0));
     return toPyObject(doc);
 }
 
-void PyGeometryInfo::DeserializeJSON(object obj, dReal fUnitScale)
+void PyGeometryInfo::DeserializeJSON(object obj, dReal unit_scale)
 {
     rapidjson::Document doc;
     toRapidJSONValue(obj, doc, doc.GetAllocator());
     KinBody::GeometryInfoPtr pgeominfo = GetGeometryInfo();
-    pgeominfo->DeserializeJSON(doc, fUnitScale);
+    pgeominfo->DeserializeJSON(doc, unit_scale);
     Init(*pgeominfo);
 }
 
@@ -175,7 +175,7 @@ KinBody::GeometryInfoPtr PyGeometryInfo::GetGeometryInfo() {
     KinBody::GeometryInfoPtr pinfo(new KinBody::GeometryInfo());
     KinBody::GeometryInfo& info = *pinfo;
     info._t = ExtractTransform(_t);
-    info._vGeomData = ExtractVector<dReal>(_vGeomData);
+    info.geom_data_vec_ = ExtractVector<dReal>(_vGeomData);
     info._vGeomData2 = ExtractVector<dReal>(_vGeomData2);
     info._vGeomData3 = ExtractVector<dReal>(_vGeomData3);
     info._vGeomData4 = ExtractVector<dReal>(_vGeomData4);
@@ -248,20 +248,20 @@ void PyLinkInfo::_Update(const KinBody::LinkInfo& info) {
 
 }
 
-py::object PyLinkInfo::SerializeJSON(dReal fUnitScale, object options)
+py::object PyLinkInfo::SerializeJSON(dReal unit_scale, object options)
 {
     rapidjson::Document doc;
     KinBody::LinkInfoPtr pInfo = GetLinkInfo();
-    pInfo->SerializeJSON(doc, doc.GetAllocator(), fUnitScale, pyGetIntFromPy(options, 0));
+    pInfo->SerializeJSON(doc, doc.GetAllocator(), unit_scale, pyGetIntFromPy(options, 0));
     return toPyObject(doc);
 }
 
-void PyLinkInfo::DeserializeJSON(object obj, dReal fUnitScale)
+void PyLinkInfo::DeserializeJSON(object obj, dReal unit_scale)
 {
     rapidjson::Document doc;
     toRapidJSONValue(obj, doc, doc.GetAllocator());
     KinBody::LinkInfoPtr pInfo = GetLinkInfo();
-    pInfo->DeserializeJSON(doc, fUnitScale);
+    pInfo->DeserializeJSON(doc, unit_scale);
     _Update(*pInfo);
 }
 
@@ -393,19 +393,19 @@ void PyElectricMotorActuatorInfo::_Update(const ElectricMotorActuatorInfo& info)
     coloumb_friction = info.coloumb_friction;
     viscous_friction = info.viscous_friction;
 }
-py::object PyElectricMotorActuatorInfo::SerializeJSON(dReal fUnitScale, py::object options)
+py::object PyElectricMotorActuatorInfo::SerializeJSON(dReal unit_scale, py::object options)
 {
     rapidjson::Document doc;
     ElectricMotorActuatorInfoPtr pInfo = GetElectricMotorActuatorInfo();
-    pInfo->SerializeJSON(doc, doc.GetAllocator(), fUnitScale, pyGetIntFromPy(options, 0));
+    pInfo->SerializeJSON(doc, doc.GetAllocator(), unit_scale, pyGetIntFromPy(options, 0));
     return toPyObject(doc);
 }
-void PyElectricMotorActuatorInfo::DeserializeJSON(py::object obj, dReal fUnitScale)
+void PyElectricMotorActuatorInfo::DeserializeJSON(py::object obj, dReal unit_scale)
 {
     rapidjson::Document doc;
     toRapidJSONValue(obj, doc, doc.GetAllocator());
     ElectricMotorActuatorInfo info;
-    info.DeserializeJSON(doc, fUnitScale);
+    info.DeserializeJSON(doc, unit_scale);
     _Update(info);
     return;
 }
@@ -952,20 +952,20 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
     return pinfo;
 }
 
-object PyJointInfo::SerializeJSON(dReal fUnitScale, object options)
+object PyJointInfo::SerializeJSON(dReal unit_scale, object options)
 {
     rapidjson::Document doc;
     KinBody::JointInfoPtr pInfo = GetJointInfo();
-    pInfo->SerializeJSON(doc, doc.GetAllocator(), fUnitScale, pyGetIntFromPy(options, 0));
+    pInfo->SerializeJSON(doc, doc.GetAllocator(), unit_scale, pyGetIntFromPy(options, 0));
     return toPyObject(doc);
 }
 
-void PyJointInfo::DeserializeJSON(object obj, dReal fUnitScale)
+void PyJointInfo::DeserializeJSON(object obj, dReal unit_scale)
 {
     rapidjson::Document doc;
     toRapidJSONValue(obj, doc, doc.GetAllocator());
     KinBody::JointInfo info;
-    info.DeserializeJSON(doc, fUnitScale);
+    info.DeserializeJSON(doc, unit_scale);
     _Update(info);
 }
 
@@ -1087,10 +1087,10 @@ object PyLink::PyGeometry::GetInfo() {
 }
 object PyLink::PyGeometry::ComputeInnerEmptyVolume() const
 {
-    Transform tInnerEmptyVolume;
-    Vector abInnerEmptyExtents;
-    if( _pgeometry->ComputeInnerEmptyVolume(tInnerEmptyVolume, abInnerEmptyExtents) ) {
-        return py::make_tuple(ReturnTransform(tInnerEmptyVolume), toPyVector3(abInnerEmptyExtents));
+    Transform inner_empty_volume;
+    Vector inner_empty_extents;
+    if( _pgeometry->ComputeInnerEmptyVolume(inner_empty_volume, inner_empty_extents) ) {
+        return py::make_tuple(ReturnTransform(inner_empty_volume), toPyVector3(inner_empty_extents));
     }
     return py::make_tuple(py::none_(), py::none_());
 }

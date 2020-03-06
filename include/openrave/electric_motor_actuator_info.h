@@ -54,8 +54,8 @@ namespace OpenRAVE
 		//@}
 
 		virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
-			dReal fUnitScale = 1.0, int options = 0) const;
-		virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
+			dReal unit_scale = 1.0, int options = 0) const;
+		virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 	};
 
 	typedef std::shared_ptr<ElectricMotorActuatorInfo> ElectricMotorActuatorInfoPtr;

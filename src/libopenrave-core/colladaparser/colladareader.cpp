@@ -2356,27 +2356,27 @@ public:
             itgeominfo->_t = tnodegeom * itgeominfo->_t;
             switch (itgeominfo->_type) {
             case GT_Box:
-                itgeominfo->_vGeomData *= vscale;
+                itgeominfo->geom_data_vec_ *= vscale;
                 break;
             case GT_Cage:
-                itgeominfo->_vGeomData *= vscale;
+                itgeominfo->geom_data_vec_ *= vscale;
                 itgeominfo->_vGeomData2 *= vscale;
                 for (size_t i = 0; i < itgeominfo->_vSideWalls.size(); ++i) {
                     itgeominfo->_vSideWalls[i].transf.trans *= vscale;
                     itgeominfo->_vSideWalls[i].vExtents *= vscale;
                 }
             case GT_Container:
-                itgeominfo->_vGeomData *= vscale;
+                itgeominfo->geom_data_vec_ *= vscale;
                 itgeominfo->_vGeomData2 *= vscale;
                 itgeominfo->_vGeomData3 *= vscale;
                 itgeominfo->_vGeomData4 *= vscale;
                 break;
             case GT_Sphere:
-                itgeominfo->_vGeomData *= max(vscale.z, max(vscale.x, vscale.y));
+                itgeominfo->geom_data_vec_ *= max(vscale.z, max(vscale.x, vscale.y));
                 break;
             case GT_Cylinder:
-                itgeominfo->_vGeomData.x *= max(vscale.x, vscale.y);
-                itgeominfo->_vGeomData.y *= vscale.z;
+                itgeominfo->geom_data_vec_.x *= max(vscale.x, vscale.y);
+                itgeominfo->geom_data_vec_.y *= vscale.z;
                 break;
             case GT_TriMesh:
                 itgeominfo->_meshcollision.ApplyTransform(TransformMatrix(tmnodegeom * toriginal).inverse() * TransformMatrix(toriginal));
@@ -2485,7 +2485,7 @@ public:
                 if( !node ) {
                     continue;
                 }
-                dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                dReal unit_scale = _GetUnitScale(node,_fGlobalScale);
                 const domFloat_arrayRef flArray = node->getFloat_array();
                 if (!!flArray) {
                     const domList_of_floats& listFloats = flArray->getValue();
@@ -2500,7 +2500,7 @@ public:
                                 domFloat fl2 = listFloats.get(size_t(index0+2));
                                 k+=triangleIndexStride;
                                 trimesh.indices.push_back(trimesh.vertices.size());
-                                trimesh.vertices.push_back(transgeom*Vector(fl0*fUnitScale,fl1*fUnitScale,fl2*fUnitScale));
+                                trimesh.vertices.push_back(transgeom*Vector(fl0*unit_scale,fl1*unit_scale,fl2*unit_scale));
                             }
                         }
                     }
@@ -2569,7 +2569,7 @@ public:
                     if( !node ) {
                         continue;
                     }
-                    dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                    dReal unit_scale = _GetUnitScale(node,_fGlobalScale);
                     const domFloat_arrayRef flArray = node->getFloat_array();
                     if (!!flArray) {
                         const domList_of_floats& listFloats = flArray->getValue();
@@ -2589,7 +2589,7 @@ public:
                             domFloat fl1 = listFloats.get(size_t(index0+1));
                             domFloat fl2 = listFloats.get(size_t(index0+2));
                             k+=triangleIndexStride;
-                            trimesh.vertices.push_back(transgeom*Vector(fl0*fUnitScale,fl1*fUnitScale,fl2*fUnitScale));
+                            trimesh.vertices.push_back(transgeom*Vector(fl0*unit_scale,fl1*unit_scale,fl2*unit_scale));
                         }
                         for(size_t ivert = startoffset+2; ivert < trimesh.vertices.size(); ++ivert) {
                             trimesh.indices.push_back(startoffset);
@@ -2658,7 +2658,7 @@ public:
                     if( !node ) {
                         continue;
                     }
-                    dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                    dReal unit_scale = _GetUnitScale(node,_fGlobalScale);
                     const domFloat_arrayRef flArray = node->getFloat_array();
                     if (!!flArray) {
                         const domList_of_floats& listFloats = flArray->getValue();
@@ -2679,7 +2679,7 @@ public:
                             domFloat fl1 = listFloats.get(size_t(index0+1));
                             domFloat fl2 = listFloats.get(size_t(index0+2));
                             k+=triangleIndexStride;
-                            trimesh.vertices.push_back(transgeom*Vector(fl0*fUnitScale,fl1*fUnitScale,fl2*fUnitScale));
+                            trimesh.vertices.push_back(transgeom*Vector(fl0*unit_scale,fl1*unit_scale,fl2*unit_scale));
                         }
 
                         bool bFlip = false;
@@ -2745,7 +2745,7 @@ public:
                 if( !node ) {
                     continue;
                 }
-                dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                dReal unit_scale = _GetUnitScale(node,_fGlobalScale);
                 const domFloat_arrayRef flArray = node->getFloat_array();
                 if (!!flArray) {
                     const domList_of_floats& listFloats = flArray->getValue();
@@ -2761,7 +2761,7 @@ public:
                                 domFloat fl1 = listFloats.get(size_t(index0+1));
                                 domFloat fl2 = listFloats.get(size_t(index0+2));
                                 k+=triangleIndexStride;
-                                trimesh.vertices.push_back(transgeom*Vector(fl0*fUnitScale,fl1*fUnitScale,fl2*fUnitScale));
+                                trimesh.vertices.push_back(transgeom*Vector(fl0*unit_scale,fl1*unit_scale,fl2*unit_scale));
                             }
                             for(size_t ivert = startoffset+2; ivert < trimesh.vertices.size(); ++ivert) {
                                 trimesh.indices.push_back(startoffset);
@@ -2835,7 +2835,9 @@ public:
     /// \param  domgeom    Geometry to extract of the COLLADA's model
     /// \param  mapmaterials    Materials applied to the geometry
     /// \param  listGeometryInfos the geometry infos to output
-    bool ExtractGeometry(const domGeometryRef domgeom, const map<string,domMaterialRef>& mapmaterials, std::list<KinBody::GeometryInfo>& listGeometryInfos)
+    bool ExtractGeometry(const domGeometryRef domgeom,
+		const std::map<std::string,domMaterialRef>& mapmaterials, 
+		std::list<KinBody::GeometryInfo>& listGeometryInfos)
     {
         if( !domgeom ) {
             return false;
@@ -2872,7 +2874,7 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo._type = GT_Box;
-                                    geominfo._vGeomData = vextents;
+                                    geominfo.geom_data_vec_ = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
                                 }
@@ -2886,7 +2888,7 @@ public:
                                 ss >> fradius;
                                 if( ss.eof() || !!ss ) {
                                     geominfo._type = GT_Sphere;
-                                    geominfo._vGeomData.x = fradius;
+                                    geominfo.geom_data_vec_.x = fradius;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
                                 }
@@ -2905,7 +2907,7 @@ public:
                                     Transform trot(quatRotateDirection(Vector(0,0,1),Vector(0,1,0)),Vector());
                                     tlocalgeom = tlocalgeom * trot;
                                     geominfo._type = GT_Cylinder;
-                                    geominfo._vGeomData = vGeomData;
+                                    geominfo.geom_data_vec_ = vGeomData;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
                                 }
@@ -2922,7 +2924,7 @@ public:
                                 ss2 >> vGeomData.y;
                                 if( (ss.eof() || !!ss) && (ss2.eof() || !!ss2) ) {
                                     geominfo._type = GT_Cylinder;
-                                    geominfo._vGeomData = vGeomData;
+                                    geominfo.geom_data_vec_ = vGeomData;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
                                 }
@@ -2938,7 +2940,7 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._vGeomData = vextents;
+                                    geominfo.geom_data_vec_ = vextents;
                                     bfoundgeom = true;
                                 }
                             }
@@ -3018,7 +3020,7 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo._type = GT_Container;
-                                    geominfo._vGeomData = vextents;
+                                    geominfo.geom_data_vec_ = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
                                 }
@@ -3150,7 +3152,7 @@ public:
                         if( !node ) {
                             continue;
                         }
-                        dReal fUnitScale = _GetUnitScale(node,_fGlobalScale);
+                        dReal unit_scale = _GetUnitScale(node,_fGlobalScale);
                         const domFloat_arrayRef flArray = node->getFloat_array();
                         if (!!flArray) {
                             const domList_of_floats& listFloats = flArray->getValue();
@@ -3159,7 +3161,7 @@ public:
                                 domFloat fl0 = listFloats.get(k);
                                 domFloat fl1 = listFloats.get(k+1);
                                 domFloat fl2 = listFloats.get(k+2);
-                                vconvexhull.push_back(tlocalgeominv * Vector(fl0*fUnitScale,fl1*fUnitScale,fl2*fUnitScale));
+                                vconvexhull.push_back(tlocalgeominv * Vector(fl0*unit_scale,fl1*unit_scale,fl2*unit_scale));
                             }
                         }
                     }

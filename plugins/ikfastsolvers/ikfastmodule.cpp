@@ -519,60 +519,73 @@ public:
         return bsuccess;
     }
 
-    bool LoadIKFastSolver(ostream& sout, istream& sinput)
+    bool LoadIKFastSolver(std::ostream& sout, std::istream& sinput)
     {
         EnvironmentMutex::scoped_lock envlock(GetEnv()->GetMutex());
-        string robotname;
-        string striktype;
-        bool bForceIK = false;
+		std::string robotname;
+		std::string striktype;
+        bool is_force_ik = false;
         sinput >> robotname;
         sinput >> striktype;
-        if( !sinput ) {
+        if( !sinput ) 
+		{
             return false;
         }
-        sinput >> bForceIK;     // optional
+        sinput >> is_force_ik;     // optional
         RobotBasePtr probot = GetEnv()->GetRobot(robotname);
-        if( !probot || !probot->GetActiveManipulator() ) {
+        if( !probot || !probot->GetActiveManipulator() ) 
+		{
             return false;
         }
         RobotBase::ManipulatorPtr pmanip = probot->GetActiveManipulator();
         IkParameterizationType iktype = IKP_None;
-        try {
-            iktype = static_cast<IkParameterizationType>(boost::lexical_cast<int>(striktype));
+        try 
+		{
+            iktype = static_cast<IkParameterizationType>(std::stoi(striktype));
             striktype = RaveGetIkParameterizationMap().find(iktype)->second;
         }
-        catch(const boost::bad_lexical_cast&) {
+        catch(const std::invalid_argument&) 
+		{
             // striktype is already correct, so check that it exists in RaveGetIkParameterizationMap
             std::transform(striktype.begin(), striktype.end(), striktype.begin(), ::tolower);
-            FOREACHC(it,RaveGetIkParameterizationMap()) {
-                string mapiktype = it->second;
+            FOREACHC(it,RaveGetIkParameterizationMap()) 
+			{
+                std::string mapiktype = it->second;
                 std::transform(mapiktype.begin(), mapiktype.end(), mapiktype.begin(), ::tolower);
-                if( mapiktype == striktype ) {
+                if( mapiktype == striktype ) 
+				{
                     iktype = it->first;
                     striktype = it->second; // get the correct capitalizations
                     break;
                 }
             }
-            if(iktype == IKP_None) {
+            if(iktype == IKP_None) 
+			{
                 throw OpenRAVEException(str(boost::format(_("could not find iktype %s"))%striktype));
             }
         }
 
         _EnsureIkFastVersion();
 
-        string ikfilename;
-        for(int iter = 0; iter < 2; ++iter) {
-            string ikfilenamefound;
+        std::string ikfilename;
+        for(int iter = 0; iter < 2; ++iter) 
+		{
+            std::string ikfilenamefound;
             // check if exists and is loadable, if not, regenerate the IK.
-            std::string ikfilenameprefix = str(boost::format("kinematics.%s/ikfast%s.%s.%s.")%pmanip->GetInverseKinematicsStructureHash(iktype)%_ikfastversion%striktype%_platform);
+            std::string ikfilenameprefix = str(boost::format("kinematics.%s/ikfast%s.%s.%s.")
+				%pmanip->GetInverseKinematicsStructureHash(iktype)%_ikfastversion%striktype%_platform);
             int ikdof = IkParameterization::GetDOF(iktype);
-            if( ikdof > pmanip->GetArmDOF() ) {
-                RAVELOG_WARN(str(boost::format("not enough joints (%d) for ik %s")%pmanip->GetArmIndices().size()%striktype));
+            if( ikdof > pmanip->GetArmDOF() ) 
+			{
+                RAVELOG_WARN(str(boost::format("not enough joints (%d) for ik %s")
+					%pmanip->GetArmIndices().size()%striktype));
             }
-            if( ikdof < pmanip->GetArmDOF() ) {
+            if( ikdof < pmanip->GetArmDOF() ) 
+			{
                 std::vector<int> vindices = pmanip->GetArmIndices();
                 std::vector<int> vsolveindices(ikdof), vfreeindices(vindices.size()-ikdof);
-                do {
+                do 
+				{
                     std::copy(vindices.begin(),vindices.begin()+ikdof,vsolveindices.begin());
                     sort(vsolveindices.begin(),vsolveindices.end());
                     std::copy(vindices.begin()+ikdof,vindices.end(),vfreeindices.begin());
@@ -662,7 +675,7 @@ public:
                 }
             }
             // if not forcing the ik, then return true as long as a valid ik solver is set
-            if( bForceIK && !bsuccess ) {
+            if( is_force_ik && !bsuccess ) {
                 return false;
             }
             return !!pmanip->GetIkSolver() && pmanip->GetIkSolver()->Supports(iktype);

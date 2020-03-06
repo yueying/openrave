@@ -1,4 +1,4 @@
-/** \example orloadviewer.cpp
+﻿/** \example orloadviewer.cpp
     \author Rosen Diankov
 
     Shows how to load a robot into the openrave environment and start a viewer in a separate thread.
@@ -45,28 +45,37 @@ void SetViewer(EnvironmentBasePtr penv, const string& viewername)
 int main(int argc, char ** argv)
 {
     //int num = 1;
-    string scenefilename = "data/lab1.env.xml";
-    string viewername = RaveGetDefaultViewerType(); // qtcoin
+    std::string scenefilename = "data/lab1.env.xml";
+	std::string viewername = RaveGetDefaultViewerType(); // qtcoin
 
     // parse the command line options
     int i = 1;
-    while(i < argc) {
-        if((strcmp(argv[i], "-h") == 0)||(strcmp(argv[i], "-?") == 0)||(strcmp(argv[i], "/?") == 0)||(strcmp(argv[i], "--help") == 0)||(strcmp(argv[i], "-help") == 0)) {
+    while(i < argc) 
+	{
+        if((strcmp(argv[i], "-h") == 0)
+			||(strcmp(argv[i], "-?") == 0)
+			||(strcmp(argv[i], "/?") == 0)
+			||(strcmp(argv[i], "--help") == 0)
+			||(strcmp(argv[i], "-help") == 0)) 
+		{
             RAVELOG_INFO("orloadviewer [--num n] [--scene filename] viewername\n");
             return 0;
         }
-        else if( strcmp(argv[i], "--scene") == 0 ) {
+        else if( strcmp(argv[i], "--scene") == 0 ) 
+		{
             scenefilename = argv[i+1];
             i += 2;
         }
         else
             break;
     }
-    if( i < argc ) {
+    if( i < argc ) 
+	{
         viewername = argv[i++];
     }
 
     RaveInitialize(true); // start openrave core
+	viewername = RaveGetDefaultViewerType(); // qtcoin
     EnvironmentBasePtr penv = RaveCreateEnvironment(); // create the main environment
     RaveSetDebugLevel(Level_Debug);
 

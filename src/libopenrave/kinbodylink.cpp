@@ -28,14 +28,14 @@ KinBody::LinkInfo::LinkInfo(const LinkInfo& other)
     *this = other;
 }
 
-void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
     Transform tmpTransform {_t};
     Transform tmpMassTransform {_tMassFrame};
-    tmpTransform.trans *= fUnitScale;
-    tmpMassTransform.trans *= fUnitScale;
+    tmpTransform.trans *= unit_scale;
+    tmpMassTransform.trans *= unit_scale;
 
     openravejson::SetJsonValueByKey(value, "transform", tmpTransform, allocator);
     openravejson::SetJsonValueByKey(value, "massTransform", tmpMassTransform, allocator);
@@ -91,7 +91,7 @@ void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Docume
     openravejson::SetJsonValueByKey(value, "isEnabled", _bIsEnabled, allocator);
 }
 
-void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal fUnitScale)
+void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal unit_scale)
 {
     openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "transform", _t);
@@ -103,15 +103,15 @@ void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal fUn
     openravejson::LoadJsonValueByKey(value, "stringParameters", _mapStringParameters);
     openravejson::LoadJsonValueByKey(value, "forcedAdjacentLinks", _vForcedAdjacentLinks);
 
-    _t.trans *= fUnitScale;
-    _tMassFrame.trans *= fUnitScale;
+    _t.trans *= unit_scale;
+    _tMassFrame.trans *= unit_scale;
 
     if (value.HasMember("geometries")) {
         _vgeometryinfos.resize(0);
         _vgeometryinfos.reserve(value["geometries"].Size());
         for (size_t i = 0; i < value["geometries"].Size(); ++i) {
             GeometryInfoPtr pGeometryInfo(new GeometryInfo());
-            pGeometryInfo->DeserializeJSON(value["geometries"][i], fUnitScale);
+            pGeometryInfo->DeserializeJSON(value["geometries"][i], unit_scale);
             _vgeometryinfos.push_back(pGeometryInfo);
         }
     }
@@ -123,7 +123,7 @@ void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal fUn
 
     //         for(rapidjson::Value::ConstValueIterator im = it->value.Begin(); im != it->value.End(); ++im) {
     //             GeometryInfoPtr pInfo (new GeometryInfo());
-    //             pInfo->DeserializeJSON(*im, fUnitScale);
+    //             pInfo->DeserializeJSON(*im, unit_scale);
     //             _mapExtraGeometries[it->name.GetString()].push_back(pInfo);
     //         }
     //     }

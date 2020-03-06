@@ -27,11 +27,14 @@ public:
     class KinBodyInfo : public OpenRAVE::UserData
     {
 public:
-        KinBodyInfo() : nLastStamp(0) {
+        KinBodyInfo() : nLastStamp(0) 
+		{
         }
-        virtual ~KinBodyInfo() {
+        virtual ~KinBodyInfo()
+		{
         }
-        KinBodyPtr GetBody() const {
+        KinBodyPtr GetBody() const
+		{
             return _pbody.lock();
         }
         KinBodyWeakPtr _pbody;

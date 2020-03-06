@@ -102,23 +102,23 @@ public:
         return ConvertStringToUnicode(ss.str());
     }
 
-    py::object SerializeJSON(dReal fUnitScale=1.0, int options=0) const
+    py::object SerializeJSON(dReal unit_scale=1.0, int options=0) const
     {
         JSONReadablePtr pjsonreadable = OPENRAVE_DYNAMIC_POINTER_CAST<JSONReadable>(_readable);
         if (!pjsonreadable) {
             return py::none_();
         }
         rapidjson::Document doc;
-        pjsonreadable->SerializeJSON(doc, doc.GetAllocator(), fUnitScale, options);
+        pjsonreadable->SerializeJSON(doc, doc.GetAllocator(), unit_scale, options);
         return toPyObject(doc);
     }
 
-    void DeserializeJSON(py::object obj, dReal fUnitScale=1.0)
+    void DeserializeJSON(py::object obj, dReal unit_scale=1.0)
     {
         rapidjson::Document doc;
         toRapidJSONValue(obj, doc, doc.GetAllocator());
         JSONReadablePtr pjsonreadable = OPENRAVE_DYNAMIC_POINTER_CAST<JSONReadable>(_readable);
-        pjsonreadable->DeserializeJSON(doc, fUnitScale);
+        pjsonreadable->DeserializeJSON(doc, unit_scale);
     }
 
     ReadablePtr GetReadable() {

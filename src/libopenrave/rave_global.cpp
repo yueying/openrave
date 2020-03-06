@@ -112,23 +112,23 @@ namespace OpenRAVE
 			RAVELOG_FATAL("failed to create the openrave plugin database\n");
 		}
 
-		char* phomedir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
-		if (phomedir == NULL)
+		char* home_dir = getenv("OPENRAVE_HOME"); // getenv not thread-safe?
+		if (home_dir == nullptr)
 		{
 #ifndef _WIN32
-			_homedirectory = std::string(getenv("HOME")) + std::string("/.openrave"); // getenv not thread-safe?
+			home_directory_ = std::string(getenv("HOME")) + std::string("/.openrave"); // getenv not thread-safe?
 #else
-			_homedirectory = std::string(getenv("HOMEDRIVE")) + std::string(getenv("HOMEPATH")) + std::string("\\.openrave"); // getenv not thread-safe?
+			home_directory_ = std::string(getenv("HOMEDRIVE")) + std::string(getenv("HOMEPATH")) + std::string("\\.openrave"); // getenv not thread-safe?
 #endif
 		}
 		else
 		{
-			_homedirectory = phomedir;
+			home_directory_ = home_dir;
 		}
 #ifndef _WIN32
-		mkdir(_homedirectory.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_IRWXU);
+		mkdir(home_directory_.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_IRWXU);
 #else
-		CreateDirectory(_homedirectory.c_str(), NULL);
+		CreateDirectory(home_directory_.c_str(), NULL);
 #endif
 
 #ifdef _WIN32
@@ -136,21 +136,169 @@ namespace OpenRAVE
 #else
 		const char* delim = ":";
 #endif
-		_vdbdirectories.clear();
-		char* pOPENRAVE_PLUGINS = getenv("OPENRAVE_DATABASE"); // getenv not thread-safe?
-		if (pOPENRAVE_PLUGINS != NULL) {
-			utils::TokenizeString(pOPENRAVE_PLUGINS, delim, _vdbdirectories);
+		database_directory_vector_.clear();
+		char* plugin_dirs_str = getenv("OPENRAVE_DATABASE"); // getenv not thread-safe?
+		if (plugin_dirs_str != NULL) 
+		{
+			utils::TokenizeString(plugin_dirs_str, delim, database_directory_vector_);
 		}
-		_vdbdirectories.push_back(_homedirectory);
+		database_directory_vector_.push_back(home_directory_);
 
-		_defaultviewertype.clear();
-		const char* pOPENRAVE_DEFAULT_VIEWER = std::getenv("OPENRAVE_DEFAULT_VIEWER");
-		if (!!pOPENRAVE_DEFAULT_VIEWER && strlen(pOPENRAVE_DEFAULT_VIEWER) > 0) {
-			_defaultviewertype = std::string(pOPENRAVE_DEFAULT_VIEWER);
+		default_viewer_type_.clear();
+		const char* openrave_default_viewer = std::getenv("OPENRAVE_DEFAULT_VIEWER");
+		if (!!openrave_default_viewer && strlen(openrave_default_viewer) > 0) 
+		{
+			default_viewer_type_ = std::string(openrave_default_viewer);
 		}
 
 		_UpdateDataDirs();
 		return 0;
 	}
 
+	void RaveGlobal::Destroy()
+	{
+		if (!!plugin_database_) 
+		{
+			// notify all plugins that about to destroy
+			plugin_database_->OnRavePreDestroy();
+		}
+
+		// don't use any log statements since global instance might be null
+		// environments have to be destroyed carefully since their destructors can be called, which will attempt to unregister the environment
+		std::map<int, EnvironmentBase*> mapenvironments;
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			mapenvironments = environments_map_;
+		}
+		FOREACH(itenv, mapenvironments) {
+			// equire a shared pointer to prevent environment from getting deleted during Destroy loop
+			EnvironmentBasePtr penv = itenv->second->shared_from_this();
+			penv->Destroy();
+		}
+		mapenvironments.clear();
+		environments_map_.clear();
+		default_space_sampler_.reset();
+		_mapxmlreaders.clear();
+		_mapjsonreaders.clear();
+
+		// process the callbacks
+		std::list<boost::function<void()> > listDestroyCallbacks;
+		{
+			boost::mutex::scoped_lock lock(_mutexinternal);
+			listDestroyCallbacks.swap(destroy_callbacks_list_);
+		}
+		FOREACH(itcallback, listDestroyCallbacks) {
+			(*itcallback)();
+		}
+		listDestroyCallbacks.clear();
+
+		if (!!plugin_database_) {
+			// force destroy in case some one is holding a pointer to it
+			plugin_database_->Destroy();
+			plugin_database_.reset();
+		}
+#ifdef USE_CRLIBM
+
+#ifdef HAS_FENV_H
+		feclearexcept(-1); // clear any cached exceptions
+#endif
+		if (is_crlibm_init_) {
+			crlibm_exit(_crlibm_fpu_state);
+			is_crlibm_init_ = false;
+		}
+#endif
+
+#if OPENRAVE_LOG4CXX
+		_logger = 0;
+#endif
+	}
+
+
+
+	void RaveGlobal::_UpdateDataDirs()
+	{
+		data_dirs_vector_.resize(0);
+
+		bool is_exists = false;
+#ifdef _WIN32
+		const char* delim = ";";
+#else
+		const char* delim = ":";
+#endif
+		char* pOPENRAVE_DATA = getenv("OPENRAVE_DATA"); // getenv not thread-safe?
+		if (pOPENRAVE_DATA != NULL) 
+		{
+			utils::TokenizeString(pOPENRAVE_DATA, delim, data_dirs_vector_);
+		}
+		std::string install_dir = OPENRAVE_DATA_INSTALL_DIR;
+#ifdef HAVE_BOOST_FILESYSTEM
+		if (!boost::filesystem::is_directory(boost::filesystem::path(install_dir))) {
+#ifdef _WIN32
+			HKEY hkey;
+			if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\OpenRAVE\\" OPENRAVE_VERSION_STRING),
+				0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+			{
+				DWORD dwType = REG_SZ;
+				CHAR szInstallRoot[4096];     // dont' take chances, it is windows
+				DWORD dwSize = sizeof(szInstallRoot);
+				RegQueryValueEx(hkey, TEXT("InstallRoot"), NULL, &dwType, (PBYTE)szInstallRoot, &dwSize);
+				RegCloseKey(hkey);
+				install_dir.assign(szInstallRoot);
+				install_dir += str(boost::format("%cshare%copenrave-%d.%d") % s_filesep%s_filesep%OPENRAVE_VERSION_MAJOR%OPENRAVE_VERSION_MINOR);
+				RAVELOG_VERBOSE(str(boost::format("window registry data dir '%s'") % install_dir));
+			}
+			else
+#endif
+			{
+				RAVELOG_WARN(str(boost::format("%s doesn't exist") % install_dir));
+			}
+		}
+
+		boost::filesystem::path data_file_name = boost::filesystem::absolute(boost::filesystem::path(install_dir));
+		for(auto itname: data_dirs_vector_)
+		{
+			if (data_file_name == boost::filesystem::absolute(boost::filesystem::path(itname)))
+			{
+				is_exists = true;
+				break;
+			}
+		}
+#else
+		std::string data_file_name = install_dir;
+		for (auto itname : data_dirs_vector_)
+		{
+			if (itname == install_dir)
+			{
+				is_exists = true;
+				break;
+			}
+		}
+#endif
+		if (!is_exists) 
+		{
+			data_dirs_vector_.push_back(install_dir);
+		}
+		for (auto itdir : data_dirs_vector_)
+		{
+			RAVELOG_VERBOSE(str(boost::format("data dir: %s") % itdir));
+		}
+
+#ifdef HAVE_BOOST_FILESYSTEM
+		boost_data_dirs_vector_.resize(0);
+		for(auto file_name: data_dirs_vector_) 
+		{
+			boost::filesystem::path full_file_name = boost::filesystem::absolute(boost::filesystem::path(file_name));
+			_CustomNormalizePath(full_file_name);
+			if (full_file_name.filename() == ".") 
+			{
+				// full_file_name ends in '/', so remove it
+				full_file_name = full_file_name.parent_path();
+			}
+			boost_data_dirs_vector_.push_back(full_file_name);
+		}
+#endif
+	}
+
 }
+
+

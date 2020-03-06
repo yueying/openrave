@@ -20,7 +20,7 @@
 namespace OpenRAVE 
 
 {
-void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
 
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
@@ -33,7 +33,7 @@ void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjso
     openravejson::SetJsonValueByKey(value, "gripperJointNames", _vGripperJointNames, allocator);
 }
 
-void RobotBase::ManipulatorInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void RobotBase::ManipulatorInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
     openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "transform", _tLocalTool);

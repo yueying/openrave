@@ -116,7 +116,7 @@ KinBody::GeometryInfo::GeometryInfo()
 			break;
 		}
 		case GT_Cage: {
-			const Vector& vCageBaseExtents = _vGeomData;
+			const Vector& vCageBaseExtents = geom_data_vec_;
 			for (size_t i = 0; i < _vSideWalls.size(); ++i) {
 				const SideWall &s = _vSideWalls[i];
 				const size_t vBase = _meshcollision.vertices.size();
@@ -131,7 +131,7 @@ KinBody::GeometryInfo::GeometryInfo()
 			break;
 		}
 		case GT_Container: {
-			const Vector& outerextents = _vGeomData;
+			const Vector& outerextents = geom_data_vec_;
 			const Vector& innerextents = _vGeomData2;
 			const Vector& bottomcross = _vGeomData3;
 			const Vector& bottom = _vGeomData4;
@@ -178,19 +178,19 @@ KinBody::GeometryInfo::GeometryInfo()
 	}
 
 	bool KinBody::GeometryInfo::ComputeInnerEmptyVolume(
-		Transform& tInnerEmptyVolume,
-		Vector& abInnerEmptyExtents) const
+		Transform& inner_empty_volume,
+		Vector& inner_empty_extents) const
 	{
 		switch (_type) {
 		case GT_Cage: {
 			Vector vwallmin, vwallmax;
-			vwallmax.z = vwallmin.z = _vGeomData.z * 2;
+			vwallmax.z = vwallmin.z = geom_data_vec_.z * 2;
 
 			// initialize to the base extents if there is no wall
-			vwallmin.x = -_vGeomData.x;
-			vwallmin.y = -_vGeomData.y;
-			vwallmax.x = _vGeomData.x;
-			vwallmax.y = _vGeomData.y;
+			vwallmin.x = -geom_data_vec_.x;
+			vwallmin.y = -geom_data_vec_.y;
+			vwallmax.x = geom_data_vec_.x;
+			vwallmax.y = geom_data_vec_.y;
 			int sideWallExtents = 0;
 
 			for(auto& itwall: _vSideWalls) {
@@ -277,25 +277,25 @@ KinBody::GeometryInfo::GeometryInfo()
 			}
 
 			// the top has no constraints, so use the max of walls and force inner region
-			if (vwallmax.z < _vGeomData.z * 2 + _vGeomData2.z) {
-				vwallmax.z = _vGeomData.z * 2 + _vGeomData2.z;
+			if (vwallmax.z < geom_data_vec_.z * 2 + _vGeomData2.z) {
+				vwallmax.z = geom_data_vec_.z * 2 + _vGeomData2.z;
 			}
 
-			abInnerEmptyExtents = 0.5*(vwallmax - vwallmin);
-			tInnerEmptyVolume = _t;
-			tInnerEmptyVolume.trans += tInnerEmptyVolume.rotate(0.5*(vwallmax + vwallmin));
+			inner_empty_extents = 0.5*(vwallmax - vwallmin);
+			inner_empty_volume = _t;
+			inner_empty_volume.trans += inner_empty_volume.rotate(0.5*(vwallmax + vwallmin));
 			return true;
 		}
 		case GT_Container: {
 			Transform tempty;
-			// full outer extents - full inner extents + inner extents = _vGeomData.z - 0.5*_vGeomData2.z
-			tempty.trans.z = _vGeomData.z - 0.5 * _vGeomData2.z;
+			// full outer extents - full inner extents + inner extents = geom_data_vec_.z - 0.5*_vGeomData2.z
+			tempty.trans.z = geom_data_vec_.z - 0.5 * _vGeomData2.z;
 			if (_vGeomData4.x > 0 && _vGeomData4.y > 0 && _vGeomData4.z > 0) {
 				// if _vGeomData4 is valid, need to shift the empty region up.
 				tempty.trans.z += _vGeomData4.z;
 			}
-			tInnerEmptyVolume = _t * tempty;
-			abInnerEmptyExtents = 0.5*_vGeomData2;
+			inner_empty_volume = _t * tempty;
+			inner_empty_extents = 0.5*_vGeomData2;
 			return true;
 		}
 		default:
@@ -324,60 +324,60 @@ inline void LoadJsonValue(const rapidjson::Value& v, KinBody::GeometryInfo::Side
 }
 
 void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value, 
-	rapidjson::Document::AllocatorType& allocator, const dReal fUnitScale, int options) const
+	rapidjson::Document::AllocatorType& allocator, const dReal unit_scale, int options) const
 {
     // RAVE_SERIALIZEJSON_ADDMEMBER(allocator, "sid", sid);
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
     Transform tscaled = _t;
-    tscaled.trans *= fUnitScale;
+    tscaled.trans *= unit_scale;
     openravejson::SetJsonValueByKey(value, "transform", tscaled, allocator);
 
     switch(_type) {
     case GT_Box:
         openravejson::SetJsonValueByKey(value, "type", "box", allocator);
-        openravejson::SetJsonValueByKey(value, "halfExtents", _vGeomData*fUnitScale, allocator);
+        openravejson::SetJsonValueByKey(value, "halfExtents", geom_data_vec_*unit_scale, allocator);
         break;
 
     case GT_Container:
         openravejson::SetJsonValueByKey(value, "type", "container", allocator);
-        openravejson::SetJsonValueByKey(value, "outerExtents", _vGeomData*fUnitScale, allocator);
-        openravejson::SetJsonValueByKey(value, "innerExtents", _vGeomData2*fUnitScale, allocator);
-        openravejson::SetJsonValueByKey(value, "bottomCross", _vGeomData3*fUnitScale, allocator);
-        openravejson::SetJsonValueByKey(value, "bottom", _vGeomData4*fUnitScale, allocator);
+        openravejson::SetJsonValueByKey(value, "outerExtents", geom_data_vec_*unit_scale, allocator);
+        openravejson::SetJsonValueByKey(value, "innerExtents", _vGeomData2*unit_scale, allocator);
+        openravejson::SetJsonValueByKey(value, "bottomCross", _vGeomData3*unit_scale, allocator);
+        openravejson::SetJsonValueByKey(value, "bottom", _vGeomData4*unit_scale, allocator);
         break;
 
     case GT_Cage: {
         openravejson::SetJsonValueByKey(value, "type", "cage", allocator);
-        openravejson::SetJsonValueByKey(value, "baseExtents", _vGeomData*fUnitScale, allocator);
+        openravejson::SetJsonValueByKey(value, "baseExtents", geom_data_vec_*unit_scale, allocator);
 
         std::vector<SideWall> vScaledSideWalls = _vSideWalls;
         FOREACH(itwall, vScaledSideWalls) {
-            itwall->transf.trans *= fUnitScale;
-            itwall->vExtents *= fUnitScale;
+            itwall->transf.trans *= unit_scale;
+            itwall->vExtents *= unit_scale;
         }
         if( _vGeomData2.x > g_fEpsilon ) {
-            openravejson::SetJsonValueByKey(value, "innerSizeX", _vGeomData2.x*fUnitScale, allocator);
+            openravejson::SetJsonValueByKey(value, "innerSizeX", _vGeomData2.x*unit_scale, allocator);
         }
         if( _vGeomData2.y > g_fEpsilon ) {
-            openravejson::SetJsonValueByKey(value, "innerSizeY", _vGeomData2.y*fUnitScale, allocator);
+            openravejson::SetJsonValueByKey(value, "innerSizeY", _vGeomData2.y*unit_scale, allocator);
         }
         if( _vGeomData2.z > g_fEpsilon ) {
-            openravejson::SetJsonValueByKey(value, "innerSizeZ", _vGeomData2.z*fUnitScale, allocator);
+            openravejson::SetJsonValueByKey(value, "innerSizeZ", _vGeomData2.z*unit_scale, allocator);
         }
         openravejson::SetJsonValueByKey(value, "sideWalls", vScaledSideWalls, allocator);
         break;
     }
     case GT_Sphere:
         openravejson::SetJsonValueByKey(value, "type", "sphere", allocator);
-        openravejson::SetJsonValueByKey(value, "radius", _vGeomData.x*fUnitScale, allocator);
+        openravejson::SetJsonValueByKey(value, "radius", geom_data_vec_.x*unit_scale, allocator);
         break;
 
 
     case GT_Cylinder:
         openravejson::SetJsonValueByKey(value, "type", "cylinder", allocator);
-        openravejson::SetJsonValueByKey(value, "radius", _vGeomData.x*fUnitScale, allocator);
-        openravejson::SetJsonValueByKey(value, "height", _vGeomData.y*fUnitScale, allocator);
+        openravejson::SetJsonValueByKey(value, "radius", geom_data_vec_.x*unit_scale, allocator);
+        openravejson::SetJsonValueByKey(value, "height", geom_data_vec_.y*unit_scale, allocator);
         break;
 
     case GT_TriMesh:
@@ -397,24 +397,24 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 	}
 
 
-	void KinBody::GeometryInfo::DeserializeJSON(const rapidjson::Value &value, const dReal fUnitScale)
+	void KinBody::GeometryInfo::DeserializeJSON(const rapidjson::Value &value, const dReal unit_scale)
 	{
     openravejson::LoadJsonValueByKey(value, "name", name_);
     openravejson::LoadJsonValueByKey(value, "transform", _t);
 
-		_t.trans *= fUnitScale;
+		_t.trans *= unit_scale;
 
 		std::string typestr;
     openravejson::LoadJsonValueByKey(value, "type", typestr);
 
 		if (typestr == "box") {
 			_type = GT_Box;
-        openravejson::LoadJsonValueByKey(value, "halfExtents", _vGeomData);
-			_vGeomData *= fUnitScale;
+        openravejson::LoadJsonValueByKey(value, "halfExtents", geom_data_vec_);
+			geom_data_vec_ *= unit_scale;
 		}
 		else if (typestr == "container") {
 			_type = GT_Container;
-        openravejson::LoadJsonValueByKey(value, "outerExtents", _vGeomData);
+        openravejson::LoadJsonValueByKey(value, "outerExtents", geom_data_vec_);
         openravejson::LoadJsonValueByKey(value, "innerExtents", _vGeomData2);
 
 			_vGeomData3 = Vector();
@@ -423,41 +423,41 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			_vGeomData4 = Vector();
         openravejson::LoadJsonValueByKey(value, "bottom", _vGeomData4);
 
-			_vGeomData *= fUnitScale;
-			_vGeomData2 *= fUnitScale;
-			_vGeomData3 *= fUnitScale;
-			_vGeomData4 *= fUnitScale;
+			geom_data_vec_ *= unit_scale;
+			_vGeomData2 *= unit_scale;
+			_vGeomData3 *= unit_scale;
+			_vGeomData4 *= unit_scale;
 		}
 		else if (typestr == "cage") {
 			_type = GT_Cage;
-        openravejson::LoadJsonValueByKey(value, "baseExtents", _vGeomData);
-			_vGeomData *= fUnitScale;
+        openravejson::LoadJsonValueByKey(value, "baseExtents", geom_data_vec_);
+			geom_data_vec_ *= unit_scale;
 
 			_vGeomData2 = Vector();
         openravejson::LoadJsonValueByKey(value, "innerSizeX", _vGeomData2.x);
         openravejson::LoadJsonValueByKey(value, "innerSizeY", _vGeomData2.y);
         openravejson::LoadJsonValueByKey(value, "innerSizeZ", _vGeomData2.z);
-			_vGeomData2 *= fUnitScale;
+			_vGeomData2 *= unit_scale;
 
         openravejson::LoadJsonValueByKey(value, "sideWalls", _vSideWalls);
 			for(auto& itsidewall: _vSideWalls) {
-				itsidewall.transf.trans *= fUnitScale;
-				itsidewall.vExtents *= fUnitScale;
+				itsidewall.transf.trans *= unit_scale;
+				itsidewall.vExtents *= unit_scale;
 			}
 		}
 		else if (typestr == "sphere") {
 			_type = GT_Sphere;
-        openravejson::LoadJsonValueByKey(value, "radius", _vGeomData.x);
+        openravejson::LoadJsonValueByKey(value, "radius", geom_data_vec_.x);
 
-			_vGeomData *= fUnitScale;
+			geom_data_vec_ *= unit_scale;
 		}
 		else if (typestr == "cylinder") {
 			_type = GT_Cylinder;
-        openravejson::LoadJsonValueByKey(value, "radius", _vGeomData.x);
-        openravejson::LoadJsonValueByKey(value, "height", _vGeomData.y);
+        openravejson::LoadJsonValueByKey(value, "radius", geom_data_vec_.x);
+        openravejson::LoadJsonValueByKey(value, "height", geom_data_vec_.y);
 
-			_vGeomData.x *= fUnitScale;
-			_vGeomData.y *= fUnitScale;
+			geom_data_vec_.x *= unit_scale;
+			geom_data_vec_.y *= unit_scale;
 
 		}
 		else if (typestr == "trimesh" || typestr == "mesh") {
@@ -465,7 +465,7 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
         openravejson::LoadJsonValueByKey(value, "mesh", _meshcollision);
 
 			for(auto& itvertex: _meshcollision.vertices) {
-				itvertex *= fUnitScale;
+				itvertex *= unit_scale;
 			}
 		}
 		else {
@@ -479,10 +479,10 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
     openravejson::LoadJsonValueByKey(value, "modifiable", _bModifiable);
 	}
 
-	AABB KinBody::GeometryInfo::ComputeAABB(const Transform& tGeometryWorld) const
+	AABB KinBody::GeometryInfo::ComputeAABB(const Transform& geometry_world) const
 	{
 		AABB ab;
-		TransformMatrix tglobal = tGeometryWorld * _t;
+		TransformMatrix tglobal = geometry_world * _t;
 
 		switch (_type) {
 		case GT_None:
@@ -491,16 +491,16 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			ab.extents.z = 0;
 			break;
 		case GT_Box: // origin of box is at the center
-			ab.extents.x = RaveFabs(tglobal.m[0])*_vGeomData.x + RaveFabs(tglobal.m[1])*_vGeomData.y + RaveFabs(tglobal.m[2])*_vGeomData.z;
-			ab.extents.y = RaveFabs(tglobal.m[4])*_vGeomData.x + RaveFabs(tglobal.m[5])*_vGeomData.y + RaveFabs(tglobal.m[6])*_vGeomData.z;
-			ab.extents.z = RaveFabs(tglobal.m[8])*_vGeomData.x + RaveFabs(tglobal.m[9])*_vGeomData.y + RaveFabs(tglobal.m[10])*_vGeomData.z;
+			ab.extents.x = RaveFabs(tglobal.m[0])*geom_data_vec_.x + RaveFabs(tglobal.m[1])*geom_data_vec_.y + RaveFabs(tglobal.m[2])*geom_data_vec_.z;
+			ab.extents.y = RaveFabs(tglobal.m[4])*geom_data_vec_.x + RaveFabs(tglobal.m[5])*geom_data_vec_.y + RaveFabs(tglobal.m[6])*geom_data_vec_.z;
+			ab.extents.z = RaveFabs(tglobal.m[8])*geom_data_vec_.x + RaveFabs(tglobal.m[9])*geom_data_vec_.y + RaveFabs(tglobal.m[10])*geom_data_vec_.z;
 			ab.pos = tglobal.trans;
 			break;
 		case GT_Container: // origin of container is at the bottom
-			ab.extents.x = 0.5*(RaveFabs(tglobal.m[0])*_vGeomData.x + RaveFabs(tglobal.m[1])*_vGeomData.y + RaveFabs(tglobal.m[2])*_vGeomData.z);
-			ab.extents.y = 0.5*(RaveFabs(tglobal.m[4])*_vGeomData.x + RaveFabs(tglobal.m[5])*_vGeomData.y + RaveFabs(tglobal.m[6])*_vGeomData.z);
-			ab.extents.z = 0.5*(RaveFabs(tglobal.m[8])*_vGeomData.x + RaveFabs(tglobal.m[9])*_vGeomData.y + RaveFabs(tglobal.m[10])*_vGeomData.z);
-			ab.pos = tglobal.trans + Vector(tglobal.m[2], tglobal.m[6], tglobal.m[10])*(0.5*_vGeomData.z);
+			ab.extents.x = 0.5*(RaveFabs(tglobal.m[0])*geom_data_vec_.x + RaveFabs(tglobal.m[1])*geom_data_vec_.y + RaveFabs(tglobal.m[2])*geom_data_vec_.z);
+			ab.extents.y = 0.5*(RaveFabs(tglobal.m[4])*geom_data_vec_.x + RaveFabs(tglobal.m[5])*geom_data_vec_.y + RaveFabs(tglobal.m[6])*geom_data_vec_.z);
+			ab.extents.z = 0.5*(RaveFabs(tglobal.m[8])*geom_data_vec_.x + RaveFabs(tglobal.m[9])*geom_data_vec_.y + RaveFabs(tglobal.m[10])*geom_data_vec_.z);
+			ab.pos = tglobal.trans + Vector(tglobal.m[2], tglobal.m[6], tglobal.m[10])*(0.5*geom_data_vec_.z);
 
 			if (_vGeomData4.x > 0 && _vGeomData4.y > 0 && _vGeomData4.z > 0) {
 				// Container with bottom
@@ -539,21 +539,21 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			}
 			break;
 		case GT_Sphere:
-			ab.extents.x = ab.extents.y = ab.extents.z = _vGeomData[0];
+			ab.extents.x = ab.extents.y = ab.extents.z = geom_data_vec_[0];
 			ab.pos = tglobal.trans;
 			break;
 		case GT_Cylinder:
-			ab.extents.x = (dReal)0.5*RaveFabs(tglobal.m[2])*_vGeomData.y 
-				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[2] * tglobal.m[2]))*_vGeomData.x;
-			ab.extents.y = (dReal)0.5*RaveFabs(tglobal.m[6])*_vGeomData.y 
-				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[6] * tglobal.m[6]))*_vGeomData.x;
-			ab.extents.z = (dReal)0.5*RaveFabs(tglobal.m[10])*_vGeomData.y 
-				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[10] * tglobal.m[10]))*_vGeomData.x;
-			ab.pos = tglobal.trans; //+(dReal)0.5*_vGeomData.y*Vector(tglobal.m[2],tglobal.m[6],tglobal.m[10]);
+			ab.extents.x = (dReal)0.5*RaveFabs(tglobal.m[2])*geom_data_vec_.y 
+				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[2] * tglobal.m[2]))*geom_data_vec_.x;
+			ab.extents.y = (dReal)0.5*RaveFabs(tglobal.m[6])*geom_data_vec_.y 
+				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[6] * tglobal.m[6]))*geom_data_vec_.x;
+			ab.extents.z = (dReal)0.5*RaveFabs(tglobal.m[10])*geom_data_vec_.y 
+				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[10] * tglobal.m[10]))*geom_data_vec_.x;
+			ab.pos = tglobal.trans; //+(dReal)0.5*geom_data_vec_.y*Vector(tglobal.m[2],tglobal.m[6],tglobal.m[10]);
 			break;
 		case GT_Cage: {
 			// have to return the entire volume, even the inner region since a lot of code use the bounding box to compute cropping and other functions
-			const Vector& vCageBaseExtents = _vGeomData;
+			const Vector& vCageBaseExtents = geom_data_vec_;
 			const Vector& vCageForceInnerFull = _vGeomData2;
 
 			Vector vmin, vmax;
@@ -678,9 +678,9 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 		return _info.InitCollisionMesh(fTessellation);
 	}
 
-	bool KinBody::Link::Geometry::ComputeInnerEmptyVolume(Transform& tInnerEmptyVolume, Vector& abInnerEmptyExtents) const
+	bool KinBody::Link::Geometry::ComputeInnerEmptyVolume(Transform& inner_empty_volume, Vector& inner_empty_extents) const
 	{
-		return _info.ComputeInnerEmptyVolume(tInnerEmptyVolume, abInnerEmptyExtents);
+		return _info.ComputeInnerEmptyVolume(inner_empty_volume, inner_empty_extents);
 	}
 
 	AABB KinBody::Link::Geometry::ComputeAABB(const Transform& t) const
@@ -697,7 +697,7 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			_info._meshcollision.serialize(o, options);
 		}
 		else {
-			SerializeRound3(o, _info._vGeomData);
+			SerializeRound3(o, _info.geom_data_vec_);
 			if (_info._type == GT_Cage) {
 				SerializeRound3(o, _info._vGeomData2);
 				for (size_t iwall = 0; iwall < _info._vSideWalls.size(); ++iwall) {
@@ -811,9 +811,9 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 				tnormal.z = -tnormal.z;
 			}
 			// find the normal to the surface depending on the region the position is in
-			dReal xaxis = -_info._vGeomData.z*tposition.y + _info._vGeomData.y*tposition.z;
-			dReal yaxis = -_info._vGeomData.x*tposition.z + _info._vGeomData.z*tposition.x;
-			dReal zaxis = -_info._vGeomData.y*tposition.x + _info._vGeomData.x*tposition.y;
+			dReal xaxis = -_info.geom_data_vec_.z*tposition.y + _info.geom_data_vec_.y*tposition.z;
+			dReal yaxis = -_info.geom_data_vec_.x*tposition.z + _info.geom_data_vec_.z*tposition.x;
+			dReal zaxis = -_info.geom_data_vec_.y*tposition.x + _info.geom_data_vec_.x*tposition.y;
 			dReal penetration = 0;
 			if ((zaxis < feps) && (yaxis > -feps)) { // x-plane
 				if (RaveFabs(tnormal.x) > RaveFabs(penetration)) {
@@ -837,8 +837,8 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			break;
 		}
 		case GT_Cylinder: { // z-axis
-			dReal fInsideCircle = position.x*position.x + position.y*position.y - _info._vGeomData.x*_info._vGeomData.x;
-			dReal fInsideHeight = 2.0f*RaveFabs(position.z) - _info._vGeomData.y;
+			dReal fInsideCircle = position.x*position.x + position.y*position.y - _info.geom_data_vec_.x*_info.geom_data_vec_.x;
+			dReal fInsideHeight = 2.0f*RaveFabs(position.z) - _info.geom_data_vec_.y;
 			if ((fInsideCircle < -feps) && (fInsideHeight > -feps) && (normal.z*position.z < 0)) {
 				_normal = -_normal;
 				return true;

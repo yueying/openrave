@@ -132,7 +132,7 @@ public:
         _maporder["joint_values"] = 9;
         _maporder["affine_transform"] = 10;
         _maporder["joint_torques"] = 11;
-        _bInit = false;
+        is_init_ = false;
         _bSamplingVerified = false;
     }
 
@@ -159,12 +159,12 @@ public:
 
     void Init(const ConfigurationSpecification& spec)
     {
-        if( _bInit  && _spec == spec ) {
+        if( is_init_  && _spec == spec ) {
             // already init
         }
         else {
             //BOOST_ASSERT(spec.GetDOF()>0 && spec.IsValid()); // when deserializing, can sometimes get invalid spec, but that's ok
-            _bInit = false;
+            is_init_ = false;
             _vgroupinterpolators.resize(0);
             _vgroupvalidators.resize(0);
             _vderivoffsets.resize(0);
@@ -187,7 +187,7 @@ public:
         _vdeltainvtime.resize(0);
         _bChanged = true;
         _bSamplingVerified = false;
-        _bInit = true;
+        is_init_ = true;
     }
 
     void Insert(size_t index, const std::vector<dReal>& data, bool bOverwrite)
@@ -362,13 +362,13 @@ public:
 
     size_t GetNumWaypoints() const
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         return _vtrajdata.size()/_spec.GetDOF();
     }
 
     void GetWaypoints(size_t startindex, size_t endindex, std::vector<dReal>& data) const
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         BOOST_ASSERT(startindex<=endindex && startindex*_spec.GetDOF() <= _vtrajdata.size() && endindex*_spec.GetDOF() <= _vtrajdata.size());
         data.resize((endindex-startindex)*_spec.GetDOF(),0);
         std::copy(_vtrajdata.begin()+startindex*_spec.GetDOF(),_vtrajdata.begin()+endindex*_spec.GetDOF(),data.begin());
@@ -376,7 +376,7 @@ public:
 
     void GetWaypoints(size_t startindex, size_t endindex, std::vector<dReal>& data, const ConfigurationSpecification& spec) const
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         BOOST_ASSERT(startindex<=endindex && startindex*_spec.GetDOF() <= _vtrajdata.size() && endindex*_spec.GetDOF() <= _vtrajdata.size());
         data.resize(spec.GetDOF()*(endindex-startindex),0);
         if( startindex < endindex ) {
@@ -386,7 +386,7 @@ public:
 
     size_t GetFirstWaypointIndexAfterTime(dReal time) const
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         BOOST_ASSERT(_timeoffset>=0);
         _ComputeInternal();
         if( _vaccumtime.size() == 0 ) {
@@ -404,7 +404,7 @@ public:
 
     dReal GetDuration() const
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         _ComputeInternal();
         return _vaccumtime.size() > 0 ? _vaccumtime.back() : 0;
     }
@@ -470,7 +470,7 @@ public:
             uint16_t numGroups = 0;
             ReadBinaryUInt16(I, numGroups);
 
-            _bInit = false;
+            is_init_ = false;
             _spec._vgroups.resize(numGroups);
             FOREACH(itgroup, _spec._vgroups)
             {
@@ -511,7 +511,7 @@ public:
         _vdddoffsets.swap(traj->_vdddoffsets);
         _vintegraloffsets.swap(traj->_vintegraloffsets);
         std::swap(_timeoffset, traj->_timeoffset);
-        std::swap(_bInit, traj->_bInit);
+        std::swap(is_init_, traj->is_init_);
         std::swap(_vtrajdata, traj->_vtrajdata);
         std::swap(_vaccumtime, traj->_vaccumtime);
         std::swap(_vdeltainvtime, traj->_vdeltainvtime);
@@ -587,7 +587,7 @@ protected:
     void _VerifySampling() const
     {
         BOOST_ASSERT(!_bChanged);
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         if( _bSamplingVerified ) {
             return;
         }
@@ -1219,7 +1219,7 @@ protected:
 
     std::vector<dReal> _vtrajdata;
     mutable std::vector<dReal> _vaccumtime, _vdeltainvtime;
-    bool _bInit;
+    bool is_init_;
     mutable bool _bChanged; ///< if true, then _ComputeInternal() has to be called in order to compute _vaccumtime and _vdeltainvtime
     mutable bool _bSamplingVerified; ///< if false, then _VerifySampling() has not be called yet to verify that all points can be sampled.
 };

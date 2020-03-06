@@ -1,4 +1,4 @@
-/** \example orplanning_multirobot.cpp
+﻿/** \example orplanning_multirobot.cpp
     \author Rosen Diankov
 
     Shows how to plan for two different robots simultaneously and control them simultaneously.
@@ -47,7 +47,7 @@ public:
         PlannerBasePtr planner = RaveCreatePlanner(penv,"birrt");
 
         while(IsOk()) {
-            list<GraphHandlePtr> listgraphs;
+            std::list<GraphHandlePtr> listgraphs;
             {
                 EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
 
@@ -56,17 +56,22 @@ public:
 
                 // find a set of free joint values for the robot
                 {
-                    while(1) {
-                        for(int i = 0; i < params->GetDOF(); ++i) {
-                            params->vgoalconfig[i] = params->_vConfigLowerLimit[i] + (params->_vConfigUpperLimit[i]-params->_vConfigLowerLimit[i])*RaveRandomFloat();
+                    while(1) 
+					{
+                        for(int i = 0; i < params->GetDOF(); ++i)
+						{
+                            params->vgoalconfig[i] = params->_vConfigLowerLimit[i] 
+								+ (params->_vConfigUpperLimit[i]-params->_vConfigLowerLimit[i])*RaveRandomFloat();
                         }
-                        params->_setstatefn(params->vgoalconfig);
-                        if( params->_checkpathconstraintsfn(params->vgoalconfig,params->vgoalconfig,IT_OpenStart,PlannerBase::ConfigurationListPtr()) ) {
-                            break;
-                        }
+                        params->_setstatevaluesfn(params->vgoalconfig,0);
+						/*if( params->_checkpathconstraintsfn(params->vgoalconfig,params->vgoalconfig,
+							IT_OpenStart,PlannerBase::ConfigurationListPtr()) )
+						{
+							break;
+						}*/
                     }
                     // restore robot state
-                    params->_setstatefn(params->vinitialconfig);
+                    params->_setstatevaluesfn(params->vinitialconfig,0);
                 }
 
                 RAVELOG_INFO("starting to plan\n");
@@ -76,7 +81,7 @@ public:
 
                 // create a new output trajectory
                 TrajectoryBasePtr ptraj = RaveCreateTrajectory(penv,"");
-                if( !planner->PlanPath(ptraj) ) {
+                if( planner->PlanPath(ptraj).GetStatusCode()==PS_Failed ) {
                     RAVELOG_WARN("plan failed, trying again\n");
                     continue;
                 }

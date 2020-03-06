@@ -123,7 +123,7 @@ namespace OpenRAVE
 		/// should be the same id used to create the object
 		inline const std::string& GetXMLId() const 
 		{
-			return str_xml_id_;
+			return xml_str_id_;
 		}
 
 		/// set internally by PluginDatabase <b>[multi-thread safe]</b>
@@ -139,7 +139,8 @@ namespace OpenRAVE
 			return environment_;
 		}
 
-		/// \brief Returns the raw map reference, this is \b not multithread safe and the GetInterfaceMutex should be locked before using.
+		/// \brief Returns the raw map reference, 
+		/// this is \b not multithread safe and the GetInterfaceMutex should be locked before using.
 		inline const READERSMAP& GetReadableInterfaces() const
 		{
 			return readable_interfaces_map_;
@@ -223,12 +224,12 @@ namespace OpenRAVE
 		inline bool SendCommand(std::string& output, const std::string& input)
 		{
 			std::stringstream soutput, sinput(input);
-			bool bSuccess = SendCommand(soutput, sinput);
-			if (bSuccess) 
+			bool is_success = SendCommand(soutput, sinput);
+			if (is_success) 
 			{
 				output = soutput.str();
 			}
-			return bSuccess;
+			return is_success;
 		}
 
 		/** \brief Used to send special JSON commands to the interface and receive output.
@@ -249,7 +250,8 @@ namespace OpenRAVE
 		/// \biref Similar to \ref SendJSONCommand except the output is a rapidjson document
 		///
 		/// This function should not be overridden by the user, therefore it isn't virtual.
-		inline void SendJSONCommand(const std::string& cmdname, const rapidjson::Value& input, rapidjson::Document& output) 
+		inline void SendJSONCommand(const std::string& cmdname, const rapidjson::Value& input, 
+			rapidjson::Document& output) 
 		{
 			SendJSONCommand(cmdname, input, output, output.GetAllocator());
 		}
@@ -331,7 +333,8 @@ namespace OpenRAVE
 		/// \param fncmd function to execute for the command
 		/// \param strhelp - help string in reStructuredText, see \ref writing_plugins_doc.
 		/// \exception OpenRAVEException Throw if there exists a registered command already.
-		virtual void RegisterJSONCommand(const std::string& cmdname, InterfaceJSONCommandFn fncmd, const std::string& strhelp);
+		virtual void RegisterJSONCommand(const std::string& cmdname, InterfaceJSONCommandFn fncmd, 
+			const std::string& strhelp);
 
 		/// \brief Unregisters the command. <b>[multi-thread safe]</b>
 		virtual void UnregisterJSONCommand(const std::string& cmdname);
@@ -351,7 +354,8 @@ namespace OpenRAVE
 		virtual bool _GetCommandHelp(std::ostream& sout, std::istream& sinput) const;
 
 		/// Write the help commands to an output stream
-		virtual void _GetJSONCommandHelp(const rapidjson::Value& input, rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator) const;
+		virtual void _GetJSONCommandHelp(const rapidjson::Value& input, rapidjson::Value& output,
+			rapidjson::Document::AllocatorType& allocator) const;
 
 		inline InterfaceBase& operator=(const InterfaceBase&r)
 		{
@@ -362,7 +366,7 @@ namespace OpenRAVE
 		InterfaceType type_; ///< \see GetInterfaceType
 		UserDataPtr plugin_; ///< handle to plugin that controls the executable code. As long as this plugin pointer is present, module will not be unloaded.
 		std::string plugin_name_; ///< the name of the plugin, necessary?
-		std::string str_xml_id_; ///< \see GetXMLId
+		std::string xml_str_id_; ///< \see GetXMLId
 		EnvironmentBasePtr environment_; ///< \see GetEnv
 		mutable std::map<std::string, UserDataPtr> user_data_map_; ///< \see GetUserData
 

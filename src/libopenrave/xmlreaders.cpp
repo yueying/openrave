@@ -365,22 +365,22 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
 
         case GT_Sphere:
             if( xmlname == "radius" ) {
-                _ss >> _pgeom->_vGeomData.x;
+                _ss >> _pgeom->geom_data_vec_.x;
             }
             break;
         case GT_Box:
             if( xmlname == "extents" || xmlname == "halfextents" ) {
-                _ss >> _pgeom->_vGeomData.x >> _pgeom->_vGeomData.y >> _pgeom->_vGeomData.z;
+                _ss >> _pgeom->geom_data_vec_.x >> _pgeom->geom_data_vec_.y >> _pgeom->geom_data_vec_.z;
             }
             else if( xmlname == "fullextents" ) {
-                _ss >> _pgeom->_vGeomData.x >> _pgeom->_vGeomData.y >> _pgeom->_vGeomData.z;
-                _pgeom->_vGeomData *= 0.5;
+                _ss >> _pgeom->geom_data_vec_.x >> _pgeom->geom_data_vec_.y >> _pgeom->geom_data_vec_.z;
+                _pgeom->geom_data_vec_ *= 0.5;
             }
 
             break;
         case GT_Container:
             if( xmlname == "outer_extents" ) {
-                _ss >> _pgeom->_vGeomData.x >> _pgeom->_vGeomData.y >> _pgeom->_vGeomData.z;
+                _ss >> _pgeom->geom_data_vec_.x >> _pgeom->geom_data_vec_.y >> _pgeom->geom_data_vec_.z;
             }
             if( xmlname == "inner_extents" ) {
                 _ss >> _pgeom->_vGeomData2.x >> _pgeom->_vGeomData2.y >> _pgeom->_vGeomData2.z;
@@ -412,10 +412,10 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
             break;
         case GT_Cylinder:
             if( xmlname == "radius") {
-                _ss >> _pgeom->_vGeomData.x;
+                _ss >> _pgeom->geom_data_vec_.x;
             }
             else if( xmlname == "height" ) {
-                _ss >> _pgeom->_vGeomData.y;
+                _ss >> _pgeom->geom_data_vec_.y;
             }
             break;
         case GT_TriMesh:

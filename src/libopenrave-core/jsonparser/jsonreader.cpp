@@ -88,7 +88,7 @@ public:
         openravejson::LoadJsonValueByKey(*_doc, "unit", unit);
         _penv->SetUnit(unit);
 
-        dReal fUnitScale = _GetUnitScale();
+        dReal unit_scale = _GetUnitScale();
         if (_doc->HasMember("bodies") && (*_doc)["bodies"].IsArray()) {
             std::map<KinBodyPtr, std::vector<KinBody::GrabbedInfoConstPtr>> mapKinBodyGrabbedInfos;
             for (rapidjson::Value::ValueIterator itr = (*_doc)["bodies"].Begin(); itr != (*_doc)["bodies"].End(); ++itr) {
@@ -107,7 +107,7 @@ public:
                     if (itr->HasMember("grabbed") && (*itr)["grabbed"].IsArray()) {
                         for(rapidjson::Value::ValueIterator itGrabInfo = (*itr)["grabbed"].Begin(); itGrabInfo != (*itr)["grabbed"].End(); ++itGrabInfo){
                             KinBody::GrabbedInfoPtr pGrabbedInfo(new KinBody::GrabbedInfo());
-                            pGrabbedInfo->DeserializeJSON(*itGrabInfo, fUnitScale);
+                            pGrabbedInfo->DeserializeJSON(*itGrabInfo, unit_scale);
                             mapKinBodyGrabbedInfos[pbody].push_back(pGrabbedInfo);
                         }
                     }
@@ -235,13 +235,13 @@ protected:
             return false;
         }
 
-        dReal fUnitScale = _GetUnitScale();
+        dReal unit_scale = _GetUnitScale();
 
         std::vector<KinBody::LinkInfoPtr> vLinkInfos;
-        _ExtractLinks(*object, vLinkInfos, fUnitScale);
+        _ExtractLinks(*object, vLinkInfos, unit_scale);
         
         std::vector<KinBody::JointInfoPtr> vJointInfos;
-        _ExtractJoints(*object, vJointInfos, fUnitScale);
+        _ExtractJoints(*object, vJointInfos, unit_scale);
         
         std::vector<KinBody::LinkInfoConstPtr> vLinkInfosConst(vLinkInfos.begin(), vLinkInfos.end());
         std::vector<KinBody::JointInfoConstPtr> vJointInfosConst(vJointInfos.begin(), vJointInfos.end());
@@ -251,7 +251,7 @@ protected:
             return false;
         }
         
-        _ExtractReadableInterfaces(*object, body, fUnitScale);
+        _ExtractReadableInterfaces(*object, body, unit_scale);
 
         body->SetName(openravejson::GetJsonValueByKey<std::string>(bodyValue, "name"));
 
@@ -276,22 +276,22 @@ protected:
             return false;
         }
 
-        dReal fUnitScale = _GetUnitScale();
+        dReal unit_scale = _GetUnitScale();
 
         std::vector<KinBody::LinkInfoPtr> vLinkInfos;
-        _ExtractLinks(*object, vLinkInfos, fUnitScale);
+        _ExtractLinks(*object, vLinkInfos, unit_scale);
         
         std::vector<KinBody::JointInfoPtr> vJointInfos;
-        _ExtractJoints(*object, vJointInfos, fUnitScale);
+        _ExtractJoints(*object, vJointInfos, unit_scale);
 
         std::vector<RobotBase::ManipulatorInfoPtr> vManipulatorInfos;
-        _ExtractManipulators(*object, vManipulatorInfos, fUnitScale);
+        _ExtractManipulators(*object, vManipulatorInfos, unit_scale);
 
         std::vector<RobotBase::AttachedSensorInfoPtr> vAttachedSensorInfos;
-        _ExtractAttachedSensors(*object, vAttachedSensorInfos, fUnitScale);
+        _ExtractAttachedSensors(*object, vAttachedSensorInfos, unit_scale);
 
         std::vector<RobotBase::ConnectedBodyInfoPtr> vConnectedBodyInfos;
-        _ExtractConnectedBodies(*object, vConnectedBodyInfos, fUnitScale);
+        _ExtractConnectedBodies(*object, vConnectedBodyInfos, unit_scale);
 
         
         std::vector<KinBody::LinkInfoConstPtr> vLinkInfosConst(vLinkInfos.begin(), vLinkInfos.end());
@@ -305,7 +305,7 @@ protected:
             return false;
         }
 
-        _ExtractReadableInterfaces(*object, robot, fUnitScale);
+        _ExtractReadableInterfaces(*object, robot, unit_scale);
 
         robot->SetName(openravejson::GetJsonValueByKey<std::string>(bodyValue, "name"));
 
@@ -319,78 +319,78 @@ protected:
         return true;
     }
 
-    void _ExtractLinks(const rapidjson::Value &objectValue, std::vector<KinBody::LinkInfoPtr> &linkinfos, dReal fUnitScale)
+    void _ExtractLinks(const rapidjson::Value &objectValue, std::vector<KinBody::LinkInfoPtr> &linkinfos, dReal unit_scale)
     {
         if (objectValue.HasMember("links") && objectValue["links"].IsArray()) {
             linkinfos.reserve(linkinfos.size() + objectValue["links"].Size());
             for (rapidjson::Value::ConstValueIterator itr = objectValue["links"].Begin(); itr != objectValue["links"].End(); ++itr) {
                 KinBody::LinkInfoPtr linkinfo(new KinBody::LinkInfo());
-                linkinfo->DeserializeJSON(*itr, fUnitScale);
+                linkinfo->DeserializeJSON(*itr, unit_scale);
                 linkinfos.push_back(linkinfo);
             }
         }
     }
 
-    void _ExtractJoints(const rapidjson::Value &objectValue, std::vector<KinBody::JointInfoPtr> &jointinfos, dReal fUnitScale)
+    void _ExtractJoints(const rapidjson::Value &objectValue, std::vector<KinBody::JointInfoPtr> &jointinfos, dReal unit_scale)
     {
         if (objectValue.HasMember("joints") && objectValue["joints"].IsArray()) {
             jointinfos.reserve(jointinfos.size() + objectValue["joints"].Size());
             for (rapidjson::Value::ConstValueIterator itr = objectValue["joints"].Begin(); itr != objectValue["joints"].End(); ++itr) {
                 KinBody::JointInfoPtr jointinfo(new KinBody::JointInfo());
-                jointinfo->DeserializeJSON(*itr, fUnitScale);
+                jointinfo->DeserializeJSON(*itr, unit_scale);
                 jointinfos.push_back(jointinfo);
             }
         }
     }
 
-    void _ExtractManipulators(const rapidjson::Value &objectValue, std::vector<RobotBase::ManipulatorInfoPtr> &manipinfos, dReal fUnitScale)
+    void _ExtractManipulators(const rapidjson::Value &objectValue, std::vector<RobotBase::ManipulatorInfoPtr> &manipinfos, dReal unit_scale)
     {
         if (objectValue.HasMember("manipulators") && objectValue["manipulators"].IsArray()) {
             manipinfos.reserve(manipinfos.size() + objectValue["manipulators"].Size());
             for (rapidjson::Value::ConstValueIterator itr = objectValue["manipulators"].Begin(); itr != objectValue["manipulators"].End(); ++itr) {
                 RobotBase::ManipulatorInfoPtr manipinfo(new RobotBase::ManipulatorInfo());
-                manipinfo->DeserializeJSON(*itr, fUnitScale);
+                manipinfo->DeserializeJSON(*itr, unit_scale);
                 manipinfos.push_back(manipinfo);
             }
         }
     }
 
-    void _ExtractAttachedSensors(const rapidjson::Value &objectValue, std::vector<RobotBase::AttachedSensorInfoPtr> &attachedsensorinfos, dReal fUnitScale)
+    void _ExtractAttachedSensors(const rapidjson::Value &objectValue, std::vector<RobotBase::AttachedSensorInfoPtr> &attachedsensorinfos, dReal unit_scale)
     {
         if (objectValue.HasMember("attachedSensors") && objectValue["attachedSensors"].IsArray()) {
             attachedsensorinfos.reserve(attachedsensorinfos.size() + objectValue["attachedSensors"].Size());
             for (rapidjson::Value::ConstValueIterator itr = objectValue["attachedSensors"].Begin(); itr != objectValue["attachedSensors"].End(); ++itr) {
                 RobotBase::AttachedSensorInfoPtr attachedsensorinfo(new RobotBase::AttachedSensorInfo());
-                attachedsensorinfo->DeserializeJSON(*itr, fUnitScale);
+                attachedsensorinfo->DeserializeJSON(*itr, unit_scale);
                 attachedsensorinfos.push_back(attachedsensorinfo);
             }
         }
     }
 
-    void _ExtractConnectedBodies(const rapidjson::Value &objectValue, std::vector<RobotBase::ConnectedBodyInfoPtr> &connectedbodyinfos, dReal fUnitScale)
+    void _ExtractConnectedBodies(const rapidjson::Value &objectValue, std::vector<RobotBase::ConnectedBodyInfoPtr> &connectedbodyinfos, dReal unit_scale)
     {
         if (objectValue.HasMember("connectedBodies") && objectValue["connectedBodies"].IsArray()) {
             for (rapidjson::Value::ConstValueIterator itr = objectValue["connectedBodies"].Begin(); itr != objectValue["connectedBodies"].End(); ++itr) {
                 RobotBase::ConnectedBodyInfoPtr connectedbodyinfo(new RobotBase::ConnectedBodyInfo());
-                connectedbodyinfo->DeserializeJSON(*itr, fUnitScale);
+                connectedbodyinfo->DeserializeJSON(*itr, unit_scale);
 
                 rapidjson::Value::ValueIterator connectedBodyObject = _ResolveObject(connectedbodyinfo->_uri);
-                _ExtractLinks(*connectedBodyObject, connectedbodyinfo->_vLinkInfos, fUnitScale);
-                _ExtractJoints(*connectedBodyObject, connectedbodyinfo->_vJointInfos, fUnitScale);
-                _ExtractManipulators(*connectedBodyObject, connectedbodyinfo->_vManipulatorInfos, fUnitScale);
-                _ExtractAttachedSensors(*connectedBodyObject, connectedbodyinfo->_vAttachedSensorInfos, fUnitScale);
+                _ExtractLinks(*connectedBodyObject, connectedbodyinfo->_vLinkInfos, unit_scale);
+                _ExtractJoints(*connectedBodyObject, connectedbodyinfo->_vJointInfos, unit_scale);
+                _ExtractManipulators(*connectedBodyObject, connectedbodyinfo->_vManipulatorInfos, unit_scale);
+                _ExtractAttachedSensors(*connectedBodyObject, connectedbodyinfo->_vAttachedSensorInfos, unit_scale);
                 connectedbodyinfos.push_back(connectedbodyinfo);
             }
         }
     }
 
-    void _ExtractReadableInterfaces(const rapidjson::Value &objectValue, InterfaceBasePtr pInterface, dReal fUnitScale)
+    void _ExtractReadableInterfaces(const rapidjson::Value &objectValue, InterfaceBasePtr pInterface, dReal unit_scale)
     {
         if (objectValue.HasMember("readableInterfaces") && objectValue["readableInterfaces"].IsObject()) {
             for (rapidjson::Value::ConstMemberIterator itr = objectValue["readableInterfaces"].MemberBegin(); itr != objectValue["readableInterfaces"].MemberEnd(); itr++) {
                 std::string id = itr->name.GetString();
                 BaseJSONReaderPtr pReader = RaveCallJSONReader(pInterface->GetInterfaceType(), id, pInterface, AttributesList());
-                pReader->DeserializeJSON(itr->value, fUnitScale);
+                pReader->DeserializeJSON(itr->value, unit_scale);
                 JSONReadablePtr pReadable = pReader->GetReadable();
                 if (!!pReadable) {
                     pInterface->SetReadableInterface(id, pReadable);

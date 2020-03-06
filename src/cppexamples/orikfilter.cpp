@@ -1,4 +1,4 @@
-/** \example orikfilter.cpp
+﻿/** \example orikfilter.cpp
     \author Rosen Diankov
 
     Shows how to use set a custom inverse kinematics filter to add extra constraints.
@@ -13,12 +13,13 @@
 #include <boost/bind.hpp>
 
 using namespace OpenRAVE;
-using namespace std;
 
 // quit after 100 milliseconds
-IkReturn MyTimeoutFilter(std::vector<dReal>&, RobotBase::ManipulatorConstPtr, const IkParameterization&, uint32_t starttime)
+IkReturn MyTimeoutFilter(std::vector<dReal>&, RobotBase::ManipulatorConstPtr,
+	const IkParameterization&, uint32_t starttime)
 {
-    if( utils::GetMilliTime()-starttime > 100 ) {
+    if( utils::GetMilliTime()-starttime > 100 )
+	{
         RAVELOG_INFO("quitting\n");
         return IKRA_Quit;
     }
@@ -27,12 +28,12 @@ IkReturn MyTimeoutFilter(std::vector<dReal>&, RobotBase::ManipulatorConstPtr, co
 
 int main(int argc, char ** argv)
 {
-    string scenefilename = "data/pr2test1.env.xml";
+    std::string scenefilename = "data/pr2test1.env.xml";
     RaveInitialize(true);
     EnvironmentBasePtr penv = RaveCreateEnvironment();
     penv->Load(scenefilename);
 
-    vector<RobotBasePtr> vrobots;
+	std::vector<RobotBasePtr> vrobots;
     penv->GetRobots(vrobots);
     RobotBasePtr probot = vrobots.at(0);
     probot->SetActiveManipulator("leftarm_torso");
@@ -41,27 +42,30 @@ int main(int argc, char ** argv)
     // load inverse kinematics using ikfast
     ModuleBasePtr pikfast = RaveCreateModule(penv,"ikfast");
     penv->Add(pikfast,true,"");
-    stringstream ssin,ssout;
-    vector<dReal> vsolution;
+	std::stringstream ssin,ssout;
+	std::vector<dReal> vsolution;
     ssin << "LoadIKFastSolver " << probot->GetName() << " " << (int)IKP_Transform6D;
-    if( !pikfast->SendCommand(ssout,ssin) ) {
+    if( !pikfast->SendCommand(ssout,ssin) ) 
+	{
         RAVELOG_ERROR("failed to load iksolver\n");
     }
-    if( !pmanip->GetIkSolver()) {
+    if( !pmanip->GetIkSolver()) 
+	{
         penv->Destroy();
         return 1;
     }
 
     probot->SetActiveDOFs(pmanip->GetArmIndices());
-    vector<dReal> vlower,vupper;
+	std::vector<dReal> vlower,vupper;
 
-    while(1) {
+    while(1) 
+	{
         {
             EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
 
             // move robot randomly
             probot->GetActiveDOFLimits(vlower,vupper);
-            vector<dReal> v(pmanip->GetArmIndices().size());
+			std::vector<dReal> v(pmanip->GetArmIndices().size());
             for(size_t i = 0; i < vlower.size(); ++i) {
                 v[i] = vlower[i] + (vupper[i]-vlower[i])*RaveRandomFloat();
             }

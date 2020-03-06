@@ -313,7 +313,7 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
     }
 }
 
-void KinBody::GrabbedInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void KinBody::GrabbedInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     openravejson::SetJsonValueByKey(value, "grabbedName", _grabbedname, allocator);
     openravejson::SetJsonValueByKey(value, "robotLinkName", _robotlinkname, allocator);
@@ -321,7 +321,7 @@ void KinBody::GrabbedInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Doc
     openravejson::SetJsonValueByKey(value, "robotLinksToIgnoreSet", _setRobotLinksToIgnore, allocator);
 }
 
-void KinBody::GrabbedInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void KinBody::GrabbedInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
     openravejson::LoadJsonValueByKey(value, "grabbedName", _grabbedname);
     openravejson::LoadJsonValueByKey(value, "robotLinkName", _robotlinkname);

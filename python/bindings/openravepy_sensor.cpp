@@ -109,18 +109,18 @@ SensorBase::SensorType PyCameraGeomData::GetType() {
     return SensorBase::ST_Camera;
 }
 
-object PyCameraGeomData::SerializeJSON(dReal fUnitScale, object options) {
+object PyCameraGeomData::SerializeJSON(dReal unit_scale, object options) {
     rapidjson::Document doc;
     SensorBase::SensorGeometryPtr pgeom = GetGeometry();
-    pgeom->SerializeJSON(doc, doc.GetAllocator(), fUnitScale, pyGetIntFromPy(options, 0));
+    pgeom->SerializeJSON(doc, doc.GetAllocator(), unit_scale, pyGetIntFromPy(options, 0));
     return toPyObject(doc);
 }
 
-void PyCameraGeomData::DeserializeJSON(object obj, dReal fUnitScale) {
+void PyCameraGeomData::DeserializeJSON(object obj, dReal unit_scale) {
     rapidjson::Document doc;
     toRapidJSONValue(obj, doc, doc.GetAllocator());
     SensorBase::CameraGeomDataPtr pgeom(new SensorBase::CameraGeomData());
-    pgeom->DeserializeJSON(doc, fUnitScale);
+    pgeom->DeserializeJSON(doc, unit_scale);
     _Update(pgeom);
 }
 

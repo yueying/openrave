@@ -381,7 +381,7 @@ else()
 endif()
 
 # only look for installed boost if not an old version of msvc
-find_package(Boost 1.54 REQUIRED COMPONENTS thread system regex timer filesystem serialization program_options)
+find_package(Boost 1.54 REQUIRED COMPONENTS thread system regex timer filesystem serialization program_options iostreams)
 
 include_directories(${Boost_INCLUDE_DIRS})
 set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${Boost_LIBRARY_DIRS} ${Boost_LIBRARIES})

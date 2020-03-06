@@ -36,7 +36,14 @@ public:
     };
 
 public:
-    IkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<IkReal> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold=1e-4) : IkSolverBase(penv), _ikfunctions(ikfunctions), _vFreeInc(vfreeinc), _ikthreshold(ikthreshold) {
+    IkFastSolver(EnvironmentBasePtr penv, std::istream& sinput,
+		std::shared_ptr<ikfast::IkFastFunctions<IkReal> > ikfunctions,
+		const vector<dReal>& vfreeinc, dReal ikthreshold=1e-4) 
+		: IkSolverBase(penv), 
+		_ikfunctions(ikfunctions),
+		_vFreeInc(vfreeinc), 
+		_ikthreshold(ikthreshold) 
+	{
         OPENRAVE_ASSERT_OP(ikfunctions->_GetIkRealSize(),==,sizeof(IkReal));
 
         _bEmptyTransform6D = false;

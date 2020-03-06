@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -48,7 +48,8 @@ public:
     }
 
     /// called when problem gets unloaded from environment
-    virtual void Destroy() {
+    virtual void Destroy() 
+	{
     }
 
     /// called when environment is reset

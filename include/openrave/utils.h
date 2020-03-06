@@ -30,6 +30,7 @@
 #include <vector>
 
 #include <boost/assert.hpp>
+#include <boost/function.hpp>
 
 #include <time.h>
 

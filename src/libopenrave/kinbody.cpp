@@ -135,7 +135,7 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
         info._type = GT_Box;
         info._t.trans = itab->pos;
         info._bVisible = visible;
-        info._vGeomData = itab->extents;
+        info.geom_data_vec_ = itab->extents;
         info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
@@ -177,7 +177,7 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         info._type = GT_Box;
         info._t = tm;
         info._bVisible = visible;
-        info._vGeomData = itobb->extents;
+        info.geom_data_vec_ = itobb->extents;
         info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
@@ -214,7 +214,7 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
         info._type = GT_Sphere;
         info._t.trans.x = itv->x; info._t.trans.y = itv->y; info._t.trans.z = itv->z;
         info._bVisible = visible;
-        info._vGeomData.x = itv->w;
+        info.geom_data_vec_.x = itv->w;
         info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));

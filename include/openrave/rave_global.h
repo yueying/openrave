@@ -51,77 +51,22 @@ namespace OpenRAVE
 
 		int Initialize(bool is_load_all_plugins, int level);
 
-		void Destroy()
-		{
-			if (!!plugin_database_) {
-				// notify all plugins that about to destroy
-				plugin_database_->OnRavePreDestroy();
-			}
-
-			// don't use any log statements since global instance might be null
-			// environments have to be destroyed carefully since their destructors can be called, which will attempt to unregister the environment
-			std::map<int, EnvironmentBase*> mapenvironments;
-			{
-				boost::mutex::scoped_lock lock(_mutexinternal);
-				mapenvironments = _mapenvironments;
-			}
-			FOREACH(itenv, mapenvironments) {
-				// equire a shared pointer to prevent environment from getting deleted during Destroy loop
-				EnvironmentBasePtr penv = itenv->second->shared_from_this();
-				penv->Destroy();
-			}
-			mapenvironments.clear();
-			_mapenvironments.clear();
-			_pdefaultsampler.reset();
-			_mapxmlreaders.clear();
-			_mapjsonreaders.clear();
-
-			// process the callbacks
-			std::list<boost::function<void()> > listDestroyCallbacks;
-			{
-				boost::mutex::scoped_lock lock(_mutexinternal);
-				listDestroyCallbacks.swap(_listDestroyCallbacks);
-			}
-			FOREACH(itcallback, listDestroyCallbacks) {
-				(*itcallback)();
-			}
-			listDestroyCallbacks.clear();
-
-			if (!!plugin_database_) {
-				// force destroy in case some one is holding a pointer to it
-				plugin_database_->Destroy();
-				plugin_database_.reset();
-			}
-#ifdef USE_CRLIBM
-
-#ifdef HAS_FENV_H
-			feclearexcept(-1); // clear any cached exceptions
-#endif
-			if (is_crlibm_init_) {
-				crlibm_exit(_crlibm_fpu_state);
-				is_crlibm_init_ = false;
-			}
-#endif
-
-#if OPENRAVE_LOG4CXX
-			_logger = 0;
-#endif
-		}
+		void Destroy();
 
 		void AddCallbackForDestroy(const boost::function<void()>& fn)
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			_listDestroyCallbacks.push_back(fn);
+			destroy_callbacks_list_.push_back(fn);
 		}
 
 		std::string GetHomeDirectory()
 		{
-			return _homedirectory;
+			return home_directory_;
 		}
 
 		std::string FindDatabaseFile(const std::string& filename, bool bRead)
 		{
-			FOREACH(itdirectory, _vdbdirectories) {
+			FOREACH(itdirectory, database_directory_vector_) {
 #ifdef HAVE_BOOST_FILESYSTEM
 				std::string fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itdirectory) / filename).string();
 #else
@@ -308,16 +253,16 @@ namespace OpenRAVE
 		{
 			BOOST_ASSERT(!!plugin_database_);
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			_mapenvironments[++global_environment_id_] = penv;
+			environments_map_[++global_environment_id_] = penv;
 			return global_environment_id_;
 		}
 
 		void UnregisterEnvironment(EnvironmentBase* penv)
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			FOREACH(it, _mapenvironments) {
+			FOREACH(it, environments_map_) {
 				if (it->second == penv) {
-					_mapenvironments.erase(it);
+					environments_map_.erase(it);
 					break;
 				}
 			}
@@ -327,7 +272,7 @@ namespace OpenRAVE
 		{
 			return !!penv ? penv->GetId() : 0;
 			//        boost::mutex::scoped_lock lock(_mutexinternal);
-			//        FOREACH(it,_mapenvironments) {
+			//        FOREACH(it,environments_map_) {
 			//            if( it->second == penv.get() ) {
 			//                return it->first;
 			//            }
@@ -338,8 +283,9 @@ namespace OpenRAVE
 		EnvironmentBasePtr GetEnvironment(int id)
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			std::map<int, EnvironmentBase*>::iterator it = _mapenvironments.find(id);
-			if (it == _mapenvironments.end()) {
+			std::map<int, EnvironmentBase*>::iterator it = environments_map_.find(id);
+			if (it == environments_map_.end()) 
+			{
 				return EnvironmentBasePtr();
 			}
 			return it->second->shared_from_this();
@@ -349,9 +295,11 @@ namespace OpenRAVE
 		{
 			listenvironments.clear();
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			FOREACH(it, _mapenvironments) {
-				EnvironmentBasePtr penv = it->second->shared_from_this();
-				if (!!penv) {
+			for(auto it: environments_map_) 
+			{
+				EnvironmentBasePtr penv = it.second->shared_from_this();
+				if (!!penv) 
+				{
 					listenvironments.push_back(penv);
 				}
 			}
@@ -359,12 +307,13 @@ namespace OpenRAVE
 
 		SpaceSamplerBasePtr GetDefaultSampler()
 		{
-			if (!_pdefaultsampler) {
+			if (!default_space_sampler_)
+			{
 				boost::mutex::scoped_lock lock(_mutexinternal);
-				BOOST_ASSERT(_mapenvironments.size() > 0);
-				_pdefaultsampler = GetDatabase()->CreateSpaceSampler(_mapenvironments.begin()->second->shared_from_this(), "MT19937");
+				BOOST_ASSERT(environments_map_.size() > 0);
+				default_space_sampler_ = GetDatabase()->CreateSpaceSampler(environments_map_.begin()->second->shared_from_this(), "MT19937");
 			}
-			return _pdefaultsampler;
+			return default_space_sampler_;
 		}
 
 		std::string FindLocalFile(const std::string& _filename, const std::string& curdir)
@@ -399,7 +348,7 @@ namespace OpenRAVE
 			}
 
 			// try the openrave directories
-			FOREACHC(itdir, _vBoostDataDirs) {
+			FOREACHC(itdir, boost_data_dirs_vector_) {
 				fullfilename = *itdir / filename;
 				if (_ValidateFilename(fullfilename, boost::filesystem::path())) {
 					return fullfilename.string();
@@ -416,10 +365,10 @@ namespace OpenRAVE
 #ifndef HAVE_BOOST_FILESYSTEM
 			RAVELOG_WARN("need to compile with boost::filesystem\n");
 #else
-			// check if filename is within _vBoostDataDirs
+			// check if filename is within boost_data_dirs_vector_
 			boost::filesystem::path fullfilename = boost::filesystem::absolute(filename);
 			_CustomNormalizePath(fullfilename);
-			FOREACHC(itpath, _vBoostDataDirs) {
+			FOREACHC(itpath, boost_data_dirs_vector_) {
 				std::list<boost::filesystem::path> listfilenameparts;
 				boost::filesystem::path testfilename = fullfilename.parent_path();
 				while (testfilename >= *itpath) {
@@ -451,27 +400,34 @@ namespace OpenRAVE
 			return data_access_options_;
 		}
 
-		std::string GetDefaultViewerType() {
-			if (_defaultviewertype.size() > 0) {
-				return _defaultviewertype;
+		std::string GetDefaultViewerType()
+		{
+			if (default_viewer_type_.size() > 0) 
+			{
+				return default_viewer_type_;
 			}
 
 			// get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
 			std::shared_ptr<PluginDatabase> pdatabase = plugin_database_;
-			if (!!pdatabase) {
-				if (pdatabase->HasInterface(PT_Viewer, "qtosg")) {
+			if (!!pdatabase) 
+			{
+				if (pdatabase->HasInterface(PT_Viewer, "qtosg")) 
+				{
 					return std::string("qtosg");
 				}
 
-				if (pdatabase->HasInterface(PT_Viewer, "qtcoin")) {
+				if (pdatabase->HasInterface(PT_Viewer, "qtcoin")) 
+				{
 					return std::string("qtcoin");
 				}
 
 				// search for the first viewer found
 				std::map<InterfaceType, std::vector<std::string> > interfacenames;
 				pdatabase->GetLoadedInterfaces(interfacenames);
-				if (interfacenames.find(PT_Viewer) != interfacenames.end()) {
-					if (interfacenames[PT_Viewer].size() > 0) {
+				if (interfacenames.find(PT_Viewer) != interfacenames.end()) 
+				{
+					if (interfacenames[PT_Viewer].size() > 0) 
+					{
 						return interfacenames[PT_Viewer].at(0);
 					}
 				}
@@ -486,81 +442,7 @@ namespace OpenRAVE
 			return !!plugin_database_;
 		}
 
-		void _UpdateDataDirs()
-		{
-			_vdatadirs.resize(0);
-
-			bool bExists = false;
-#ifdef _WIN32
-			const char* delim = ";";
-#else
-			const char* delim = ":";
-#endif
-			char* pOPENRAVE_DATA = getenv("OPENRAVE_DATA"); // getenv not thread-safe?
-			if (pOPENRAVE_DATA != NULL) {
-				utils::TokenizeString(pOPENRAVE_DATA, delim, _vdatadirs);
-			}
-			std::string installdir = OPENRAVE_DATA_INSTALL_DIR;
-#ifdef HAVE_BOOST_FILESYSTEM
-			if (!boost::filesystem::is_directory(boost::filesystem::path(installdir))) {
-#ifdef _WIN32
-				HKEY hkey;
-				if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\OpenRAVE\\" OPENRAVE_VERSION_STRING), 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-					DWORD dwType = REG_SZ;
-					CHAR szInstallRoot[4096];     // dont' take chances, it is windows
-					DWORD dwSize = sizeof(szInstallRoot);
-					RegQueryValueEx(hkey, TEXT("InstallRoot"), NULL, &dwType, (PBYTE)szInstallRoot, &dwSize);
-					RegCloseKey(hkey);
-					installdir.assign(szInstallRoot);
-					installdir += str(boost::format("%cshare%copenrave-%d.%d") % s_filesep%s_filesep%OPENRAVE_VERSION_MAJOR%OPENRAVE_VERSION_MINOR);
-					RAVELOG_VERBOSE(str(boost::format("window registry data dir '%s'") % installdir));
-				}
-				else
-#endif
-				{
-					RAVELOG_WARN(str(boost::format("%s doesn't exist") % installdir));
-				}
-			}
-
-			boost::filesystem::path datafilename = boost::filesystem::absolute(boost::filesystem::path(installdir));
-			FOREACH(itname, _vdatadirs) {
-				if (datafilename == boost::filesystem::absolute(boost::filesystem::path(*itname))) {
-					bExists = true;
-					break;
-				}
-			}
-#else
-			std::string datafilename = installdir;
-			for (auto itname : _vdatadirs)
-			{
-				if (itname == installdir)
-				{
-					bExists = true;
-					break;
-				}
-			}
-#endif
-			if (!bExists) {
-				_vdatadirs.push_back(installdir);
-			}
-			for (auto itdir : _vdatadirs)
-			{
-				RAVELOG_VERBOSE(str(boost::format("data dir: %s") % itdir));
-			}
-
-#ifdef HAVE_BOOST_FILESYSTEM
-			_vBoostDataDirs.resize(0);
-			FOREACHC(itfilename, _vdatadirs) {
-				boost::filesystem::path fullfilename = boost::filesystem::absolute(boost::filesystem::path(*itfilename));
-				_CustomNormalizePath(fullfilename);
-				if (fullfilename.filename() == ".") {
-					// fullfilename ends in '/', so remove it
-					fullfilename = fullfilename.parent_path();
-				}
-				_vBoostDataDirs.push_back(fullfilename);
-			}
-#endif
-		}
+		void _UpdateDataDirs();
 
 #ifdef HAVE_BOOST_FILESYSTEM
 
@@ -606,11 +488,11 @@ namespace OpenRAVE
 			}
 
 			if (data_access_options_ & 1) {
-				// check if filename is within _vBoostDataDirs
+				// check if filename is within boost_data_dirs_vector_
 				boost::filesystem::path fullfilename = boost::filesystem::absolute(filename, curdir.empty() ? boost::filesystem::current_path() : curdir);
 				_CustomNormalizePath(fullfilename);
 				bool bfound = false;
-				FOREACHC(itpath, _vBoostDataDirs) {
+				FOREACHC(itpath, boost_data_dirs_vector_) {
 					boost::filesystem::path testfilename = fullfilename.parent_path();
 					while (testfilename >= *itpath) {
 						if (testfilename == *itpath) {
@@ -666,22 +548,22 @@ namespace OpenRAVE
 		std::map<InterfaceType, JSONREADERSMAP > _mapjsonreaders;
 		std::map<InterfaceType, std::string> interface_names_map_;
 		std::map<IkParameterizationType, std::string> ik_parameterization_map_, ik_parameterization_lower_map_;
-		std::map<int, EnvironmentBase*> _mapenvironments;
-		std::list<boost::function<void()> > _listDestroyCallbacks;
-		std::string _homedirectory;
-		std::string _defaultviewertype; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
-		std::vector<std::string> _vdbdirectories;
+		std::map<int, EnvironmentBase*> environments_map_;
+		std::list<boost::function<void()> > destroy_callbacks_list_;
+		std::string home_directory_;
+		std::string default_viewer_type_; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
+		std::vector<std::string> database_directory_vector_;
 		int global_environment_id_;
-		SpaceSamplerBasePtr _pdefaultsampler;
+		SpaceSamplerBasePtr default_space_sampler_;
 #ifdef USE_CRLIBM
 		long long _crlibm_fpu_state;
 		bool is_crlibm_init_; ///< true if crlibm is initialized
 #endif
 		int data_access_options_;
 
-		std::vector<std::string> _vdatadirs;
+		std::vector<std::string> data_dirs_vector_;
 #ifdef HAVE_BOOST_FILESYSTEM
-		std::vector<boost::filesystem::path> _vBoostDataDirs; ///< \brief returns absolute filenames of the data
+		std::vector<boost::filesystem::path> boost_data_dirs_vector_; ///< \brief returns absolute filenames of the data
 #endif
 
 #if OPENRAVE_LOG4CXX

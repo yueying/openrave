@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -59,10 +59,10 @@ class ODEPhysicsEngine : public OpenRAVE::PhysicsEngineBase
     }
 
     inline std::shared_ptr<ODEPhysicsEngine> shared_physics() {
-        return boost::static_pointer_cast<ODEPhysicsEngine>(shared_from_this());
+        return std::static_pointer_cast<ODEPhysicsEngine>(shared_from_this());
     }
     inline std::shared_ptr<ODEPhysicsEngine const> shared_physics_const() const {
-        return boost::static_pointer_cast<ODEPhysicsEngine const>(shared_from_this());
+        return std::static_pointer_cast<ODEPhysicsEngine const>(shared_from_this());
     }
 
     class PhysicsPropertiesXMLReader : public BaseXMLReader
@@ -206,7 +206,7 @@ The possible properties that can be set are: ";
             ss << "**" << *it << "**, ";
         }
         ss << "\n\n";
-        __description = ss.str();
+        description_ = ss.str();
         _globalfriction = 0.4;
         _globalerp = 0.01;
         _globalcfm = 1e-5;

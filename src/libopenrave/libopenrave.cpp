@@ -152,9 +152,9 @@ std::string RaveFindDatabaseFile(const std::string& filename, bool bRead)
     return RaveGlobal::instance()->FindDatabaseFile(filename,bRead);
 }
 
-int RaveInitialize(bool bLoadAllPlugins, int level)
+int RaveInitialize(bool is_load_all_plugins, int level)
 {
-    return RaveGlobal::instance()->Initialize(bLoadAllPlugins,level);
+    return RaveGlobal::instance()->Initialize(is_load_all_plugins,level);
 }
 
 void RaveInitializeFromState(UserDataPtr globalstate)
@@ -644,21 +644,21 @@ void RaveGetVelocityFromAffineDOFVelocities(Vector& linearvel, Vector& angularve
 
 
 
-void SensorBase::SensorGeometry::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void SensorBase::SensorGeometry::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     if(hardware_id.size() > 0) {
         openravejson::SetJsonValueByKey(value, "hardwareId", hardware_id, allocator);
     }
 }
 
-void SensorBase::SensorGeometry::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void SensorBase::SensorGeometry::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
     openravejson::LoadJsonValueByKey(value, "hardwareId", hardware_id);
 }
 
-void SensorBase::CameraGeomData::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const
+void SensorBase::CameraGeomData::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
-    SensorBase::SensorGeometry::SerializeJSON(value, allocator, fUnitScale, options);
+    SensorBase::SensorGeometry::SerializeJSON(value, allocator, unit_scale, options);
     openravejson::SetJsonValueByKey(value, "sensorReference", sensor_reference, allocator);
     openravejson::SetJsonValueByKey(value, "targetRegion", target_region, allocator);
     openravejson::SetJsonValueByKey(value, "intrinstics", intrinsics, allocator);
@@ -668,9 +668,9 @@ void SensorBase::CameraGeomData::SerializeJSON(rapidjson::Value& value, rapidjso
     openravejson::SetJsonValueByKey(value, "gain", gain, allocator);
 }
 
-void SensorBase::CameraGeomData::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
+void SensorBase::CameraGeomData::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
-    SensorBase::SensorGeometry::DeserializeJSON(value, fUnitScale);
+    SensorBase::SensorGeometry::DeserializeJSON(value, unit_scale);
     openravejson::LoadJsonValueByKey(value, "sensorReference", sensor_reference);
     openravejson::LoadJsonValueByKey(value, "targetRegion", target_region);
     openravejson::LoadJsonValueByKey(value, "intrinstics", intrinsics);

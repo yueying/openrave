@@ -1,4 +1,4 @@
-/** \example orconveyormovement.cpp
+﻿/** \example orconveyormovement.cpp
     \author Rosen Diankov
 
     \image html cppexample_orconveyormovement.jpg "Parts moving on a conveyor belt."
@@ -37,7 +37,7 @@ class ConveyorBeltModule : public ModuleBase
 public:
     ConveyorBeltModule(EnvironmentBasePtr penv, std::istream& is) : ModuleBase(penv)
     {
-        __description = "Handles conveyor belt movement";
+        description_ = "Handles conveyor belt movement";
         RegisterCommand("registerbody",boost::bind(&ConveyorBeltModule::RegisterBody,this,_1,_2),"registers a body to be put into the environment");
         movevel = Vector(0,0.4,0);
         start = Vector(0.5,-1,0.6);

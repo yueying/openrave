@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6.0)
+﻿cmake_minimum_required (VERSION 2.6.0)
 project (cppexamples)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../..) # only used for cppexamples!

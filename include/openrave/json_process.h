@@ -27,8 +27,8 @@ namespace OpenRAVE
 	public:
 		JSONReadable() { }
 		virtual ~JSONReadable() {}
-		virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const = 0;
-		virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0) = 0;
+		virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const = 0;
+		virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0) = 0;
 	};
 	typedef std::shared_ptr<JSONReadable> JSONReadablePtr;
 	typedef std::shared_ptr<JSONReadable const> JSONReadableConstPtr;
@@ -51,12 +51,12 @@ namespace OpenRAVE
 		}
 
 		/// by default, json reader will simply call readable's deserialize function
-		virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0)
+		virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0)
 		{
 			JSONReadablePtr pReadable = GetReadable();
 			if (!!pReadable)
 			{
-				pReadable->DeserializeJSON(value, fUnitScale);
+				pReadable->DeserializeJSON(value, unit_scale);
 			}
 		}
 	};
