@@ -247,33 +247,33 @@ static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Ve
     for (size_t i = 0; i < node->mNumMeshes; i++) {
         listGeometries.push_back(KinBody::GeometryInfo());
         KinBody::GeometryInfo& g = listGeometries.back();
-        g._type = GT_TriMesh;
-        g._vRenderScale = scale;
+        g.type_ = GT_TriMesh;
+        g.render_scale_vec_ = scale;
         aiMesh* input_mesh = scene->mMeshes[node->mMeshes[i]];
-        g._meshcollision.vertices.resize(input_mesh->mNumVertices);
+        g.mesh_collision_.vertices.resize(input_mesh->mNumVertices);
         for (size_t j = 0; j < input_mesh->mNumVertices; j++) {
             aiVector3D p = input_mesh->mVertices[j];
             p *= transform;
-            g._meshcollision.vertices[j] = Vector(p.x*scale.x,p.y*scale.y,p.z*scale.z);
+            g.mesh_collision_.vertices[j] = Vector(p.x*scale.x,p.y*scale.y,p.z*scale.z);
         }
         size_t indexCount = 0;
         for (size_t j = 0; j < input_mesh->mNumFaces; j++) {
             aiFace& face = input_mesh->mFaces[j];
             indexCount += 3*(face.mNumIndices-2);
         }
-        g._meshcollision.indices.reserve(indexCount);
+        g.mesh_collision_.indices.reserve(indexCount);
         for (size_t j = 0; j < input_mesh->mNumFaces; j++) {
             aiFace& face = input_mesh->mFaces[j];
             if( face.mNumIndices == 3 ) {
-                g._meshcollision.indices.push_back(face.mIndices[0]);
-                g._meshcollision.indices.push_back(face.mIndices[1]);
-                g._meshcollision.indices.push_back(face.mIndices[2]);
+                g.mesh_collision_.indices.push_back(face.mIndices[0]);
+                g.mesh_collision_.indices.push_back(face.mIndices[1]);
+                g.mesh_collision_.indices.push_back(face.mIndices[2]);
             }
             else {
                 for (size_t k = 2; k < face.mNumIndices; ++k) {
-                    g._meshcollision.indices.push_back(face.mIndices[0]);
-                    g._meshcollision.indices.push_back(face.mIndices[k-1]);
-                    g._meshcollision.indices.push_back(face.mIndices[k]);
+                    g.mesh_collision_.indices.push_back(face.mIndices[0]);
+                    g.mesh_collision_.indices.push_back(face.mIndices[k-1]);
+                    g.mesh_collision_.indices.push_back(face.mIndices[k]);
                 }
             }
         }
@@ -282,7 +282,7 @@ static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Ve
             aiMaterial* mtrl = scene->mMaterials[input_mesh->mMaterialIndex];
             aiColor4D color;
             aiGetMaterialColor(mtrl,AI_MATKEY_COLOR_DIFFUSE,&color);
-            g._vDiffuseColor = Vector(color.r,color.g,color.b,color.a);
+            g.diffuse_color_vec_ = Vector(color.r,color.g,color.b,color.a);
             aiGetMaterialColor(mtrl,AI_MATKEY_COLOR_AMBIENT,&color);
             g._vAmbientColor = Vector(color.r,color.g,color.b,color.a);
         }
@@ -432,7 +432,7 @@ bool CreateTriMeshFromFile(EnvironmentBasePtr penv, const std::string& filename,
                     trimesh.vertices.clear();
                     trimesh.indices.clear();
                     FOREACH(itgeom, listGeometries) {
-                        trimesh.Append(itgeom->_meshcollision, itgeom->_t);
+                        trimesh.Append(itgeom->mesh_collision_, itgeom->_t);
                     }
                     return true;
                 }
@@ -805,11 +805,11 @@ public:
         // for other importers, just convert into one big trimesh
         listGeometries.push_back(KinBody::GeometryInfo());
         KinBody::GeometryInfo& g = listGeometries.back();
-        g._type = GT_TriMesh;
-        g._vDiffuseColor=Vector(1,0.5f,0.5f,1);
+        g.type_ = GT_TriMesh;
+        g.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         g._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
-        g._vRenderScale = vscale;
-        if( !CreateTriMeshFromFile(penv,filename,vscale,g._meshcollision,g._vDiffuseColor,g._vAmbientColor,g._fTransparency) ) {
+        g.render_scale_vec_ = vscale;
+        if( !CreateTriMeshFromFile(penv,filename,vscale,g.mesh_collision_,g.diffuse_color_vec_,g._vAmbientColor,g.transparency_) ) {
             return false;
         }
         return true;
@@ -998,10 +998,10 @@ public:
                         }
                     }
                     std::list<KinBody::GeometryInfo> listGeometries;
-                    if( info->_type == GT_TriMesh ) {
+                    if( info->type_ == GT_TriMesh ) {
                         bool bSuccess = false;
                         if( info->_filenamecollision.size() > 0 ) {
-                            if( !CreateGeometries(_pparent->GetEnv(),info->_filenamecollision, info->_vCollisionScale, listGeometries) ) {
+                            if( !CreateGeometries(_pparent->GetEnv(),info->_filenamecollision, info->collision_scale_vec_, listGeometries) ) {
                                 RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->_filenamecollision));
                             }
                             else {
@@ -1010,7 +1010,7 @@ public:
                         }
                         if( info->_filenamerender.size() > 0 ) {
                             if( !bSuccess ) {
-                                if( !CreateGeometries(_pparent->GetEnv(), info->_filenamerender, info->_vRenderScale, listGeometries) ) {
+                                if( !CreateGeometries(_pparent->GetEnv(), info->_filenamerender, info->render_scale_vec_, listGeometries) ) {
                                     RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->_filenamerender));
                                 }
                                 else {
@@ -1025,49 +1025,49 @@ public:
                                 extension = info->_filenamerender.substr(info->_filenamerender.find_last_of('.')+1);
                             }
                             FOREACH(itnewgeom,listGeometries) {
-                                itnewgeom->_bVisible = info->_bVisible;
-                                itnewgeom->_bModifiable = info->_bModifiable;
+                                itnewgeom->_bVisible = info->is_visible_;
+                                itnewgeom->_bModifiable = info->is_modifiable_;
                                 itnewgeom->_t = info->_t;
-                                itnewgeom->_fTransparency = info->_fTransparency;
+                                itnewgeom->_fTransparency = info->transparency_;
                                 itnewgeom->_filenamerender = string("__norenderif__:")+extension;
                                 FOREACH(it,itnewgeom->_meshcollision.vertices) {
                                     *it = tmres * *it;
                                 }
                                 if( geomreader->IsOverwriteDiffuse() ) {
-                                    itnewgeom->_vDiffuseColor = info->_vDiffuseColor;
+                                    itnewgeom->_vDiffuseColor = info->diffuse_color_vec_;
                                 }
                                 if( geomreader->IsOverwriteAmbient() ) {
                                     itnewgeom->_vAmbientColor = info->_vAmbientColor;
                                 }
                                 if( geomreader->IsOverwriteTransparency() ) {
-                                    itnewgeom->_fTransparency = info->_fTransparency;
+                                    itnewgeom->transparency_ = info->transparency_;
                                 }
                                 itnewgeom->_t.trans *= _vScaleGeometry;
-                                _plink->_collision.Append(itnewgeom->_meshcollision, itnewgeom->_t);
+                                _plink->_collision.Append(itnewgeom->mesh_collision_, itnewgeom->_t);
                             }
-                            listGeometries.front()._vRenderScale = info->_vRenderScale*geomspacescale;
+                            listGeometries.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
                             listGeometries.front()._filenamerender = info->_filenamerender;
-                            listGeometries.front()._vCollisionScale = info->_vCollisionScale*geomspacescale;
+                            listGeometries.front().collision_scale_vec_ = info->collision_scale_vec_*geomspacescale;
                             listGeometries.front()._filenamecollision = info->_filenamecollision;
-                            listGeometries.front()._bVisible = info->_bVisible;
+                            listGeometries.front().is_visible_ = info->is_visible_;
                             FOREACH(itinfo, listGeometries) {
                                 _plink->_vGeometries.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*itinfo)));
                             }
                         }
                         else {
-                            info->_vRenderScale = info->_vRenderScale*geomspacescale;
-                            FOREACH(it,info->_meshcollision.vertices) {
+                            info->render_scale_vec_ = info->render_scale_vec_*geomspacescale;
+                            FOREACH(it,info->mesh_collision_.vertices) {
                                 *it = tmres * *it;
                             }
                             info->_t.trans *= _vScaleGeometry;
-                            _plink->_collision.Append(info->_meshcollision, info->_t);
+                            _plink->_collision.Append(info->mesh_collision_, info->_t);
                             _plink->_vGeometries.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*info)));
                         }
                     }
                     else {
-                        info->_vRenderScale = info->_vRenderScale*geomspacescale;
+                        info->render_scale_vec_ = info->render_scale_vec_*geomspacescale;
                         info->_filenamerender = info->_filenamerender;
-                        if( info->_type == GT_Cylinder ) {         // axis has to point on y
+                        if( info->type_ == GT_Cylinder ) {         // axis has to point on y
                             // rotate on x axis by pi/2
                             Transform trot;
                             trot.rot = quatFromAxisAngle(Vector(1, 0, 0), PI/2);
@@ -1077,7 +1077,7 @@ public:
                         // call before attaching the geom
                         KinBody::Link::GeometryPtr geom(new KinBody::Link::Geometry(_plink,*info));
                         geom->_info.InitCollisionMesh();
-                        FOREACH(it,info->_meshcollision.vertices) {
+                        FOREACH(it,info->mesh_collision_.vertices) {
                             *it = tmres * *it;
                         }
                         info->_t.trans *= _vScaleGeometry;
@@ -1370,7 +1370,7 @@ public:
                 }
             }
             else if( itatt->first == "enable" ) {
-                _pjoint->_info._bIsActive = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
+                _pjoint->_info.is_active_ = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
             }
             else if( itatt->first == "mimic" ) {
                 RAVELOG_WARN("mimic attribute on <joint> tag is deprecated! Use mimic_pos, mimic_vel, and mimic_accel\n");
@@ -2187,7 +2187,7 @@ public:
                 else if( xmlname == "joint" ) {
                     _pjoint->dofindex = _pchain->GetDOF();
                     std::shared_ptr<JointXMLReader> pjointreader = std::dynamic_pointer_cast<JointXMLReader>(_pcurreader);
-                    if( _pjoint->_info._bIsActive ) {
+                    if( _pjoint->_info.is_active_ ) {
                         _pjoint->jointindex = (int)_pchain->_vecjoints.size();
                         _pchain->_vecjoints.push_back(_pjoint);
                     }

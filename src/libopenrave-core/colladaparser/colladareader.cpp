@@ -1962,7 +1962,7 @@ public:
                 // create the joints before creating the child links
                 KinBody::JointPtr pjoint(new KinBody::Joint(pkinbody));
                 int jointtype = vdomaxes.getCount();
-                pjoint->_info._bIsActive = true;     // if not active, put into the passive list
+                pjoint->_info.is_active_ = true;     // if not active, put into the passive list
                 FOREACH(it,pjoint->_info._vweights) {
                     *it = 1;
                 }
@@ -1984,7 +1984,7 @@ public:
                             if( !!itaxisbinding->kinematics_axis_info ) {
                                 if( !!itaxisbinding->kinematics_axis_info->getActive() ) {
                                     // what if different axes have different active profiles?
-                                    pjoint->_info._bIsActive = resolveBool(itaxisbinding->kinematics_axis_info->getActive(),itaxisbinding->kinematics_axis_info);
+                                    pjoint->_info.is_active_ = resolveBool(itaxisbinding->kinematics_axis_info->getActive(),itaxisbinding->kinematics_axis_info);
                                 }
                             }
                             break;
@@ -2008,7 +2008,7 @@ public:
 
                 pjoint->_info._type = (KinBody::JointType)jointtype;
                 _mapJointUnits[pjoint] = vaxisunits;
-                if( pjoint->_info._bIsActive ) {
+                if( pjoint->_info.is_active_ ) {
                     pjoint->jointindex = (int) pkinbody->_vecjoints.size();
                     pjoint->dofindex = pkinbody->GetDOF();
                 }
@@ -2019,7 +2019,7 @@ public:
                     pjoint->_info.name_ = str(boost::format("dummy%d")%pjoint->jointindex);
                 }
 
-                if( pjoint->_info._bIsActive ) {
+                if( pjoint->_info.is_active_ ) {
                     pkinbody->_vecjoints.push_back(pjoint);
                 }
                 else {
@@ -2354,16 +2354,16 @@ public:
             //  Switch between different type of geometry PRIMITIVES
             Transform toriginal = itgeominfo->_t;
             itgeominfo->_t = tnodegeom * itgeominfo->_t;
-            switch (itgeominfo->_type) {
+            switch (itgeominfo->type_) {
             case GT_Box:
                 itgeominfo->geom_data_vec_ *= vscale;
                 break;
             case GT_Cage:
                 itgeominfo->geom_data_vec_ *= vscale;
                 itgeominfo->_vGeomData2 *= vscale;
-                for (size_t i = 0; i < itgeominfo->_vSideWalls.size(); ++i) {
-                    itgeominfo->_vSideWalls[i].transf.trans *= vscale;
-                    itgeominfo->_vSideWalls[i].vExtents *= vscale;
+                for (size_t i = 0; i < itgeominfo->side_walls_vector_.size(); ++i) {
+                    itgeominfo->side_walls_vector_[i].transf.trans *= vscale;
+                    itgeominfo->side_walls_vector_[i].vExtents *= vscale;
                 }
             case GT_Container:
                 itgeominfo->geom_data_vec_ *= vscale;
@@ -2379,10 +2379,10 @@ public:
                 itgeominfo->geom_data_vec_.y *= vscale.z;
                 break;
             case GT_TriMesh:
-                itgeominfo->_meshcollision.ApplyTransform(TransformMatrix(tmnodegeom * toriginal).inverse() * TransformMatrix(toriginal));
+                itgeominfo->mesh_collision_.ApplyTransform(TransformMatrix(tmnodegeom * toriginal).inverse() * TransformMatrix(toriginal));
                 break;
             default:
-                RAVELOG_WARN(str(boost::format("unknown geometry type: 0x%x")%itgeominfo->_type));
+                RAVELOG_WARN(str(boost::format("unknown geometry type: 0x%x")%itgeominfo->type_));
             }
 
             KinBody::Link::GeometryPtr pgeom(new KinBody::Link::Geometry(plink,*itgeominfo));
@@ -2411,24 +2411,24 @@ public:
                         geom._vAmbientColor = getVector4(pphong->getAmbient()->getColor()->getValue());
                         if( pphong->getAmbient()->getColor()->getValue().getCount() >= 4 ) {
                             // colors of the phong element in collada have the 4th value set to alpha.
-                            geom._fTransparency = 1-geom._vAmbientColor.w;
+                            geom.transparency_ = 1-geom._vAmbientColor.w;
                         }
                         geom._vAmbientColor.w = 0; // not used in openrave
                     }
                     if( !!pphong->getDiffuse() && !!pphong->getDiffuse()->getColor() ) {
-                        geom._vDiffuseColor = getVector4(pphong->getDiffuse()->getColor()->getValue());
+                        geom.diffuse_color_vec_ = getVector4(pphong->getDiffuse()->getColor()->getValue());
                         if( pphong->getDiffuse()->getColor()->getValue().getCount() >= 4 ) {
                             // colors of the phong element in collada have the 4th value set to alpha.
-                            geom._fTransparency = 1-geom._vDiffuseColor.w;
+                            geom.transparency_ = 1-geom.diffuse_color_vec_.w;
                         }
-                        geom._vDiffuseColor.w = 0; // not used in openrave
+                        geom.diffuse_color_vec_.w = 0; // not used in openrave
                     }
                     if( !!pphong->getTransparency() && !!pphong->getTransparency()->getFloat() ) {
-                        geom._fTransparency = 1-static_cast<dReal>(pphong->getTransparency()->getFloat()->getValue());
+                        geom.transparency_ = 1-static_cast<dReal>(pphong->getTransparency()->getFloat()->getValue());
                     }
-                    if( geom._fTransparency >= 1 ) {
-                        RAVELOG_WARN(str(boost::format("transparecy is %f, which means the item will be rendered invisible, this must be a mistake so setting to opaque (1)")%geom._fTransparency));
-                        geom._fTransparency = 0;
+                    if( geom.transparency_ >= 1 ) {
+                        RAVELOG_WARN(str(boost::format("transparecy is %f, which means the item will be rendered invisible, this must be a mistake so setting to opaque (1)")%geom.transparency_));
+                        geom.transparency_ = 0;
                     }
                 }
             }
@@ -2447,8 +2447,8 @@ public:
             return false;
         }
 
-        TriMesh& trimesh = geom._meshcollision;
-        geom._type = GT_TriMesh;
+        TriMesh& trimesh = geom.mesh_collision_;
+        geom.type_ = GT_TriMesh;
 
         // resolve the material and assign correct colors to the geometry
         if( !!triRef->getMaterial() ) {
@@ -2528,8 +2528,8 @@ public:
         if( !triRef ) {
             return false;
         }
-        TriMesh& trimesh = geom._meshcollision;
-        geom._type = GT_TriMesh;
+        TriMesh& trimesh = geom.mesh_collision_;
+        geom.type_ = GT_TriMesh;
 
         // resolve the material and assign correct colors to the geometry
         if( !!triRef->getMaterial() ) {
@@ -2618,8 +2618,8 @@ public:
         if( !triRef ) {
             return false;
         }
-        TriMesh& trimesh = geom._meshcollision;
-        geom._type = GT_TriMesh;
+        TriMesh& trimesh = geom.mesh_collision_;
+        geom.type_ = GT_TriMesh;
 
         // resolve the material and assign correct colors to the geometry
         if( !!triRef->getMaterial() ) {
@@ -2711,8 +2711,8 @@ public:
         if( !triRef ) {
             return false;
         }
-        TriMesh& trimesh = geom._meshcollision;
-        geom._type = GT_TriMesh;
+        TriMesh& trimesh = geom.mesh_collision_;
+        geom.type_ = GT_TriMesh;
 
         // resolve the material and assign correct colors to the geometry
         if( !!triRef->getMaterial() ) {
@@ -2873,7 +2873,7 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._type = GT_Box;
+                                    geominfo.type_ = GT_Box;
                                     geominfo.geom_data_vec_ = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -2887,7 +2887,7 @@ public:
                                 stringstream ss(pradius->getCharData());
                                 ss >> fradius;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._type = GT_Sphere;
+                                    geominfo.type_ = GT_Sphere;
                                     geominfo.geom_data_vec_.x = fradius;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -2906,7 +2906,7 @@ public:
                                 if( (ss.eof() || !!ss) && (ss2.eof() || !!ss2) ) {
                                     Transform trot(quatRotateDirection(Vector(0,0,1),Vector(0,1,0)),Vector());
                                     tlocalgeom = tlocalgeom * trot;
-                                    geominfo._type = GT_Cylinder;
+                                    geominfo.type_ = GT_Cylinder;
                                     geominfo.geom_data_vec_ = vGeomData;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -2923,7 +2923,7 @@ public:
                                 stringstream ss2(pheight->getCharData());
                                 ss2 >> vGeomData.y;
                                 if( (ss.eof() || !!ss) && (ss2.eof() || !!ss2) ) {
-                                    geominfo._type = GT_Cylinder;
+                                    geominfo.type_ = GT_Cylinder;
                                     geominfo.geom_data_vec_ = vGeomData;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -2931,7 +2931,7 @@ public:
                             }
                         }
                         else if( name == "cage" ) {
-                            geominfo._type = GT_Cage;
+                            geominfo.type_ = GT_Cage;
                             geominfo._t = tlocalgeom;
 
                             daeElementRef phalf_extents = children[i]->getChild("half_extents");
@@ -2977,7 +2977,7 @@ public:
                                 }
                             }
 
-                            geominfo._vSideWalls.clear();
+                            geominfo.side_walls_vector_.clear();
                             daeTArray<daeElementRef> cagechildren;
                             children[i]->getChildren(cagechildren);
                             for(size_t icagechild = 0; icagechild < cagechildren.getCount(); ++icagechild) {
@@ -3007,7 +3007,7 @@ public:
                                         }
                                     }
 
-                                    geominfo._vSideWalls.push_back(sidewall);
+                                    geominfo.side_walls_vector_.push_back(sidewall);
                                     bfoundgeom = true;
                                 }
                             }
@@ -3019,7 +3019,7 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._type = GT_Container;
+                                    geominfo.type_ = GT_Container;
                                     geominfo.geom_data_vec_ = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -3031,7 +3031,7 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._type = GT_Container;
+                                    geominfo.type_ = GT_Container;
                                     geominfo._vGeomData2 = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -3043,7 +3043,7 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._type = GT_Container;
+                                    geominfo.type_ = GT_Container;
                                     geominfo._vGeomData3 = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -3055,7 +3055,7 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._type = GT_Container;
+                                    geominfo.type_ = GT_Container;
                                     geominfo._vGeomData4 = vextents;
                                     geominfo._t = tlocalgeom;
                                     bfoundgeom = true;
@@ -3069,8 +3069,8 @@ public:
                             RAVELOG_WARN("plane geometries are not supported");
                         }
                         else if( name == "visible" ) {
-                            resolveCommon_bool_or_param(children[i],domgeom,geominfo._bVisible);
-                            bgeomvisible = geominfo._bVisible;
+                            resolveCommon_bool_or_param(children[i],domgeom,geominfo.is_visible_);
+                            bgeomvisible = geominfo.is_visible_;
                         }
                     }
                     if( bfoundgeom ) {
@@ -3091,28 +3091,28 @@ public:
                 _ExtractGeometry(meshRef->getTriangles_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
-                listGeometryInfos.back()._bVisible = bgeomvisible;
+                listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getTrifans_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTrifans_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
-                listGeometryInfos.back()._bVisible = bgeomvisible;
+                listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getTristrips_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTristrips_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
-                listGeometryInfos.back()._bVisible = bgeomvisible;
+                listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getPolylist_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getPolylist_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back()._t = tlocalgeom;
-                listGeometryInfos.back()._bVisible = bgeomvisible;
+                listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             if( meshRef->getPolygons_array().getCount()> 0 ) {
                 RAVELOG_WARN("openrave does not support collada polygons\n");
@@ -3136,7 +3136,7 @@ public:
                 FOREACH(itgeominfo,listNewGeometryInfos) {
                     itgeominfo->InitCollisionMesh();
                     Transform tnew = tlocalgeominv * itgeominfo->_t;
-                    FOREACH(itvertex, itgeominfo->_meshcollision.vertices) {
+                    FOREACH(itvertex, itgeominfo->mesh_collision_.vertices) {
                         vconvexhull.push_back(tnew * *itvertex);
                     }
                 }
@@ -3171,10 +3171,10 @@ public:
             if( vconvexhull.size()> 0 ) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 listGeometryInfos.back().name_ = geomname;
-                listGeometryInfos.back()._type = GT_TriMesh;
+                listGeometryInfos.back().type_ = GT_TriMesh;
                 listGeometryInfos.back()._t = tlocalgeom;
-                listGeometryInfos.back()._bVisible = bgeomvisible;
-                _computeConvexHull(vconvexhull,listGeometryInfos.back()._meshcollision);
+                listGeometryInfos.back().is_visible_ = bgeomvisible;
+                _computeConvexHull(vconvexhull,listGeometryInfos.back().mesh_collision_);
             }
             return true;
         }
@@ -4729,10 +4729,10 @@ private:
                             if( resolveCommon_bool_or_param(pelt, referenceElt, bVisible) ) {
                                 FOREACH(itgeometry, plink->_vGeometries) {
                                     if( bAndWithPrevious ) {
-                                        (*itgeometry)->_info._bVisible &= bVisible;
+                                        (*itgeometry)->_info.is_visible_ &= bVisible;
                                     }
                                     else {
-                                        (*itgeometry)->_info._bVisible = bVisible;
+                                        (*itgeometry)->_info.is_visible_ = bVisible;
                                     }
                                 }
                             }

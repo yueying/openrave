@@ -190,21 +190,21 @@ namespace OpenRAVE
 				Vector vExtents;
 				SideWallType type;
 			};
-			std::vector<SideWall> _vSideWalls; ///< used by GT_Cage
+			std::vector<SideWall> side_walls_vector_; ///< used by GT_Cage
 
 			///< for sphere it is radius
 			///< for cylinder, first 2 values are radius and height
 			///< for trimesh, none
-			RaveVector<float> _vDiffuseColor, _vAmbientColor; ///< hints for how to color the meshes
+			RaveVector<float> diffuse_color_vec_, _vAmbientColor; ///< hints for how to color the meshes
 
 			/// \brief trimesh representation of the collision data of this object in this local coordinate system
 			///
 			/// Should be transformed by \ref _t before rendering.
 			/// For spheres and cylinders, an appropriate discretization value is chosen.
 			/// If empty, will be automatically computed from the geometry's type and render data
-			TriMesh _meshcollision;
+			TriMesh mesh_collision_;
 
-			GeometryType _type; ///< the type of geometry primitive
+			GeometryType type_; ///< the type of geometry primitive
 
 			std::string name_; ///< the name of the geometry
 
@@ -216,15 +216,15 @@ namespace OpenRAVE
 
 			/// \brief filename for collision data (optional)
 			///
-			/// This is for record keeping only and geometry does not get automatically loaded to _meshcollision.
-			/// The user should call _meshcollision = *env->ReadTrimeshURI(_filenamecollision) by themselves.
+			/// This is for record keeping only and geometry does not get automatically loaded to mesh_collision_.
+			/// The user should call mesh_collision_ = *env->ReadTrimeshURI(_filenamecollision) by themselves.
 			std::string _filenamecollision;
 
-			Vector _vRenderScale; ///< render scale of the object (x,y,z) from _filenamerender
-			Vector _vCollisionScale; ///< render scale of the object (x,y,z) from _filenamecollision
-			float _fTransparency; ///< value from 0-1 for the transparency of the rendered object, 0 is opaque
-			bool _bVisible; ///< if true, geometry is visible as part of the 3d model (default is true)
-			bool _bModifiable; ///< if true, object geometry can be dynamically modified (default is true)
+			Vector render_scale_vec_; ///< render scale of the object (x,y,z) from _filenamerender
+			Vector collision_scale_vec_; ///< render scale of the object (x,y,z) from _filenamecollision
+			float transparency_; ///< value from 0-1 for the transparency of the rendered object, 0 is opaque
+			bool is_visible_; ///< if true, geometry is visible as part of the 3d model (default is true)
+			bool is_modifiable_; ///< if true, object geometry can be dynamically modified (default is true)
 		};
 		typedef std::shared_ptr<GeometryInfo> GeometryInfoPtr;
 		typedef std::shared_ptr<GeometryInfo const> GeometryInfoConstPtr;
@@ -306,27 +306,27 @@ namespace OpenRAVE
 					return _info._t;
 				}
 				inline GeometryType GetType() const {
-					return _info._type;
+					return _info.type_;
 				}
 				inline const Vector& GetRenderScale() const {
-					return _info._vRenderScale;
+					return _info.render_scale_vec_;
 				}
 
 				inline const std::string& GetRenderFilename() const {
 					return _info._filenamerender;
 				}
 				inline float GetTransparency() const {
-					return _info._fTransparency;
+					return _info.transparency_;
 				}
 				/// \deprecated (12/1/12)
 				inline bool IsDraw() const RAVE_DEPRECATED {
-					return _info._bVisible;
+					return _info.is_visible_;
 				}
 				inline bool IsVisible() const {
-					return _info._bVisible;
+					return _info.is_visible_;
 				}
 				inline bool IsModifiable() const {
-					return _info._bModifiable;
+					return _info.is_modifiable_;
 				}
 
 				inline dReal GetSphereRadius() const {
@@ -354,7 +354,7 @@ namespace OpenRAVE
 					return _info._vGeomData4;
 				}
 				inline const RaveVector<float>& GetDiffuseColor() const {
-					return _info._vDiffuseColor;
+					return _info.diffuse_color_vec_;
 				}
 				inline const RaveVector<float>& GetAmbientColor() const {
 					return _info._vAmbientColor;
@@ -365,7 +365,7 @@ namespace OpenRAVE
 
 				/// \brief returns the local collision mesh
 				inline const TriMesh& GetCollisionMesh() const {
-					return _info._meshcollision;
+					return _info.mesh_collision_;
 				}
 
 				inline const KinBody::GeometryInfo& GetInfo() const {
@@ -774,7 +774,8 @@ namespace OpenRAVE
 
 			For multi-dof joints, the order is transform(parentlink) * transform(axis0) * transform(axis1) ...
 		 */
-		enum JointType {
+		enum JointType 
+		{
 			JointNone = 0,
 			JointHinge = 0x01,
 			JointRevolute = 0x01,
@@ -791,7 +792,8 @@ namespace OpenRAVE
 			JointTrajectory = 0x80000004, ///< there is no axis defined, instead the relative transformation is directly output from the trajectory affine_transform structure
 		};
 
-		enum JointControlMode {
+		enum JointControlMode 
+		{
 			JCM_None = 0, ///< unspecified
 			JCM_RobotController = 1, ///< joint controlled by the robot controller
 			JCM_IO = 2,              ///< joint controlled by I/O signals
@@ -870,7 +872,7 @@ namespace OpenRAVE
 			std::string name_;         ///< the unique joint name
 			std::string _linkname0, _linkname1; ///< attaching links, all axes and anchors are defined in the link pointed to by _linkname0 coordinate system. _linkname0 is usually the parent link.
 			Vector _vanchor; ///< the anchor of the rotation axes defined in _linkname0's coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
-			boost::array<Vector, 3> _vaxes;                ///< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
+			boost::array<Vector, 3> axes_vector_;                ///< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
 			std::vector<dReal> _vcurrentvalues; ///< joint values at initialization. passed into Joint::_ComputeInternalInformation
 
 			boost::array<dReal, 3> _vresolution;              ///< interpolation resolution
@@ -909,7 +911,7 @@ namespace OpenRAVE
 			/// Although currently not developed, it could be possible to support identification for joints that are not revolute.
 			boost::array<uint8_t, 3> _bIsCircular;
 
-			bool _bIsActive;                 ///< if true, should belong to the DOF of the body, unless it is a mimic joint (_ComputeInternalInformation decides this)
+			bool is_active_;                 ///< if true, should belong to the DOF of the body, unless it is a mimic joint (_ComputeInternalInformation decides this)
 
 			/// \brief _controlMode specifies how this joint is controlled. For possible control modes, see enum JointControlMode.
 			JointControlMode _controlMode;
@@ -1447,7 +1449,7 @@ namespace OpenRAVE
 
 			KinBodyWeakPtr _parent;               ///< body that joint belong to
 			boost::array<LinkPtr, 2> _attachedbodies;         ///< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
-			boost::array<Vector, 3> _vaxes;                ///< normalized axes, this can be different from _info._vaxes and reflects how _tRight and _tLeft are computed
+			boost::array<Vector, 3> _vaxes;                ///< normalized axes, this can be different from _info.axes_vector_ and reflects how _tRight and _tLeft are computed
 			Transform _tRight, _tLeft;         ///< transforms used to get body[1]'s transformation with respect to body[0]'s: Tbody1 = Tbody0 * tLeft * JointOffsetLeft * JointRotation * JointOffsetRight * tRight
 			Transform _tRightNoOffset, _tLeftNoOffset;         ///< same as _tLeft and _tRight except it doesn't not include the offset
 			Transform _tinvRight, _tinvLeft;         ///< the inverse transformations of tRight and tLeft

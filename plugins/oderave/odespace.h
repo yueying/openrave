@@ -628,7 +628,7 @@ private:
     dGeomID _CreateODEGeomFromGeometryInfo(dSpaceID space, std::shared_ptr<KinBodyInfo::LINK> link, const KinBody::GeometryInfo& info)
     {
         dGeomID odegeom = NULL;
-        switch(info._type) {
+        switch(info.type_) {
         case OpenRAVE::GT_None:
             break;
         case OpenRAVE::GT_Box:
@@ -643,25 +643,25 @@ private:
         case OpenRAVE::GT_Container:
         case OpenRAVE::GT_Cage:
         case OpenRAVE::GT_TriMesh:
-            if( info._meshcollision.indices.size() > 0 ) {
-                dTriIndex* pindices = new dTriIndex[info._meshcollision.indices.size()];
-                for(size_t i = 0; i < info._meshcollision.indices.size(); ++i) {
-                    pindices[i] = info._meshcollision.indices[i];
+            if( info.mesh_collision_.indices.size() > 0 ) {
+                dTriIndex* pindices = new dTriIndex[info.mesh_collision_.indices.size()];
+                for(size_t i = 0; i < info.mesh_collision_.indices.size(); ++i) {
+                    pindices[i] = info.mesh_collision_.indices[i];
                 }
-                dReal* pvertices = new dReal[4*info._meshcollision.vertices.size()];
-                for(size_t i = 0; i < info._meshcollision.vertices.size(); ++i) {
-                    Vector v = info._meshcollision.vertices[i];
+                dReal* pvertices = new dReal[4*info.mesh_collision_.vertices.size()];
+                for(size_t i = 0; i < info.mesh_collision_.vertices.size(); ++i) {
+                    Vector v = info.mesh_collision_.vertices[i];
                     pvertices[4*i+0] = v.x; pvertices[4*i+1] = v.y; pvertices[4*i+2] = v.z;
                 }
                 dTriMeshDataID id = dGeomTriMeshDataCreate();
-                dGeomTriMeshDataBuildSimple(id, pvertices, info._meshcollision.vertices.size(), pindices, info._meshcollision.indices.size());
+                dGeomTriMeshDataBuildSimple(id, pvertices, info.mesh_collision_.vertices.size(), pindices, info.mesh_collision_.indices.size());
                 odegeom = dCreateTriMesh(0, id, NULL, NULL, NULL);
                 link->listtrimeshinds.push_back(pindices);
                 link->listvertices.push_back(pvertices);
             }
             break;
         default:
-            RAVELOG_WARN(str(boost::format("ode doesn't support geom type %d")%info._type));
+            RAVELOG_WARN(str(boost::format("ode doesn't support geom type %d")%info.type_));
             break;
         }
 

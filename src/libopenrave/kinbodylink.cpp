@@ -202,8 +202,8 @@ namespace OpenRAVE {
 	{
 		bool bchanged = false;
 		FOREACH(itgeom, _vGeometries) {
-			if ((*itgeom)->_info._bVisible != visible) {
-				(*itgeom)->_info._bVisible = visible;
+			if ((*itgeom)->_info.is_visible_ != visible) {
+				(*itgeom)->_info.is_visible_ = visible;
 				bchanged = true;
 			}
 		}

@@ -132,11 +132,11 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
     size_t numvertices=0, numindices=0;
     FOREACHC(itab, vaabbs) {
         GeometryInfo info;
-        info._type = GT_Box;
+        info.type_ = GT_Box;
         info._t.trans = itab->pos;
-        info._bVisible = visible;
+        info.is_visible_ = visible;
         info.geom_data_vec_ = itab->extents;
-        info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
+        info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
         geom->_info.InitCollisionMesh();
@@ -174,11 +174,11 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         tm.m[4] = itobb->right.y; tm.m[5] = itobb->up.y; tm.m[6] = itobb->dir.y;
         tm.m[8] = itobb->right.z; tm.m[9] = itobb->up.z; tm.m[10] = itobb->dir.z;
         GeometryInfo info;
-        info._type = GT_Box;
+        info.type_ = GT_Box;
         info._t = tm;
-        info._bVisible = visible;
+        info.is_visible_ = visible;
         info.geom_data_vec_ = itobb->extents;
-        info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
+        info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
         geom->_info.InitCollisionMesh();
@@ -211,11 +211,11 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
     TriMesh trimesh;
     FOREACHC(itv, vspheres) {
         GeometryInfo info;
-        info._type = GT_Sphere;
+        info.type_ = GT_Sphere;
         info._t.trans.x = itv->x; info._t.trans.y = itv->y; info._t.trans.z = itv->z;
-        info._bVisible = visible;
+        info.is_visible_ = visible;
         info.geom_data_vec_.x = itv->w;
-        info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
+        info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
         geom->_info.InitCollisionMesh();
@@ -239,11 +239,11 @@ bool KinBody::InitFromTrimesh(const TriMesh& trimesh, bool visible, const std::s
     plink->_info._bStatic = true;
     plink->_collision = trimesh;
     GeometryInfo info;
-    info._type = GT_TriMesh;
-    info._bVisible = visible;
-    info._vDiffuseColor=Vector(1,0.5f,0.5f,1);
+    info.type_ = GT_TriMesh;
+    info.is_visible_ = visible;
+    info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
     info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
-    info._meshcollision = trimesh;
+    info.mesh_collision_ = trimesh;
     Link::GeometryPtr geom(new Link::Geometry(plink,info));
     plink->_vGeometries.push_back(geom);
     _veclinks.push_back(plink);
@@ -4318,7 +4318,7 @@ bool KinBody::SetVisible(bool visible)
     FOREACH(it, _veclinks) {
         FOREACH(itgeom,(*it)->_vGeometries) {
             if( (*itgeom)->IsVisible() != visible ) {
-                (*itgeom)->_info._bVisible = visible;
+                (*itgeom)->_info.is_visible_ = visible;
                 bchanged = true;
             }
         }
@@ -4861,7 +4861,7 @@ void KinBody::_InitAndAddLink(LinkPtr plink)
     plink->_collision.indices.clear();
     FOREACHC(itgeominfo,info._vgeometryinfos) {
         Link::GeometryPtr geom(new Link::Geometry(plink,**itgeominfo));
-        if( geom->_info._meshcollision.vertices.size() == 0 ) { // try to avoid recomputing
+        if( geom->_info.mesh_collision_.vertices.size() == 0 ) { // try to avoid recomputing
             geom->_info.InitCollisionMesh();
         }
         plink->_vGeometries.push_back(geom);
@@ -4911,9 +4911,9 @@ void KinBody::_InitAndAddJoint(JointPtr pjoint)
     }
     OPENRAVE_ASSERT_FORMAT(!!plink0&&!!plink1, "cannot find links '%s' and '%s' of body '%s' joint %s ", info._linkname0%info._linkname1%GetName()%info.name_, ORE_Failed);
     std::vector<Vector> vaxes(pjoint->GetDOF());
-    std::copy(info._vaxes.begin(),info._vaxes.begin()+vaxes.size(), vaxes.begin());
+    std::copy(info.axes_vector_.begin(),info.axes_vector_.begin()+vaxes.size(), vaxes.begin());
     pjoint->_ComputeInternalInformation(plink0, plink1, info._vanchor, vaxes, info._vcurrentvalues);
-    if( info._bIsActive ) {
+    if( info.is_active_ ) {
         _vecjoints.push_back(pjoint);
     }
     else {

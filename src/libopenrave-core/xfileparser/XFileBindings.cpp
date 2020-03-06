@@ -218,7 +218,7 @@ protected:
             else if( node->mFramePivot->mType == 5 ) {
                 RAVELOG_WARN(str(boost::format("frame %s is some type of geometry scaling joint?\n")%node->mName));
                 pjoint.reset();
-                //pjoint->_type = KinBody::JointPrismatic;
+                //pjoint->type_ = KinBody::JointPrismatic;
                 //pjoint->_vlowerlimit[0] = -10000;
                 //pjoint->_vupperlimit[0] = 10000;
             }
@@ -303,7 +303,7 @@ protected:
 //                if( node->mFramePivot->mJointIndex == 0 ) {
 //                    if( pjoint->_info._linkname0 != pjoint->_info._linkname1 ) {
 //                        // possibly connected to the base?
-//                        pjoint->_info._type = KinBody::JointHinge;
+//                        pjoint->_info.type_ = KinBody::JointHinge;
 //                        pjoint->_info._bIsActive = false;
 //                        pjoint->_info._vlowerlimit[0] = pjoint->_info._vupperlimit[0] = 0;
 //                        pjoint->_vmimic[0].reset(); // remove any mimic
@@ -366,18 +366,18 @@ protected:
 
     void _ExtractGeometry(const Assimp::XFile::Mesh* pmesh, KinBody::GeometryInfo& g)
     {
-        g._type = GT_TriMesh;
-        g._meshcollision.vertices.resize(pmesh->mPositions.size());
+        g.type_ = GT_TriMesh;
+        g.mesh_collision_.vertices.resize(pmesh->mPositions.size());
         // faces are defined clockwise in X file, so flip Z and change the order of indices!
         for(size_t i = 0; i < pmesh->mPositions.size(); ++i) {
-            g._meshcollision.vertices[i] = Vector(pmesh->mPositions[i].x*_vScaleGeometry.x,pmesh->mPositions[i].y*_vScaleGeometry.y, -pmesh->mPositions[i].z*_vScaleGeometry.z);
+            g.mesh_collision_.vertices[i] = Vector(pmesh->mPositions[i].x*_vScaleGeometry.x,pmesh->mPositions[i].y*_vScaleGeometry.y, -pmesh->mPositions[i].z*_vScaleGeometry.z);
         }
         size_t numindices = 0;
         for(size_t iface = 0; iface < pmesh->mPosFaces.size(); ++iface) {
             numindices += 3*(pmesh->mPosFaces[iface].mIndices.size()-2);
         }
-        g._meshcollision.indices.resize(numindices);
-        std::vector<int>::iterator itindex = g._meshcollision.indices.begin();
+        g.mesh_collision_.indices.resize(numindices);
+        std::vector<int>::iterator itindex = g.mesh_collision_.indices.begin();
         for(size_t iface = 0; iface < pmesh->mPosFaces.size(); ++iface) {
             for(size_t i = 2; i < pmesh->mPosFaces[iface].mIndices.size(); ++i) {
                 *itindex++ = pmesh->mPosFaces[iface].mIndices.at(1);
@@ -392,7 +392,7 @@ protected:
         }
         if( matindex < pmesh->mMaterials.size() ) {
             const Assimp::XFile::Material& mtrl = pmesh->mMaterials.at(matindex);
-            g._vDiffuseColor = Vector(mtrl.mDiffuse.r, mtrl.mDiffuse.g, mtrl.mDiffuse.b, mtrl.mDiffuse.a);
+            g.diffuse_color_vec_ = Vector(mtrl.mDiffuse.r, mtrl.mDiffuse.g, mtrl.mDiffuse.b, mtrl.mDiffuse.a);
             g._vAmbientColor = Vector(mtrl.mEmissive.r, mtrl.mEmissive.g, mtrl.mEmissive.b, 1);
         }
     }

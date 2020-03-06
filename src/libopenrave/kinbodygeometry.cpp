@@ -21,46 +21,49 @@
 #include <openrave/json.h>
 #include <openrave/openravejson.h>
 
-
 namespace OpenRAVE
 {
-
-KinBody::GeometryInfo::GeometryInfo()
+	KinBody::GeometryInfo::GeometryInfo()
 	{
-		_vDiffuseColor = Vector(1, 1, 1);
-		_type = GT_None;
-		_fTransparency = 0;
-		_vRenderScale = _vCollisionScale = Vector(1, 1, 1);
-		_bVisible = true;
-		_bModifiable = true;
+		diffuse_color_vec_ = Vector(1, 1, 1);
+		type_ = GT_None;
+		transparency_ = 0;
+		render_scale_vec_ = collision_scale_vec_ = Vector(1, 1, 1);
+		is_visible_ = true;
+		is_modifiable_ = true;
 	}
 
-	bool KinBody::GeometryInfo::InitCollisionMesh(float fTessellation)
+	bool KinBody::GeometryInfo::InitCollisionMesh(float tessellation)
 	{
-		if (_type == GT_TriMesh || _type == GT_None) {
+		if (type_ == GT_TriMesh || type_ == GT_None)
+		{
 			return true;
 		}
 
 		// is clear() better since it releases the memory?
-		_meshcollision.indices.resize(0);
-		_meshcollision.vertices.resize(0);
+		mesh_collision_.indices.resize(0);
+		mesh_collision_.vertices.resize(0);
 
-		if (fTessellation < 0.01f) {
-			fTessellation = 0.01f;
+		if (tessellation < 0.01f)
+		{
+			tessellation = 0.01f;
 		}
 		// start tesselating
-		switch (_type) {
-		case GT_Sphere: {
+		switch (type_)
+		{
+		case GT_Sphere:
+		{
 			// log_2 (1+ tess)
-			GenerateSphereTriangulation(_meshcollision, 3 + (int)(logf(fTessellation) / logf(2.0f)));
-			dReal fRadius = GetSphereRadius();
-			for(auto& it: _meshcollision.vertices) 
+			GenerateSphereTriangulation(mesh_collision_, 3 + (int)(logf(tessellation) / logf(2.0f)));
+			dReal radius = GetSphereRadius();
+			for (auto& it : mesh_collision_.vertices)
 			{
-				it *= fRadius;
+				it *= radius;
 			}
 			break;
 		}
-		case GT_Box: {
+		case GT_Box:
+		{
 			// trivial
 			Vector ex = GetBoxExtents();
 			Vector v[8] = { Vector(ex.x, ex.y, ex.z),
@@ -86,92 +89,107 @@ KinBody::GeometryInfo::GeometryInfo()
 				1, 3, 5,
 				3, 7, 5
 			};
-			_meshcollision.vertices.resize(8);
-			std::copy(&v[0], &v[8], _meshcollision.vertices.begin());
-			_meshcollision.indices.resize(nindices);
-			std::copy(&indices[0], &indices[nindices], _meshcollision.indices.begin());
+			mesh_collision_.vertices.resize(8);
+			std::copy(&v[0], &v[8], mesh_collision_.vertices.begin());
+			mesh_collision_.indices.resize(nindices);
+			std::copy(&indices[0], &indices[nindices], mesh_collision_.indices.begin());
 			break;
 		}
-		case GT_Cylinder: {
+		case GT_Cylinder:
+		{
 			// cylinder is on z axis
 			dReal rad = GetCylinderRadius(), len = GetCylinderHeight()*0.5f;
-			int numverts = (int)(fTessellation*48.0f) + 3;
+			int numverts = (int)(tessellation*48.0f) + 3;
 			dReal dtheta = 2 * PI / (dReal)numverts;
-			_meshcollision.vertices.push_back(Vector(0, 0, len));
-			_meshcollision.vertices.push_back(Vector(0, 0, -len));
-			_meshcollision.vertices.push_back(Vector(rad, 0, len));
-			_meshcollision.vertices.push_back(Vector(rad, 0, -len));
-			for (int i = 0; i < numverts + 1; ++i) {
+			mesh_collision_.vertices.push_back(Vector(0, 0, len));
+			mesh_collision_.vertices.push_back(Vector(0, 0, -len));
+			mesh_collision_.vertices.push_back(Vector(rad, 0, len));
+			mesh_collision_.vertices.push_back(Vector(rad, 0, -len));
+			for (int i = 0; i < numverts + 1; ++i)
+			{
 				dReal s = rad * RaveSin(dtheta * (dReal)i);
 				dReal c = rad * RaveCos(dtheta * (dReal)i);
-				int off = (int)_meshcollision.vertices.size();
-				_meshcollision.vertices.push_back(Vector(c, s, len));
-				_meshcollision.vertices.push_back(Vector(c, s, -len));
+				int off = (int)mesh_collision_.vertices.size();
+				mesh_collision_.vertices.push_back(Vector(c, s, len));
+				mesh_collision_.vertices.push_back(Vector(c, s, -len));
 
-				_meshcollision.indices.push_back(0);       _meshcollision.indices.push_back(off - 2);       _meshcollision.indices.push_back(off);
-				_meshcollision.indices.push_back(1);       _meshcollision.indices.push_back(off + 1);       _meshcollision.indices.push_back(off - 1);
-				_meshcollision.indices.push_back(off - 2);   _meshcollision.indices.push_back(off - 1);         _meshcollision.indices.push_back(off);
-				_meshcollision.indices.push_back(off);   _meshcollision.indices.push_back(off - 1);         _meshcollision.indices.push_back(off + 1);
+				mesh_collision_.indices.push_back(0);       mesh_collision_.indices.push_back(off - 2);       mesh_collision_.indices.push_back(off);
+				mesh_collision_.indices.push_back(1);       mesh_collision_.indices.push_back(off + 1);       mesh_collision_.indices.push_back(off - 1);
+				mesh_collision_.indices.push_back(off - 2);   mesh_collision_.indices.push_back(off - 1);         mesh_collision_.indices.push_back(off);
+				mesh_collision_.indices.push_back(off);   mesh_collision_.indices.push_back(off - 1);         mesh_collision_.indices.push_back(off + 1);
 			}
 			break;
 		}
-		case GT_Cage: {
+		case GT_Cage:
+		{
 			const Vector& vCageBaseExtents = geom_data_vec_;
-			for (size_t i = 0; i < _vSideWalls.size(); ++i) {
-				const SideWall &s = _vSideWalls[i];
-				const size_t vBase = _meshcollision.vertices.size();
-				AppendBoxTriangulation(Vector(0, 0, s.vExtents[2]), s.vExtents, _meshcollision);
+			for (size_t i = 0; i < side_walls_vector_.size(); ++i)
+			{
+				const SideWall &s = side_walls_vector_[i];
+				const size_t vBase = mesh_collision_.vertices.size();
+				AppendBoxTriangulation(Vector(0, 0, s.vExtents[2]), s.vExtents, mesh_collision_);
 
 				for (size_t j = 0; j < 8; ++j) {
-					_meshcollision.vertices[vBase + j] = s.transf * _meshcollision.vertices[vBase + j];
+					mesh_collision_.vertices[vBase + j] = s.transf * mesh_collision_.vertices[vBase + j];
 				}
 			}
 			// finally add the base
-			AppendBoxTriangulation(Vector(0, 0, vCageBaseExtents.z), vCageBaseExtents, _meshcollision);
+			AppendBoxTriangulation(Vector(0, 0, vCageBaseExtents.z), vCageBaseExtents, mesh_collision_);
 			break;
 		}
-		case GT_Container: {
+		case GT_Container:
+		{
 			const Vector& outerextents = geom_data_vec_;
 			const Vector& innerextents = _vGeomData2;
 			const Vector& bottomcross = _vGeomData3;
 			const Vector& bottom = _vGeomData4;
 			dReal zoffset = 0;
-			if (bottom[2] > 0) {
-				if (bottom[0] > 0 && bottom[1] > 0) {
+			if (bottom[2] > 0)
+			{
+				if (bottom[0] > 0 && bottom[1] > 0)
+				{
 					zoffset = bottom[2];
 				}
 			}
 			// +x wall
-			AppendBoxTriangulation(Vector((outerextents[0] + innerextents[0]) / 4., 0, outerextents[2] / 2. + zoffset), Vector((outerextents[0] - innerextents[0]) / 4., outerextents[1] / 2., outerextents[2] / 2.), _meshcollision);
+			AppendBoxTriangulation(Vector((outerextents[0] + innerextents[0]) / 4., 0, outerextents[2] / 2. + zoffset),
+				Vector((outerextents[0] - innerextents[0]) / 4., outerextents[1] / 2., outerextents[2] / 2.), mesh_collision_);
 			// -x wall
-			AppendBoxTriangulation(Vector(-(outerextents[0] + innerextents[0]) / 4., 0, outerextents[2] / 2. + zoffset), Vector((outerextents[0] - innerextents[0]) / 4., outerextents[1] / 2., outerextents[2] / 2.), _meshcollision);
+			AppendBoxTriangulation(Vector(-(outerextents[0] + innerextents[0]) / 4., 0, outerextents[2] / 2. + zoffset),
+				Vector((outerextents[0] - innerextents[0]) / 4., outerextents[1] / 2., outerextents[2] / 2.), mesh_collision_);
 			// +y wall
-			AppendBoxTriangulation(Vector(0, (outerextents[1] + innerextents[1]) / 4., outerextents[2] / 2. + zoffset), Vector(outerextents[0] / 2., (outerextents[1] - innerextents[1]) / 4., outerextents[2] / 2.), _meshcollision);
+			AppendBoxTriangulation(Vector(0, (outerextents[1] + innerextents[1]) / 4., outerextents[2] / 2. + zoffset),
+				Vector(outerextents[0] / 2., (outerextents[1] - innerextents[1]) / 4., outerextents[2] / 2.), mesh_collision_);
 			// -y wall
-			AppendBoxTriangulation(Vector(0, -(outerextents[1] + innerextents[1]) / 4., outerextents[2] / 2. + zoffset), Vector(outerextents[0] / 2., (outerextents[1] - innerextents[1]) / 4., outerextents[2] / 2.), _meshcollision);
+			AppendBoxTriangulation(Vector(0, -(outerextents[1] + innerextents[1]) / 4., outerextents[2] / 2. + zoffset),
+				Vector(outerextents[0] / 2., (outerextents[1] - innerextents[1]) / 4., outerextents[2] / 2.), mesh_collision_);
 			// bottom
 			if (outerextents[2] - innerextents[2] >= 1e-6) { // small epsilon error can make thin triangles appear, so test with a reasonable threshold
-				AppendBoxTriangulation(Vector(0, 0, (outerextents[2] - innerextents[2]) / 2. + zoffset), Vector(outerextents[0] / 2., outerextents[1] / 2., (outerextents[2] - innerextents[2]) / 2), _meshcollision);
+				AppendBoxTriangulation(Vector(0, 0, (outerextents[2] - innerextents[2]) / 2. + zoffset),
+					Vector(outerextents[0] / 2., outerextents[1] / 2., (outerextents[2] - innerextents[2]) / 2),
+					mesh_collision_);
 			}
 			// cross
-			if (bottomcross[2] > 0) {
-				if (bottomcross[0] > 0) {
-					AppendBoxTriangulation(Vector(0, 0, bottomcross[2] / 2 + outerextents[2] - innerextents[2] + zoffset), Vector(bottomcross[0] / 2, innerextents[1] / 2, bottomcross[2] / 2), _meshcollision);
+			if (bottomcross[2] > 0)
+			{
+				if (bottomcross[0] > 0)
+				{
+					AppendBoxTriangulation(Vector(0, 0, bottomcross[2] / 2 + outerextents[2] - innerextents[2] + zoffset), Vector(bottomcross[0] / 2, innerextents[1] / 2, bottomcross[2] / 2), mesh_collision_);
 				}
 				if (bottomcross[1] > 0) {
-					AppendBoxTriangulation(Vector(0, 0, bottomcross[2] / 2 + outerextents[2] - innerextents[2] + zoffset), Vector(innerextents[0] / 2, bottomcross[1] / 2, bottomcross[2] / 2), _meshcollision);
+					AppendBoxTriangulation(Vector(0, 0, bottomcross[2] / 2 + outerextents[2] - innerextents[2] + zoffset), Vector(innerextents[0] / 2, bottomcross[1] / 2, bottomcross[2] / 2), mesh_collision_);
 				}
 			}
 			// bottom
 			if (bottom[2] > 0) {
 				if (bottom[0] > 0 && bottom[1] > 0) {
-					AppendBoxTriangulation(Vector(0, 0, bottom[2] / 2), Vector(bottom[0] / 2., bottom[1] / 2., bottom[2] / 2.), _meshcollision);
+					AppendBoxTriangulation(Vector(0, 0, bottom[2] / 2), Vector(bottom[0] / 2., bottom[1] / 2., bottom[2] / 2.), mesh_collision_);
 				}
 			}
 			break;
 		}
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(("unrecognized geom type %d!"), _type, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(("unrecognized geom type %d!"), type_, ORE_InvalidArguments);
 		}
 
 		return true;
@@ -181,8 +199,10 @@ KinBody::GeometryInfo::GeometryInfo()
 		Transform& inner_empty_volume,
 		Vector& inner_empty_extents) const
 	{
-		switch (_type) {
-		case GT_Cage: {
+		switch (type_) 
+		{
+		case GT_Cage: 
+		{
 			Vector vwallmin, vwallmax;
 			vwallmax.z = vwallmin.z = geom_data_vec_.z * 2;
 
@@ -193,22 +213,22 @@ KinBody::GeometryInfo::GeometryInfo()
 			vwallmax.y = geom_data_vec_.y;
 			int sideWallExtents = 0;
 
-			for(auto& itwall: _vSideWalls) {
+			for (auto& itwall : side_walls_vector_) {
 				// compute the XYZ extents of the wall
 				Vector vxaxis = geometry::ExtractAxisFromQuat(itwall.transf.rot, 0);
 				Vector vyaxis = geometry::ExtractAxisFromQuat(itwall.transf.rot, 1);
 				Vector vzaxis = geometry::ExtractAxisFromQuat(itwall.transf.rot, 2);
 
 				Vector vprojectedextents;
-				for (int idim = 0; idim < 3; ++idim) 
+				for (int idim = 0; idim < 3; ++idim)
 				{
-					vprojectedextents[idim] = RaveFabs(vxaxis[idim])*itwall.vExtents.x 
-						+ RaveFabs(vyaxis[idim])*itwall.vExtents.y 
+					vprojectedextents[idim] = RaveFabs(vxaxis[idim])*itwall.vExtents.x
+						+ RaveFabs(vyaxis[idim])*itwall.vExtents.y
 						+ RaveFabs(vzaxis[idim])*itwall.vExtents.z;
 				}
 
 				// the origin of the side wall is the bottom center
-				if (vwallmax.z < itwall.transf.trans.z + 2 * vprojectedextents.z) 
+				if (vwallmax.z < itwall.transf.trans.z + 2 * vprojectedextents.z)
 				{
 					vwallmax.z = itwall.transf.trans.z + 2 * vprojectedextents.z;
 				}
@@ -303,125 +323,124 @@ KinBody::GeometryInfo::GeometryInfo()
 		}
 	}
 
-inline void SaveJsonValue(rapidjson::Value& v, const KinBody::GeometryInfo::SideWall& t,
-	rapidjson::Document::AllocatorType& alloc) {
-    v.SetObject();
-    openravejson::SetJsonValueByKey(v, "transform", t.transf, alloc);
-    openravejson::SetJsonValueByKey(v, "halfExtents", t.vExtents, alloc);
-    openravejson::SetJsonValueByKey(v, "type", (int)t.type, alloc);
-}
+	inline void SaveJsonValue(rapidjson::Value& v, const KinBody::GeometryInfo::SideWall& t,
+		rapidjson::Document::AllocatorType& alloc) {
+		v.SetObject();
+		openravejson::SetJsonValueByKey(v, "transform", t.transf, alloc);
+		openravejson::SetJsonValueByKey(v, "halfExtents", t.vExtents, alloc);
+		openravejson::SetJsonValueByKey(v, "type", (int)t.type, alloc);
+	}
 
-inline void LoadJsonValue(const rapidjson::Value& v, KinBody::GeometryInfo::SideWall& t) {
-    if(v.IsObject()) {
-        openravejson::LoadJsonValueByKey(v, "transform", t.transf);
-        openravejson::LoadJsonValueByKey(v, "halfExtents", t.vExtents);
-        int type = 0;
-        openravejson::LoadJsonValueByKey(v, "type", type);
-        t.type = (KinBody::GeometryInfo::SideWallType)type;
-    } else {
-        throw openravejson::OpenRAVEJSONException("Cannot convert json type " + openravejson::GetJsonTypeName(v) + " to OpenRAVE::Geometry::SideWall");
-    }
-}
+	inline void LoadJsonValue(const rapidjson::Value& v, KinBody::GeometryInfo::SideWall& t) {
+		if (v.IsObject()) {
+			openravejson::LoadJsonValueByKey(v, "transform", t.transf);
+			openravejson::LoadJsonValueByKey(v, "halfExtents", t.vExtents);
+			int type = 0;
+			openravejson::LoadJsonValueByKey(v, "type", type);
+			t.type = (KinBody::GeometryInfo::SideWallType)type;
+		}
+		else {
+			throw openravejson::OpenRAVEJSONException("Cannot convert json type " + openravejson::GetJsonTypeName(v) + " to OpenRAVE::Geometry::SideWall");
+		}
+	}
 
-void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value, 
-	rapidjson::Document::AllocatorType& allocator, const dReal unit_scale, int options) const
-{
-    // RAVE_SERIALIZEJSON_ADDMEMBER(allocator, "sid", sid);
-    openravejson::SetJsonValueByKey(value, "name", name_, allocator);
+	void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
+		rapidjson::Document::AllocatorType& allocator, const dReal unit_scale, int options) const
+	{
+		// RAVE_SERIALIZEJSON_ADDMEMBER(allocator, "sid", sid);
+		openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
-    Transform tscaled = _t;
-    tscaled.trans *= unit_scale;
-    openravejson::SetJsonValueByKey(value, "transform", tscaled, allocator);
+		Transform tscaled = _t;
+		tscaled.trans *= unit_scale;
+		openravejson::SetJsonValueByKey(value, "transform", tscaled, allocator);
 
-    switch(_type) {
-    case GT_Box:
-        openravejson::SetJsonValueByKey(value, "type", "box", allocator);
-        openravejson::SetJsonValueByKey(value, "halfExtents", geom_data_vec_*unit_scale, allocator);
-        break;
+		switch (type_) {
+		case GT_Box:
+			openravejson::SetJsonValueByKey(value, "type", "box", allocator);
+			openravejson::SetJsonValueByKey(value, "halfExtents", geom_data_vec_*unit_scale, allocator);
+			break;
 
-    case GT_Container:
-        openravejson::SetJsonValueByKey(value, "type", "container", allocator);
-        openravejson::SetJsonValueByKey(value, "outerExtents", geom_data_vec_*unit_scale, allocator);
-        openravejson::SetJsonValueByKey(value, "innerExtents", _vGeomData2*unit_scale, allocator);
-        openravejson::SetJsonValueByKey(value, "bottomCross", _vGeomData3*unit_scale, allocator);
-        openravejson::SetJsonValueByKey(value, "bottom", _vGeomData4*unit_scale, allocator);
-        break;
+		case GT_Container:
+			openravejson::SetJsonValueByKey(value, "type", "container", allocator);
+			openravejson::SetJsonValueByKey(value, "outerExtents", geom_data_vec_*unit_scale, allocator);
+			openravejson::SetJsonValueByKey(value, "innerExtents", _vGeomData2*unit_scale, allocator);
+			openravejson::SetJsonValueByKey(value, "bottomCross", _vGeomData3*unit_scale, allocator);
+			openravejson::SetJsonValueByKey(value, "bottom", _vGeomData4*unit_scale, allocator);
+			break;
 
-    case GT_Cage: {
-        openravejson::SetJsonValueByKey(value, "type", "cage", allocator);
-        openravejson::SetJsonValueByKey(value, "baseExtents", geom_data_vec_*unit_scale, allocator);
+		case GT_Cage: {
+			openravejson::SetJsonValueByKey(value, "type", "cage", allocator);
+			openravejson::SetJsonValueByKey(value, "baseExtents", geom_data_vec_*unit_scale, allocator);
 
-        std::vector<SideWall> vScaledSideWalls = _vSideWalls;
-        FOREACH(itwall, vScaledSideWalls) {
-            itwall->transf.trans *= unit_scale;
-            itwall->vExtents *= unit_scale;
-        }
-        if( _vGeomData2.x > g_fEpsilon ) {
-            openravejson::SetJsonValueByKey(value, "innerSizeX", _vGeomData2.x*unit_scale, allocator);
-        }
-        if( _vGeomData2.y > g_fEpsilon ) {
-            openravejson::SetJsonValueByKey(value, "innerSizeY", _vGeomData2.y*unit_scale, allocator);
-        }
-        if( _vGeomData2.z > g_fEpsilon ) {
-            openravejson::SetJsonValueByKey(value, "innerSizeZ", _vGeomData2.z*unit_scale, allocator);
-        }
-        openravejson::SetJsonValueByKey(value, "sideWalls", vScaledSideWalls, allocator);
-        break;
-    }
-    case GT_Sphere:
-        openravejson::SetJsonValueByKey(value, "type", "sphere", allocator);
-        openravejson::SetJsonValueByKey(value, "radius", geom_data_vec_.x*unit_scale, allocator);
-        break;
+			std::vector<SideWall> vScaledSideWalls = side_walls_vector_;
+			FOREACH(itwall, vScaledSideWalls) {
+				itwall->transf.trans *= unit_scale;
+				itwall->vExtents *= unit_scale;
+			}
+			if (_vGeomData2.x > g_fEpsilon) {
+				openravejson::SetJsonValueByKey(value, "innerSizeX", _vGeomData2.x*unit_scale, allocator);
+			}
+			if (_vGeomData2.y > g_fEpsilon) {
+				openravejson::SetJsonValueByKey(value, "innerSizeY", _vGeomData2.y*unit_scale, allocator);
+			}
+			if (_vGeomData2.z > g_fEpsilon) {
+				openravejson::SetJsonValueByKey(value, "innerSizeZ", _vGeomData2.z*unit_scale, allocator);
+			}
+			openravejson::SetJsonValueByKey(value, "sideWalls", vScaledSideWalls, allocator);
+			break;
+		}
+		case GT_Sphere:
+			openravejson::SetJsonValueByKey(value, "type", "sphere", allocator);
+			openravejson::SetJsonValueByKey(value, "radius", geom_data_vec_.x*unit_scale, allocator);
+			break;
 
+		case GT_Cylinder:
+			openravejson::SetJsonValueByKey(value, "type", "cylinder", allocator);
+			openravejson::SetJsonValueByKey(value, "radius", geom_data_vec_.x*unit_scale, allocator);
+			openravejson::SetJsonValueByKey(value, "height", geom_data_vec_.y*unit_scale, allocator);
+			break;
 
-    case GT_Cylinder:
-        openravejson::SetJsonValueByKey(value, "type", "cylinder", allocator);
-        openravejson::SetJsonValueByKey(value, "radius", geom_data_vec_.x*unit_scale, allocator);
-        openravejson::SetJsonValueByKey(value, "height", geom_data_vec_.y*unit_scale, allocator);
-        break;
-
-    case GT_TriMesh:
-        openravejson::SetJsonValueByKey(value, "type", "trimesh", allocator);
-        openravejson::SetJsonValueByKey(value, "mesh", _meshcollision, allocator);
+		case GT_TriMesh:
+			openravejson::SetJsonValueByKey(value, "type", "trimesh", allocator);
+			openravejson::SetJsonValueByKey(value, "mesh", mesh_collision_, allocator);
 			break;
 
 		default:
 			break;
 		}
 
-    openravejson::SetJsonValueByKey(value, "transparency", _fTransparency, allocator);
-    openravejson::SetJsonValueByKey(value, "visible", _bVisible, allocator);
-    openravejson::SetJsonValueByKey(value, "diffuseColor", _vDiffuseColor, allocator);
-    openravejson::SetJsonValueByKey(value, "ambientColor", _vAmbientColor, allocator);
-    openravejson::SetJsonValueByKey(value, "modifiable", _bModifiable, allocator);
+		openravejson::SetJsonValueByKey(value, "transparency", transparency_, allocator);
+		openravejson::SetJsonValueByKey(value, "visible", is_visible_, allocator);
+		openravejson::SetJsonValueByKey(value, "diffuseColor", diffuse_color_vec_, allocator);
+		openravejson::SetJsonValueByKey(value, "ambientColor", _vAmbientColor, allocator);
+		openravejson::SetJsonValueByKey(value, "modifiable", is_modifiable_, allocator);
 	}
-
 
 	void KinBody::GeometryInfo::DeserializeJSON(const rapidjson::Value &value, const dReal unit_scale)
 	{
-    openravejson::LoadJsonValueByKey(value, "name", name_);
-    openravejson::LoadJsonValueByKey(value, "transform", _t);
+		openravejson::LoadJsonValueByKey(value, "name", name_);
+		openravejson::LoadJsonValueByKey(value, "transform", _t);
 
 		_t.trans *= unit_scale;
 
 		std::string typestr;
-    openravejson::LoadJsonValueByKey(value, "type", typestr);
+		openravejson::LoadJsonValueByKey(value, "type", typestr);
 
 		if (typestr == "box") {
-			_type = GT_Box;
-        openravejson::LoadJsonValueByKey(value, "halfExtents", geom_data_vec_);
+			type_ = GT_Box;
+			openravejson::LoadJsonValueByKey(value, "halfExtents", geom_data_vec_);
 			geom_data_vec_ *= unit_scale;
 		}
 		else if (typestr == "container") {
-			_type = GT_Container;
-        openravejson::LoadJsonValueByKey(value, "outerExtents", geom_data_vec_);
-        openravejson::LoadJsonValueByKey(value, "innerExtents", _vGeomData2);
+			type_ = GT_Container;
+			openravejson::LoadJsonValueByKey(value, "outerExtents", geom_data_vec_);
+			openravejson::LoadJsonValueByKey(value, "innerExtents", _vGeomData2);
 
 			_vGeomData3 = Vector();
-        openravejson::LoadJsonValueByKey(value, "bottomCross", _vGeomData3);
+			openravejson::LoadJsonValueByKey(value, "bottomCross", _vGeomData3);
 
 			_vGeomData4 = Vector();
-        openravejson::LoadJsonValueByKey(value, "bottom", _vGeomData4);
+			openravejson::LoadJsonValueByKey(value, "bottom", _vGeomData4);
 
 			geom_data_vec_ *= unit_scale;
 			_vGeomData2 *= unit_scale;
@@ -429,42 +448,41 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			_vGeomData4 *= unit_scale;
 		}
 		else if (typestr == "cage") {
-			_type = GT_Cage;
-        openravejson::LoadJsonValueByKey(value, "baseExtents", geom_data_vec_);
+			type_ = GT_Cage;
+			openravejson::LoadJsonValueByKey(value, "baseExtents", geom_data_vec_);
 			geom_data_vec_ *= unit_scale;
 
 			_vGeomData2 = Vector();
-        openravejson::LoadJsonValueByKey(value, "innerSizeX", _vGeomData2.x);
-        openravejson::LoadJsonValueByKey(value, "innerSizeY", _vGeomData2.y);
-        openravejson::LoadJsonValueByKey(value, "innerSizeZ", _vGeomData2.z);
+			openravejson::LoadJsonValueByKey(value, "innerSizeX", _vGeomData2.x);
+			openravejson::LoadJsonValueByKey(value, "innerSizeY", _vGeomData2.y);
+			openravejson::LoadJsonValueByKey(value, "innerSizeZ", _vGeomData2.z);
 			_vGeomData2 *= unit_scale;
 
-        openravejson::LoadJsonValueByKey(value, "sideWalls", _vSideWalls);
-			for(auto& itsidewall: _vSideWalls) {
+			openravejson::LoadJsonValueByKey(value, "sideWalls", side_walls_vector_);
+			for (auto& itsidewall : side_walls_vector_) {
 				itsidewall.transf.trans *= unit_scale;
 				itsidewall.vExtents *= unit_scale;
 			}
 		}
 		else if (typestr == "sphere") {
-			_type = GT_Sphere;
-        openravejson::LoadJsonValueByKey(value, "radius", geom_data_vec_.x);
+			type_ = GT_Sphere;
+			openravejson::LoadJsonValueByKey(value, "radius", geom_data_vec_.x);
 
 			geom_data_vec_ *= unit_scale;
 		}
 		else if (typestr == "cylinder") {
-			_type = GT_Cylinder;
-        openravejson::LoadJsonValueByKey(value, "radius", geom_data_vec_.x);
-        openravejson::LoadJsonValueByKey(value, "height", geom_data_vec_.y);
+			type_ = GT_Cylinder;
+			openravejson::LoadJsonValueByKey(value, "radius", geom_data_vec_.x);
+			openravejson::LoadJsonValueByKey(value, "height", geom_data_vec_.y);
 
 			geom_data_vec_.x *= unit_scale;
 			geom_data_vec_.y *= unit_scale;
-
 		}
 		else if (typestr == "trimesh" || typestr == "mesh") {
-			_type = GT_TriMesh;
-        openravejson::LoadJsonValueByKey(value, "mesh", _meshcollision);
+			type_ = GT_TriMesh;
+			openravejson::LoadJsonValueByKey(value, "mesh", mesh_collision_);
 
-			for(auto& itvertex: _meshcollision.vertices) {
+			for (auto& itvertex : mesh_collision_.vertices) {
 				itvertex *= unit_scale;
 			}
 		}
@@ -472,11 +490,11 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			throw OPENRAVE_EXCEPTION_FORMAT("failed to deserialize json, unsupported geometry type \"%s\"", typestr, ORE_InvalidArguments);
 		}
 
-    openravejson::LoadJsonValueByKey(value, "transparency", _fTransparency);
-    openravejson::LoadJsonValueByKey(value, "visible", _bVisible);
-    openravejson::LoadJsonValueByKey(value, "diffuseColor", _vDiffuseColor);
-    openravejson::LoadJsonValueByKey(value, "ambientColor", _vAmbientColor);
-    openravejson::LoadJsonValueByKey(value, "modifiable", _bModifiable);
+		openravejson::LoadJsonValueByKey(value, "transparency", transparency_);
+		openravejson::LoadJsonValueByKey(value, "visible", is_visible_);
+		openravejson::LoadJsonValueByKey(value, "diffuseColor", diffuse_color_vec_);
+		openravejson::LoadJsonValueByKey(value, "ambientColor", _vAmbientColor);
+		openravejson::LoadJsonValueByKey(value, "modifiable", is_modifiable_);
 	}
 
 	AABB KinBody::GeometryInfo::ComputeAABB(const Transform& geometry_world) const
@@ -484,34 +502,53 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 		AABB ab;
 		TransformMatrix tglobal = geometry_world * _t;
 
-		switch (_type) {
+		switch (type_) {
 		case GT_None:
 			ab.extents.x = 0;
 			ab.extents.y = 0;
 			ab.extents.z = 0;
 			break;
 		case GT_Box: // origin of box is at the center
-			ab.extents.x = RaveFabs(tglobal.m[0])*geom_data_vec_.x + RaveFabs(tglobal.m[1])*geom_data_vec_.y + RaveFabs(tglobal.m[2])*geom_data_vec_.z;
-			ab.extents.y = RaveFabs(tglobal.m[4])*geom_data_vec_.x + RaveFabs(tglobal.m[5])*geom_data_vec_.y + RaveFabs(tglobal.m[6])*geom_data_vec_.z;
-			ab.extents.z = RaveFabs(tglobal.m[8])*geom_data_vec_.x + RaveFabs(tglobal.m[9])*geom_data_vec_.y + RaveFabs(tglobal.m[10])*geom_data_vec_.z;
+			ab.extents.x = RaveFabs(tglobal.m[0])*geom_data_vec_.x 
+				+ RaveFabs(tglobal.m[1])*geom_data_vec_.y 
+				+ RaveFabs(tglobal.m[2])*geom_data_vec_.z;
+			ab.extents.y = RaveFabs(tglobal.m[4])*geom_data_vec_.x 
+				+ RaveFabs(tglobal.m[5])*geom_data_vec_.y 
+				+ RaveFabs(tglobal.m[6])*geom_data_vec_.z;
+			ab.extents.z = RaveFabs(tglobal.m[8])*geom_data_vec_.x 
+				+ RaveFabs(tglobal.m[9])*geom_data_vec_.y 
+				+ RaveFabs(tglobal.m[10])*geom_data_vec_.z;
 			ab.pos = tglobal.trans;
 			break;
 		case GT_Container: // origin of container is at the bottom
-			ab.extents.x = 0.5*(RaveFabs(tglobal.m[0])*geom_data_vec_.x + RaveFabs(tglobal.m[1])*geom_data_vec_.y + RaveFabs(tglobal.m[2])*geom_data_vec_.z);
-			ab.extents.y = 0.5*(RaveFabs(tglobal.m[4])*geom_data_vec_.x + RaveFabs(tglobal.m[5])*geom_data_vec_.y + RaveFabs(tglobal.m[6])*geom_data_vec_.z);
-			ab.extents.z = 0.5*(RaveFabs(tglobal.m[8])*geom_data_vec_.x + RaveFabs(tglobal.m[9])*geom_data_vec_.y + RaveFabs(tglobal.m[10])*geom_data_vec_.z);
+			ab.extents.x = 0.5*(RaveFabs(tglobal.m[0])*geom_data_vec_.x 
+				+ RaveFabs(tglobal.m[1])*geom_data_vec_.y 
+				+ RaveFabs(tglobal.m[2])*geom_data_vec_.z);
+			ab.extents.y = 0.5*(RaveFabs(tglobal.m[4])*geom_data_vec_.x 
+				+ RaveFabs(tglobal.m[5])*geom_data_vec_.y 
+				+ RaveFabs(tglobal.m[6])*geom_data_vec_.z);
+			ab.extents.z = 0.5*(RaveFabs(tglobal.m[8])*geom_data_vec_.x 
+				+ RaveFabs(tglobal.m[9])*geom_data_vec_.y 
+				+ RaveFabs(tglobal.m[10])*geom_data_vec_.z);
 			ab.pos = tglobal.trans + Vector(tglobal.m[2], tglobal.m[6], tglobal.m[10])*(0.5*geom_data_vec_.z);
 
-			if (_vGeomData4.x > 0 && _vGeomData4.y > 0 && _vGeomData4.z > 0) {
+			if (_vGeomData4.x > 0 && _vGeomData4.y > 0 && _vGeomData4.z > 0)
+			{
 				// Container with bottom
 				Vector vcontainerdir = Vector(tglobal.m[2], tglobal.m[6], tglobal.m[10]);
 				ab.pos += vcontainerdir * _vGeomData4.z; // take into account the bottom of the container
 
 				Vector vbottompos = tglobal.trans + vcontainerdir * (0.5*_vGeomData4.z);
 				Vector vbottomextents;
-				vbottomextents.x = 0.5*(RaveFabs(tglobal.m[0])*_vGeomData4.x + RaveFabs(tglobal.m[1])*_vGeomData4.y + RaveFabs(tglobal.m[2])*_vGeomData4.z);
-				vbottomextents.y = 0.5*(RaveFabs(tglobal.m[4])*_vGeomData4.x + RaveFabs(tglobal.m[5])*_vGeomData4.y + RaveFabs(tglobal.m[6])*_vGeomData4.z);
-				vbottomextents.z = 0.5*(RaveFabs(tglobal.m[8])*_vGeomData4.x + RaveFabs(tglobal.m[9])*_vGeomData4.y + RaveFabs(tglobal.m[10])*_vGeomData4.z);
+				vbottomextents.x = 0.5*(RaveFabs(tglobal.m[0])*_vGeomData4.x 
+					+ RaveFabs(tglobal.m[1])*_vGeomData4.y 
+					+ RaveFabs(tglobal.m[2])*_vGeomData4.z);
+				vbottomextents.y = 0.5*(RaveFabs(tglobal.m[4])*_vGeomData4.x 
+					+ RaveFabs(tglobal.m[5])*_vGeomData4.y 
+					+ RaveFabs(tglobal.m[6])*_vGeomData4.z);
+				vbottomextents.z = 0.5*(RaveFabs(tglobal.m[8])*_vGeomData4.x 
+					+ RaveFabs(tglobal.m[9])*_vGeomData4.y 
+					+ RaveFabs(tglobal.m[10])*_vGeomData4.z);
 				Vector vmin = ab.pos - ab.extents;
 				Vector vmax = ab.pos + ab.extents;
 				Vector vbottommin = vbottompos - vbottomextents;
@@ -543,11 +580,11 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			ab.pos = tglobal.trans;
 			break;
 		case GT_Cylinder:
-			ab.extents.x = (dReal)0.5*RaveFabs(tglobal.m[2])*geom_data_vec_.y 
+			ab.extents.x = (dReal)0.5*RaveFabs(tglobal.m[2])*geom_data_vec_.y
 				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[2] * tglobal.m[2]))*geom_data_vec_.x;
-			ab.extents.y = (dReal)0.5*RaveFabs(tglobal.m[6])*geom_data_vec_.y 
+			ab.extents.y = (dReal)0.5*RaveFabs(tglobal.m[6])*geom_data_vec_.y
 				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[6] * tglobal.m[6]))*geom_data_vec_.x;
-			ab.extents.z = (dReal)0.5*RaveFabs(tglobal.m[10])*geom_data_vec_.y 
+			ab.extents.z = (dReal)0.5*RaveFabs(tglobal.m[10])*geom_data_vec_.y
 				+ RaveSqrt(std::max(dReal(0), 1 - tglobal.m[10] * tglobal.m[10]))*geom_data_vec_.x;
 			ab.pos = tglobal.trans; //+(dReal)0.5*geom_data_vec_.y*Vector(tglobal.m[2],tglobal.m[6],tglobal.m[10]);
 			break;
@@ -562,14 +599,20 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			vmax.x = vCageBaseExtents.x;
 			vmax.y = vCageBaseExtents.y;
 			vmax.z = vCageBaseExtents.z * 2;
-			for (size_t i = 0; i < _vSideWalls.size(); ++i) {
-				const GeometryInfo::SideWall &s = _vSideWalls[i];
+			for (size_t i = 0; i < side_walls_vector_.size(); ++i) {
+				const GeometryInfo::SideWall &s = side_walls_vector_[i];
 				TransformMatrix sidewallmat = s.transf;
 				Vector vselocal = s.vExtents;
 				Vector vsegeom;
-				vsegeom.x = RaveFabs(sidewallmat.m[0])*vselocal.x + RaveFabs(sidewallmat.m[1])*vselocal.y + RaveFabs(sidewallmat.m[2])*vselocal.z;
-				vsegeom.y = RaveFabs(sidewallmat.m[4])*vselocal.x + RaveFabs(sidewallmat.m[5])*vselocal.y + RaveFabs(sidewallmat.m[6])*vselocal.z;
-				vsegeom.z = RaveFabs(sidewallmat.m[8])*vselocal.x + RaveFabs(sidewallmat.m[9])*vselocal.y + RaveFabs(sidewallmat.m[10])*vselocal.z;
+				vsegeom.x = RaveFabs(sidewallmat.m[0])*vselocal.x 
+					+ RaveFabs(sidewallmat.m[1])*vselocal.y 
+					+ RaveFabs(sidewallmat.m[2])*vselocal.z;
+				vsegeom.y = RaveFabs(sidewallmat.m[4])*vselocal.x 
+					+ RaveFabs(sidewallmat.m[5])*vselocal.y 
+					+ RaveFabs(sidewallmat.m[6])*vselocal.z;
+				vsegeom.z = RaveFabs(sidewallmat.m[8])*vselocal.x 
+					+ RaveFabs(sidewallmat.m[9])*vselocal.y 
+					+ RaveFabs(sidewallmat.m[10])*vselocal.z;
 
 				Vector vcenterpos = s.transf.trans + Vector(sidewallmat.m[2], sidewallmat.m[6], sidewallmat.m[10])*(vselocal.z);
 				Vector vsidemin = vcenterpos - vsegeom;
@@ -625,14 +668,13 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			ab.extents.z = RaveFabs(tglobal.m[8])*vgeomextents.x + RaveFabs(tglobal.m[9])*vgeomextents.y + RaveFabs(tglobal.m[10])*vgeomextents.z;
 			ab.pos = tglobal * (0.5*(vmin + vmax));
 			break;
-
 		}
 		case GT_TriMesh: {
 			// Cage: init collision mesh?
-			// just use _meshcollision
-			if (_meshcollision.vertices.size() > 0) {
-				Vector vmin, vmax; vmin = vmax = tglobal * _meshcollision.vertices.at(0);
-				for(auto itv: _meshcollision.vertices) {
+			// just use mesh_collision_
+			if (mesh_collision_.vertices.size() > 0) {
+				Vector vmin, vmax; vmin = vmax = tglobal * mesh_collision_.vertices.at(0);
+				for (auto itv : mesh_collision_.vertices) {
 					Vector v = tglobal * itv;
 					if (vmin.x > v.x) {
 						vmin.x = v.x;
@@ -662,14 +704,14 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 			break;
 		}
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(("unknown geometry type %d"), _type, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(("unknown geometry type %d"), type_, ORE_InvalidArguments);
 		}
 
 		return ab;
 	}
 
-
-	KinBody::Link::Geometry::Geometry(KinBody::LinkPtr parent, const KinBody::GeometryInfo& info) : _parent(parent), _info(info)
+	KinBody::Link::Geometry::Geometry(KinBody::LinkPtr parent, const KinBody::GeometryInfo& info)
+		: _parent(parent), _info(info)
 	{
 	}
 
@@ -691,23 +733,23 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 	void KinBody::Link::Geometry::serialize(std::ostream& o, int options) const
 	{
 		SerializeRound(o, _info._t);
-		o << _info._type << " ";
-		SerializeRound3(o, _info._vRenderScale);
-		if (_info._type == GT_TriMesh) {
-			_info._meshcollision.serialize(o, options);
+		o << _info.type_ << " ";
+		SerializeRound3(o, _info.render_scale_vec_);
+		if (_info.type_ == GT_TriMesh) {
+			_info.mesh_collision_.serialize(o, options);
 		}
 		else {
 			SerializeRound3(o, _info.geom_data_vec_);
-			if (_info._type == GT_Cage) {
+			if (_info.type_ == GT_Cage) {
 				SerializeRound3(o, _info._vGeomData2);
-				for (size_t iwall = 0; iwall < _info._vSideWalls.size(); ++iwall) {
-					const GeometryInfo::SideWall &s = _info._vSideWalls[iwall];
+				for (size_t iwall = 0; iwall < _info.side_walls_vector_.size(); ++iwall) {
+					const GeometryInfo::SideWall &s = _info.side_walls_vector_[iwall];
 					SerializeRound(o, s.transf);
 					SerializeRound3(o, s.vExtents);
 					o << (uint32_t)s.type;
 				}
 			}
-			else if (_info._type == GT_Container) {
+			else if (_info.type_ == GT_Container) {
 				SerializeRound3(o, _info._vGeomData2);
 				SerializeRound3(o, _info._vGeomData3);
 				SerializeRound3(o, _info._vGeomData4);
@@ -717,16 +759,16 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 
 	void KinBody::Link::Geometry::SetCollisionMesh(const TriMesh& mesh)
 	{
-		OPENRAVE_ASSERT_FORMAT0(_info._bModifiable, "geometry cannot be modified", ORE_Failed);
+		OPENRAVE_ASSERT_FORMAT0(_info.is_modifiable_, "geometry cannot be modified", ORE_Failed);
 		LinkPtr parent(_parent);
-		_info._meshcollision = mesh;
+		_info.mesh_collision_ = mesh;
 		parent->_Update();
 	}
 
 	bool KinBody::Link::Geometry::SetVisible(bool visible)
 	{
-		if (_info._bVisible != visible) {
-			_info._bVisible = visible;
+		if (_info.is_visible_ != visible) {
+			_info.is_visible_ = visible;
 			LinkPtr parent(_parent);
 			parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 			return true;
@@ -737,14 +779,14 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 	void KinBody::Link::Geometry::SetTransparency(float f)
 	{
 		LinkPtr parent(_parent);
-		_info._fTransparency = f;
+		_info.transparency_ = f;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 	}
 
 	void KinBody::Link::Geometry::SetDiffuseColor(const RaveVector<float>& color)
 	{
 		LinkPtr parent(_parent);
-		_info._vDiffuseColor = color;
+		_info.diffuse_color_vec_ = color;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 	}
 
@@ -794,7 +836,7 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 		Vector position = tinv * _position;
 		Vector normal = tinv.rotate(_normal);
 		const dReal feps = 0.00005f;
-		switch (_info._type) {
+		switch (_info.type_) {
 		case GT_Box: {
 			// transform position in +x+y+z octant
 			Vector tposition = position, tnormal = normal;
@@ -874,16 +916,14 @@ void KinBody::GeometryInfo::SerializeJSON(rapidjson::Value& value,
 		LinkPtr parent(_parent);
 		_info.name_ = name;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkGeometry);
-
 	}
 
 	uint8_t KinBody::Link::Geometry::GetSideWallExists() const
 	{
 		uint8_t mask = 0;
-		for (size_t i = 0; i < _info._vSideWalls.size(); ++i) {
-			mask |= 1 << _info._vSideWalls[i].type;
+		for (size_t i = 0; i < _info.side_walls_vector_.size(); ++i) {
+			mask |= 1 << _info.side_walls_vector_[i].type;
 		}
 		return mask;
 	}
-
 }

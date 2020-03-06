@@ -19,11 +19,12 @@
 #include <boost/algorithm/string.hpp> // boost::trim
 #include <boost/lexical_cast.hpp>
 #include <openrave/kinbody.h>
-
+#include <openrave/openrave_macros.h>
 #include "fparsermulti.h"
-#define M_PI       3.14159265358979323846   // pi
 
-namespace OpenRAVE {
+
+namespace OpenRAVE 
+{
 
 
 KinBody::JointInfo::JointControlInfo_RobotController::JointControlInfo_RobotController() : robotId(-1)
@@ -39,9 +40,14 @@ KinBody::JointInfo::JointControlInfo_ExternalDevice::JointControlInfo_ExternalDe
 {
 }
 
-KinBody::JointInfo::JointInfo() : _type(JointNone), _bIsActive(true), _controlMode(JCM_None) {
-    for(size_t i = 0; i < _vaxes.size(); ++i) {
-        _vaxes[i] = Vector(0,0,1);
+KinBody::JointInfo::JointInfo() 
+	: _type(JointNone), 
+	is_active_(true),
+	_controlMode(JCM_None) 
+{
+    for(size_t i = 0; i < axes_vector_.size(); ++i)
+	{
+        axes_vector_[i] = Vector(0,0,1);
     }
     std::fill(_vresolution.begin(), _vresolution.end(), 0.02);
     std::fill(_vmaxvel.begin(), _vmaxvel.end(), 10);
@@ -111,7 +117,7 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
     openravejson::SetJsonValueByKey(value, "anchors", _vanchor, allocator);
     openravejson::SetJsonValueByKey(value, "parentLinkName", _linkname0, allocator);
     openravejson::SetJsonValueByKey(value, "childLinkName", _linkname1, allocator);
-    openravejson::SetJsonValueByKey(value, "axes", _vaxes, allocator);
+    openravejson::SetJsonValueByKey(value, "axes", axes_vector_, allocator);
     openravejson::SetJsonValueByKey(value, "currentValues", _vcurrentvalues, allocator);
     openravejson::SetJsonValueByKey(value, "resolutions", _vresolution, allocator, dof);
 
@@ -180,7 +186,7 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
     }
 
     openravejson::SetJsonValueByKey(value, "isCircular", _bIsCircular, allocator, dof);
-    openravejson::SetJsonValueByKey(value, "isActive", _bIsActive, allocator);
+    openravejson::SetJsonValueByKey(value, "isActive", is_active_, allocator);
 
 }
 
@@ -206,7 +212,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal un
     openravejson::LoadJsonValueByKey(value, "parentLinkName", _linkname0);
     openravejson::LoadJsonValueByKey(value, "anchors", _vanchor);
     openravejson::LoadJsonValueByKey(value, "childLinkName", _linkname1);
-    openravejson::LoadJsonValueByKey(value, "axes", _vaxes);
+    openravejson::LoadJsonValueByKey(value, "axes", axes_vector_);
     openravejson::LoadJsonValueByKey(value, "currentValues", _vcurrentvalues);
     openravejson::LoadJsonValueByKey(value, "resolutions", _vresolution);
     openravejson::LoadJsonValueByKey(value, "maxVel", _vmaxvel);
@@ -222,7 +228,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal un
     openravejson::LoadJsonValueByKey(value, "lowerLimit", _vlowerlimit);
     openravejson::LoadJsonValueByKey(value, "upperLimit", _vupperlimit);
     openravejson::LoadJsonValueByKey(value, "isCircular", _bIsCircular);
-    openravejson::LoadJsonValueByKey(value, "isActive", _bIsActive);
+    openravejson::LoadJsonValueByKey(value, "isActive", is_active_);
 
     // multiply unit_scale on maxVel, maxAccel, lowerLimit, upperLimit
     dReal fjointmult = unit_scale;
@@ -234,7 +240,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal un
     {
         fjointmult = unit_scale;
     }
-    for(size_t ic = 0; ic < _vaxes.size(); ic++)
+    for(size_t ic = 0; ic < axes_vector_.size(); ic++)
     {
         _vmaxvel[ic] *= fjointmult;
         _vmaxaccel[ic] *= fjointmult;
@@ -271,7 +277,7 @@ KinBody::JointInfo& KinBody::JointInfo::operator=(const KinBody::JointInfo& othe
     _linkname0 = other._linkname0;
     _linkname1 = other._linkname1;
     _vanchor = other._vanchor;
-    _vaxes = other._vaxes;
+    axes_vector_ = other.axes_vector_;
     _vcurrentvalues = other._vcurrentvalues;
     _vresolution = other._vresolution;
     _vmaxvel = other._vmaxvel;
@@ -315,7 +321,7 @@ KinBody::JointInfo& KinBody::JointInfo::operator=(const KinBody::JointInfo& othe
     }
 
     _bIsCircular = other._bIsCircular;
-    _bIsActive = other._bIsActive;
+    is_active_ = other.is_active_;
 
     _controlMode = other._controlMode;
     if( _controlMode == KinBody::JCM_RobotController ) {
@@ -896,7 +902,7 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
 
     // update _info
     for(size_t i = 0; i < vaxes.size(); ++i) {
-        _info._vaxes[i] = _vaxes[i];
+        _info.axes_vector_[i] = _vaxes[i];
     }
     _info._vanchor = vanchor;
 

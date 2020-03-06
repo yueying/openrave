@@ -209,31 +209,31 @@ GeometryInfoReader::GeometryInfoReader(KinBody::GeometryInfoPtr pgeom, const Att
     _pgeom.reset(new KinBody::GeometryInfo());
     _pgeom->name_ = name;
     if( _stricmp(type.c_str(), "none") == 0 ) {
-        _pgeom->_type = GT_None;
+        _pgeom->type_ = GT_None;
     }
     else if( _stricmp(type.c_str(), "box") == 0 ) {
-        _pgeom->_type = GT_Box;
+        _pgeom->type_ = GT_Box;
     }
     else if( _stricmp(type.c_str(), "sphere") == 0 ) {
-        _pgeom->_type = GT_Sphere;
+        _pgeom->type_ = GT_Sphere;
     }
     else if( _stricmp(type.c_str(), "cylinder") == 0 ) {
-        _pgeom->_type = GT_Cylinder;
+        _pgeom->type_ = GT_Cylinder;
     }
     else if( _stricmp(type.c_str(), "trimesh") == 0 ) {
-        _pgeom->_type = GT_TriMesh;
+        _pgeom->type_ = GT_TriMesh;
     }
     else if( _stricmp(type.c_str(), "container") == 0 ) {
-        _pgeom->_type = GT_Container;
+        _pgeom->type_ = GT_Container;
     }
     else if( _stricmp(type.c_str(), "cage") == 0 ) {
-        _pgeom->_type = GT_Cage;
+        _pgeom->type_ = GT_Cage;
     }
     else {
         RAVELOG_WARN(str(boost::format("type %s not supported\n")%type));
     }
-    _pgeom->_bVisible = bVisible;
-    _pgeom->_bModifiable = bModifiable;
+    _pgeom->is_visible_ = bVisible;
+    _pgeom->is_modifiable_ = bModifiable;
 }
 
 BaseXMLReader::ProcessElement GeometryInfoReader::startElement(const std::string& xmlname, const AttributesList& atts)
@@ -257,10 +257,10 @@ BaseXMLReader::ProcessElement GeometryInfoReader::startElement(const std::string
                 _pgeom->_filenamerender = itatt->second;
             }
             else if( itatt->first == "scale" ) {
-                _pgeom->_vRenderScale = Vector(1,1,1);
+                _pgeom->render_scale_vec_ = Vector(1,1,1);
                 stringstream sslocal(itatt->second);
-                sslocal >> _pgeom->_vRenderScale.x; _pgeom->_vRenderScale.y = _pgeom->_vRenderScale.z = _pgeom->_vRenderScale.x;
-                sslocal >> _pgeom->_vRenderScale.y >> _pgeom->_vRenderScale.z;
+                sslocal >> _pgeom->render_scale_vec_.x; _pgeom->render_scale_vec_.y = _pgeom->render_scale_vec_.z = _pgeom->render_scale_vec_.x;
+                sslocal >> _pgeom->render_scale_vec_.y >> _pgeom->render_scale_vec_.z;
             }
         }
     }
@@ -271,10 +271,10 @@ BaseXMLReader::ProcessElement GeometryInfoReader::startElement(const std::string
                 _pgeom->_filenamecollision = itatt->second;
             }
             else if( itatt->first == "scale" ) {
-                _pgeom->_vCollisionScale = Vector(1,1,1);
+                _pgeom->collision_scale_vec_ = Vector(1,1,1);
                 stringstream sslocal(itatt->second);
-                sslocal >> _pgeom->_vCollisionScale.x; _pgeom->_vCollisionScale.y = _pgeom->_vCollisionScale.z = _pgeom->_vCollisionScale.x;
-                sslocal >> _pgeom->_vCollisionScale.y >> _pgeom->_vCollisionScale.z;
+                sslocal >> _pgeom->collision_scale_vec_.x; _pgeom->collision_scale_vec_.y = _pgeom->collision_scale_vec_.z = _pgeom->collision_scale_vec_.x;
+                sslocal >> _pgeom->collision_scale_vec_.y >> _pgeom->collision_scale_vec_.z;
             }
         }
     }
@@ -283,7 +283,7 @@ BaseXMLReader::ProcessElement GeometryInfoReader::startElement(const std::string
     if( find(tags.begin(),tags.end(),xmlname) != tags.end() ) {
         return PE_Support;
     }
-    switch(_pgeom->_type) {
+    switch(_pgeom->type_) {
     case GT_TriMesh:
         if(xmlname=="collision"|| xmlname=="data" || xmlname=="vertices" ) {
             return PE_Support;
@@ -335,15 +335,15 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
     }
     else if( xmlname == "render" ) {
         if( _pgeom->_filenamerender.size() == 0 ) {
-            _pgeom->_vRenderScale = Vector(1,1,1);
+            _pgeom->render_scale_vec_ = Vector(1,1,1);
             _ss >> _pgeom->_filenamerender;
-            _ss >> _pgeom->_vRenderScale.x; _pgeom->_vRenderScale.y = _pgeom->_vRenderScale.z = _pgeom->_vRenderScale.x;
-            _ss >> _pgeom->_vRenderScale.y >> _pgeom->_vRenderScale.z;
+            _ss >> _pgeom->render_scale_vec_.x; _pgeom->render_scale_vec_.y = _pgeom->render_scale_vec_.z = _pgeom->render_scale_vec_.x;
+            _ss >> _pgeom->render_scale_vec_.y >> _pgeom->render_scale_vec_.z;
         }
     }
     else if( xmlname == "diffusecolor" ) {
         _bOverwriteDiffuse = true;
-        _ss >> _pgeom->_vDiffuseColor.x >> _pgeom->_vDiffuseColor.y >> _pgeom->_vDiffuseColor.z;
+        _ss >> _pgeom->diffuse_color_vec_.x >> _pgeom->diffuse_color_vec_.y >> _pgeom->diffuse_color_vec_.z;
     }
     else if( xmlname == "ambientcolor" ) {
         _bOverwriteAmbient = true;
@@ -351,14 +351,14 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
     }
     else if( xmlname == "transparency" ) {
         _bOverwriteTransparency = true;
-        _ss >> _pgeom->_fTransparency;
+        _ss >> _pgeom->transparency_;
     }
     else if( xmlname == "name" ) {
         _ss >> _pgeom->name_;
     }
     else {
         // could be type specific features
-        switch(_pgeom->_type) {
+        switch(_pgeom->type_) {
         case GT_None:
             // Do nothing
             break;
@@ -395,18 +395,18 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
             break;
         case GT_Cage:
             if( xmlname == "sidewall" ) {
-                _pgeom->_vSideWalls.push_back({});
+                _pgeom->side_walls_vector_.push_back({});
             }
             if( xmlname == "transf" ) {
-                _ss >> _pgeom->_vSideWalls.back().transf;
+                _ss >> _pgeom->side_walls_vector_.back().transf;
             }
             if( xmlname == "vExtents" ) {
-                _ss >> _pgeom->_vSideWalls.back().vExtents;
+                _ss >> _pgeom->side_walls_vector_.back().vExtents;
             }
             if( xmlname == "type" ) {
                 int32_t type;
                 _ss >> type;
-                _pgeom->_vSideWalls.back().type = static_cast<KinBody::GeometryInfo::SideWallType>(type);
+                _pgeom->side_walls_vector_.back().type = static_cast<KinBody::GeometryInfo::SideWallType>(type);
             }
 
             break;
@@ -422,10 +422,10 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
             if(( xmlname == "data") ||( xmlname == "collision") ) {
                 if( _pgeom->_filenamecollision.size() == 0 ) {
                     // check the attributes first
-                    _pgeom->_vCollisionScale = Vector(1,1,1);
+                    _pgeom->collision_scale_vec_ = Vector(1,1,1);
                     _ss >> _pgeom->_filenamecollision;
-                    _ss >> _pgeom->_vCollisionScale.x; _pgeom->_vCollisionScale.y = _pgeom->_vCollisionScale.z = _pgeom->_vCollisionScale.x;
-                    _ss >> _pgeom->_vCollisionScale.y >> _pgeom->_vCollisionScale.z;
+                    _ss >> _pgeom->collision_scale_vec_.x; _pgeom->collision_scale_vec_.y = _pgeom->collision_scale_vec_.z = _pgeom->collision_scale_vec_.x;
+                    _ss >> _pgeom->collision_scale_vec_.y >> _pgeom->collision_scale_vec_.z;
                 }
             }
             else if( xmlname == "vertices" ) {
@@ -434,15 +434,15 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
                     RAVELOG_WARN(str(boost::format("number of points specified in the vertices field needs to be a multiple of 3 (it is %d), ignoring...\n")%values.size()));
                 }
                 else {
-                    _pgeom->_meshcollision.vertices.resize(values.size()/3);
-                    _pgeom->_meshcollision.indices.resize(values.size()/3);
+                    _pgeom->mesh_collision_.vertices.resize(values.size()/3);
+                    _pgeom->mesh_collision_.indices.resize(values.size()/3);
                     vector<dReal>::iterator itvalue = values.begin();
                     size_t i = 0;
-                    FOREACH(itv,_pgeom->_meshcollision.vertices) {
+                    FOREACH(itv,_pgeom->mesh_collision_.vertices) {
                         itv->x = *itvalue++;
                         itv->y = *itvalue++;
                         itv->z = *itvalue++;
-                        _pgeom->_meshcollision.indices[i] = i;
+                        _pgeom->mesh_collision_.indices[i] = i;
                         ++i;
                     }
                 }

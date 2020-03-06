@@ -1890,17 +1890,17 @@ private:
                     pcage->add("inner_size_z")->setCharData(ss.str());
                 }
 
-                for (size_t i = 0; i < info._vSideWalls.size(); ++i) {
+                for (size_t i = 0; i < info.side_walls_vector_.size(); ++i) {
                     daeElementRef psidewall = pcage->add("sidewall");
 
-                    _WriteTransformation(psidewall, info._vSideWalls[i].transf);
+                    _WriteTransformation(psidewall, info.side_walls_vector_[i].transf);
 
                     ss.str(""); ss.clear();
-                    ss << info._vSideWalls[i].vExtents.x << " " << info._vSideWalls[i].vExtents.y << " " << info._vSideWalls[i].vExtents.z;
+                    ss << info.side_walls_vector_[i].vExtents.x << " " << info.side_walls_vector_[i].vExtents.y << " " << info.side_walls_vector_[i].vExtents.z;
                     psidewall->add("half_extents")->setCharData(ss.str());
 
                     ss.clear(); ss.str("");
-                    ss << info._vSideWalls[i].type;
+                    ss << info.side_walls_vector_[i].type;
                     psidewall->add("type")->setCharData(ss.str());
                     ss.clear(); ss.str("");
                 }
