@@ -141,7 +141,7 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
         bool bchanged = false;
         for(size_t i = 0; i < _vEnabledLinks.size(); ++i) {
             if( pbody->GetLinks().at(i)->IsEnabled() != !!_vEnabledLinks[i] ) {
-                pbody->GetLinks().at(i)->_info.is_enabled_ = !!_vEnabledLinks[i];
+                pbody->GetLinks().at(i)->info_.is_enabled_ = !!_vEnabledLinks[i];
                 bchanged = true;
             }
         }
@@ -289,7 +289,7 @@ void KinBody::KinBodyStateSaverRef::_RestoreKinBody(KinBody& body)
         bool bchanged = false;
         for(size_t i = 0; i < _vEnabledLinks.size(); ++i) {
             if( body.GetLinks().at(i)->IsEnabled() != !!_vEnabledLinks[i] ) {
-                body.GetLinks().at(i)->_info.is_enabled_ = !!_vEnabledLinks[i];
+                body.GetLinks().at(i)->info_.is_enabled_ = !!_vEnabledLinks[i];
                 bchanged = true;
             }
         }

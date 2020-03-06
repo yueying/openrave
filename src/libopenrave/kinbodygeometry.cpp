@@ -711,65 +711,65 @@ namespace OpenRAVE
 	}
 
 	KinBody::Link::Geometry::Geometry(KinBody::LinkPtr parent, const KinBody::GeometryInfo& info)
-		: _parent(parent), _info(info)
+		: parent_(parent), info_(info)
 	{
 	}
 
 	bool KinBody::Link::Geometry::InitCollisionMesh(float fTessellation)
 	{
-		return _info.InitCollisionMesh(fTessellation);
+		return info_.InitCollisionMesh(fTessellation);
 	}
 
 	bool KinBody::Link::Geometry::ComputeInnerEmptyVolume(Transform& inner_empty_volume, Vector& inner_empty_extents) const
 	{
-		return _info.ComputeInnerEmptyVolume(inner_empty_volume, inner_empty_extents);
+		return info_.ComputeInnerEmptyVolume(inner_empty_volume, inner_empty_extents);
 	}
 
 	AABB KinBody::Link::Geometry::ComputeAABB(const Transform& t) const
 	{
-		return _info.ComputeAABB(t);
+		return info_.ComputeAABB(t);
 	}
 
 	void KinBody::Link::Geometry::serialize(std::ostream& o, int options) const
 	{
-		SerializeRound(o, _info._t);
-		o << _info.type_ << " ";
-		SerializeRound3(o, _info.render_scale_vec_);
-		if (_info.type_ == GT_TriMesh) {
-			_info.mesh_collision_.serialize(o, options);
+		SerializeRound(o, info_._t);
+		o << info_.type_ << " ";
+		SerializeRound3(o, info_.render_scale_vec_);
+		if (info_.type_ == GT_TriMesh) {
+			info_.mesh_collision_.serialize(o, options);
 		}
 		else {
-			SerializeRound3(o, _info.geom_data_vec_);
-			if (_info.type_ == GT_Cage) {
-				SerializeRound3(o, _info._vGeomData2);
-				for (size_t iwall = 0; iwall < _info.side_walls_vector_.size(); ++iwall) {
-					const GeometryInfo::SideWall &s = _info.side_walls_vector_[iwall];
+			SerializeRound3(o, info_.geom_data_vec_);
+			if (info_.type_ == GT_Cage) {
+				SerializeRound3(o, info_._vGeomData2);
+				for (size_t iwall = 0; iwall < info_.side_walls_vector_.size(); ++iwall) {
+					const GeometryInfo::SideWall &s = info_.side_walls_vector_[iwall];
 					SerializeRound(o, s.transf);
 					SerializeRound3(o, s.vExtents);
 					o << (uint32_t)s.type;
 				}
 			}
-			else if (_info.type_ == GT_Container) {
-				SerializeRound3(o, _info._vGeomData2);
-				SerializeRound3(o, _info._vGeomData3);
-				SerializeRound3(o, _info._vGeomData4);
+			else if (info_.type_ == GT_Container) {
+				SerializeRound3(o, info_._vGeomData2);
+				SerializeRound3(o, info_._vGeomData3);
+				SerializeRound3(o, info_._vGeomData4);
 			}
 		}
 	}
 
 	void KinBody::Link::Geometry::SetCollisionMesh(const TriMesh& mesh)
 	{
-		OPENRAVE_ASSERT_FORMAT0(_info.is_modifiable_, "geometry cannot be modified", ORE_Failed);
-		LinkPtr parent(_parent);
-		_info.mesh_collision_ = mesh;
+		OPENRAVE_ASSERT_FORMAT0(info_.is_modifiable_, "geometry cannot be modified", ORE_Failed);
+		LinkPtr parent(parent_);
+		info_.mesh_collision_ = mesh;
 		parent->_Update();
 	}
 
 	bool KinBody::Link::Geometry::SetVisible(bool visible)
 	{
-		if (_info.is_visible_ != visible) {
-			_info.is_visible_ = visible;
-			LinkPtr parent(_parent);
+		if (info_.is_visible_ != visible) {
+			info_.is_visible_ = visible;
+			LinkPtr parent(parent_);
 			parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 			return true;
 		}
@@ -778,22 +778,22 @@ namespace OpenRAVE
 
 	void KinBody::Link::Geometry::SetTransparency(float f)
 	{
-		LinkPtr parent(_parent);
-		_info.transparency_ = f;
+		LinkPtr parent(parent_);
+		info_.transparency_ = f;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 	}
 
 	void KinBody::Link::Geometry::SetDiffuseColor(const RaveVector<float>& color)
 	{
-		LinkPtr parent(_parent);
-		_info.diffuse_color_vec_ = color;
+		LinkPtr parent(parent_);
+		info_.diffuse_color_vec_ = color;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 	}
 
 	void KinBody::Link::Geometry::SetAmbientColor(const RaveVector<float>& color)
 	{
-		LinkPtr parent(_parent);
-		_info._vAmbientColor = color;
+		LinkPtr parent(parent_);
+		info_._vAmbientColor = color;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 	}
 
@@ -832,11 +832,11 @@ namespace OpenRAVE
 
 	bool KinBody::Link::Geometry::ValidateContactNormal(const Vector& _position, Vector& _normal) const
 	{
-		Transform tinv = _info._t.inverse();
+		Transform tinv = info_._t.inverse();
 		Vector position = tinv * _position;
 		Vector normal = tinv.rotate(_normal);
 		const dReal feps = 0.00005f;
-		switch (_info.type_) {
+		switch (info_.type_) {
 		case GT_Box: {
 			// transform position in +x+y+z octant
 			Vector tposition = position, tnormal = normal;
@@ -853,9 +853,9 @@ namespace OpenRAVE
 				tnormal.z = -tnormal.z;
 			}
 			// find the normal to the surface depending on the region the position is in
-			dReal xaxis = -_info.geom_data_vec_.z*tposition.y + _info.geom_data_vec_.y*tposition.z;
-			dReal yaxis = -_info.geom_data_vec_.x*tposition.z + _info.geom_data_vec_.z*tposition.x;
-			dReal zaxis = -_info.geom_data_vec_.y*tposition.x + _info.geom_data_vec_.x*tposition.y;
+			dReal xaxis = -info_.geom_data_vec_.z*tposition.y + info_.geom_data_vec_.y*tposition.z;
+			dReal yaxis = -info_.geom_data_vec_.x*tposition.z + info_.geom_data_vec_.z*tposition.x;
+			dReal zaxis = -info_.geom_data_vec_.y*tposition.x + info_.geom_data_vec_.x*tposition.y;
 			dReal penetration = 0;
 			if ((zaxis < feps) && (yaxis > -feps)) { // x-plane
 				if (RaveFabs(tnormal.x) > RaveFabs(penetration)) {
@@ -879,8 +879,8 @@ namespace OpenRAVE
 			break;
 		}
 		case GT_Cylinder: { // z-axis
-			dReal fInsideCircle = position.x*position.x + position.y*position.y - _info.geom_data_vec_.x*_info.geom_data_vec_.x;
-			dReal fInsideHeight = 2.0f*RaveFabs(position.z) - _info.geom_data_vec_.y;
+			dReal fInsideCircle = position.x*position.x + position.y*position.y - info_.geom_data_vec_.x*info_.geom_data_vec_.x;
+			dReal fInsideHeight = 2.0f*RaveFabs(position.z) - info_.geom_data_vec_.y;
 			if ((fInsideCircle < -feps) && (fInsideHeight > -feps) && (normal.z*position.z < 0)) {
 				_normal = -_normal;
 				return true;
@@ -906,23 +906,23 @@ namespace OpenRAVE
 
 	void KinBody::Link::Geometry::SetRenderFilename(const std::string& renderfilename)
 	{
-		LinkPtr parent(_parent);
-		_info._filenamerender = renderfilename;
+		LinkPtr parent(parent_);
+		info_._filenamerender = renderfilename;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkGeometry);
 	}
 
 	void KinBody::Link::Geometry::SetName(const std::string& name)
 	{
-		LinkPtr parent(_parent);
-		_info.name_ = name;
+		LinkPtr parent(parent_);
+		info_.name_ = name;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkGeometry);
 	}
 
 	uint8_t KinBody::Link::Geometry::GetSideWallExists() const
 	{
 		uint8_t mask = 0;
-		for (size_t i = 0; i < _info.side_walls_vector_.size(); ++i) {
-			mask |= 1 << _info.side_walls_vector_[i].type;
+		for (size_t i = 0; i < info_.side_walls_vector_.size(); ++i) {
+			mask |= 1 << info_.side_walls_vector_[i].type;
 		}
 		return mask;
 	}

@@ -1543,18 +1543,18 @@ private:
                 }
                 if( pjoint->GetControlMode() != KinBody::JCM_None ) {
                     daeElementRef param_controlMode = ptec->add("controlMode");
-                    param_controlMode->setCharData(boost::lexical_cast<std::string>(pjoint->_info.control_mode_).c_str());
-                    switch( pjoint->_info.control_mode_ ) {
+                    param_controlMode->setCharData(boost::lexical_cast<std::string>(pjoint->info_.control_mode_).c_str());
+                    switch( pjoint->info_.control_mode_ ) {
                     case KinBody::JCM_RobotController: {
                         daeElementRef param_jointcontrolinfo_robotcontroller = ptec->add("jointcontrolinfo_robotcontroller");
                         // robotId
                         daeElementRef param_robotId = param_jointcontrolinfo_robotcontroller->add("robotId");
-                        param_robotId->setCharData(boost::lexical_cast<std::string>(pjoint->_info._jci_robotcontroller->robotId).c_str());
+                        param_robotId->setCharData(boost::lexical_cast<std::string>(pjoint->info_._jci_robotcontroller->robotId).c_str());
                         // robotControllerDOFIndex
                         for( int iaxis = 0; iaxis < pjoint->GetDOF(); ++iaxis ) {
                             daeElementRef param_robotControllerDOFIndex = param_jointcontrolinfo_robotcontroller->add("robotControllerDOFIndex");
                             param_robotControllerDOFIndex->setAttribute("axis", boost::lexical_cast<std::string>(iaxis).c_str());
-                            param_robotControllerDOFIndex->setCharData(boost::lexical_cast<std::string>(pjoint->_info._jci_robotcontroller->robotControllerDOFIndex[iaxis]).c_str());
+                            param_robotControllerDOFIndex->setCharData(boost::lexical_cast<std::string>(pjoint->info_._jci_robotcontroller->robotControllerDOFIndex[iaxis]).c_str());
                         }
                         break;
                     } // end case KinBody::JCM_RobotController
@@ -1562,14 +1562,14 @@ private:
                         daeElementRef param_jointcontrolinfo_io = ptec->add("jointcontrolinfo_io");
                         // deviceId
                         daeElementRef param_deviceId = param_jointcontrolinfo_io->add("deviceId");
-                        param_deviceId->setCharData(boost::lexical_cast<std::string>(pjoint->_info._jci_io->deviceId).c_str());
+                        param_deviceId->setCharData(boost::lexical_cast<std::string>(pjoint->info_._jci_io->deviceId).c_str());
                         for( int iaxis = 0; iaxis < pjoint->GetDOF(); ++iaxis ) {
                             // vMoveIONames
                             daeElementRef param_vMoveIONames = param_jointcontrolinfo_io->add("vMoveIONames");
                             param_vMoveIONames->setAttribute("axis", boost::lexical_cast<std::string>(iaxis).c_str());
-                            param_vMoveIONames->setAttribute("count", boost::lexical_cast<std::string>(pjoint->_info._jci_io->vMoveIONames[iaxis].size()).c_str());
+                            param_vMoveIONames->setAttribute("count", boost::lexical_cast<std::string>(pjoint->info_._jci_io->vMoveIONames[iaxis].size()).c_str());
                             ss.str(""); ss.clear();
-                            FOREACHC(itioname, pjoint->_info._jci_io->vMoveIONames[iaxis]) {
+                            FOREACHC(itioname, pjoint->info_._jci_io->vMoveIONames[iaxis]) {
                                 ss << *itioname << " ";
                             }
                             param_vMoveIONames->setCharData(ss.str());
@@ -1577,9 +1577,9 @@ private:
                             // vUpperLimitIONames
                             daeElementRef param_vUpperLimitIONames = param_jointcontrolinfo_io->add("vUpperLimitIONames");
                             param_vUpperLimitIONames->setAttribute("axis", boost::lexical_cast<std::string>(iaxis).c_str());
-                            param_vUpperLimitIONames->setAttribute("count", boost::lexical_cast<std::string>(pjoint->_info._jci_io->vUpperLimitIONames[iaxis].size()).c_str());
+                            param_vUpperLimitIONames->setAttribute("count", boost::lexical_cast<std::string>(pjoint->info_._jci_io->vUpperLimitIONames[iaxis].size()).c_str());
                             ss.str(""); ss.clear();
-                            FOREACHC(itioname, pjoint->_info._jci_io->vUpperLimitIONames[iaxis]) {
+                            FOREACHC(itioname, pjoint->info_._jci_io->vUpperLimitIONames[iaxis]) {
                                 ss << *itioname << " ";
                             }
                             param_vUpperLimitIONames->setCharData(ss.str());
@@ -1587,9 +1587,9 @@ private:
                             // vUpperLimitSensorIsOn
                             daeElementRef param_vUpperLimitSensorIsOn = param_jointcontrolinfo_io->add("vUpperLimitSensorIsOn");
                             param_vUpperLimitSensorIsOn->setAttribute("axis", boost::lexical_cast<std::string>(iaxis).c_str());
-                            param_vUpperLimitSensorIsOn->setAttribute("count", boost::lexical_cast<std::string>(pjoint->_info._jci_io->vUpperLimitSensorIsOn[iaxis].size()).c_str());
+                            param_vUpperLimitSensorIsOn->setAttribute("count", boost::lexical_cast<std::string>(pjoint->info_._jci_io->vUpperLimitSensorIsOn[iaxis].size()).c_str());
                             ss.str(""); ss.clear();
-                            FOREACHC(itiovalue, pjoint->_info._jci_io->vUpperLimitSensorIsOn[iaxis]) {
+                            FOREACHC(itiovalue, pjoint->info_._jci_io->vUpperLimitSensorIsOn[iaxis]) {
                                 ss << (int)*itiovalue << " ";
                             }
                             param_vUpperLimitSensorIsOn->setCharData(ss.str());
@@ -1597,9 +1597,9 @@ private:
                             // vLowerLimitIONames
                             daeElementRef param_vLowerLimitIONames = param_jointcontrolinfo_io->add("vLowerLimitIONames");
                             param_vLowerLimitIONames->setAttribute("axis", boost::lexical_cast<std::string>(iaxis).c_str());
-                            param_vLowerLimitIONames->setAttribute("count", boost::lexical_cast<std::string>(pjoint->_info._jci_io->vLowerLimitIONames[iaxis].size()).c_str());
+                            param_vLowerLimitIONames->setAttribute("count", boost::lexical_cast<std::string>(pjoint->info_._jci_io->vLowerLimitIONames[iaxis].size()).c_str());
                             ss.str(""); ss.clear();
-                            FOREACHC(itioname, pjoint->_info._jci_io->vLowerLimitIONames[iaxis]) {
+                            FOREACHC(itioname, pjoint->info_._jci_io->vLowerLimitIONames[iaxis]) {
                                 ss << *itioname << " ";
                             }
                             param_vLowerLimitIONames->setCharData(ss.str());
@@ -1607,9 +1607,9 @@ private:
                             // vLowerLimitSensorIsOn
                             daeElementRef param_vLowerLimitSensorIsOn = param_jointcontrolinfo_io->add("vLowerLimitSensorIsOn");
                             param_vLowerLimitSensorIsOn->setAttribute("axis", boost::lexical_cast<std::string>(iaxis).c_str());
-                            param_vLowerLimitSensorIsOn->setAttribute("count", boost::lexical_cast<std::string>(pjoint->_info._jci_io->vLowerLimitSensorIsOn[iaxis].size()).c_str());
+                            param_vLowerLimitSensorIsOn->setAttribute("count", boost::lexical_cast<std::string>(pjoint->info_._jci_io->vLowerLimitSensorIsOn[iaxis].size()).c_str());
                             ss.str(""); ss.clear();
-                            FOREACHC(itiovalue, pjoint->_info._jci_io->vLowerLimitSensorIsOn[iaxis]) {
+                            FOREACHC(itiovalue, pjoint->info_._jci_io->vLowerLimitSensorIsOn[iaxis]) {
                                 ss << (int)*itiovalue << " ";
                             }
                             param_vLowerLimitSensorIsOn->setCharData(ss.str());
@@ -1620,7 +1620,7 @@ private:
                         daeElementRef param_jointcontrolinfo_externaldevice = ptec->add("jointcontrolinfo_externaldevice");
                         // robotId
                         daeElementRef param_externalDeviceId = param_jointcontrolinfo_externaldevice->add("externalDeviceId");
-                        param_externalDeviceId->setCharData(pjoint->_info._jci_externaldevice->externalDeviceId.c_str());
+                        param_externalDeviceId->setCharData(pjoint->info_._jci_externaldevice->externalDeviceId.c_str());
                         break;
                     } // end case KinBody::JCM_ExternalDevice
                     default: {

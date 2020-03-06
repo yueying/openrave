@@ -165,10 +165,10 @@ RobotBase::ConnectedBody::ConnectedBody(OpenRAVE::RobotBasePtr probot) : _pattac
 }
 
 RobotBase::ConnectedBody::ConnectedBody(OpenRAVE::RobotBasePtr probot, const OpenRAVE::RobotBase::ConnectedBodyInfo &info)
-    : _info(info), _pattachedrobot(probot)
+    : info_(info), _pattachedrobot(probot)
 {
     if (!!probot) {
-        LinkPtr attachedLink = probot->GetLink(_info._linkname);
+        LinkPtr attachedLink = probot->GetLink(info_._linkname);
         if( !attachedLink ) {
             throw OPENRAVE_EXCEPTION_FORMAT("Link \"%s\" to which ConnectedBody %s is attached does not exist in robot %s", info._linkname%GetName()%probot->GetName(), ORE_InvalidArguments);
         }
@@ -206,23 +206,23 @@ RobotBase::ConnectedBody::~ConnectedBody()
 
 bool RobotBase::ConnectedBody::SetActive(bool active)
 {
-    if (_info._bIsActive == active) {
+    if (info_._bIsActive == active) {
         return false;
     }
 
     RobotBasePtr pattachedrobot = _pattachedrobot.lock();
     if( !!pattachedrobot ) {
         if( pattachedrobot->_nHierarchyComputed != 0 ) {
-            throw OPENRAVE_EXCEPTION_FORMAT("Cannot set ConnectedBody %s active to %s since robot %s is still in the environment", _info.name_%active%pattachedrobot->GetName(), ORE_InvalidState);
+            throw OPENRAVE_EXCEPTION_FORMAT("Cannot set ConnectedBody %s active to %s since robot %s is still in the environment", info_.name_%active%pattachedrobot->GetName(), ORE_InvalidState);
         }
     }
-    _info._bIsActive = active;
+    info_._bIsActive = active;
     return true; // changed
 }
 
 bool RobotBase::ConnectedBody::IsActive()
 {
-    return _info._bIsActive;
+    return info_._bIsActive;
 }
 
 void RobotBase::ConnectedBody::SetLinkEnable(bool benable)
@@ -399,7 +399,7 @@ void RobotBase::_ComputeConnectedBodiesInformation()
 
     FOREACH(itconnectedBody, _vecConnectedBodies) {
         ConnectedBody& connectedBody = **itconnectedBody;
-        const ConnectedBodyInfo& connectedBodyInfo = connectedBody._info;
+        const ConnectedBodyInfo& connectedBodyInfo = connectedBody.info_;
 
         if( !connectedBody.GetAttachingLink() ) {
             throw OPENRAVE_EXCEPTION_FORMAT("ConnectedBody %s for robot %s does not have a valid pointer to link %s", connectedBody.GetName()%GetName()%connectedBodyInfo._linkname, ORE_InvalidArguments);
@@ -449,11 +449,11 @@ void RobotBase::_ComputeConnectedBodiesInformation()
             if( !plink ) {
                 plink.reset(new KinBody::Link(shared_kinbody()));
             }
-            plink->_info = *connectedBodyInfo._vLinkInfos[ilink]; // copy
-            plink->_info.name_ = connectedBody._nameprefix + plink->_info.name_;
-            plink->_info._t = tBaseLinkInWorld * plink->_info._t;
+            plink->info_ = *connectedBodyInfo._vLinkInfos[ilink]; // copy
+            plink->info_.name_ = connectedBody._nameprefix + plink->info_.name_;
+            plink->info_._t = tBaseLinkInWorld * plink->info_._t;
             _InitAndAddLink(plink);
-            connectedBody._vResolvedLinkNames[ilink].first = plink->_info.name_;
+            connectedBody._vResolvedLinkNames[ilink].first = plink->info_.name_;
         }
 
         // Joints
@@ -465,35 +465,35 @@ void RobotBase::_ComputeConnectedBodiesInformation()
             if( !pjoint ) {
                 pjoint.reset(new KinBody::Joint(shared_kinbody()));
             }
-            pjoint->_info = *connectedBodyInfo._vJointInfos[ijoint]; // copy
-            pjoint->_info.name_ = connectedBody._nameprefix + pjoint->_info.name_;
+            pjoint->info_ = *connectedBodyInfo._vJointInfos[ijoint]; // copy
+            pjoint->info_.name_ = connectedBody._nameprefix + pjoint->info_.name_;
 
             // search for the correct resolved _linkname0 and _linkname1
             bool bfoundlink0 = false, bfoundlink1 = false;
             for(size_t ilink = 0; ilink < connectedBodyInfo._vLinkInfos.size(); ++ilink) {
-                if( pjoint->_info._linkname0 == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
-                    pjoint->_info._linkname0 = connectedBody._vResolvedLinkNames.at(ilink).first;
+                if( pjoint->info_._linkname0 == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
+                    pjoint->info_._linkname0 = connectedBody._vResolvedLinkNames.at(ilink).first;
                     bfoundlink0 = true;
                 }
-                if( pjoint->_info._linkname1 == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
-                    pjoint->_info._linkname1 = connectedBody._vResolvedLinkNames.at(ilink).first;
+                if( pjoint->info_._linkname1 == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
+                    pjoint->info_._linkname1 = connectedBody._vResolvedLinkNames.at(ilink).first;
                     bfoundlink1 = true;
                 }
             }
 
             if( !bfoundlink0 ) {
-                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname0 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->_info.name_%pjoint->_info._linkname0, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname0 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->info_.name_%pjoint->info_._linkname0, ORE_InvalidArguments);
             }
             if( !bfoundlink1 ) {
-                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname1 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->_info.name_%pjoint->_info._linkname1, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname1 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->info_.name_%pjoint->info_._linkname1, ORE_InvalidArguments);
             }
-            jointNamePairs.emplace_back(connectedBodyInfo._vJointInfos[ijoint]->name_,  pjoint->_info.name_);
+            jointNamePairs.emplace_back(connectedBodyInfo._vJointInfos[ijoint]->name_,  pjoint->info_.name_);
             vNewJointsToAdd.push_back(pjoint);
-            connectedBody._vResolvedJointNames[ijoint].first = pjoint->_info.name_;
+            connectedBody._vResolvedJointNames[ijoint].first = pjoint->info_.name_;
         }
 
         FOREACH(itnewjoint, vNewJointsToAdd) {
-            KinBody::JointInfo& jointinfo = (*itnewjoint)->_info;
+            KinBody::JointInfo& jointinfo = (*itnewjoint)->info_;
             FOREACH(itmimic, jointinfo._vmimic) {
                 if (!(*itmimic)) {
                     continue;
@@ -516,39 +516,39 @@ void RobotBase::_ComputeConnectedBodiesInformation()
                 pnewmanipulator.reset(new RobotBase::Manipulator(shared_robot(), *connectedBodyInfo._vManipulatorInfos[imanipulator]));
             }
             else {
-                pnewmanipulator->_info = *connectedBodyInfo._vManipulatorInfos[imanipulator];
+                pnewmanipulator->info_ = *connectedBodyInfo._vManipulatorInfos[imanipulator];
             }
-            pnewmanipulator->_info.name_ = connectedBody._nameprefix + pnewmanipulator->_info.name_;
+            pnewmanipulator->info_.name_ = connectedBody._nameprefix + pnewmanipulator->info_.name_;
 
             FOREACH(ittestmanipulator, _vecManipulators) {
-                if( pnewmanipulator->_info.name_ == (*ittestmanipulator)->GetName() ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, got resolved manipulator with same name %s!", connectedBody.GetName()%GetName()%pnewmanipulator->_info.name_, ORE_InvalidArguments);
+                if( pnewmanipulator->info_.name_ == (*ittestmanipulator)->GetName() ) {
+                    throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, got resolved manipulator with same name %s!", connectedBody.GetName()%GetName()%pnewmanipulator->info_.name_, ORE_InvalidArguments);
                 }
             }
 
             {
                 LinkPtr pArmBaseLink = !GetLinks().empty() ? GetLinks()[0] : LinkPtr();
                 if( !pArmBaseLink ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for manipulator %s, could not find a base link of the robot.", connectedBody.GetName()%GetName()%pnewmanipulator->_info.name_, ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for manipulator %s, could not find a base link of the robot.", connectedBody.GetName()%GetName()%pnewmanipulator->info_.name_, ORE_InvalidArguments);
                 }
-                pnewmanipulator->_info._sBaseLinkName = pArmBaseLink->_info.name_;
+                pnewmanipulator->info_._sBaseLinkName = pArmBaseLink->info_.name_;
             }
 
             // search for the correct resolved _sEffectorLinkName
             bool bFoundEffectorLink = false;
             for(size_t ilink = 0; ilink < connectedBodyInfo._vLinkInfos.size(); ++ilink) {
-                if( pnewmanipulator->_info._sEffectorLinkName == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
-                    pnewmanipulator->_info._sEffectorLinkName = connectedBody._vResolvedLinkNames.at(ilink).first;
+                if( pnewmanipulator->info_._sEffectorLinkName == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
+                    pnewmanipulator->info_._sEffectorLinkName = connectedBody._vResolvedLinkNames.at(ilink).first;
                     bFoundEffectorLink = true;
                 }
             }
 
             if( !bFoundEffectorLink ) {
-                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for manipulator %s, could not find linkname1 %s in connected body link infos!", connectedBody.GetName()%GetName()%pnewmanipulator->_info.name_%pnewmanipulator->_info._sEffectorLinkName, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for manipulator %s, could not find linkname1 %s in connected body link infos!", connectedBody.GetName()%GetName()%pnewmanipulator->info_.name_%pnewmanipulator->info_._sEffectorLinkName, ORE_InvalidArguments);
             }
 
             _vecManipulators.push_back(pnewmanipulator);
-            connectedBody._vResolvedManipulatorNames[imanipulator].first = pnewmanipulator->_info.name_;
+            connectedBody._vResolvedManipulatorNames[imanipulator].first = pnewmanipulator->info_.name_;
         }
 
         // AttachedSensors
@@ -559,31 +559,31 @@ void RobotBase::_ComputeConnectedBodiesInformation()
                 pnewattachedSensor.reset(new RobotBase::AttachedSensor(shared_robot(), *connectedBodyInfo._vAttachedSensorInfos[iattachedsensor]));
             }
             else {
-                pnewattachedSensor->_info = *connectedBodyInfo._vAttachedSensorInfos[iattachedsensor];
+                pnewattachedSensor->info_ = *connectedBodyInfo._vAttachedSensorInfos[iattachedsensor];
             }
-            pnewattachedSensor->_info.name_ = connectedBody._nameprefix + pnewattachedSensor->_info.name_;
+            pnewattachedSensor->info_.name_ = connectedBody._nameprefix + pnewattachedSensor->info_.name_;
 
             FOREACH(ittestattachedSensor, _vecAttachedSensors) {
-                if( pnewattachedSensor->_info.name_ == (*ittestattachedSensor)->GetName() ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, got resolved attachedSensor with same name %s!", connectedBody.GetName()%GetName()%pnewattachedSensor->_info.name_, ORE_InvalidArguments);
+                if( pnewattachedSensor->info_.name_ == (*ittestattachedSensor)->GetName() ) {
+                    throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, got resolved attachedSensor with same name %s!", connectedBody.GetName()%GetName()%pnewattachedSensor->info_.name_, ORE_InvalidArguments);
                 }
             }
 
             // search for the correct resolved _linkname and _sEffectorLinkName
             bool bFoundLink = false;
             for(size_t ilink = 0; ilink < connectedBodyInfo._vLinkInfos.size(); ++ilink) {
-                if( pnewattachedSensor->_info._linkname == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
-                    pnewattachedSensor->_info._linkname = connectedBody._vResolvedLinkNames.at(ilink).first;
+                if( pnewattachedSensor->info_._linkname == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
+                    pnewattachedSensor->info_._linkname = connectedBody._vResolvedLinkNames.at(ilink).first;
                     bFoundLink = true;
                 }
             }
 
             if( !bFoundLink ) {
-                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for attachedSensor %s, could not find linkname0 %s in connected body link infos!", connectedBody.GetName()%GetName()%pnewattachedSensor->_info.name_%pnewattachedSensor->_info._linkname, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for attachedSensor %s, could not find linkname0 %s in connected body link infos!", connectedBody.GetName()%GetName()%pnewattachedSensor->info_.name_%pnewattachedSensor->info_._linkname, ORE_InvalidArguments);
             }
 
             _vecAttachedSensors.push_back(pnewattachedSensor);
-            connectedBody._vResolvedAttachedSensorNames[iattachedsensor].first = pnewattachedSensor->_info.name_;
+            connectedBody._vResolvedAttachedSensorNames[iattachedsensor].first = pnewattachedSensor->info_.name_;
         }
 
         connectedBody._dummyPassiveJointName = connectedBody._nameprefix + "_dummyconnectedbody__";
@@ -591,7 +591,7 @@ void RobotBase::_ComputeConnectedBodiesInformation()
         if( !connectedBody._pDummyJointCache ) {
             connectedBody._pDummyJointCache.reset(new KinBody::Joint(shared_kinbody()));
         }
-        KinBody::JointInfo& dummyJointInfo = connectedBody._pDummyJointCache->_info;
+        KinBody::JointInfo& dummyJointInfo = connectedBody._pDummyJointCache->info_;
         dummyJointInfo.name_ = connectedBody._dummyPassiveJointName;
         dummyJointInfo.is_active_ = false;
         dummyJointInfo.type_ = KinBody::JointType::JointPrismatic;

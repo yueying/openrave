@@ -851,17 +851,17 @@ public:
                 _AddPrefixForKinBody(probot,_prefix);
                 FOREACH(itmanip,probot->_vecManipulators) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
-                        (*itmanip)->_info.name_ = _prefix + (*itmanip)->_info.name_;
-                        (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
-                        (*itmanip)->_info._sEffectorLinkName = _prefix + (*itmanip)->_info._sEffectorLinkName;
-                        FOREACH(itgrippername,(*itmanip)->_info._vGripperJointNames) {
+                        (*itmanip)->info_.name_ = _prefix + (*itmanip)->info_.name_;
+                        (*itmanip)->info_._sBaseLinkName = _prefix + (*itmanip)->info_._sBaseLinkName;
+                        (*itmanip)->info_._sEffectorLinkName = _prefix + (*itmanip)->info_._sEffectorLinkName;
+                        FOREACH(itgrippername,(*itmanip)->info_._vGripperJointNames) {
                             *itgrippername = _prefix + *itgrippername;
                         }
                     }
                 }
                 FOREACH(itsensor, probot->_vecAttachedSensors) {
                     if( _setInitialSensors.find(*itsensor) == _setInitialSensors.end() ) {
-                        (*itsensor)->_info.name_ = _prefix + (*itsensor)->_info.name_;
+                        (*itsensor)->info_.name_ = _prefix + (*itsensor)->info_.name_;
                     }
                 }
             }
@@ -964,22 +964,22 @@ public:
     {
         FOREACH(itlink,pbody->_veclinks) {
             if( _setInitialLinks.find(*itlink) == _setInitialLinks.end()) {
-                (*itlink)->_info.name_ = prefix + (*itlink)->_info.name_;
+                (*itlink)->info_.name_ = prefix + (*itlink)->info_.name_;
             }
         }
         std::list<KinBody::JointPtr> listprocessjoints;
         std::vector< std::pair<std::string, std::string> > jointnamepairs; jointnamepairs.reserve(listprocessjoints.size());
         FOREACH(itjoint,pbody->_vecjoints) {
             if( _setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
-                jointnamepairs.emplace_back((*itjoint)->_info.name_,  prefix +(*itjoint)->_info.name_);
-                (*itjoint)->_info.name_ = prefix + (*itjoint)->_info.name_;
+                jointnamepairs.emplace_back((*itjoint)->info_.name_,  prefix +(*itjoint)->info_.name_);
+                (*itjoint)->info_.name_ = prefix + (*itjoint)->info_.name_;
                 listprocessjoints.push_back(*itjoint);
             }
         }
         FOREACH(itjoint,pbody->_vPassiveJoints) {
             if( _setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
-                jointnamepairs.emplace_back((*itjoint)->_info.name_,  prefix +(*itjoint)->_info.name_);
-                (*itjoint)->_info.name_ = prefix + (*itjoint)->_info.name_;
+                jointnamepairs.emplace_back((*itjoint)->info_.name_,  prefix +(*itjoint)->info_.name_);
+                (*itjoint)->info_.name_ = prefix + (*itjoint)->info_.name_;
                 listprocessjoints.push_back(*itjoint);
             }
         }
@@ -1409,11 +1409,11 @@ public:
             name = _ConvertToOpenRAVEName(pdomnode->getID());
         }
         KinBody::LinkPtr plink(new KinBody::Link(pkinbody));
-        plink->_info.name_ = name;
-        plink->_info.mass_ = 1.0;
-        plink->_info.is_static_ = false;
-        plink->_info._t = getNodeParentTransform(pdomnode) * _ExtractFullTransform(pdomnode);
-        bool bhasgeometry = ExtractGeometries(pdomnode, plink->_info._t, plink, bindings, vprocessednodes);
+        plink->info_.name_ = name;
+        plink->info_.mass_ = 1.0;
+        plink->info_.is_static_ = false;
+        plink->info_._t = getNodeParentTransform(pdomnode) * _ExtractFullTransform(pdomnode);
+        bool bhasgeometry = ExtractGeometries(pdomnode, plink->info_._t, plink, bindings, vprocessednodes);
         if( !bhasgeometry ) {
             return KinBodyPtr();
         }
@@ -1604,14 +1604,14 @@ public:
                                 std::string name = pelt->getAttribute("name");
                                 if( bFloatArray ) {
                                     ss.clear(); ss.str(pelt->getCharData());
-                                    plink->_info._mapFloatParameters[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
+                                    plink->info_._mapFloatParameters[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
                                 }
                                 else if( bIntArray ) {
                                     ss.clear(); ss.str(pelt->getCharData());
-                                    plink->_info._mapIntParameters[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
+                                    plink->info_._mapIntParameters[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
                                 }
                                 else if( bStringValue ) {
-                                    plink->_info._mapStringParameters[name] = pelt->getCharData();
+                                    plink->info_._mapStringParameters[name] = pelt->getCharData();
                                 }
                             }
                         }
@@ -1634,25 +1634,25 @@ public:
                                     std::string name = pelt->getAttribute("name");
                                     if( bFloatArray ) {
                                         ss.clear(); ss.str(pelt->getCharData());
-                                        pjoint->_info._mapFloatParameters[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
+                                        pjoint->info_._mapFloatParameters[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
                                     }
                                     else if( bIntArray ) {
                                         ss.clear(); ss.str(pelt->getCharData());
-                                        pjoint->_info._mapIntParameters[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
+                                        pjoint->info_._mapIntParameters[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
                                     }
                                     else if( bStringValue ) {
-                                        pjoint->_info._mapStringParameters[name] = pelt->getCharData();
+                                        pjoint->info_._mapStringParameters[name] = pelt->getCharData();
                                     }
                                 }
                                 bool bControlMode = pelt->getElementName() == std::string("controlMode");
                                 if( bControlMode ) {
-                                    pjoint->_info.control_mode_ = (KinBody::JointControlMode)boost::lexical_cast<int>(pelt->getCharData());
+                                    pjoint->info_.control_mode_ = (KinBody::JointControlMode)boost::lexical_cast<int>(pelt->getCharData());
                                     continue;
                                 }
                                 bool bJCIRobotController = pelt->getElementName() == std::string("jointcontrolinfo_robotcontroller");
                                 if( bJCIRobotController ) {
-                                    pjoint->_info._jci_robotcontroller.reset(new KinBody::JointInfo::JointControlInfo_RobotController());
-                                    KinBody::JointInfo::JointControlInfo_RobotController& jci = *pjoint->_info._jci_robotcontroller;
+                                    pjoint->info_._jci_robotcontroller.reset(new KinBody::JointInfo::JointControlInfo_RobotController());
+                                    KinBody::JointInfo::JointControlInfo_RobotController& jci = *pjoint->info_._jci_robotcontroller;
                                     for( size_t ieltcontent = 0; ieltcontent < pelt->getChildren().getCount(); ++ieltcontent ) {
                                         daeElementRef pchild = pelt->getChildren()[ieltcontent];
                                         if( pchild->getElementName() == std::string("robotId") ) {
@@ -1670,8 +1670,8 @@ public:
                                 }
                                 bool bJCIIO = pelt->getElementName() == std::string("jointcontrolinfo_io");
                                 if( bJCIIO ) {
-                                    pjoint->_info._jci_io.reset(new KinBody::JointInfo::JointControlInfo_IO());
-                                    KinBody::JointInfo::JointControlInfo_IO& jci = *pjoint->_info._jci_io;
+                                    pjoint->info_._jci_io.reset(new KinBody::JointInfo::JointControlInfo_IO());
+                                    KinBody::JointInfo::JointControlInfo_IO& jci = *pjoint->info_._jci_io;
                                     for( size_t ieltcontent = 0; ieltcontent < pelt->getChildren().getCount(); ++ieltcontent ) {
                                         daeElementRef pchild = pelt->getChildren()[ieltcontent];
                                         if( pchild->getElementName() == std::string("deviceId") ) {
@@ -1727,8 +1727,8 @@ public:
                                 }
                                 bool bJCIExternalDevice = pelt->getElementName() == std::string("jointcontrolinfo_externaldevice");
                                 if( bJCIExternalDevice ) {
-                                    pjoint->_info._jci_externaldevice.reset(new KinBody::JointInfo::JointControlInfo_ExternalDevice());
-                                    KinBody::JointInfo::JointControlInfo_ExternalDevice& jci = *pjoint->_info._jci_externaldevice;
+                                    pjoint->info_._jci_externaldevice.reset(new KinBody::JointInfo::JointControlInfo_ExternalDevice());
+                                    KinBody::JointInfo::JointControlInfo_ExternalDevice& jci = *pjoint->info_._jci_externaldevice;
                                     for( size_t ieltcontent = 0; ieltcontent < pelt->getChildren().getCount(); ++ieltcontent ) {
                                         daeElementRef pchild = pelt->getChildren()[ieltcontent];
                                         if( pchild->getElementName() == std::string("externalDeviceId") ) {
@@ -1742,13 +1742,13 @@ public:
                             // vUpper/LowerLimitSensorIsOn would be meaningless without vUpper/LowerLimitIONames. If the
                             // sizes of the two are not equal, resize vUpperLimitSensorIsOn to have the same size as
                             // vUpperLimitIONames and fill in the default value (1) if necessary.
-                            if( pjoint->_info.control_mode_ == KinBody::JointControlMode::JCM_IO ) {
+                            if( pjoint->info_.control_mode_ == KinBody::JointControlMode::JCM_IO ) {
                                 for( int ijointaxis = 0; ijointaxis < pjoint->GetDOF(); ++ijointaxis ) {
-                                    if( pjoint->_info._jci_io->vUpperLimitIONames.at(ijointaxis).size() != pjoint->_info._jci_io->vUpperLimitSensorIsOn.at(ijointaxis).size() ) {
-                                        pjoint->_info._jci_io->vUpperLimitSensorIsOn[ijointaxis].resize(pjoint->_info._jci_io->vUpperLimitIONames.at(ijointaxis).size(), 1);
+                                    if( pjoint->info_._jci_io->vUpperLimitIONames.at(ijointaxis).size() != pjoint->info_._jci_io->vUpperLimitSensorIsOn.at(ijointaxis).size() ) {
+                                        pjoint->info_._jci_io->vUpperLimitSensorIsOn[ijointaxis].resize(pjoint->info_._jci_io->vUpperLimitIONames.at(ijointaxis).size(), 1);
                                     }
-                                    if( pjoint->_info._jci_io->vLowerLimitIONames.at(ijointaxis).size() != pjoint->_info._jci_io->vLowerLimitSensorIsOn.at(ijointaxis).size() ) {
-                                        pjoint->_info._jci_io->vLowerLimitSensorIsOn[ijointaxis].resize(pjoint->_info._jci_io->vLowerLimitIONames.at(ijointaxis).size(), 1);
+                                    if( pjoint->info_._jci_io->vLowerLimitIONames.at(ijointaxis).size() != pjoint->info_._jci_io->vLowerLimitSensorIsOn.at(ijointaxis).size() ) {
+                                        pjoint->info_._jci_io->vLowerLimitSensorIsOn[ijointaxis].resize(pjoint->info_._jci_io->vLowerLimitIONames.at(ijointaxis).size(), 1);
                                     }
                                 }
                             }
@@ -1787,10 +1787,10 @@ public:
         KinBody::LinkPtr plink = pkinbody->GetLink(linkname);
         if( !plink ) {
             plink.reset(new KinBody::Link(pkinbody));
-            plink->_info.name_ = linkname;
-            plink->_info.mass_ = 1e-10;
-            plink->_info._vinertiamoments = Vector(1e-7,1e-7,1e-7);
-            plink->_info.is_static_ = false;
+            plink->info_.name_ = linkname;
+            plink->info_.mass_ = 1e-10;
+            plink->info_._vinertiamoments = Vector(1e-7,1e-7,1e-7);
+            plink->info_.is_static_ = false;
             plink->index_ = (int) pkinbody->_veclinks.size();
             pkinbody->_veclinks.push_back(plink);
         }
@@ -1798,10 +1798,10 @@ public:
             RAVELOG_DEBUG(str(boost::format("found previously defined link '%s")%linkname));
         }
 
-        plink->_info._t = tParentLink;
+        plink->info_._t = tParentLink;
         // use the kinematics coordinate system for each link
         if( !!pdomlink ) {
-            plink->_info._t = plink->_info._t * _ExtractFullTransform(pdomlink);
+            plink->info_._t = plink->info_._t * _ExtractFullTransform(pdomlink);
         }
 
         domInstance_rigid_bodyRef irigidbody;
@@ -1852,20 +1852,20 @@ public:
         if( !!rigidbody && !!rigidbody->getTechnique_common() ) {
             domRigid_body::domTechnique_commonRef rigiddata = rigidbody->getTechnique_common();
             if( !!rigiddata->getMass() ) {
-                plink->_info.mass_ = rigiddata->getMass()->getValue();
+                plink->info_.mass_ = rigiddata->getMass()->getValue();
             }
             Transform tmassframe = trigidoffset;
             if( !!rigiddata->getMass_frame() ) {
                 tmassframe *= _ExtractFullTransform(rigiddata->getMass_frame());
             }
             if( !!rigiddata->getInertia() ) {
-                plink->_info._vinertiamoments[0] = rigiddata->getInertia()->getValue()[0];
-                plink->_info._vinertiamoments[1] = rigiddata->getInertia()->getValue()[1];
-                plink->_info._vinertiamoments[2] = rigiddata->getInertia()->getValue()[2];
+                plink->info_._vinertiamoments[0] = rigiddata->getInertia()->getValue()[0];
+                plink->info_._vinertiamoments[1] = rigiddata->getInertia()->getValue()[1];
+                plink->info_._vinertiamoments[2] = rigiddata->getInertia()->getValue()[2];
             }
-            plink->_info._tMassFrame = plink->_info._t.inverse() * tmassframe;
+            plink->info_._tMassFrame = plink->info_._t.inverse() * tmassframe;
             if( !!rigiddata->getDynamic() ) {
-                plink->_info.is_static_ = !rigiddata->getDynamic()->getValue();
+                plink->info_.is_static_ = !rigiddata->getDynamic()->getValue();
             }
         }
         else {
@@ -1885,7 +1885,7 @@ public:
             RAVELOG_DEBUG(str(boost::format("Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
 
             {
-                stringstream ss; ss << plink->GetName() << ": " << plink->_info._t << endl;
+                stringstream ss; ss << plink->GetName() << ": " << plink->info_._t << endl;
                 RAVELOG_DEBUG(ss.str());
             }
 
@@ -1962,8 +1962,8 @@ public:
                 // create the joints before creating the child links
                 KinBody::JointPtr pjoint(new KinBody::Joint(pkinbody));
                 int jointtype = vdomaxes.getCount();
-                pjoint->_info.is_active_ = true;     // if not active, put into the passive list
-                FOREACH(it,pjoint->_info.weights_vector_) {
+                pjoint->info_.is_active_ = true;     // if not active, put into the passive list
+                FOREACH(it,pjoint->info_.weights_vector_) {
                     *it = 1;
                 }
 
@@ -1984,7 +1984,7 @@ public:
                             if( !!itaxisbinding->kinematics_axis_info ) {
                                 if( !!itaxisbinding->kinematics_axis_info->getActive() ) {
                                     // what if different axes have different active profiles?
-                                    pjoint->_info.is_active_ = resolveBool(itaxisbinding->kinematics_axis_info->getActive(),itaxisbinding->kinematics_axis_info);
+                                    pjoint->info_.is_active_ = resolveBool(itaxisbinding->kinematics_axis_info->getActive(),itaxisbinding->kinematics_axis_info);
                                 }
                             }
                             break;
@@ -1992,38 +1992,38 @@ public:
                     }
                     domAxis_constraintRef pdomaxis = vdomaxes[ic];
                     if( strcmp(pdomaxis->getElementName(), "revolute") == 0 ) {
-                        pjoint->_info.type_ = KinBody::JointRevolute;
-                        pjoint->_info.max_velocity_vector_[ic] = 0.5;
+                        pjoint->info_.type_ = KinBody::JointRevolute;
+                        pjoint->info_.max_velocity_vector_[ic] = 0.5;
                     }
                     else if( strcmp(pdomaxis->getElementName(), "prismatic") == 0 ) {
-                        pjoint->_info.type_ = KinBody::JointPrismatic;
+                        pjoint->info_.type_ = KinBody::JointPrismatic;
                         vaxisunits[ic] = _GetUnitScale(pdomaxis,_fGlobalScale);
                         jointtype |= 1<<(4+ic);
-                        pjoint->_info.max_velocity_vector_[ic] = 0.01;
+                        pjoint->info_.max_velocity_vector_[ic] = 0.01;
                     }
                     else {
                         RAVELOG_WARN(str(boost::format("unsupported joint type: %s\n")%pdomaxis->getElementName()));
                     }
                 }
 
-                pjoint->_info.type_ = (KinBody::JointType)jointtype;
+                pjoint->info_.type_ = (KinBody::JointType)jointtype;
                 _mapJointUnits[pjoint] = vaxisunits;
-                if( pjoint->_info.is_active_ ) {
+                if( pjoint->info_.is_active_ ) {
                     pjoint->jointindex = (int) pkinbody->_vecjoints.size();
                     pjoint->dofindex = pkinbody->GetDOF();
                 }
                 if( !!pdomjoint->getName() ) {
-                    pjoint->_info.name_ = _ConvertToOpenRAVEName(pdomjoint->getName());
+                    pjoint->info_.name_ = _ConvertToOpenRAVEName(pdomjoint->getName());
                 }
                 else {
-                    pjoint->_info.name_ = str(boost::format("dummy%d")%pjoint->jointindex);
+                    pjoint->info_.name_ = str(boost::format("dummy%d")%pjoint->jointindex);
                 }
 
-                if( pjoint->_info.is_active_ ) {
+                if( pjoint->info_.is_active_ ) {
                     pkinbody->_vecjoints.push_back(pjoint);
                 }
                 else {
-                    RAVELOG_VERBOSE(str(boost::format("joint %s is passive\n")%pjoint->_info.name_));
+                    RAVELOG_VERBOSE(str(boost::format("joint %s is passive\n")%pjoint->info_.name_));
                     pkinbody->_vPassiveJoints.push_back(pjoint);
                 }
 
@@ -2036,19 +2036,19 @@ public:
                     _mapJointSids[jointsidref.substr(lastJointSidIndex+1)] = pjoint;
                 }
 
-                RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)")%pjoint->_info.name_%pjoint->jointindex%pjoint->dofindex));
+                RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)")%pjoint->info_.name_%pjoint->jointindex%pjoint->dofindex));
 
-                KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->_info._t * tatt, vdomjoints, bindings);
+                KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->info_._t * tatt, vdomjoints, bindings);
 
                 if (!pchildlink) {
                     RAVELOG_WARN(str(boost::format("Link '%s' has no child link, creating dummy link\n")%plink->GetName()));
                     // create dummy child link
                     stringstream ss;
-                    ss << plink->_info.name_;
+                    ss << plink->info_.name_;
                     ss <<"_dummy" << pkinbody->_veclinks.size();
                     pchildlink.reset(new KinBody::Link(pkinbody));
-                    pchildlink->_info.name_ = ss.str();
-                    pchildlink->_info.is_static_ = false;
+                    pchildlink->info_.name_ = ss.str();
+                    pchildlink->info_.is_static_ = false;
                     pchildlink->index_ = (int)pkinbody->_veclinks.size();
                     pkinbody->_veclinks.push_back(pchildlink);
                 }
@@ -2083,7 +2083,7 @@ public:
                         fjointmult = _GetUnitScale(kinematics_axis_info,_fGlobalScale);
                     }
 
-                    pjoint->_info.offsets_vector_[ic] = 0;     // to overcome -pi to pi boundary
+                    pjoint->info_.offsets_vector_[ic] = 0;     // to overcome -pi to pi boundary
                     if (pkinbody->IsRobot() && !motion_axis_info) {
                         RAVELOG_WARN(str(boost::format("No motion axis info for joint %s\n")%pjoint->GetName()));
                     }
@@ -2096,14 +2096,14 @@ public:
                             domKinematics_newparamRef param = motion_axis_info->getNewparam_array()[iparam];
                             if ( !!param->getSid() ) {
                                 if ( std::string(param->getSid()) == "hardMaxVel" ) {
-                                    pjoint->_info.hard_max_velocity_vector_[ic] = fjointmult * param->getFloat()->getValue();
-                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info.hard_max_velocity_vector_[ic]);
+                                    pjoint->info_.hard_max_velocity_vector_[ic] = fjointmult * param->getFloat()->getValue();
+                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->info_.hard_max_velocity_vector_[ic]);
                                 } else if ( std::string(param->getSid()) == "hardMaxAccel" ) {
-                                    pjoint->_info.hard_max_accelerate_vector_[ic] = fjointmult * param->getFloat()->getValue();
-                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info.hard_max_accelerate_vector_[ic]);
+                                    pjoint->info_.hard_max_accelerate_vector_[ic] = fjointmult * param->getFloat()->getValue();
+                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->info_.hard_max_accelerate_vector_[ic]);
                                 } else if ( std::string(param->getSid()) == "hardMaxJerk" ) {
-                                    pjoint->_info.hard_max_jerk_vector_[ic] = fjointmult * param->getFloat()->getValue();
-                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info.hard_max_jerk_vector_[ic]);
+                                    pjoint->info_.hard_max_jerk_vector_[ic] = fjointmult * param->getFloat()->getValue();
+                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->info_.hard_max_jerk_vector_[ic]);
                                 }
                             }
                         }
@@ -2111,35 +2111,35 @@ public:
                         // Read soft limits. Soft limits are defined as <speed>, <acceleration>, <jerk> tag.
                         // In below, we check the consistency between hard limit (_vhadmaxXXX) and soft limit (_vmaxXXX). If soft limit is larger than soft limit, it is invalid and overwrite soft limit by hard limit.
                         if (!!motion_axis_info->getSpeed()) {
-                            pjoint->_info.max_velocity_vector_[ic] = resolveFloat(motion_axis_info->getSpeed(),motion_axis_info);
+                            pjoint->info_.max_velocity_vector_[ic] = resolveFloat(motion_axis_info->getSpeed(),motion_axis_info);
                             if( !_bBackCompatValuesInRadians ) {
-                                pjoint->_info.max_velocity_vector_[ic] *= fjointmult;
+                                pjoint->info_.max_velocity_vector_[ic] *= fjointmult;
                             }
-                            if ( pjoint->_info.hard_max_velocity_vector_[ic] != 0.0 && pjoint->_info.hard_max_velocity_vector_[ic] < pjoint->_info.max_velocity_vector_[ic] ) {
-                                RAVELOG_VERBOSE_FORMAT("... Joint Speed : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info.max_velocity_vector_[ic] % pjoint->_info.hard_max_velocity_vector_[ic]);
-                                pjoint->_info.max_velocity_vector_[ic] = pjoint->_info.hard_max_velocity_vector_[ic];
+                            if ( pjoint->info_.hard_max_velocity_vector_[ic] != 0.0 && pjoint->info_.hard_max_velocity_vector_[ic] < pjoint->info_.max_velocity_vector_[ic] ) {
+                                RAVELOG_VERBOSE_FORMAT("... Joint Speed : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->info_.max_velocity_vector_[ic] % pjoint->info_.hard_max_velocity_vector_[ic]);
+                                pjoint->info_.max_velocity_vector_[ic] = pjoint->info_.hard_max_velocity_vector_[ic];
                             }
                             RAVELOG_VERBOSE("... Joint Speed: %f...\n",pjoint->GetMaxVel());
                         }
                         if (!!motion_axis_info->getAcceleration()) {
-                            pjoint->_info.max_accelerate_vector_[ic] = resolveFloat(motion_axis_info->getAcceleration(),motion_axis_info);
+                            pjoint->info_.max_accelerate_vector_[ic] = resolveFloat(motion_axis_info->getAcceleration(),motion_axis_info);
                             if( !_bBackCompatValuesInRadians ) {
-                                pjoint->_info.max_accelerate_vector_[ic] *= fjointmult;
+                                pjoint->info_.max_accelerate_vector_[ic] *= fjointmult;
                             }
-                            if ( pjoint->_info.hard_max_accelerate_vector_[ic] != 0.0 && pjoint->_info.hard_max_accelerate_vector_[ic] < pjoint->_info.max_accelerate_vector_[ic] ) {
-                                RAVELOG_VERBOSE_FORMAT("... Joint Acceleration : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info.max_accelerate_vector_[ic] % pjoint->_info.hard_max_accelerate_vector_[ic]);
-                                pjoint->_info.max_accelerate_vector_[ic] = pjoint->_info.hard_max_accelerate_vector_[ic];
+                            if ( pjoint->info_.hard_max_accelerate_vector_[ic] != 0.0 && pjoint->info_.hard_max_accelerate_vector_[ic] < pjoint->info_.max_accelerate_vector_[ic] ) {
+                                RAVELOG_VERBOSE_FORMAT("... Joint Acceleration : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->info_.max_accelerate_vector_[ic] % pjoint->info_.hard_max_accelerate_vector_[ic]);
+                                pjoint->info_.max_accelerate_vector_[ic] = pjoint->info_.hard_max_accelerate_vector_[ic];
                             }
                             RAVELOG_VERBOSE("... Joint Acceleration: %f...\n",pjoint->GetMaxAccel());
                         }
                         if (!!motion_axis_info->getJerk()) {
-                            pjoint->_info.max_jerk_vector_[ic] = resolveFloat(motion_axis_info->getJerk(),motion_axis_info);
+                            pjoint->info_.max_jerk_vector_[ic] = resolveFloat(motion_axis_info->getJerk(),motion_axis_info);
                             if( !_bBackCompatValuesInRadians ) {
-                                pjoint->_info.max_jerk_vector_[ic] *= fjointmult;
+                                pjoint->info_.max_jerk_vector_[ic] *= fjointmult;
                             }
-                            if ( pjoint->_info.hard_max_jerk_vector_[ic] != 0.0 && pjoint->_info.hard_max_jerk_vector_[ic] < pjoint->_info.max_jerk_vector_[ic] ) {
-                                RAVELOG_VERBOSE_FORMAT("... Joint Jerk : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info.max_jerk_vector_[ic] % pjoint->_info.hard_max_jerk_vector_[ic]);
-                                pjoint->_info.max_jerk_vector_[ic] = pjoint->_info.hard_max_jerk_vector_[ic];
+                            if ( pjoint->info_.hard_max_jerk_vector_[ic] != 0.0 && pjoint->info_.hard_max_jerk_vector_[ic] < pjoint->info_.max_jerk_vector_[ic] ) {
+                                RAVELOG_VERBOSE_FORMAT("... Joint Jerk : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->info_.max_jerk_vector_[ic] % pjoint->info_.hard_max_jerk_vector_[ic]);
+                                pjoint->info_.max_jerk_vector_[ic] = pjoint->info_.hard_max_jerk_vector_[ic];
                             }
                             RAVELOG_VERBOSE("... Joint Jerk: %f...\n",pjoint->GetMaxJerk());
                         }
@@ -2157,17 +2157,17 @@ public:
 
                         if (joint_locked) {     // If joint is locked set limits to the static value.
                             RAVELOG_WARN("lock joint!!\n");
-                            pjoint->_info.lower_limit_vector_.at(ic) = 0;
-                            pjoint->_info.upper_limit_vector_.at(ic) = 0;
+                            pjoint->info_.lower_limit_vector_.at(ic) = 0;
+                            pjoint->info_.upper_limit_vector_.at(ic) = 0;
                         }
                         else if (!!kinematics_axis_info->getLimits()) {     // If there are articulated system kinematics limits
                             has_soft_limits = true;
-                            pjoint->_info.lower_limit_vector_.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMin(),kinematics_axis_info));
-                            pjoint->_info.upper_limit_vector_.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMax(),kinematics_axis_info));
+                            pjoint->info_.lower_limit_vector_.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMin(),kinematics_axis_info));
+                            pjoint->info_.upper_limit_vector_.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMax(),kinematics_axis_info));
                             if( pjoint->IsRevolute(ic) ) {
-                                if(( pjoint->_info.lower_limit_vector_.at(ic) < -PI) ||( pjoint->_info.upper_limit_vector_[ic] > PI) ) {
+                                if(( pjoint->info_.lower_limit_vector_.at(ic) < -PI) ||( pjoint->info_.upper_limit_vector_[ic] > PI) ) {
                                     // TODO, necessary?
-                                    pjoint->_info.offsets_vector_[ic] = 0.5f * (pjoint->_info.lower_limit_vector_.at(ic) + pjoint->_info.upper_limit_vector_[ic]);
+                                    pjoint->info_.offsets_vector_[ic] = 0.5f * (pjoint->info_.lower_limit_vector_.at(ic) + pjoint->info_.upper_limit_vector_[ic]);
                                 }
                             }
                         }
@@ -2190,7 +2190,7 @@ public:
                                 else if( paramsid == "planning_weight" ) {
                                     if( !!axisparam->getFloat() ) {
                                         if( axisparam->getFloat()->getValue() > 0 ) {
-                                            pjoint->_info.weights_vector_[ic] = axisparam->getFloat()->getValue();
+                                            pjoint->info_.weights_vector_[ic] = axisparam->getFloat()->getValue();
                                         }
                                         else {
                                             RAVELOG_WARN(str(boost::format("bad joint weight %f")%axisparam->getFloat()->getValue()));
@@ -2203,7 +2203,7 @@ public:
                                 else if( paramsid == "discretization_resolution" ) {
                                     if( !!axisparam->getFloat() ) {
                                         if( axisparam->getFloat()->getValue() > 0 ) {
-                                            pjoint->_info.resolution_vector_[ic] = axisparam->getFloat()->getValue();
+                                            pjoint->info_.resolution_vector_[ic] = axisparam->getFloat()->getValue();
                                         }
                                         else {
                                             RAVELOG_WARN(str(boost::format("bad joint resolution %f")%axisparam->getFloat()->getValue()));
@@ -2223,33 +2223,33 @@ public:
                             // contains the hard limits (prioritize over soft limits)
                             RAVELOG_VERBOSE_FORMAT("There are LIMITS in joint %s", pjoint->GetName());
                             dReal fscale = pjoint->IsRevolute(ic) ? (PI/180.0f) : _GetUnitScale(pdomaxis,_fGlobalScale);
-                            pjoint->_info.lower_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMin()->getValue()*fscale;
-                            pjoint->_info.upper_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMax()->getValue()*fscale;
+                            pjoint->info_.lower_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMin()->getValue()*fscale;
+                            pjoint->info_.upper_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMax()->getValue()*fscale;
                             if( pjoint->IsRevolute(ic) ) {
-                                if(( pjoint->_info.lower_limit_vector_[ic] < -PI) ||( pjoint->_info.upper_limit_vector_[ic] > PI) ) {
+                                if(( pjoint->info_.lower_limit_vector_[ic] < -PI) ||( pjoint->info_.upper_limit_vector_[ic] > PI) ) {
                                     // TODO, necessary?
-                                    pjoint->_info.offsets_vector_[ic] = 0.5f * (pjoint->_info.lower_limit_vector_[ic] + pjoint->_info.upper_limit_vector_[ic]);
+                                    pjoint->info_.offsets_vector_[ic] = 0.5f * (pjoint->info_.lower_limit_vector_[ic] + pjoint->info_.upper_limit_vector_[ic]);
                                 }
                             }
                         }
                     }
 
                     if( !!is_circular ) {
-                        pjoint->_info.is_circular_.at(ic) = *is_circular;
+                        pjoint->info_.is_circular_.at(ic) = *is_circular;
                     }
 
                     if( !has_soft_limits && !has_hard_limits && !joint_locked ) {
                         RAVELOG_VERBOSE(str(boost::format("There are NO LIMITS in joint %s ...\n")%pjoint->GetName()));
                         if( pjoint->IsRevolute(ic) ) {
                             if( !is_circular ) {
-                                pjoint->_info.is_circular_.at(ic) = true;
+                                pjoint->info_.is_circular_.at(ic) = true;
                             }
-                            pjoint->_info.lower_limit_vector_.at(ic) = -PI;
-                            pjoint->_info.upper_limit_vector_.at(ic) = PI;
+                            pjoint->info_.lower_limit_vector_.at(ic) = -PI;
+                            pjoint->info_.upper_limit_vector_.at(ic) = PI;
                         }
                         else {
-                            pjoint->_info.lower_limit_vector_.at(ic) =-1000000;
-                            pjoint->_info.upper_limit_vector_.at(ic) = 1000000;
+                            pjoint->info_.lower_limit_vector_.at(ic) =-1000000;
+                            pjoint->info_.upper_limit_vector_.at(ic) = 1000000;
                         }
                     }
 
@@ -2343,7 +2343,7 @@ public:
         // WARNING if pdomnode comes from an external reference, then the top of its parent will point to the first visual node ever parsed, which might not be the current visual node! Therefore, have to stop as soon as the external reference visual hierarchy is done and then multiply by the kinbody transform.
         TransformMatrix tnodeparent = tkinbodytrans * GetRelativeNodeParentTransform(pdomnode, bindings);
         TransformMatrix tnodetrans = _ExtractFullTransform(pdomnode);
-        TransformMatrix tmnodegeom = (TransformMatrix) plink->_info._t.inverse() * tnodeparent * tnodetrans;
+        TransformMatrix tmnodegeom = (TransformMatrix) plink->info_._t.inverse() * tnodeparent * tnodetrans;
         Transform tnodegeom;
         Vector vscale;
         decompose(tmnodegeom, tnodegeom, vscale);
@@ -2386,11 +2386,11 @@ public:
             }
 
             KinBody::Link::GeometryPtr pgeom(new KinBody::Link::Geometry(plink,*itgeominfo));
-            pgeom->_info.InitCollisionMesh();
+            pgeom->info_.InitCollisionMesh();
             plink->_vGeometries.push_back(pgeom);
             //  Append the collision mesh
             TriMesh trimesh = pgeom->GetCollisionMesh();
-            trimesh.ApplyTransform(pgeom->_info._t);
+            trimesh.ApplyTransform(pgeom->info_._t);
             plink->_collision.Append(trimesh);
         }
 
@@ -3337,7 +3337,7 @@ public:
                 domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
                 if( !!tec ) {
                     RobotBase::AttachedSensorPtr pattachedsensor(new RobotBase::AttachedSensor(probot));
-                    pattachedsensor->_info.name_ = _ConvertToOpenRAVEName(name);
+                    pattachedsensor->info_.name_ = _ConvertToOpenRAVEName(name);
                     daeElementRef pframe_origin = tec->getChild("frame_origin");
                     if( !!pframe_origin ) {
                         domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
@@ -3348,7 +3348,7 @@ public:
                             RAVELOG_WARN(str(boost::format("failed to find manipulator %s frame origin %s\n")%name%pframe_origin->getAttribute("link")));
                             continue;
                         }
-                        pattachedsensor->_info._trelative = _ExtractFullTransformFromChildren(pframe_origin);
+                        pattachedsensor->info_._trelative = _ExtractFullTransformFromChildren(pframe_origin);
                     }
                     daeElementRef instance_sensor = tec->getChild("instance_sensor");
                     if( !!instance_sensor ) {
@@ -3388,7 +3388,7 @@ public:
                     pattachedsensor->_psensor->SetReadableInterface(pattachedsensor->_psensor->GetXMLId(),pcurreader->GetReadable());
                 }
             }
-            pattachedsensor->UpdateInfo(); // need to update the _info struct with the latest values
+            pattachedsensor->UpdateInfo(); // need to update the info_ struct with the latest values
         }
     }
 
@@ -3428,7 +3428,7 @@ public:
                         for(size_t ic = 0; ic < tec->getContents().getCount(); ++ic) {
                             daeElementRef pchild = tec->getContents()[ic];
                             if( pchild->getElementName() == string("instance_actuator") ) {
-                                pjoint->_info._infoElectricMotor = _ExtractElectricMotorActuatorInfo(pchild);
+                                pjoint->info_._infoElectricMotor = _ExtractElectricMotorActuatorInfo(pchild);
                             }
                         }
                     }
@@ -3577,7 +3577,7 @@ public:
             }
             daeElementRef pactive = tec->getChild("active");
             if( !!pactive ) {
-                resolveCommon_bool_or_param(pactive, tec, connectedBody->_info._bIsActive);
+                resolveCommon_bool_or_param(pactive, tec, connectedBody->info_._bIsActive);
             }
         }
     }
@@ -4675,10 +4675,10 @@ private:
                             bool bIsEnabled=true;
                             if( resolveCommon_bool_or_param(pelt, referenceElt, bIsEnabled) ) {
                                 if( bAndWithPrevious ) {
-                                    plink->_info.is_enabled_ &= bIsEnabled;
+                                    plink->info_.is_enabled_ &= bIsEnabled;
                                 }
                                 else {
-                                    plink->_info.is_enabled_ = bIsEnabled;
+                                    plink->info_.is_enabled_ = bIsEnabled;
                                 }
                             }
                         }
@@ -4729,10 +4729,10 @@ private:
                             if( resolveCommon_bool_or_param(pelt, referenceElt, bVisible) ) {
                                 FOREACH(itgeometry, plink->_vGeometries) {
                                     if( bAndWithPrevious ) {
-                                        (*itgeometry)->_info.is_visible_ &= bVisible;
+                                        (*itgeometry)->info_.is_visible_ &= bVisible;
                                     }
                                     else {
-                                        (*itgeometry)->_info.is_visible_ = bVisible;
+                                        (*itgeometry)->info_.is_visible_ = bVisible;
                                     }
                                 }
                             }

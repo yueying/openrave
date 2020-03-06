@@ -304,79 +304,79 @@ namespace OpenRAVE
 
 				/// \brief get local geometry transform
 				inline const Transform& GetTransform() const {
-					return _info._t;
+					return info_._t;
 				}
 				inline GeometryType GetType() const {
-					return _info.type_;
+					return info_.type_;
 				}
 				inline const Vector& GetRenderScale() const {
-					return _info.render_scale_vec_;
+					return info_.render_scale_vec_;
 				}
 
 				inline const std::string& GetRenderFilename() const {
-					return _info._filenamerender;
+					return info_._filenamerender;
 				}
 				inline float GetTransparency() const {
-					return _info.transparency_;
+					return info_.transparency_;
 				}
 				/// \deprecated (12/1/12)
 				inline bool IsDraw() const RAVE_DEPRECATED {
-					return _info.is_visible_;
+					return info_.is_visible_;
 				}
 				inline bool IsVisible() const {
-					return _info.is_visible_;
+					return info_.is_visible_;
 				}
 				inline bool IsModifiable() const {
-					return _info.is_modifiable_;
+					return info_.is_modifiable_;
 				}
 
 				inline dReal GetSphereRadius() const {
-					return _info.geom_data_vec_.x;
+					return info_.geom_data_vec_.x;
 				}
 				inline dReal GetCylinderRadius() const {
-					return _info.geom_data_vec_.x;
+					return info_.geom_data_vec_.x;
 				}
 				inline dReal GetCylinderHeight() const {
-					return _info.geom_data_vec_.y;
+					return info_.geom_data_vec_.y;
 				}
 				inline const Vector& GetBoxExtents() const {
-					return _info.geom_data_vec_;
+					return info_.geom_data_vec_;
 				}
 				inline const Vector& GetContainerOuterExtents() const {
-					return _info.geom_data_vec_;
+					return info_.geom_data_vec_;
 				}
 				inline const Vector& GetContainerInnerExtents() const {
-					return _info._vGeomData2;
+					return info_._vGeomData2;
 				}
 				inline const Vector& GetContainerBottomCross() const {
-					return _info._vGeomData3;
+					return info_._vGeomData3;
 				}
 				inline const Vector& GetContainerBottom() const {
-					return _info._vGeomData4;
+					return info_._vGeomData4;
 				}
 				inline const RaveVector<float>& GetDiffuseColor() const {
-					return _info.diffuse_color_vec_;
+					return info_.diffuse_color_vec_;
 				}
 				inline const RaveVector<float>& GetAmbientColor() const {
-					return _info._vAmbientColor;
+					return info_._vAmbientColor;
 				}
 				inline const std::string& GetName() const {
-					return _info.name_;
+					return info_.name_;
 				}
 
 				/// \brief returns the local collision mesh
 				inline const TriMesh& GetCollisionMesh() const {
-					return _info.mesh_collision_;
+					return info_.mesh_collision_;
 				}
 
 				inline const KinBody::GeometryInfo& GetInfo() const {
-					return _info;
+					return info_;
 				}
 
 				/// cage
 				//@{
 				inline const Vector& GetCageBaseExtents() const {
-					return _info.geom_data_vec_;
+					return info_.geom_data_vec_;
 				}
 
 				/// \brief compute the inner empty volume in the parent link coordinate system
@@ -426,8 +426,8 @@ namespace OpenRAVE
 				virtual void SetName(const std::string& name);
 
 			protected:
-				std::weak_ptr<Link> _parent;
-				KinBody::GeometryInfo _info; //!< geometry info
+				std::weak_ptr<Link> parent_;
+				KinBody::GeometryInfo info_; //!< geometry info
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
 				friend class OpenRAVEXMLParser::LinkXMLReader;
@@ -450,7 +450,7 @@ namespace OpenRAVE
 			typedef Geometry GEOMPROPERTIES RAVE_DEPRECATED;
 
 			inline const std::string& GetName() const {
-				return _info.name_;
+				return info_.name_;
 			}
 
 			/// \brief Indicates a static body that does not move with respect to the root link.
@@ -458,7 +458,7 @@ namespace OpenRAVE
 			//// Static should be used when an object has infinite mass and
 			//!< shouldn't be affected by physics (including gravity). Collision still works.
 			inline bool IsStatic() const {
-				return _info.is_static_;
+				return info_.is_static_;
 			}
 
 			/// \brief Enables a Link. An enabled link takes part in collision detection and physics simulations
@@ -509,7 +509,7 @@ namespace OpenRAVE
 
 			/// \brief Return the current transformation of the link in the world coordinate system.
 			inline Transform GetTransform() const {
-				return _info._t;
+				return info_._t;
 			}
 
 			/// \brief Return all the direct parent links in the kinematics hierarchy of this link.
@@ -530,16 +530,16 @@ namespace OpenRAVE
 
 			/// \brief return center of mass offset in the link's local coordinate frame
 			inline Vector GetLocalCOM() const {
-				return _info._tMassFrame.trans;
+				return info_._tMassFrame.trans;
 			}
 
 			/// \brief return center of mass of the link in the global coordinate system
 			inline Vector GetGlobalCOM() const {
-				return _info._t*_info._tMassFrame.trans;
+				return info_._t*info_._tMassFrame.trans;
 			}
 
 			inline Vector GetCOMOffset() const {
-				return _info._tMassFrame.trans;
+				return info_._tMassFrame.trans;
 			}
 
 			/// \brief return inertia in link's local coordinate frame. The translation component is the the COM in the link's frame.
@@ -559,20 +559,20 @@ namespace OpenRAVE
 
 			/// \brief return the mass frame in the link's local coordinate system that holds the center of mass and principal axes for inertia.
 			inline const Transform& GetLocalMassFrame() const {
-				return _info._tMassFrame;
+				return info_._tMassFrame;
 			}
 
 			/// \brief return the mass frame in the global coordinate system that holds the center of mass and principal axes for inertia.
 			inline Transform GetGlobalMassFrame() const {
-				return _info._t*_info._tMassFrame;
+				return info_._t*info_._tMassFrame;
 			}
 
 			/// \brief return the principal moments of inertia inside the mass frame
 			inline const Vector& GetPrincipalMomentsOfInertia() const {
-				return _info._vinertiamoments;
+				return info_._vinertiamoments;
 			}
 			inline dReal GetMass() const {
-				return _info.mass_;
+				return info_.mass_;
 			}
 
 			/// \brief sets a link to be static.
@@ -680,7 +680,7 @@ namespace OpenRAVE
 
 			/// \brief return a map of custom float parameters
 			inline const std::map<std::string, std::vector<dReal> >& GetFloatParameters() const {
-				return _info._mapFloatParameters;
+				return info_._mapFloatParameters;
 			}
 
 			/// \brief set custom float parameters
@@ -690,7 +690,7 @@ namespace OpenRAVE
 
 			/// \brief return a map of custom integer parameters
 			inline const std::map<std::string, std::vector<int> >& GetIntParameters() const {
-				return _info._mapIntParameters;
+				return info_._mapIntParameters;
 			}
 
 			/// \brief set custom int parameters
@@ -700,7 +700,7 @@ namespace OpenRAVE
 
 			/// \brief return a map of custom float parameters
 			inline const std::map<std::string, std::string >& GetStringParameters() const {
-				return _info._mapStringParameters;
+				return info_._mapStringParameters;
 			}
 
 			/// \brief set custom string parameters
@@ -708,7 +708,7 @@ namespace OpenRAVE
 			/// \param value if empty, then removes the parameter
 			virtual void SetStringParameters(const std::string& key, const std::string& value);
 
-			/// \brief Updates several fields in \ref _info depending on the current state of the link
+			/// \brief Updates several fields in \ref info_ depending on the current state of the link
 			virtual void UpdateInfo();
 
 			/// \brief returns the current info structure of the link.
@@ -716,13 +716,13 @@ namespace OpenRAVE
 			/// The LinkInfo::_vgeometryinfos do not reflect geometry changes that happened since the robot was created. User
 			/// will need to call Geometry::GetInfo on each individual geometry.
 			inline const KinBody::LinkInfo& GetInfo() const {
-				return _info;
+				return info_;
 			}
 
 			/// \brief Calls \ref UpdateInfo and returns the link structure
 			inline const KinBody::LinkInfo& UpdateAndGetInfo() {
 				UpdateInfo();
-				return _info;
+				return info_;
 			}
 
 		protected:
@@ -733,7 +733,7 @@ namespace OpenRAVE
 
 			std::vector<GeometryPtr> _vGeometries;         //!< \see GetGeometries
 
-			LinkInfo _info; //!< parameter information of the link
+			LinkInfo info_; //!< parameter information of the link
 
 		private:
 			/// Sensitive variables that are auto-generated and should not be modified by the user.
@@ -978,27 +978,27 @@ namespace OpenRAVE
 
 			/// \brief The unique name of the joint
 			inline const std::string& GetName() const {
-				return _info.name_;
+				return info_.name_;
 			}
 
 			inline dReal GetMaxVel(int iaxis = 0) const {
-				return _info.max_velocity_vector_[iaxis];
+				return info_.max_velocity_vector_[iaxis];
 			}
 			inline dReal GetMaxAccel(int iaxis = 0) const {
-				return _info.max_accelerate_vector_[iaxis];
+				return info_.max_accelerate_vector_[iaxis];
 			}
 			inline dReal GetMaxJerk(int iaxis = 0) const {
-				return _info.max_jerk_vector_[iaxis];
+				return info_.max_jerk_vector_[iaxis];
 			}
 
 			inline dReal GetHardMaxVel(int iaxis = 0) const {
-				return _info.hard_max_velocity_vector_[iaxis];
+				return info_.hard_max_velocity_vector_[iaxis];
 			}
 			inline dReal GetHardMaxAccel(int iaxis = 0) const {
-				return _info.hard_max_accelerate_vector_[iaxis];
+				return info_.hard_max_accelerate_vector_[iaxis];
 			}
 			inline dReal GetHardMaxJerk(int iaxis = 0) const {
-				return _info.hard_max_jerk_vector_[iaxis];
+				return info_.hard_max_jerk_vector_[iaxis];
 			}
 
 			//!< \brief gets the max instantaneous torque of the joint
@@ -1019,7 +1019,7 @@ namespace OpenRAVE
 			std::pair<dReal, dReal> GetNominalTorqueLimits(int iaxis = 0) const;
 
 			inline dReal GetMaxInertia(int iaxis = 0) const {
-				return _info.max_inertia_vector_[iaxis];
+				return info_.max_inertia_vector_[iaxis];
 			}
 
 			/// \brief Get the degree of freedom index in the body's DOF array.
@@ -1054,7 +1054,7 @@ namespace OpenRAVE
 			}
 
 			inline KinBody::JointType GetType() const {
-				return _info.type_;
+				return info_.type_;
 			}
 
 			/// \brief gets all resolutions for the joint axes
@@ -1262,7 +1262,7 @@ namespace OpenRAVE
 			/// \param iaxis the axis to get the offset from
 			inline dReal GetWrapOffset(int iaxis = 0) const
 			{
-				return _info.offsets_vector_.at(iaxis);
+				return info_.offsets_vector_.at(iaxis);
 			}
 
 			inline dReal GetOffset(int iaxis = 0) const RAVE_DEPRECATED {
@@ -1347,7 +1347,7 @@ namespace OpenRAVE
 
 			/// \brief return a map of custom float parameters
 			inline const std::map<std::string, std::vector<dReal> >& GetFloatParameters() const {
-				return _info._mapFloatParameters;
+				return info_._mapFloatParameters;
 			}
 
 			/// \brief set custom float parameters
@@ -1357,7 +1357,7 @@ namespace OpenRAVE
 
 			/// \brief return a map of custom integer parameters
 			inline const std::map<std::string, std::vector<int> >& GetIntParameters() const {
-				return _info._mapIntParameters;
+				return info_._mapIntParameters;
 			}
 
 			/// \brief set custom int parameters
@@ -1367,7 +1367,7 @@ namespace OpenRAVE
 
 			/// \brief return a map of custom string parameters
 			inline const std::map<std::string, std::string >& GetStringParameters() const {
-				return _info._mapStringParameters;
+				return info_._mapStringParameters;
 			}
 
 			/// \brief set custom string parameters
@@ -1377,27 +1377,27 @@ namespace OpenRAVE
 
 			/// \brief return controlMode for this joint
 			inline JointControlMode GetControlMode() const {
-				return _info.control_mode_;
+				return info_.control_mode_;
 			}
 
-			/// \brief Updates several fields in \ref _info depending on the current state of the joint.
+			/// \brief Updates several fields in \ref info_ depending on the current state of the joint.
 			virtual void UpdateInfo();
 
 			/// \brief returns the JointInfo structure containing all information.
 			///
 			/// Some values in this structure like _vcurrentvalues need to be updated, so make sure to call \ref UpdateInfo() right before this function is called.
 			inline const KinBody::JointInfo& GetInfo() const {
-				return _info;
+				return info_;
 			}
 
 			/// \brief Calls \ref UpdateInfo and returns the joint structure
 			inline const KinBody::JointInfo& UpdateAndGetInfo() {
 				UpdateInfo();
-				return _info;
+				return info_;
 			}
 
 		protected:
-			JointInfo _info;
+			JointInfo info_;
 
 			std::array< MimicPtr, 3> _vmimic;          //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
@@ -1450,7 +1450,7 @@ namespace OpenRAVE
 
 			KinBodyWeakPtr _parent;               //!< body that joint belong to
 			std::array<LinkPtr, 2> _attachedbodies;         //!< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
-			std::array<Vector, 3> _vaxes;                //!< normalized axes, this can be different from _info.axes_vector_ and reflects how _tRight and _tLeft are computed
+			std::array<Vector, 3> _vaxes;                //!< normalized axes, this can be different from info_.axes_vector_ and reflects how _tRight and _tLeft are computed
 			Transform _tRight, _tLeft;         //!< transforms used to get body[1]'s transformation with respect to body[0]'s: Tbody1 = Tbody0 * tLeft * JointOffsetLeft * JointRotation * JointOffsetRight * tRight
 			Transform _tRightNoOffset, _tLeftNoOffset;         //!< same as _tLeft and _tRight except it doesn't not include the offset
 			Transform _tinvRight, _tinvLeft;         //!< the inverse transformations of tRight and tLeft
@@ -2576,13 +2576,13 @@ namespace OpenRAVE
 
 		/// \brief initializes and adds a link to internal hierarchy.
 		///
-		/// Assumes plink has _info initialized correctly, so will be initializing the other data depending on it.
+		/// Assumes plink has info_ initialized correctly, so will be initializing the other data depending on it.
 		/// Can only be called before internal robot hierarchy is initialized.
 		virtual void _InitAndAddLink(LinkPtr plink);
 
 		/// \brief initializes and adds a link to internal hierarchy.
 		///
-		/// Assumes plink has _info initialized correctly, so will be initializing the other data depending on it.
+		/// Assumes plink has info_ initialized correctly, so will be initializing the other data depending on it.
 		/// Can only be called before internal robot hierarchy is initialized
 		virtual void _InitAndAddJoint(JointPtr pjoint);
 

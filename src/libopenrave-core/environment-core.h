@@ -2047,7 +2047,8 @@ protected:
 
     void _SetDefaultGravity()
     {
-        if( !!physics_engine_ ) {
+        if( !!physics_engine_ )
+		{
             // At a latitude of L with altitude H (above sea level), the acceleration due to gravity at sea level is approximately
             // g= 9.780327 * ( 1 + .0053024*sin(L)**2 - .0000058*sin(2L)**2 ) - 0.000003086*H meters per second**2.
             // tokyo,japan 35.6894875 deg

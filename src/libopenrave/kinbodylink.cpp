@@ -189,26 +189,26 @@ namespace OpenRAVE
 
 	void KinBody::Link::Enable(bool is_enable)
 	{
-		if (_info.is_enabled_ != is_enable)
+		if (info_.is_enabled_ != is_enable)
 		{
 			KinBodyPtr parent = GetParent();
 			parent->_nNonAdjacentLinkCache &= ~AO_Enabled;
-			_info.is_enabled_ = is_enable;
+			info_.is_enabled_ = is_enable;
 			GetParent()->_PostprocessChangedParameters(Prop_LinkEnable);
 		}
 	}
 
 	bool KinBody::Link::IsEnabled() const
 	{
-		return _info.is_enabled_;
+		return info_.is_enabled_;
 	}
 
 	bool KinBody::Link::SetVisible(bool visible)
 	{
 		bool bchanged = false;
 		FOREACH(itgeom, _vGeometries) {
-			if ((*itgeom)->_info.is_visible_ != visible) {
-				(*itgeom)->_info.is_visible_ = visible;
+			if ((*itgeom)->info_.is_visible_ != visible) {
+				(*itgeom)->info_.is_visible_ = visible;
 				bchanged = true;
 			}
 		}
@@ -274,29 +274,29 @@ namespace OpenRAVE
 	}
 	TransformMatrix KinBody::Link::GetLocalInertia() const
 	{
-		return ComputeInertia(_info._tMassFrame, _info._vinertiamoments);
+		return ComputeInertia(info_._tMassFrame, info_._vinertiamoments);
 	}
 
 	TransformMatrix KinBody::Link::GetGlobalInertia() const
 	{
-		return ComputeInertia(_info._t*_info._tMassFrame, _info._vinertiamoments);
+		return ComputeInertia(info_._t*info_._tMassFrame, info_._vinertiamoments);
 	}
 
 	void KinBody::Link::SetLocalMassFrame(const Transform& massframe)
 	{
-		_info._tMassFrame = massframe;
+		info_._tMassFrame = massframe;
 		GetParent()->_PostprocessChangedParameters(Prop_LinkDynamics);
 	}
 
 	void KinBody::Link::SetPrincipalMomentsOfInertia(const Vector& inertiamoments)
 	{
-		_info._vinertiamoments = inertiamoments;
+		info_._vinertiamoments = inertiamoments;
 		GetParent()->_PostprocessChangedParameters(Prop_LinkDynamics);
 	}
 
 	void KinBody::Link::SetMass(dReal mass)
 	{
-		_info.mass_ = mass;
+		info_.mass_ = mass;
 		GetParent()->_PostprocessChangedParameters(Prop_LinkDynamics);
 	}
 
@@ -307,7 +307,7 @@ namespace OpenRAVE
 
 	AABB KinBody::Link::ComputeAABB() const
 	{
-		return ComputeAABBFromTransform(_info._t);
+		return ComputeAABBFromTransform(info_._t);
 	}
 
 	AABB KinBody::Link::ComputeAABBFromTransform(const Transform& tLink) const
@@ -376,23 +376,23 @@ namespace OpenRAVE
 			}
 		}
 		if (options & SO_Dynamics) {
-			SerializeRound(o, _info._tMassFrame);
-			SerializeRound(o, _info.mass_);
-			SerializeRound3(o, _info._vinertiamoments);
+			SerializeRound(o, info_._tMassFrame);
+			SerializeRound(o, info_.mass_);
+			SerializeRound3(o, info_._vinertiamoments);
 		}
 	}
 
 	void KinBody::Link::SetStatic(bool bStatic)
 	{
-		if (_info.is_static_ != bStatic) {
-			_info.is_static_ = bStatic;
+		if (info_.is_static_ != bStatic) {
+			info_.is_static_ = bStatic;
 			GetParent()->_PostprocessChangedParameters(Prop_LinkStatic);
 		}
 	}
 
 	void KinBody::Link::SetTransform(const Transform& t)
 	{
-		_info._t = t;
+		info_._t = t;
 		GetParent()->_nUpdateStampId++;
 	}
 
@@ -441,13 +441,13 @@ namespace OpenRAVE
 				_vGeometries[i]->InitCollisionMesh(); // have to initialize the mesh since some plugins might not understand all geometry types
 			}
 		}
-		_info._mapExtraGeometries.clear();
+		info_._mapExtraGeometries.clear();
 		// have to reset the self group! cannot use geometries directly since we require exclusive access to the GeometryInfo objects
 		std::vector<KinBody::GeometryInfoPtr> vgeometryinfos;
 		vgeometryinfos.resize(_vGeometries.size());
 		for (size_t i = 0; i < vgeometryinfos.size(); ++i) {
 			vgeometryinfos[i].reset(new KinBody::GeometryInfo());
-			*vgeometryinfos[i] = _vGeometries[i]->_info;
+			*vgeometryinfos[i] = _vGeometries[i]->info_;
 		}
 		SetGroupGeometries("self", vgeometryinfos);
 		_Update();
@@ -465,13 +465,13 @@ namespace OpenRAVE
 			}
 			++i;
 		}
-		_info._mapExtraGeometries.clear();
+		info_._mapExtraGeometries.clear();
 		// have to reset the self group!
 		std::vector<KinBody::GeometryInfoPtr> vgeometryinfos;
 		vgeometryinfos.resize(_vGeometries.size());
 		for (size_t i = 0; i < vgeometryinfos.size(); ++i) {
 			vgeometryinfos[i].reset(new KinBody::GeometryInfo());
-			*vgeometryinfos[i] = _vGeometries[i]->_info;
+			*vgeometryinfos[i] = _vGeometries[i]->info_;
 		}
 		SetGroupGeometries("self", vgeometryinfos);
 		_Update();
@@ -481,11 +481,11 @@ namespace OpenRAVE
 	{
 		std::vector<KinBody::GeometryInfoPtr>* pvinfos = NULL;
 		if (groupname.size() == 0) {
-			pvinfos = &_info._vgeometryinfos;
+			pvinfos = &info_._vgeometryinfos;
 		}
 		else {
-			std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = _info._mapExtraGeometries.find(groupname);
-			if (it == _info._mapExtraGeometries.end()) {
+			std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = info_._mapExtraGeometries.find(groupname);
+			if (it == info_._mapExtraGeometries.end()) {
 				throw OPENRAVE_EXCEPTION_FORMAT(_("could not find geometries %s for link %s"), groupname%GetName(), ORE_InvalidArguments);
 			}
 			pvinfos = &it->second;
@@ -503,8 +503,8 @@ namespace OpenRAVE
 
 	const std::vector<KinBody::GeometryInfoPtr>& KinBody::Link::GetGeometriesFromGroup(const std::string& groupname) const
 	{
-		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = _info._mapExtraGeometries.find(groupname);
-		if (it == _info._mapExtraGeometries.end()) {
+		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = info_._mapExtraGeometries.find(groupname);
+		if (it == info_._mapExtraGeometries.end()) {
 			throw OPENRAVE_EXCEPTION_FORMAT(_("geometry group %s does not exist for link %s"), groupname%GetName(), ORE_InvalidArguments);
 		}
 		return it->second;
@@ -512,7 +512,7 @@ namespace OpenRAVE
 
 	void KinBody::Link::SetGroupGeometries(const std::string& groupname, const std::vector<KinBody::GeometryInfoPtr>& geometries)
 	{
-		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = _info._mapExtraGeometries.insert(make_pair(groupname, std::vector<KinBody::GeometryInfoPtr>())).first;
+		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = info_._mapExtraGeometries.insert(make_pair(groupname, std::vector<KinBody::GeometryInfoPtr>())).first;
 		it->second.resize(geometries.size());
 		std::copy(geometries.begin(), geometries.end(), it->second.begin());
 		GetParent()->_PostprocessChangedParameters(Prop_LinkGeometryGroup); // have to notify collision checkers that the geometry info they are caching could have changed.
@@ -520,8 +520,8 @@ namespace OpenRAVE
 
 	int KinBody::Link::GetGroupNumGeometries(const std::string& groupname) const
 	{
-		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = _info._mapExtraGeometries.find(groupname);
-		if (it == _info._mapExtraGeometries.end()) {
+		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::const_iterator it = info_._mapExtraGeometries.find(groupname);
+		if (it == info_._mapExtraGeometries.end()) {
 			return -1;
 		}
 		return it->second.size();
@@ -542,13 +542,13 @@ namespace OpenRAVE
 				}
 			}
 
-			FOREACH(itgeometryinfo, _info._vgeometryinfos) {
+			FOREACH(itgeometryinfo, info_._vgeometryinfos) {
 				if ((*itgeometryinfo)->name_ == ginfo.name_) {
 					throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s has conflicting name for link %s"), ginfo.name_%GetName(), ORE_InvalidArguments);
 				}
 			}
 			if (addToGroups) {
-				FOREACH(itgeometrygroup, _info._mapExtraGeometries) {
+				FOREACH(itgeometrygroup, info_._mapExtraGeometries) {
 					FOREACH(itgeometryinfo, itgeometrygroup->second) {
 						if ((*itgeometryinfo)->name_ == ginfo.name_) {
 							throw OPENRAVE_EXCEPTION_FORMAT(_("new added geometry %s for group %s has conflicting name for link %s"), ginfo.name_%itgeometrygroup->first%GetName(), ORE_InvalidArguments);
@@ -560,9 +560,9 @@ namespace OpenRAVE
 
 		_vGeometries.push_back(GeometryPtr(new Geometry(shared_from_this(), *pginfo)));
 		_vGeometries.back()->InitCollisionMesh();
-		_info._vgeometryinfos.push_back(pginfo);
+		info_._vgeometryinfos.push_back(pginfo);
 		if (addToGroups) {
-			FOREACH(itgeometrygroup, _info._mapExtraGeometries) {
+			FOREACH(itgeometrygroup, info_._mapExtraGeometries) {
 				itgeometrygroup->second.push_back(pginfo);
 			}
 		}
@@ -584,10 +584,10 @@ namespace OpenRAVE
 				++itgeometry;
 			}
 		}
-		std::vector<KinBody::GeometryInfoPtr>::iterator itgeometryinfo = _info._vgeometryinfos.begin();
-		while (itgeometryinfo != _info._vgeometryinfos.end()) {
+		std::vector<KinBody::GeometryInfoPtr>::iterator itgeometryinfo = info_._vgeometryinfos.begin();
+		while (itgeometryinfo != info_._vgeometryinfos.end()) {
 			if ((*itgeometryinfo)->name_ == geometryname) {
-				itgeometryinfo = _info._vgeometryinfos.erase(itgeometryinfo);
+				itgeometryinfo = info_._vgeometryinfos.erase(itgeometryinfo);
 				bChanged = true;
 			}
 			else {
@@ -596,7 +596,7 @@ namespace OpenRAVE
 		}
 
 		if (removeFromAllGroups) {
-			FOREACH(itgeometrygroup, _info._mapExtraGeometries) {
+			FOREACH(itgeometrygroup, info_._mapExtraGeometries) {
 				std::vector<KinBody::GeometryInfoPtr>::iterator itgeometryinfo2 = itgeometrygroup->second.begin();
 				while (itgeometryinfo2 != itgeometrygroup->second.end()) {
 					if ((*itgeometryinfo2)->name_ == geometryname) {
@@ -634,7 +634,7 @@ namespace OpenRAVE
 			return _vGeometries.front()->ValidateContactNormal(position, normal);
 		}
 		else if (_vGeometries.size() > 1) {
-			RAVELOG_VERBOSE(str(boost::format("cannot validate normal when there is more than one geometry in link '%s(%d)' (do not know colliding geometry)") % _info.name_%GetIndex()));
+			RAVELOG_VERBOSE(str(boost::format("cannot validate normal when there is more than one geometry in link '%s(%d)' (do not know colliding geometry)") % info_.name_%GetIndex()));
 		}
 		return false;
 	}
@@ -651,10 +651,10 @@ namespace OpenRAVE
 	void KinBody::Link::SetFloatParameters(const std::string& key, const std::vector<dReal>& parameters)
 	{
 		if (parameters.size() > 0) {
-			_info._mapFloatParameters[key] = parameters;
+			info_._mapFloatParameters[key] = parameters;
 		}
 		else {
-			_info._mapFloatParameters.erase(key);
+			info_._mapFloatParameters.erase(key);
 		}
 		GetParent()->_PostprocessChangedParameters(Prop_LinkCustomParameters);
 	}
@@ -662,10 +662,10 @@ namespace OpenRAVE
 	void KinBody::Link::SetIntParameters(const std::string& key, const std::vector<int>& parameters)
 	{
 		if (parameters.size() > 0) {
-			_info._mapIntParameters[key] = parameters;
+			info_._mapIntParameters[key] = parameters;
 		}
 		else {
-			_info._mapIntParameters.erase(key);
+			info_._mapIntParameters.erase(key);
 		}
 		GetParent()->_PostprocessChangedParameters(Prop_LinkCustomParameters);
 	}
@@ -673,10 +673,10 @@ namespace OpenRAVE
 	void KinBody::Link::SetStringParameters(const std::string& key, const std::string& value)
 	{
 		if (value.size() > 0) {
-			_info._mapStringParameters[key] = value;
+			info_._mapStringParameters[key] = value;
 		}
 		else {
-			_info._mapStringParameters.erase(key);
+			info_._mapStringParameters.erase(key);
 		}
 		GetParent()->_PostprocessChangedParameters(Prop_LinkCustomParameters);
 	}
@@ -689,12 +689,12 @@ namespace OpenRAVE
 	void KinBody::Link::UpdateInfo()
 	{
 		// always have to recompute the geometries
-		_info._vgeometryinfos.resize(_vGeometries.size());
-		for (size_t i = 0; i < _info._vgeometryinfos.size(); ++i) {
-			if (!_info._vgeometryinfos[i]) {
-				_info._vgeometryinfos[i].reset(new KinBody::GeometryInfo());
+		info_._vgeometryinfos.resize(_vGeometries.size());
+		for (size_t i = 0; i < info_._vgeometryinfos.size(); ++i) {
+			if (!info_._vgeometryinfos[i]) {
+				info_._vgeometryinfos[i].reset(new KinBody::GeometryInfo());
 			}
-			*_info._vgeometryinfos[i] = _vGeometries[i]->GetInfo();
+			*info_._vgeometryinfos[i] = _vGeometries[i]->GetInfo();
 		}
 	}
 

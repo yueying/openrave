@@ -80,7 +80,7 @@ public:
         /// \brief return a serializable info holding everything to initialize a manipulator
         inline const ManipulatorInfo& GetInfo() const 
 		{
-            return _info;
+            return info_;
         }
 
         /// \brief Return the transformation of the manipulator frame
@@ -99,7 +99,7 @@ public:
 
         virtual const std::string& GetName() const 
 		{
-            return _info.name_;
+            return info_.name_;
         }
 
         /// \brief get robot that manipulator belongs to.
@@ -120,7 +120,7 @@ public:
         /// \brief Sets the ik solver and initializes it with the current manipulator.
         ///
         /// Due to complications with translation,rotation,direction,and ray ik,
-        /// the ik solver should take into account the grasp transform (_info._tLocalTool) internally.
+        /// the ik solver should take into account the grasp transform (info_._tLocalTool) internally.
         /// The actual ik primitives are transformed into the base frame only.
         virtual bool SetIkSolver(IkSolverBasePtr iksolver);
 
@@ -145,7 +145,7 @@ public:
 
         /// \brief Return transform with respect to end effector defining the grasp coordinate system
         virtual const Transform& GetLocalToolTransform() const {
-            return _info._tLocalTool;
+            return info_._tLocalTool;
         }
 
         /// \brief Sets the local tool transform with respect to the end effector link.
@@ -177,7 +177,7 @@ public:
         virtual int GetGripperDOF() const;
 
         virtual const std::vector<dReal>& GetChuckingDirection() const {
-            return _info._vChuckingDirection;
+            return info_._vChuckingDirection;
         }
 
         /// \brief sets the normal gripper direction to move joints to close/chuck the hand
@@ -190,7 +190,7 @@ public:
 
         /// \brief direction of palm/head/manipulator used for approaching. defined inside the manipulator/grasp coordinate system
         virtual const Vector& GetLocalToolDirection() const {
-            return _info._vdirection;
+            return info_._vdirection;
         }
 
         /// \brief returns the current values of the manipulator arm.
@@ -406,7 +406,7 @@ protected:
         /// \brief compute internal information from user-set info
         virtual void _ComputeInternalInformation();
 
-        ManipulatorInfo _info; //!< user-set information
+        ManipulatorInfo info_; //!< user-set information
 private:
         RobotBaseWeakPtr __probot;
         LinkPtr __pBase, __pEffector; //!< contains weak links to robot
@@ -473,10 +473,10 @@ public:
             return LinkPtr(pattachedlink);
         }
         virtual const Transform& GetRelativeTransform() const {
-            return _info._trelative;
+            return info_._trelative;
         }
         virtual Transform GetTransform() const {
-            return LinkPtr(pattachedlink)->GetTransform()*_info._trelative;
+            return LinkPtr(pattachedlink)->GetTransform()*info_._trelative;
         }
 
         /// \brief get robot that manipulator belongs to.
@@ -491,7 +491,7 @@ public:
             }
         }
         virtual const std::string& GetName() const {
-            return _info.name_;
+            return info_.name_;
         }
 
         /// retrieves the current data from the sensor
@@ -504,29 +504,29 @@ public:
         /// \brief return hash of the sensor definition
         virtual const std::string& GetStructureHash() const;
 
-        /// \brief Updates several fields in \ref _info depending on the current state of the attached sensor
+        /// \brief Updates several fields in \ref info_ depending on the current state of the attached sensor
         ///
-        /// \param type the type of sensor geometry that should be updated in _info
+        /// \param type the type of sensor geometry that should be updated in info_
         virtual void UpdateInfo(SensorBase::SensorType type=SensorBase::ST_Invalid);
 
         /// \brief returns the attached sensor info
         ///
-        /// \param type the type of sensor geometry that should be updated in _info
+        /// \param type the type of sensor geometry that should be updated in info_
         inline const AttachedSensorInfo& UpdateAndGetInfo(SensorBase::SensorType type=SensorBase::ST_Invalid) {
             UpdateInfo(type);
-            return _info;
+            return info_;
         }
 
         /// \brief returns the attached sensor info
         inline const AttachedSensorInfo& GetInfo() const {
-            return _info;
+            return info_;
         }
 
 private:
         /// \brief compute internal information from user-set info
         //virtual void _ComputeInternalInformation();
 
-        AttachedSensorInfo _info; //!< user specified data
+        AttachedSensorInfo info_; //!< user specified data
 
         RobotBaseWeakPtr _probot;
         SensorBasePtr _psensor; //!< initialized by _ComputeInternalInformation when added to the environment
@@ -605,34 +605,34 @@ public:
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with _info._vLinkInfos
+        /// Has one-to-one correspondence with info_._vLinkInfos
         virtual void GetResolvedLinks(std::vector<KinBody::LinkPtr>& links);
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with _info._vJointInfos
+        /// Has one-to-one correspondence with info_._vJointInfos
         virtual void GetResolvedJoints(std::vector<KinBody::JointPtr>& joints);
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with _info._vManipulatorInfos
+        /// Has one-to-one correspondence with info_._vManipulatorInfos
         virtual void GetResolvedManipulators(std::vector<RobotBase::ManipulatorPtr>& manipulators);
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with _info._vAttachedSensorInfos
+        /// Has one-to-one correspondence with info_._vAttachedSensorInfos
         virtual void GetResolvedAttachedSensors(std::vector<RobotBase::AttachedSensorPtr>& attachedsensors);
 
         virtual LinkPtr GetAttachingLink() const {
             return LinkPtr(_pattachedlink);
         }
         virtual const Transform& GetRelativeTransform() const {
-            return _info._trelative;
+            return info_._trelative;
         }
 
         /// \brief return the transform of the base link of the connecting body
         virtual Transform GetTransform() const {
-            return LinkPtr(_pattachedlink)->GetTransform()*_info._trelative;
+            return LinkPtr(_pattachedlink)->GetTransform()*info_._trelative;
         }
 
         /// \brief get robot that manipulator belongs to.
@@ -648,7 +648,7 @@ public:
         }
 
         inline const std::string& GetName() const {
-            return _info.name_;
+            return info_.name_;
         }
 
         // virtual void serialize(std::ostream& o, int options) const;
@@ -658,19 +658,19 @@ public:
 
         /// \brief returns the attached kinbody info
         inline const ConnectedBodyInfo& GetInfo() const {
-            return _info;
+            return info_;
         }
 
 private:
-        ConnectedBodyInfo _info; //!< user specified data (to be serialized and saved), should not contain dynamically generated parameters.
+        ConnectedBodyInfo info_; //!< user specified data (to be serialized and saved), should not contain dynamically generated parameters.
 
         std::string _nameprefix; //!< the name prefix to use for all the resolved link names.
         std::string _dummyPassiveJointName; //!< the joint that is used to attach the connected body to the robot link
         KinBody::JointPtr _pDummyJointCache; //!< cached Joint used for _dummyPassiveJointName
-        std::vector< std::pair<std::string, RobotBase::LinkPtr> > _vResolvedLinkNames; //!< for every entry in _info._vLinkInfos, the resolved link names added to the robot. Also serves as cache for pointers
-        std::vector< std::pair<std::string, RobotBase::JointPtr> > _vResolvedJointNames; //!< for every entry in _info._vJointInfos, the resolved link names. Also serves as cache for pointers.
-        std::vector< std::pair<std::string, RobotBase::ManipulatorPtr> > _vResolvedManipulatorNames; //!< for every entry in _info._vManipInfos. Also serves as cache for pointers
-        std::vector< std::pair<std::string, RobotBase::AttachedSensorPtr> > _vResolvedAttachedSensorNames; //!< for every entry in _info._vAttachedSensorResolvedNames. Also serves as cache for pointers
+        std::vector< std::pair<std::string, RobotBase::LinkPtr> > _vResolvedLinkNames; //!< for every entry in info_._vLinkInfos, the resolved link names added to the robot. Also serves as cache for pointers
+        std::vector< std::pair<std::string, RobotBase::JointPtr> > _vResolvedJointNames; //!< for every entry in info_._vJointInfos, the resolved link names. Also serves as cache for pointers.
+        std::vector< std::pair<std::string, RobotBase::ManipulatorPtr> > _vResolvedManipulatorNames; //!< for every entry in info_._vManipInfos. Also serves as cache for pointers
+        std::vector< std::pair<std::string, RobotBase::AttachedSensorPtr> > _vResolvedAttachedSensorNames; //!< for every entry in info_._vAttachedSensorResolvedNames. Also serves as cache for pointers
 
         RobotBaseWeakPtr _pattachedrobot; //!< the robot that the body is attached to
         LinkWeakPtr _pattachedlink;         //!< the robot link that the body is attached to

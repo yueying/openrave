@@ -877,12 +877,12 @@ public:
             _plink.reset(new KinBody::Link(pparent));
         }
         if( linkname.size() > 0 ) {
-            _plink->_info.name_ = linkname;
+            _plink->info_.name_ = linkname;
         }
         if( bStaticSet ) {
-            _plink->_info.is_static_ = bStatic;
+            _plink->info_.is_static_ = bStatic;
         }
-        _plink->_info.is_enabled_ = bIsEnabled;
+        _plink->info_.is_enabled_ = bIsEnabled;
     }
     virtual ~LinkXMLReader() {
     }
@@ -960,7 +960,7 @@ public:
                     // directly apply transform to all geomteries
                     Transform tnew = _plink->GetTransform();
                     FOREACH(itgeom, _plink->_vGeometries) {
-                        (*itgeom)->_info._t = tnew * (*itgeom)->_info._t;
+                        (*itgeom)->info_._t = tnew * (*itgeom)->info_._t;
                     }
                     _plink->_collision.ApplyTransform(tnew);
                     _plink->SetTransform(tOrigTrans);
@@ -973,7 +973,7 @@ public:
                     // geometry is not in the default group, so we add it to the LinkInfo without instantiating it
                     string groupname = geomreader->GetGroupName();
                     if( groupname != "self" ) {
-                        _plink->_info._mapExtraGeometries[groupname].push_back(info);
+                        _plink->info_._mapExtraGeometries[groupname].push_back(info);
                         _pcurreader.reset();
                         return false;
                     }
@@ -1076,7 +1076,7 @@ public:
 
                         // call before attaching the geom
                         KinBody::Link::GeometryPtr geom(new KinBody::Link::Geometry(_plink,*info));
-                        geom->_info.InitCollisionMesh();
+                        geom->info_.InitCollisionMesh();
                         FOREACH(it,info->mesh_collision_.vertices) {
                             *it = tmres * *it;
                         }
@@ -1223,8 +1223,8 @@ public:
                 totalmass = MASS::GetSphericalMass(_vMassExtents.x, Vector(), _fTotalMass);
             }
 
-            totalmass.GetMassFrame(_plink->_info._tMassFrame, _plink->_info._vinertiamoments);
-            _plink->_info.mass_ =totalmass.fTotalMass;
+            totalmass.GetMassFrame(_plink->info_._tMassFrame, _plink->info_._vinertiamoments);
+            _plink->info_.mass_ =totalmass.fTotalMass;
             tOrigTrans = _plink->GetTransform();
 
             Transform cur;
@@ -1249,24 +1249,24 @@ public:
         if( xmlname == "translation" ) {
             Vector v;
             _ss >> v.x >> v.y >> v.z;
-            _plink->_info._t.trans += v*_vScaleGeometry;
+            _plink->info_._t.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
             _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-            _plink->_info._t.rot = (Transform(tnew)*_plink->_info._t).rot;
+            _plink->info_._t.rot = (Transform(tnew)*_plink->info_._t).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
             _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-            _plink->_info._t.rot = (tnew*_plink->_info._t).rot;
+            _plink->info_._t.rot = (tnew*_plink->info_._t).rot;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
             _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
-            _plink->_info._t.rot = (tnew*_plink->_info._t).rot;
+            _plink->info_._t.rot = (tnew*_plink->info_._t).rot;
         }
         else if( xmlname == "offsetfrom" ) {
             // figure out which body
@@ -1341,36 +1341,36 @@ public:
         _bNegateJoint = false;
         _pparent = pparent;
         _pjoint.reset(new KinBody::Joint(pparent));
-        _pjoint->_info.type_ = KinBody::JointHinge;
+        _pjoint->info_.type_ = KinBody::JointHinge;
         _vScaleGeometry = Vector(1,1,1);
 
         FOREACHC(itatt,atts) {
             if( itatt->first == "name" ) {
-                _pjoint->_info.name_ = itatt->second;
+                _pjoint->info_.name_ = itatt->second;
             }
             else if( itatt->first == "type" ) {
                 if( _stricmp(itatt->second.c_str(), "hinge") == 0 ) {
-                    _pjoint->_info.type_ = KinBody::JointHinge;
+                    _pjoint->info_.type_ = KinBody::JointHinge;
                 }
                 else if( _stricmp(itatt->second.c_str(), "slider") == 0 ) {
-                    _pjoint->_info.type_ = KinBody::JointSlider;
+                    _pjoint->info_.type_ = KinBody::JointSlider;
                 }
                 else if( _stricmp(itatt->second.c_str(), "universal") == 0 ) {
-                    _pjoint->_info.type_ = KinBody::JointUniversal;
+                    _pjoint->info_.type_ = KinBody::JointUniversal;
                 }
                 else if( _stricmp(itatt->second.c_str(), "hinge2") == 0 ) {
-                    _pjoint->_info.type_ = KinBody::JointHinge2;
+                    _pjoint->info_.type_ = KinBody::JointHinge2;
                 }
                 else if( _stricmp(itatt->second.c_str(), "spherical") == 0 ) {
-                    _pjoint->_info.type_ = KinBody::JointSpherical;
+                    _pjoint->info_.type_ = KinBody::JointSpherical;
                 }
                 else {
                     RAVELOG_WARN(str(boost::format("unrecognized joint type: %s, setting to hinge\n")%itatt->second));
-                    _pjoint->_info.type_ = KinBody::JointHinge;
+                    _pjoint->info_.type_ = KinBody::JointHinge;
                 }
             }
             else if( itatt->first == "enable" ) {
-                _pjoint->_info.is_active_ = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
+                _pjoint->info_.is_active_ = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
             }
             else if( itatt->first == "mimic" ) {
                 RAVELOG_WARN("mimic attribute on <joint> tag is deprecated! Use mimic_pos, mimic_vel, and mimic_accel\n");
@@ -1405,9 +1405,9 @@ public:
                 _pjoint->_vmimic[0]->_equations[2] = itatt->second;
             }
             else if( itatt->first == "circular" ) {
-                _pjoint->_info.is_circular_[0] = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
+                _pjoint->info_.is_circular_[0] = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
                 for(int i = 1; i < _pjoint->GetDOF(); ++i) {
-                    _pjoint->_info.is_circular_[i] = _pjoint->_info.is_circular_[0];
+                    _pjoint->info_.is_circular_[i] = _pjoint->info_.is_circular_[0];
                 }
             }
             else if( itatt->first == "scalegeometry" ) {
@@ -1424,8 +1424,8 @@ public:
         _vAxes.resize(_pjoint->GetDOF());
         if( _pjoint->GetType() == KinBody::JointSlider ) {
             for(int i = 0; i < _pjoint->GetDOF(); ++i) {
-                _pjoint->_info.lower_limit_vector_.at(i) = -10;
-                _pjoint->_info.upper_limit_vector_.at(i) = 10;
+                _pjoint->info_.lower_limit_vector_.at(i) = -10;
+                _pjoint->info_.upper_limit_vector_.at(i) = 10;
             }
         }
         else if( _pjoint->GetType() == KinBody::JointSpherical ) {
@@ -1433,17 +1433,17 @@ public:
             _vAxes.at(1) = Vector(0,1,0);
             _vAxes.at(2) = Vector(0,0,1);
             for(int i = 0; i < _pjoint->GetDOF(); ++i) {
-                _pjoint->_info.lower_limit_vector_.at(i) = -100;
-                _pjoint->_info.upper_limit_vector_.at(i) = 100;
+                _pjoint->info_.lower_limit_vector_.at(i) = -100;
+                _pjoint->info_.upper_limit_vector_.at(i) = 100;
             }
         }
         else {
             for(int i = 0; i < _pjoint->GetDOF(); ++i) {
-                _pjoint->_info.lower_limit_vector_.at(i) = -PI;
-                _pjoint->_info.upper_limit_vector_.at(i) = PI;
+                _pjoint->info_.lower_limit_vector_.at(i) = -PI;
+                _pjoint->info_.upper_limit_vector_.at(i) = PI;
             }
         }
-        FOREACH(it,_pjoint->_info.weights_vector_) {
+        FOREACH(it,_pjoint->info_.weights_vector_) {
             *it = 1;
         }
     }
@@ -1473,13 +1473,13 @@ public:
     virtual bool endElement(const std::string& xmlname)
     {
         int numindices = _pjoint->GetDOF();
-        dReal fRatio = _pjoint->_info.type_ == KinBody::JointSlider ? (dReal)1 : (dReal)PI / 180.0f;         // most, but not all, joint take degrees
+        dReal fRatio = _pjoint->info_.type_ == KinBody::JointSlider ? (dReal)1 : (dReal)PI / 180.0f;         // most, but not all, joint take degrees
 
         if( !!_pcurreader ) {
             if( _pcurreader->endElement(xmlname) ) {
                 xmlreaders::ElectricMotorActuatorInfoReaderPtr actuatorreader = std::dynamic_pointer_cast<xmlreaders::ElectricMotorActuatorInfoReader>(_pcurreader);
                 if( !!actuatorreader ) {
-                    _pjoint->_info._infoElectricMotor = actuatorreader->GetActuatorInfo();
+                    _pjoint->info_._infoElectricMotor = actuatorreader->GetActuatorInfo();
                 }
                 _pcurreader.reset();
             }
@@ -1498,11 +1498,11 @@ public:
 
             string defaultname = "J_";
             // check if joint needs an artificial offset, only for revolute joints that have identifying points!
-            if(( _pjoint->_info.type_ == KinBody::JointUniversal) ||( _pjoint->_info.type_ == KinBody::JointHinge2) ||( _pjoint->_info.type_ == KinBody::JointHinge) ) {
+            if(( _pjoint->info_.type_ == KinBody::JointUniversal) ||( _pjoint->info_.type_ == KinBody::JointHinge2) ||( _pjoint->info_.type_ == KinBody::JointHinge) ) {
                 for(int i = 0; i < numindices; ++i) {
-                    if(( _pjoint->_info.lower_limit_vector_[i] < -PI) ||( _pjoint->_info.upper_limit_vector_[i] > PI) ) {
+                    if(( _pjoint->info_.lower_limit_vector_[i] < -PI) ||( _pjoint->info_.upper_limit_vector_[i] > PI) ) {
                         // TODO, necessary?
-                        _pjoint->_info.offsets_vector_[i] = 0.5f * (_pjoint->_info.lower_limit_vector_[i] + _pjoint->_info.upper_limit_vector_[i]);
+                        _pjoint->info_.offsets_vector_[i] = 0.5f * (_pjoint->info_.lower_limit_vector_[i] + _pjoint->info_.upper_limit_vector_[i]);
                     }
                 }
             }
@@ -1526,7 +1526,7 @@ public:
         }
         else if( xmlname == "weight" ) {
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->_info.weights_vector_.at(i);
+                _ss >> _pjoint->info_.weights_vector_.at(i);
             }
         }
         else if( xmlname == "initial" ) {
@@ -1548,7 +1548,7 @@ public:
             }
 
             if( !attachedbodies[index] && bQuery ) {
-                RAVELOG_WARN(str(boost::format("Failed to find body %s for joint %s\n")%linkname%_pjoint->_info.name_));
+                RAVELOG_WARN(str(boost::format("Failed to find body %s for joint %s\n")%linkname%_pjoint->info_.name_));
                 GetXMLErrorCount()++;
             }
         }
@@ -1560,8 +1560,8 @@ public:
             vector<dReal> values = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
             if( (int)values.size() == 2*_pjoint->GetDOF() ) {
                 for(int i = 0; i < _pjoint->GetDOF(); ++i ) {
-                    _pjoint->_info.lower_limit_vector_.at(i) = fmult*min(values[2*i+0],values[2*i+1]);
-                    _pjoint->_info.upper_limit_vector_.at(i) = fmult*max(values[2*i+0],values[2*i+1]);
+                    _pjoint->info_.lower_limit_vector_.at(i) = fmult*min(values[2*i+0],values[2*i+1]);
+                    _pjoint->info_.upper_limit_vector_.at(i) = fmult*max(values[2*i+0],values[2*i+1]);
                 }
             }
             else {
@@ -1572,60 +1572,60 @@ public:
             _bNegateJoint = true;
             RAVELOG_ERROR(str(boost::format("%s: <lostop> is deprecated, please use <limits> (now in radians), <limitsrad>, or <limitsdeg> tag and negate your joint axis!\n")%_pparent->GetName()));
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->_info.lower_limit_vector_.at(i);
-                _pjoint->_info.lower_limit_vector_.at(i) *= fRatio;
+                _ss >> _pjoint->info_.lower_limit_vector_.at(i);
+                _pjoint->info_.lower_limit_vector_.at(i) *= fRatio;
             }
         }
         else if( xmlname == "histop" ) {
             _bNegateJoint = true;
             RAVELOG_ERROR(str(boost::format("%s: <histop> deprecated, please use <limits> (now in radians), <limitsrad>, <limitsdeg> tag and negate your joint axis!\n")%_pparent->GetName()));
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->_info.upper_limit_vector_.at(i);
-                _pjoint->_info.upper_limit_vector_.at(i) *= fRatio;
+                _ss >> _pjoint->info_.upper_limit_vector_.at(i);
+                _pjoint->info_.upper_limit_vector_.at(i) *= fRatio;
             }
         }
         else if( xmlname == "maxvel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.max_velocity_vector_[idof];
+                _ss >> _pjoint->info_.max_velocity_vector_[idof];
             }
         }
         else if( xmlname == "maxveldeg" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.max_velocity_vector_[idof];
-                _pjoint->_info.max_velocity_vector_[idof] *= PI/180.0;
+                _ss >> _pjoint->info_.max_velocity_vector_[idof];
+                _pjoint->info_.max_velocity_vector_[idof] *= PI/180.0;
             }
         }
         else if( xmlname == "hardmaxvel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.hard_max_velocity_vector_[idof];
+                _ss >> _pjoint->info_.hard_max_velocity_vector_[idof];
             }
         }
         else if( xmlname == "maxaccel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.max_accelerate_vector_[idof];
+                _ss >> _pjoint->info_.max_accelerate_vector_[idof];
             }
         }
         else if( xmlname == "maxacceldeg" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.max_accelerate_vector_[idof];
-                _pjoint->_info.max_accelerate_vector_[idof] *= PI/180.0;
+                _ss >> _pjoint->info_.max_accelerate_vector_[idof];
+                _pjoint->info_.max_accelerate_vector_[idof] *= PI/180.0;
             }
         }
         else if( xmlname == "maxtorque" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.max_torque_vector_[idof];
+                _ss >> _pjoint->info_.max_torque_vector_[idof];
             }
         }
         else if( xmlname == "maxinertia" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info.max_inertia_vector_[idof];
+                _ss >> _pjoint->info_.max_inertia_vector_[idof];
             }
         }
         else if( xmlname == "resolution" ) {
             dReal fResolution = 0.02;
             _ss >> fResolution;
             fResolution *= fRatio;
-            FOREACH(itvalue, _pjoint->_info.resolution_vector_) {
+            FOREACH(itvalue, _pjoint->info_.resolution_vector_) {
                 *itvalue = fResolution;
             }
         }
@@ -1641,7 +1641,7 @@ public:
         }
         else {
             // could be type specific
-            switch(_pjoint->_info.type_) {
+            switch(_pjoint->info_.type_) {
             case KinBody::JointHinge:
                 if( xmlname == "anchor" ) {
                     _ss >> _vanchor.x >> _vanchor.y >> _vanchor.z;
@@ -1693,7 +1693,7 @@ public:
                 }
                 break;
             default:
-                throw OpenRAVEException(str(boost::format(_("bad joint type: 0x%x"))%_pjoint->_info.type_));
+                throw OpenRAVEException(str(boost::format(_("bad joint type: 0x%x"))%_pjoint->info_.type_));
                 break;
             }
         }
@@ -2187,7 +2187,7 @@ public:
                 else if( xmlname == "joint" ) {
                     _pjoint->dofindex = _pchain->GetDOF();
                     std::shared_ptr<JointXMLReader> pjointreader = std::dynamic_pointer_cast<JointXMLReader>(_pcurreader);
-                    if( _pjoint->_info.is_active_ ) {
+                    if( _pjoint->info_.is_active_ ) {
                         _pjoint->jointindex = (int)_pchain->_vecjoints.size();
                         _pchain->_vecjoints.push_back(_pjoint);
                     }
@@ -2307,15 +2307,15 @@ public:
                 //RAVELOG_INFO("write prefix: links: %d-%d, 0x%x\n",rootoffset,(int)_pchain->_veclinks.size(),this);
                 BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_pchain->_veclinks.size());
                 for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->_veclinks.begin()+rootoffset; itlink != _pchain->_veclinks.end(); ++itlink) {
-                    (*itlink)->_info.name_ = _prefix + (*itlink)->_info.name_;
+                    (*itlink)->info_.name_ = _prefix + (*itlink)->info_.name_;
                 }
                 BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_pchain->_vecjoints.size());
                 for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->_vecjoints.begin()+rootjoffset; itjoint != _pchain->_vecjoints.end(); ++itjoint) {
-                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
+                    (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                 }
                 BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_pchain->_vPassiveJoints.size());
                 for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->_vPassiveJoints.begin()+rootjpoffset; itjoint != _pchain->_vPassiveJoints.end(); ++itjoint) {
-                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
+                    (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                 }
             }
 
@@ -2323,7 +2323,7 @@ public:
                 // overwrite the color
                 FOREACH(itlink, _pchain->_veclinks) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
-                        (*itgeom)->_info.diffuse_color_vec_ = _diffusecol;
+                        (*itgeom)->info_.diffuse_color_vec_ = _diffusecol;
                     }
                 }
             }
@@ -2331,7 +2331,7 @@ public:
                 // overwrite the color
                 FOREACH(itlink, _pchain->_veclinks) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
-                        (*itgeom)->_info._vAmbientColor = _ambientcol;
+                        (*itgeom)->info_._vAmbientColor = _ambientcol;
                     }
                 }
             }
@@ -2339,7 +2339,7 @@ public:
                 // overwrite the color
                 FOREACH(itlink, _pchain->_veclinks) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
-                        (*itgeom)->_info.transparency_ = _transparency;
+                        (*itgeom)->info_.transparency_ = _transparency;
                     }
                 }
             }
@@ -2708,7 +2708,7 @@ public:
             }
         }
 
-        _psensor->_info.name_ = name;
+        _psensor->info_.name_ = name;
         _probot = _psensor->GetRobot();
     }
 
@@ -2777,24 +2777,24 @@ public:
         else if( xmlname == "translation" ) {
             Vector v;
             _ss >> v.x >> v.y >> v.z;
-            _psensor->_info._trelative.trans += v*_vScaleGeometry;
+            _psensor->info_._trelative.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
             _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
-            _psensor->_info._trelative.rot = (tnew*_psensor->_info._trelative).rot;
+            _psensor->info_._trelative.rot = (tnew*_psensor->info_._trelative).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
             _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-            _psensor->_info._trelative.rot = (tnew*_psensor->_info._trelative).rot;
+            _psensor->info_._trelative.rot = (tnew*_psensor->info_._trelative).rot;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
             _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-            _psensor->_info._trelative.rot = (Transform(tnew)*_psensor->_info._trelative).rot;
+            _psensor->info_._trelative.rot = (Transform(tnew)*_psensor->info_._trelative).rot;
         }
 
         if( xmlname !=_processingtag )
@@ -3012,7 +3012,7 @@ public:
                 BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_probot->_veclinks.size());
                 vector<KinBody::LinkPtr>::iterator itlink = _probot->_veclinks.begin()+rootoffset;
                 while(itlink != _probot->_veclinks.end()) {
-                    (*itlink)->_info.name_ = _prefix + (*itlink)->_info.name_;
+                    (*itlink)->info_.name_ = _prefix + (*itlink)->info_.name_;
                     ++itlink;
                 }
                 std::vector< std::pair<std::string, std::string> > jointnamepairs;
@@ -3021,16 +3021,16 @@ public:
                 vector<KinBody::JointPtr>::iterator itjoint = _probot->_vecjoints.begin()+rootjoffset;
                 list<KinBody::JointPtr> listjoints;
                 while(itjoint != _probot->_vecjoints.end()) {
-                    jointnamepairs.emplace_back((*itjoint)->_info.name_,  _prefix +(*itjoint)->_info.name_);
-                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
+                    jointnamepairs.emplace_back((*itjoint)->info_.name_,  _prefix +(*itjoint)->info_.name_);
+                    (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                     listjoints.push_back(*itjoint);
                     ++itjoint;
                 }
                 BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_probot->_vPassiveJoints.size());
                 itjoint = _probot->_vPassiveJoints.begin()+rootjpoffset;
                 while(itjoint != _probot->_vPassiveJoints.end()) {
-                    jointnamepairs.emplace_back((*itjoint)->_info.name_,  _prefix +(*itjoint)->_info.name_);
-                    (*itjoint)->_info.name_ = _prefix +(*itjoint)->_info.name_;
+                    jointnamepairs.emplace_back((*itjoint)->info_.name_,  _prefix +(*itjoint)->info_.name_);
+                    (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                     listjoints.push_back(*itjoint);
                     ++itjoint;
                 }
@@ -3048,15 +3048,15 @@ public:
                 }
                 FOREACH(itsensor, _probot->GetAttachedSensors()) {
                     if( _setInitialSensors.find(*itsensor) == _setInitialSensors.end() ) {
-                        (*itsensor)->_info.name_ = _prefix + (*itsensor)->_info.name_;
+                        (*itsensor)->info_.name_ = _prefix + (*itsensor)->info_.name_;
                     }
                 }
                 FOREACH(itmanip,_probot->GetManipulators()) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
-                        (*itmanip)->_info.name_ = _prefix + (*itmanip)->_info.name_;
-                        (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;
-                        (*itmanip)->_info._sEffectorLinkName = _prefix + (*itmanip)->_info._sEffectorLinkName;
-                        FOREACH(itgrippername,(*itmanip)->_info._vGripperJointNames) {
+                        (*itmanip)->info_.name_ = _prefix + (*itmanip)->info_.name_;
+                        (*itmanip)->info_._sBaseLinkName = _prefix + (*itmanip)->info_._sBaseLinkName;
+                        (*itmanip)->info_._sEffectorLinkName = _prefix + (*itmanip)->info_._sEffectorLinkName;
+                        FOREACH(itgrippername,(*itmanip)->info_._vGripperJointNames) {
                             *itgrippername = _prefix + *itgrippername;
                         }
                     }

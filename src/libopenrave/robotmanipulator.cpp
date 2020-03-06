@@ -46,7 +46,7 @@ void RobotBase::ManipulatorInfo::DeserializeJSON(const rapidjson::Value& value, 
 }
 
 RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) 
-	: _info(info), __probot(probot) 
+	: info_(info), __probot(probot) 
 {
 }
 RobotBase::Manipulator::~Manipulator() 
@@ -57,8 +57,8 @@ RobotBase::Manipulator::Manipulator(const RobotBase::Manipulator& r)
 {
     *this = r;
     __pIkSolver.reset();
-    if( _info._sIkSolverXMLId.size() > 0 ) {
-        __pIkSolver = RaveCreateIkSolver(GetRobot()->GetEnv(), _info._sIkSolverXMLId);
+    if( info_._sIkSolverXMLId.size() > 0 ) {
+        __pIkSolver = RaveCreateIkSolver(GetRobot()->GetEnv(), info_._sIkSolverXMLId);
     }
 }
 
@@ -73,8 +73,8 @@ RobotBase::Manipulator::Manipulator(RobotBasePtr probot, std::shared_ptr<RobotBa
         __pEffector = probot->GetLinks().at(r->GetEndEffector()->GetIndex());
     }
     __pIkSolver.reset(); // will be initialized when needed. Problem: the freeinc parameters will not get transferred to the new iksolver
-//    if( _info._sIkSolverXMLId.size() > 0 ) {
-//        //__pIkSolver = RaveCreateIkSolver(probot->GetEnv(), _info._sIkSolverXMLId);
+//    if( info_._sIkSolverXMLId.size() > 0 ) {
+//        //__pIkSolver = RaveCreateIkSolver(probot->GetEnv(), info_._sIkSolverXMLId);
 //        // cannot call __pIkSolver->Init since this is the constructor...
 //    }
 }
@@ -92,18 +92,18 @@ int RobotBase::Manipulator::GetGripperDOF() const
 void RobotBase::Manipulator::SetChuckingDirection(const std::vector<dReal>& chuckingdirection)
 {
     OPENRAVE_ASSERT_OP((int)chuckingdirection.size(),==,GetGripperDOF());
-    _info._vChuckingDirection = chuckingdirection;
+    info_._vChuckingDirection = chuckingdirection;
     GetRobot()->_PostprocessChangedParameters(Prop_RobotManipulatorTool);
 }
 
 void RobotBase::Manipulator::SetLocalToolTransform(const Transform& t)
 {
-    _info._sIkSolverXMLId.resize(0);
+    info_._sIkSolverXMLId.resize(0);
     // only reset the iksolver if transform is different. note that the correct way is to see if the hash changes, but that could take too much computation. also hashes truncate the numbers.
-    if( !!__pIkSolver && TransformDistance2(_info._tLocalTool, t) > g_fEpsilonLinear ) {
+    if( !!__pIkSolver && TransformDistance2(info_._tLocalTool, t) > g_fEpsilonLinear ) {
         __pIkSolver.reset();
     }
-    _info._tLocalTool = t;
+    info_._tLocalTool = t;
     __hashkinematicsstructure.resize(0);
     __hashstructure.resize(0);
     __maphashikstructure.clear();
@@ -112,16 +112,16 @@ void RobotBase::Manipulator::SetLocalToolTransform(const Transform& t)
 
 void RobotBase::Manipulator::SetLocalToolDirection(const Vector& direction)
 {
-    _info._sIkSolverXMLId.resize(0);
+    info_._sIkSolverXMLId.resize(0);
     __pIkSolver.reset();
     // only reset the iksolver if transform is different. note that the correct way is to see if the hash changes, but that could take too much computation. also hashes truncate the numbers.
-    if( (_info._vdirection-direction).lengthsqr3() > g_fEpsilonLinear ) {
+    if( (info_._vdirection-direction).lengthsqr3() > g_fEpsilonLinear ) {
         // only reset if direction is actually used
         if( !!__pIkSolver && (__pIkSolver->Supports(IKP_TranslationDirection5D) || __pIkSolver->Supports(IKP_Direction3D)) ) {
             __pIkSolver.reset();
         }
     }
-    _info._vdirection = direction*(1/RaveSqrt(direction.lengthsqr3())); // should normalize
+    info_._vdirection = direction*(1/RaveSqrt(direction.lengthsqr3())); // should normalize
     __hashkinematicsstructure.resize(0);
     __hashstructure.resize(0);
     __maphashikstructure.clear();
@@ -133,21 +133,21 @@ void RobotBase::Manipulator::SetName(const std::string& name)
     RobotBasePtr probot=GetRobot();
     FOREACHC(itmanip,probot->GetManipulators()) {
         if( *itmanip != shared_from_this() && name == (*itmanip)->GetName() ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator name change '%s'->'%s' is colliding with other manipulator"), _info.name_%name, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator name change '%s'->'%s' is colliding with other manipulator"), info_.name_%name, ORE_InvalidArguments);
         }
     }
-    _info.name_=name;
+    info_.name_=name;
     probot->_PostprocessChangedParameters(Prop_RobotManipulatorName);
 }
 
 Transform RobotBase::Manipulator::GetTransform() const
 {
-    return __pEffector->GetTransform() * _info._tLocalTool;
+    return __pEffector->GetTransform() * info_._tLocalTool;
 }
 
 std::pair<Vector,Vector> RobotBase::Manipulator::GetVelocity() const
 {
-    Vector vdifference = __pEffector->GetTransform().rotate(_info._tLocalTool.trans);
+    Vector vdifference = __pEffector->GetTransform().rotate(info_._tLocalTool.trans);
     std::pair<Vector,Vector> velocity = __pEffector->GetVelocity();
     velocity.first += velocity.second.cross(vdifference);
     return velocity;
@@ -155,15 +155,15 @@ std::pair<Vector,Vector> RobotBase::Manipulator::GetVelocity() const
 
 IkSolverBasePtr RobotBase::Manipulator::GetIkSolver() const
 {
-    if( !!__pIkSolver || _info._sIkSolverXMLId.size() == 0 ) {
+    if( !!__pIkSolver || info_._sIkSolverXMLId.size() == 0 ) {
         return __pIkSolver;
     }
 
     // initialize ik solver
     try {
-        if( _info._sIkSolverXMLId.size() > 0 ) {
+        if( info_._sIkSolverXMLId.size() > 0 ) {
             RobotBasePtr probot(__probot);
-            __pIkSolver = RaveCreateIkSolver(probot->GetEnv(), _info._sIkSolverXMLId);
+            __pIkSolver = RaveCreateIkSolver(probot->GetEnv(), info_._sIkSolverXMLId);
             if( !!__pIkSolver ) {
                 // note that ik solvers might look at the manipulator hashes for verification
                 __pIkSolver->Init(shared_from_this());
@@ -187,14 +187,14 @@ bool RobotBase::Manipulator::SetIkSolver(IkSolverBasePtr iksolver)
     if( iksolver->GetXMLId().size() == 0 ) {
         RAVELOG_WARN(str(boost::format("robot %s manip %s IkSolver XML is not initialized\n")%GetRobot()->GetName()%GetName()));
     }
-    if( iksolver == __pIkSolver && _info._sIkSolverXMLId == iksolver->GetXMLId() ) {
+    if( iksolver == __pIkSolver && info_._sIkSolverXMLId == iksolver->GetXMLId() ) {
         return true;
     }
 
     // only call the changed message if something changed
     if( iksolver->Init(shared_from_this()) ) {
         __pIkSolver = iksolver;
-        _info._sIkSolverXMLId = iksolver->GetXMLId();
+        info_._sIkSolverXMLId = iksolver->GetXMLId();
         GetRobot()->_PostprocessChangedParameters(Prop_RobotManipulatorSolver);
         return true;
     }
@@ -318,19 +318,19 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_Transform6D: ikp.SetTransform6D(t); break;
     case IKP_Rotation3D: ikp.SetRotation3D(t.rot); break;
     case IKP_Translation3D: ikp.SetTranslation3D(t.trans); break;
-    case IKP_Direction3D: ikp.SetDirection3D(t.rotate(_info._vdirection)); break;
+    case IKP_Direction3D: ikp.SetDirection3D(t.rotate(info_._vdirection)); break;
     case IKP_Ray4D: {
-        ikp.SetRay4D(RAY(t.trans,t.rotate(_info._vdirection)));
+        ikp.SetRay4D(RAY(t.trans,t.rotate(info_._vdirection)));
         break;
     }
     case IKP_Lookat3D: {
         RAVELOG_WARN("RobotBase::Manipulator::GetIkParameterization: Lookat3D type setting goal a distance of 1 from the origin.\n");
-        Vector vdir = t.rotate(_info._vdirection);
+        Vector vdir = t.rotate(info_._vdirection);
         ikp.SetLookat3D(RAY(t.trans + vdir,vdir));
         break;
     }
     case IKP_TranslationDirection5D: {
-        ikp.SetTranslationDirection5D(RAY(t.trans,t.rotate(_info._vdirection)));
+        ikp.SetTranslationDirection5D(RAY(t.trans,t.rotate(info_._vdirection)));
         break;
     }
     case IKP_TranslationXY2D: {
@@ -339,7 +339,7 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     }
     case IKP_TranslationXYOrientation3D: {
         //dReal zangle = -normalizeAxisRotation(Vector(0,0,1),t.rot).first;
-        Vector vglobaldirection = t.rotate(_info._vdirection);
+        Vector vglobaldirection = t.rotate(info_._vdirection);
         ikp.SetTranslationXYOrientation3D(Vector(t.trans.x,t.trans.y,RaveAtan2(vglobaldirection.y,vglobaldirection.x)));
         break;
     }
@@ -351,11 +351,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_TranslationXAxisAngle4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.x,-1.0,1.0)));
         }
         else {
-            const Vector vlocaldirection = t.rotate(_info._vdirection);
+            const Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.x,-1.0,1.0)));
         }
         break;
@@ -363,11 +363,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_TranslationYAxisAngle4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.y,-1.0,1.0)));
         }
         else {
-            const Vector vlocaldirection = t.rotate(_info._vdirection);
+            const Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.y,-1.0,1.0)));
         }
         break;
@@ -375,11 +375,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_TranslationZAxisAngle4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.z,-1.0,1.0)));
         }
         else {
-            const Vector vlocaldirection = t.rotate(_info._vdirection);
+            const Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.z,-1.0,1.0)));
         }
         break;
@@ -387,11 +387,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_TranslationXAxisAngleZNorm4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngleZNorm4D(t.trans,RaveAtan2(vlocaldirection.y,vlocaldirection.x));
         }
         else {
-            Vector vlocaldirection = t.rotate(_info._vdirection);
+            Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngleZNorm4D(t.trans,RaveAtan2(vlocaldirection.y,vlocaldirection.x));
         }
         break;
@@ -399,11 +399,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_TranslationYAxisAngleXNorm4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngleXNorm4D(t.trans,RaveAtan2(vlocaldirection.z,vlocaldirection.y));
         }
         else {
-            Vector vlocaldirection = t.rotate(_info._vdirection);
+            Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngleXNorm4D(t.trans,RaveAtan2(vlocaldirection.z,vlocaldirection.y));
         }
         break;
@@ -411,11 +411,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
     case IKP_TranslationZAxisAngleYNorm4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngleYNorm4D(t.trans,RaveAtan2(vlocaldirection.x,vlocaldirection.z));
         }
         else {
-            Vector vlocaldirection = t.rotate(_info._vdirection);
+            Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngleYNorm4D(t.trans,RaveAtan2(vlocaldirection.x,vlocaldirection.z));
         }
         break;
@@ -426,7 +426,7 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
         GetEndEffector()->GetVelocity(vlinearvel, vangularvel);
 
         Transform tee = GetTransform();
-        //__pEffector->GetTransform() * _info._tLocalTool
+        //__pEffector->GetTransform() * info_._tLocalTool
         // TODO, have to convert relative to the end effector's velocity
         vlinearvel += vangularvel.cross(tee.trans - GetEndEffector()->GetTransform().trans); // t.trans = GetTransform().trans - tbase.trans
 
@@ -465,19 +465,19 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_Transform6D: ikp.SetTransform6D(t); break;
     case IKP_Rotation3D: ikp.SetRotation3D(t.rot); break;
     case IKP_Translation3D: ikp.SetTranslation3D(t.trans); break;
-    case IKP_Direction3D: ikp.SetDirection3D(t.rotate(_info._vdirection)); break;
+    case IKP_Direction3D: ikp.SetDirection3D(t.rotate(info_._vdirection)); break;
     case IKP_Ray4D: {
-        ikp.SetRay4D(RAY(t.trans,t.rotate(_info._vdirection)));
+        ikp.SetRay4D(RAY(t.trans,t.rotate(info_._vdirection)));
         break;
     }
     case IKP_Lookat3D: {
         // find the closest point to ikparam.GetLookat3D() to the current ray
-        Vector vdir = t.rotate(_info._vdirection);
+        Vector vdir = t.rotate(info_._vdirection);
         ikp.SetLookat3D(RAY(t.trans + vdir*vdir.dot(ikparam.GetLookat3D()-t.trans),vdir));
         break;
     }
     case IKP_TranslationDirection5D: {
-        ikp.SetTranslationDirection5D(RAY(t.trans,t.rotate(_info._vdirection)));
+        ikp.SetTranslationDirection5D(RAY(t.trans,t.rotate(info_._vdirection)));
         break;
     }
     case IKP_TranslationXY2D: {
@@ -485,7 +485,7 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
         break;
     }
     case IKP_TranslationXYOrientation3D: {
-        Vector vglobaldirection = t.rotate(_info._vdirection);
+        Vector vglobaldirection = t.rotate(info_._vdirection);
         ikp.SetTranslationXYOrientation3D(Vector(t.trans.x,t.trans.y,RaveAtan2(vglobaldirection.y,vglobaldirection.x)));
         break;
     }
@@ -497,11 +497,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_TranslationXAxisAngle4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.x,-1.0,1.0)));
         }
         else {
-            const Vector vlocaldirection = t.rotate(_info._vdirection);
+            const Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.x,-1.0,1.0)));
         }
         break;
@@ -509,11 +509,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_TranslationYAxisAngle4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.y,-1.0,1.0)));
         }
         else {
-            const Vector vlocaldirection = t.rotate(_info._vdirection);
+            const Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.y,-1.0,1.0)));
         }
         break;
@@ -521,11 +521,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_TranslationZAxisAngle4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.z,-1.0,1.0)));
         }
         else {
-            const Vector vlocaldirection = t.rotate(_info._vdirection);
+            const Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngle4D(t.trans,RaveAcos(OpenRAVE::utils::ClampOnRange(vlocaldirection.z,-1.0,1.0)));
         }
         break;
@@ -533,11 +533,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_TranslationXAxisAngleZNorm4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngleZNorm4D(t.trans,RaveAtan2(vlocaldirection.y,vlocaldirection.x));
         }
         else {
-            Vector vlocaldirection = t.rotate(_info._vdirection);
+            Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationXAxisAngleZNorm4D(t.trans,RaveAtan2(vlocaldirection.y,vlocaldirection.x));
         }
         break;
@@ -545,11 +545,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_TranslationYAxisAngleXNorm4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngleXNorm4D(t.trans,RaveAtan2(vlocaldirection.z,vlocaldirection.y));
         }
         else {
-            Vector vlocaldirection = t.rotate(_info._vdirection);
+            Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationYAxisAngleXNorm4D(t.trans,RaveAtan2(vlocaldirection.z,vlocaldirection.y));
         }
         break;
@@ -557,11 +557,11 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     case IKP_TranslationZAxisAngleYNorm4D: {
         if (inworld) {
             Transform localt = GetBase()->GetTransform().inverse()*t;
-            const Vector vlocaldirection = localt.rotate(_info._vdirection);
+            const Vector vlocaldirection = localt.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngleYNorm4D(t.trans,RaveAtan2(vlocaldirection.x,vlocaldirection.z));
         }
         else {
-            Vector vlocaldirection = t.rotate(_info._vdirection);
+            Vector vlocaldirection = t.rotate(info_._vdirection);
             ikp.SetTranslationZAxisAngleYNorm4D(t.trans,RaveAtan2(vlocaldirection.x,vlocaldirection.z));
         }
         break;
@@ -572,7 +572,7 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
         GetEndEffector()->GetVelocity(vlinearvel, vangularvel);
 
         Transform tee = GetTransform();
-        //__pEffector->GetTransform() * _info._tLocalTool
+        //__pEffector->GetTransform() * info_._tLocalTool
         // TODO, have to convert relative to the end effector's velocity
         vlinearvel += vangularvel.cross(tee.trans - GetEndEffector()->GetTransform().trans); // t.trans = GetTransform().trans - tbase.trans
 
@@ -1149,9 +1149,9 @@ bool RobotBase::Manipulator::CheckEndEffectorCollision(const IkParameterization&
     if( numredundantsamples > 0 ) {
         if( ikparam.GetType() == IKP_TranslationDirection5D ) {
             Transform tStartEE;
-            tStartEE.rot = quatRotateDirection(_info._vdirection, ikparam.GetTranslationDirection5D().dir);
+            tStartEE.rot = quatRotateDirection(info_._vdirection, ikparam.GetTranslationDirection5D().dir);
             tStartEE.trans = ikparam.GetTranslationDirection5D().pos;
-            Vector qdelta = quatFromAxisAngle(_info._vdirection, 2*M_PI/dReal(numredundantsamples));
+            Vector qdelta = quatFromAxisAngle(info_._vdirection, 2*M_PI/dReal(numredundantsamples));
             bool bNotInCollision = false;
             for(int i = 0; i < numredundantsamples; ++i) {
                 if( !CheckEndEffectorCollision(tStartEE,report) ) {
@@ -1252,9 +1252,9 @@ bool RobotBase::Manipulator::CheckEndEffectorSelfCollision(const IkParameterizat
     if( numredundantsamples > 0 ) {
         if( ikparam.GetType() == IKP_TranslationDirection5D ) {
             Transform tStartEE;
-            tStartEE.rot = quatRotateDirection(_info._vdirection, ikparam.GetTranslationDirection5D().dir);
+            tStartEE.rot = quatRotateDirection(info_._vdirection, ikparam.GetTranslationDirection5D().dir);
             tStartEE.trans = ikparam.GetTranslationDirection5D().pos;
-            Vector qdelta = quatFromAxisAngle(_info._vdirection, 2*M_PI/dReal(numredundantsamples));
+            Vector qdelta = quatFromAxisAngle(info_._vdirection, 2*M_PI/dReal(numredundantsamples));
             bool bNotInCollision = false;
             for(int i = 0; i < numredundantsamples; ++i) {
                 if( !CheckEndEffectorSelfCollision(tStartEE,report, bIgnoreManipulatorLinks) ) {
@@ -1443,7 +1443,7 @@ bool RobotBase::Manipulator::IsGrabbing(const KinBody &body) const
 void RobotBase::Manipulator::CalculateJacobian(std::vector<dReal>& jacobian) const
 {
     RobotBasePtr probot(__probot);
-    probot->ComputeJacobianTranslation(__pEffector->GetIndex(), __pEffector->GetTransform() * _info._tLocalTool.trans, jacobian, __varmdofindices);
+    probot->ComputeJacobianTranslation(__pEffector->GetIndex(), __pEffector->GetTransform() * info_._tLocalTool.trans, jacobian, __varmdofindices);
 }
 
 void RobotBase::Manipulator::CalculateJacobian(boost::multi_array<dReal,2>& mjacobian) const
@@ -1454,7 +1454,7 @@ void RobotBase::Manipulator::CalculateJacobian(boost::multi_array<dReal,2>& mjac
     }
     RobotBasePtr probot(__probot);
     std::vector<dReal> vjacobian;
-    probot->ComputeJacobianTranslation(__pEffector->GetIndex(), __pEffector->GetTransform() * _info._tLocalTool.trans, vjacobian, __varmdofindices);
+    probot->ComputeJacobianTranslation(__pEffector->GetIndex(), __pEffector->GetTransform() * info_._tLocalTool.trans, vjacobian, __varmdofindices);
     OPENRAVE_ASSERT_OP(vjacobian.size(),==,3*__varmdofindices.size());
     vector<dReal>::const_iterator itsrc = vjacobian.begin();
     FOREACH(itdst,mjacobian) {
@@ -1468,7 +1468,7 @@ void RobotBase::Manipulator::CalculateRotationJacobian(std::vector<dReal>& jacob
     RobotBasePtr probot(__probot);
     RobotBase::RobotStateSaver saver(probot,RobotBase::Save_ActiveDOF);
     probot->SetActiveDOFs(__varmdofindices);
-    probot->CalculateActiveRotationJacobian(__pEffector->GetIndex(),quatMultiply(__pEffector->GetTransform().rot, _info._tLocalTool.rot),jacobian);
+    probot->CalculateActiveRotationJacobian(__pEffector->GetIndex(),quatMultiply(__pEffector->GetTransform().rot, info_._tLocalTool.rot),jacobian);
 }
 
 void RobotBase::Manipulator::CalculateRotationJacobian(boost::multi_array<dReal,2>& jacobian) const
@@ -1476,7 +1476,7 @@ void RobotBase::Manipulator::CalculateRotationJacobian(boost::multi_array<dReal,
     RobotBasePtr probot(__probot);
     RobotBase::RobotStateSaver saver(probot,RobotBase::Save_ActiveDOF);
     probot->SetActiveDOFs(__varmdofindices);
-    probot->CalculateActiveRotationJacobian(__pEffector->GetIndex(),quatMultiply(__pEffector->GetTransform().rot, _info._tLocalTool.rot),jacobian);
+    probot->CalculateActiveRotationJacobian(__pEffector->GetIndex(),quatMultiply(__pEffector->GetTransform().rot, info_._tLocalTool.rot),jacobian);
 }
 
 void RobotBase::Manipulator::CalculateAngularVelocityJacobian(std::vector<dReal>& jacobian) const
@@ -1507,14 +1507,14 @@ void RobotBase::Manipulator::serialize(std::ostream& o, int options, IkParameter
     if( options & SO_RobotManipulators ) {
         o << (!__pBase ? -1 : __pBase->GetIndex()) << " " << (!__pEffector ? -1 : __pEffector->GetIndex()) << " ";
         // don't include __varmdofindices and __vgripperdofindices since they are generated from the data
-        o << _info._vGripperJointNames.size() << " ";
-        FOREACHC(it,_info._vGripperJointNames) {
+        o << info_._vGripperJointNames.size() << " ";
+        FOREACHC(it,info_._vGripperJointNames) {
             o << *it << " ";
         }
-        FOREACHC(it,_info._vChuckingDirection) {
+        FOREACHC(it,info_._vChuckingDirection) {
             SerializeRound(o,*it);
         }
-        SerializeRound(o,_info._tLocalTool);
+        SerializeRound(o,info_._tLocalTool);
     }
     if( options & (SO_Kinematics|SO_InverseKinematics) ) {
         RobotBasePtr probot(__probot);
@@ -1528,7 +1528,7 @@ void RobotBase::Manipulator::serialize(std::ostream& o, int options, IkParameter
             tcur = tcur;
             // if 6D transform IK, then don't inlucde the local tool transform!
             if( !!(options & SO_Kinematics) || iktype != IKP_Transform6D ) {
-                tcur *= _info._tLocalTool;
+                tcur *= info_._tLocalTool;
             }
             SerializeRound(o,tcur);
             o << __varmdofindices.size() << " ";
@@ -1569,7 +1569,7 @@ void RobotBase::Manipulator::serialize(std::ostream& o, int options, IkParameter
 
     // output direction if SO_Kinematics|SO_RobotManipulators. if IK hash, then output only on certain ik types.
     if( !!(options & (SO_Kinematics|SO_RobotManipulators)) || (!!(options&SO_InverseKinematics) && (iktype == IKP_TranslationDirection5D || iktype == IKP_Direction3D || iktype == IKP_Ray4D)) ) {
-        SerializeRound3(o,_info._vdirection);
+        SerializeRound3(o,info_._vdirection);
     }
 }
 
@@ -1629,12 +1629,12 @@ const std::string& RobotBase::Manipulator::GetInverseKinematicsStructureHash(IkP
 
 void RobotBase::Manipulator::_ComputeInternalInformation()
 {
-    if( !utils::IsValidName(_info.name_) ) {
+    if( !utils::IsValidName(info_.name_) ) {
         throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator name \"%s\" is not valid"), GetName(), ORE_Failed);
     }
     RobotBasePtr probot(__probot);
-    __pBase = probot->GetLink(_info._sBaseLinkName);
-    __pEffector = probot->GetLink(_info._sEffectorLinkName);
+    __pBase = probot->GetLink(info_._sBaseLinkName);
+    __pEffector = probot->GetLink(info_._sEffectorLinkName);
     __varmdofindices.resize(0);
     __vgripperdofindices.resize(0);
     __pIkSolver.reset();
@@ -1642,7 +1642,7 @@ void RobotBase::Manipulator::_ComputeInternalInformation()
     __hashkinematicsstructure.resize(0);
     __maphashikstructure.clear();
     if( !__pBase || !__pEffector ) {
-        RAVELOG_WARN(str(boost::format("manipulator %s has undefined base and end effector links %s, %s\n")%GetName()%_info._sBaseLinkName%_info._sEffectorLinkName));
+        RAVELOG_WARN(str(boost::format("manipulator %s has undefined base and end effector links %s, %s\n")%GetName()%info_._sBaseLinkName%info_._sEffectorLinkName));
         __armspec = ConfigurationSpecification();
     }
     else {
@@ -1688,7 +1688,7 @@ void RobotBase::Manipulator::_ComputeInternalInformation()
     // init the gripper dof indices
     std::vector<dReal> vChuckingDirection;
     size_t ichuckingdirection = 0;
-    FOREACHC(itjointname,_info._vGripperJointNames) {
+    FOREACHC(itjointname,info_._vGripperJointNames) {
         JointPtr pjoint = probot->GetJoint(*itjointname);
         if( !pjoint ) {
             RAVELOG_WARN(str(boost::format("could not find gripper joint %s for manipulator %s")%*itjointname%GetName()));
@@ -1702,8 +1702,8 @@ void RobotBase::Manipulator::_ComputeInternalInformation()
                     }
                     else {
                         __vgripperdofindices.push_back(pjoint->GetDOFIndex()+i);
-                        if( ichuckingdirection < _info._vChuckingDirection.size() ) {
-                            vChuckingDirection.push_back(_info._vChuckingDirection[ichuckingdirection++]);
+                        if( ichuckingdirection < info_._vChuckingDirection.size() ) {
+                            vChuckingDirection.push_back(info_._vChuckingDirection[ichuckingdirection++]);
                         }
                         else {
                             vChuckingDirection.push_back(0);
@@ -1718,7 +1718,7 @@ void RobotBase::Manipulator::_ComputeInternalInformation()
             }
         }
     }
-    _info._vChuckingDirection.swap(vChuckingDirection);
+    info_._vChuckingDirection.swap(vChuckingDirection);
 }
 
 }

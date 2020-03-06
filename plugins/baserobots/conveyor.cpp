@@ -24,12 +24,12 @@ public:
     {
 public:
         ConveyorLink(const std::string& name, Transform tinernal, KinBodyPtr parent) : Link(parent) {
-            _info._t = tinernal;
-            _info.mass_ = 0.01; // just an estimate
-            _info._vinertiamoments = Vector(1,1,1);
-            _info.name_ = name;
-            _info.is_static_ = false;
-            _info.is_enabled_ = true;
+            info_._t = tinernal;
+            info_.mass_ = 0.01; // just an estimate
+            info_._vinertiamoments = Vector(1,1,1);
+            info_.name_ = name;
+            info_.is_static_ = false;
+            info_.is_enabled_ = true;
         }
     };
 
@@ -37,12 +37,12 @@ public:
     {
 public:
         ConveyorJoint(const std::string& name, TrajectoryBasePtr trajfollow, std::shared_ptr<KinBody::Mimic> mimic, bool bIsCircular, KinBodyPtr parent) : Joint(parent, KinBody::JointTrajectory) {
-            _info.name_ = name;
-            _info.lower_limit_vector_[0] = 0;
-            _info.upper_limit_vector_[0] = trajfollow->GetDuration();
+            info_.name_ = name;
+            info_.lower_limit_vector_[0] = 0;
+            info_.upper_limit_vector_[0] = trajfollow->GetDuration();
             _vmimic[0] = mimic;
-            _info.is_circular_[0] = bIsCircular;
-            _info._trajfollow = trajfollow;
+            info_.is_circular_[0] = bIsCircular;
+            info_._trajfollow = trajfollow;
         }
 
         virtual void _ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1, dReal currentvalue)
