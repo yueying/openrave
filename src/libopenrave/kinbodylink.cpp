@@ -18,11 +18,11 @@
 #include <algorithm>
 #include <openrave/kinbody.h>
 
-namespace OpenRAVE 
+namespace OpenRAVE
 {
 
-	KinBody::LinkInfo::LinkInfo() 
-		: mass_(0), is_static_(false), is_enabled_(true) 
+	KinBody::LinkInfo::LinkInfo()
+		: mass_(0), is_static_(false), is_enabled_(true)
 	{
 	}
 
@@ -512,6 +512,12 @@ namespace OpenRAVE
 
 	void KinBody::Link::SetGroupGeometries(const std::string& groupname, const std::vector<KinBody::GeometryInfoPtr>& geometries)
 	{
+		FOREACH(itgeominfo, geometries) {
+			if (!(*itgeominfo)) {
+				int igeominfo = itgeominfo - geometries.begin();
+				throw OPENRAVE_EXCEPTION_FORMAT("GeometryInfo index %d is invalid for body %s", igeominfo%GetParent()->GetName(), ORE_InvalidArguments);
+			}
+		}
 		std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = info_._mapExtraGeometries.insert(make_pair(groupname, std::vector<KinBody::GeometryInfoPtr>())).first;
 		it->second.resize(geometries.size());
 		std::copy(geometries.begin(), geometries.end(), it->second.begin());
