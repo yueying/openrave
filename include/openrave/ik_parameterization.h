@@ -24,6 +24,7 @@
 #include <openrave/numerical.h>
 #include <openrave/configuration_specification.h>
 
+
 namespace OpenRAVE
 {
 	/// \brief The types of inverse kinematics parameterizations supported.
@@ -1238,9 +1239,10 @@ namespace OpenRAVE
 			_mapCustomData.swap(r._mapCustomData);
 		}
 
-		void SerializeJSON(rapidjson::Value& rIkParameterization, rapidjson::Document::AllocatorType& alloc) const;
+		void SerializeJSON(rapidjson::Value& rIkParameterization, 
+			rapidjson::Document::AllocatorType& alloc, dReal fUnitScale) const;
 
-		void DeserializeJSON(const rapidjson::Value& rIkParameterization);
+		void DeserializeJSON(const rapidjson::Value& rIkParameterization, dReal fUnitScale);
 
 	protected:
 		inline static bool _IsValidCharInName(char c) {

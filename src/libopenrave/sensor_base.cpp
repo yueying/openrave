@@ -20,6 +20,7 @@
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 #include <openrave/logging.h>
+#include <openrave/openravejson.h>
 
 namespace OpenRAVE
 {
@@ -97,5 +98,46 @@ namespace OpenRAVE
 	{
 		RAVELOG_WARN(str(boost::format("sensor %s does not implement Serialize") % GetXMLId()));
 	}
+
+
+	void SensorBase::SensorGeometry::SerializeJSON(rapidjson::Value& value, 
+		rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
+	{
+		if (hardware_id.size() > 0) {
+			openravejson::SetJsonValueByKey(value, "hardwareId", hardware_id, allocator);
+		}
+	}
+
+	void SensorBase::SensorGeometry::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
+	{
+		openravejson::LoadJsonValueByKey(value, "hardwareId", hardware_id);
+	}
+
+	void SensorBase::CameraGeomData::SerializeJSON(rapidjson::Value& value, 
+		rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
+	{
+		SensorBase::SensorGeometry::SerializeJSON(value, allocator, unit_scale, options);
+		openravejson::SetJsonValueByKey(value, "sensorReference", sensor_reference, allocator);
+		openravejson::SetJsonValueByKey(value, "targetRegion", target_region, allocator);
+		openravejson::SetJsonValueByKey(value, "intrinstics", intrinsics, allocator);
+		openravejson::SetJsonValueByKey(value, "width", width, allocator);
+		openravejson::SetJsonValueByKey(value, "height", height, allocator);
+		openravejson::SetJsonValueByKey(value, "measurementTime", measurement_time, allocator);
+		openravejson::SetJsonValueByKey(value, "gain", gain, allocator);
+	}
+
+	void SensorBase::CameraGeomData::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
+	{
+		SensorBase::SensorGeometry::DeserializeJSON(value, unit_scale);
+		openravejson::LoadJsonValueByKey(value, "sensorReference", sensor_reference);
+		openravejson::LoadJsonValueByKey(value, "targetRegion", target_region);
+		openravejson::LoadJsonValueByKey(value, "intrinstics", intrinsics);
+		openravejson::LoadJsonValueByKey(value, "width", width);
+		openravejson::LoadJsonValueByKey(value, "height", height);
+		openravejson::LoadJsonValueByKey(value, "measurementTime", measurement_time);
+		openravejson::LoadJsonValueByKey(value, "gain", gain);
+	}
+
+
 
 }
