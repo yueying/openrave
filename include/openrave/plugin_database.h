@@ -889,28 +889,39 @@ namespace OpenRAVE
 		{
 			interfacenames.clear();
 			boost::mutex::scoped_lock lock(_mutex);
-			FOREACHC(it, registered_interfaces_list_) {
-				RegisteredInterfacePtr registration = it->lock();
-				if (!!registration) {
+			for(auto& it: registered_interfaces_list_)
+			{
+				RegisteredInterfacePtr registration = it.lock();
+				if (!!registration) 
+				{
 					interfacenames[registration->type_].push_back(registration->name_);
 				}
 			}
-			FOREACHC(itplugin, plugins_list_) {
+			for(auto& itplugin: plugins_list_)
+			{
 				PluginInfo localinfo;
-				if (!(*itplugin)->GetInfo(localinfo)) {
-					RAVELOG_WARN(boost::str(boost::format("failed to get plugin info: %s\n") % (*itplugin)->GetName()));
+				if (!itplugin->GetInfo(localinfo)) 
+				{
+					RAVELOG_WARN(boost::str(boost::format("failed to get plugin info: %s\n") % itplugin->GetName()));
 				}
-				else {
+				else 
+				{
 					// for now just return the cached info (so quering is faster)
-					FOREACH(it, localinfo.interfacenames) {
-						std::vector<std::string>& vnames = interfacenames[it->first];
-						vnames.insert(vnames.end(), it->second.begin(), it->second.end());
+					for(auto& it: localinfo.interfacenames) 
+					{
+						std::vector<std::string>& vnames = interfacenames[it.first];
+						vnames.insert(vnames.end(), it.second.begin(), it.second.end());
 					}
 				}
 			}
 		}
 
-		UserDataPtr RegisterInterface(InterfaceType type, const std::string& name, const char* interfacehash, const char* envhash, const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) {
+		UserDataPtr RegisterInterface(InterfaceType type, 
+			const std::string& name,
+			const char* interfacehash,
+			const char* envhash,
+			const boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)>& createfn) 
+		{
 			BOOST_ASSERT(interfacehash != NULL && envhash != NULL);
 			BOOST_ASSERT(!!createfn);
 			BOOST_ASSERT(name.size() > 0);

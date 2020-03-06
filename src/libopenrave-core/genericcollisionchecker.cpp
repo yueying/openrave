@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -18,121 +18,142 @@
 
 namespace OpenRAVE {
 
-class GenericCollisionChecker : public CollisionCheckerBase
-{
+class GenericCollisionChecker : public CollisionCheckerBase {
 public:
-    GenericCollisionChecker(EnvironmentBasePtr penv, std::istream& sinput) : CollisionCheckerBase(penv) {
+    GenericCollisionChecker(EnvironmentBasePtr penv, std::istream& sinput)
+        : CollisionCheckerBase(penv)
+    {
     }
-    virtual ~GenericCollisionChecker() {
-    }
+
+    virtual ~GenericCollisionChecker() {}
 
     void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         CollisionCheckerBase::Clone(preference, cloningoptions);
-        std::shared_ptr<GenericCollisionChecker const > r = std::dynamic_pointer_cast<GenericCollisionChecker const>(preference);
+        std::shared_ptr<GenericCollisionChecker const> r = std::dynamic_pointer_cast<GenericCollisionChecker const>(preference);
         _geometrygroup = r->_geometrygroup;
     }
 
-    virtual bool InitEnvironment() {
-        return true;
-    }
-    virtual void DestroyEnvironment() {
-    }
+    virtual bool InitEnvironment() { return true; }
+    virtual void DestroyEnvironment() {}
 
-    virtual bool InitKinBody(KinBodyPtr pbody) {
-        return true;
-    }
-    virtual void RemoveKinBody(KinBodyPtr pbody) {
-    }
-    virtual bool Enable(KinBodyConstPtr pbody, bool bEnable) {
-        return true;
-    }
-    virtual bool EnableLink(KinBody::LinkConstPtr pbody, bool bEnable) {
+    virtual bool InitKinBody(KinBodyPtr pbody) { return true; }
+    virtual void RemoveKinBody(KinBodyPtr pbody) {}
+    virtual bool Enable(KinBodyConstPtr pbody, bool bEnable) { return true; }
+    virtual bool EnableLink(KinBody::LinkConstPtr pbody, bool bEnable)
+    {
         return true;
     }
 
-    virtual bool SetCollisionOptions(int collisionoptions) {
-        return true;
-    }
-    virtual int GetCollisionOptions() const {
-        return 0;
-    }
+    virtual bool SetCollisionOptions(int collisionoptions) { return true; }
+    virtual int GetCollisionOptions() const { return 0; }
 
-    virtual bool SetCollisionOptions(std::ostream& sout, std::istream& sinput) {
+    virtual bool SetCollisionOptions(std::ostream& sout, std::istream& sinput)
+    {
         return true;
     }
 
-    virtual bool CheckCollision(KinBodyConstPtr pbody1, CollisionReportPtr) {
+    virtual bool CheckCollision(KinBodyConstPtr pbody1, CollisionReportPtr)
+    {
         return false;
     }
-    virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, CollisionReportPtr) {
+    virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2,
+        CollisionReportPtr)
+    {
         return false;
     }
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink, CollisionReportPtr) {
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink, CollisionReportPtr)
+    {
         return false;
     }
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink1, KinBody::LinkConstPtr plink2, CollisionReportPtr) {
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink1,
+        KinBody::LinkConstPtr plink2,
+        CollisionReportPtr)
+    {
         return false;
     }
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink, KinBodyConstPtr pbody, CollisionReportPtr) {
-        return false;
-    }
-
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr) {
-        return false;
-    }
-    virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr) {
-        return false;
-    }
-
-    virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink, CollisionReportPtr) {
-        return false;
-    }
-    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr) {
-        return false;
-    }
-    virtual bool CheckCollision(const RAY& ray, CollisionReportPtr) {
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink,
+        KinBodyConstPtr pbody, CollisionReportPtr)
+    {
         return false;
     }
 
-    virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody, CollisionReportPtr) {
+    virtual bool
+    CheckCollision(KinBody::LinkConstPtr plink,
+        const std::vector<KinBodyConstPtr>& vbodyexcluded,
+        const std::vector<KinBody::LinkConstPtr>& vlinkexcluded,
+        CollisionReportPtr)
+    {
         return false;
     }
-    
-    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr) {
-        return false;
-    }
-    virtual bool CheckStandaloneSelfCollision(KinBody::LinkConstPtr pbody, CollisionReportPtr) {
+    virtual bool
+    CheckCollision(KinBodyConstPtr pbody,
+        const std::vector<KinBodyConstPtr>& vbodyexcluded,
+        const std::vector<KinBody::LinkConstPtr>& vlinkexcluded,
+        CollisionReportPtr)
+    {
         return false;
     }
 
-    virtual void SetTolerance(dReal tolerance) {
+    virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink,
+        CollisionReportPtr)
+    {
+        return false;
     }
+    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody,
+        CollisionReportPtr)
+    {
+        return false;
+    }
+    virtual bool CheckCollision(const RAY& ray, CollisionReportPtr)
+    {
+        return false;
+    }
+
+    virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody,
+        CollisionReportPtr)
+    {
+        return false;
+    }
+
+    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody,
+        CollisionReportPtr)
+    {
+        return false;
+    }
+    virtual bool CheckStandaloneSelfCollision(KinBody::LinkConstPtr pbody,
+        CollisionReportPtr)
+    {
+        return false;
+    }
+
+    virtual void SetTolerance(dReal tolerance) {}
 
     virtual void SetGeometryGroup(const std::string& groupname)
     {
         _geometrygroup = groupname;
     }
 
-    virtual const std::string& GetGeometryGroup() const
-    {
-        return _geometrygroup;
-    }
+    virtual const std::string& GetGeometryGroup() const { return _geometrygroup; }
 
-    virtual bool SetBodyGeometryGroup(KinBodyConstPtr pbody, const std::string& groupname) {
+    virtual bool SetBodyGeometryGroup(KinBodyConstPtr pbody,
+        const std::string& groupname)
+    {
         return false;
     }
 
-    virtual const std::string& GetBodyGeometryGroup(KinBodyConstPtr pbody) const {
+    virtual const std::string& GetBodyGeometryGroup(KinBodyConstPtr pbody) const
+    {
         return _geometrygroup;
     }
 
     std::string _geometrygroup;
 };
 
-CollisionCheckerBasePtr CreateGenericCollisionChecker(EnvironmentBasePtr penv, std::istream& sinput)
+CollisionCheckerBasePtr CreateGenericCollisionChecker(EnvironmentBasePtr penv,
+    std::istream& sinput)
 {
-    return CollisionCheckerBasePtr(new GenericCollisionChecker(penv,sinput));
+    return CollisionCheckerBasePtr(new GenericCollisionChecker(penv, sinput));
 }
 
-}
+} // namespace OpenRAVE

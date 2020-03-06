@@ -86,43 +86,55 @@
 		CollisionCheckerBasePtr localchecker;
 
 		const char* pOPENRAVE_DEFAULT_COLLISIONCHECKER = std::getenv("OPENRAVE_DEFAULT_COLLISIONCHECKER");
-		if (!!pOPENRAVE_DEFAULT_COLLISIONCHECKER && strlen(pOPENRAVE_DEFAULT_COLLISIONCHECKER) > 0) {
+		if (!!pOPENRAVE_DEFAULT_COLLISIONCHECKER && strlen(pOPENRAVE_DEFAULT_COLLISIONCHECKER) > 0) 
+		{
 			localchecker = RaveCreateCollisionChecker(shared_from_this(), std::string(pOPENRAVE_DEFAULT_COLLISIONCHECKER));
 		}
 
-		if (!localchecker) {
+		if (!localchecker)
+		{
 			std::array<string, 4> checker_prefs = { { "fcl_", "ode", "bullet", "pqp"} };     // ode takes priority since bullet has some bugs with deleting bodies
-			FOREACH(itchecker, checker_prefs) {
-				localchecker = RaveCreateCollisionChecker(shared_from_this(), *itchecker);
-				if (!!localchecker) {
+			for(auto& itchecker: checker_prefs)
+			{
+				localchecker = RaveCreateCollisionChecker(shared_from_this(), itchecker);
+				if (!!localchecker) 
+				{
 					break;
 				}
 			}
 		}
 
-		if (!localchecker) {     // take any collision checker
+		if (!localchecker) // take any collision checker
+		{     
 			std::map<InterfaceType, std::vector<std::string> > interfacenames;
 			RaveGetLoadedInterfaces(interfacenames);
-			std::map<InterfaceType, std::vector<std::string> >::const_iterator itnames = interfacenames.find(PT_CollisionChecker);
-			if (itnames != interfacenames.end()) {
-				FOREACHC(itname, itnames->second) {
-					localchecker = RaveCreateCollisionChecker(shared_from_this(), *itname);
-					if (!!localchecker) {
+			std::map<InterfaceType, std::vector<std::string> >::const_iterator itnames
+				= interfacenames.find(PT_CollisionChecker);
+			if (itnames != interfacenames.end()) 
+			{
+				for(auto& itname: itnames->second)
+				{
+					localchecker = RaveCreateCollisionChecker(shared_from_this(), itname);
+					if (!!localchecker) 
+					{
 						break;
 					}
 				}
 			}
 		}
 
-		if (!!localchecker) {
+		if (!!localchecker)
+		{
 			RAVELOG_DEBUG("using %s collision checker\n", localchecker->GetXMLId().c_str());
 			SetCollisionChecker(localchecker);
 		}
-		else {
+		else 
+		{
 			RAVELOG_WARN("failed to find any collision checker.\n");
 		}
 
-		if (is_start_simulation_thread) {
+		if (is_start_simulation_thread) 
+		{
 			_StartSimulationThread();
 		}
 	}
@@ -142,13 +154,13 @@
 		_StopSimulationThread();
 
 		// destroy the modules (their destructors could attempt to lock environment, so have to do it before global lock)
-		// however, do not clear the _listModules yet
+		// however, do not clear the modules_list_ yet
 		RAVELOG_DEBUG_FORMAT("env=%d destroy module", GetId());
 		list< pair<ModuleBasePtr, std::string> > listModules;
 		list<ViewerBasePtr> listViewers = _listViewers;
 		{
 			boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
-			listModules = _listModules;
+			listModules = modules_list_;
 			listViewers = _listViewers;
 		}
 		FOREACH(itmodule, listModules) {
@@ -181,12 +193,12 @@
 			list<SensorBasePtr> listSensors;
 			{
 				boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
-				vecrobots.swap(_vecrobots);
-				vecbodies.swap(_vecbodies);
-				listSensors.swap(_listSensors);
+				vecrobots.swap(robots_vector_);
+				vecbodies.swap(bodies_vector_);
+				listSensors.swap(sensors_list_);
 				_vPublishedBodies.clear();
 				bodies_modified_stamp_++;
-				_listModules.clear();
+				modules_list_.clear();
 				_listViewers.clear();
 				_listOwnedInterfaces.clear();
 			}
@@ -243,32 +255,32 @@
 			boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
 			boost::mutex::scoped_lock locknetworkid(_mutexEnvironmentIds);
 
-			FOREACH(itbody, _vecbodies) {
+			FOREACH(itbody, bodies_vector_) {
 				(*itbody)->_environmentid = 0;
 				(*itbody)->Destroy();
 			}
 			if (_listRegisteredBodyCallbacks.size() > 0) {
-				vcallbackbodies.insert(vcallbackbodies.end(), _vecbodies.begin(), _vecbodies.end());
+				vcallbackbodies.insert(vcallbackbodies.end(), bodies_vector_.begin(), bodies_vector_.end());
 			}
-			_vecbodies.clear();
-			FOREACH(itrobot, _vecrobots) {
+			bodies_vector_.clear();
+			FOREACH(itrobot, robots_vector_) {
 				(*itrobot)->_environmentid = 0;
 				(*itrobot)->Destroy();
 			}
 			if (_listRegisteredBodyCallbacks.size() > 0) {
-				vcallbackbodies.insert(vcallbackbodies.end(), _vecrobots.begin(), _vecrobots.end());
+				vcallbackbodies.insert(vcallbackbodies.end(), robots_vector_.begin(), robots_vector_.end());
 			}
-			_vecrobots.clear();
+			robots_vector_.clear();
 			_vPublishedBodies.clear();
 			bodies_modified_stamp_++;
 
 			_mapBodies.clear();
 
-			FOREACH(itsensor, _listSensors) {
+			FOREACH(itsensor, sensors_list_) {
 				(*itsensor)->Configure(SensorBase::CC_PowerOff);
 				(*itsensor)->Configure(SensorBase::CC_RenderGeometryOff);
 			}
-			_listSensors.clear();
+			sensors_list_.clear();
 		}
 		if (vcallbackbodies.size() > 0) {
 			FOREACH(itbody, vcallbackbodies) {
@@ -280,7 +292,7 @@
 		list< pair<ModuleBasePtr, std::string> > listModules;
 		{
 			boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
-			listModules = _listModules;
+			listModules = modules_list_;
 		}
 
 		FOREACH(itmodule, listModules) {
