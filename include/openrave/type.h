@@ -50,7 +50,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/format.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/multi_array.hpp>
 //#include <boost/cstdint.hpp>
 

@@ -1043,7 +1043,7 @@ public:
 
         IkParameterization twrist, twrist_out;
         vector<dReal> vfreeparameters_real, vfreeparameters, vfreeparameters_out;
-        boost::array<vector<pair<IkParameterization, vector<dReal> > >, 3> vsolutionresults;
+        std::array<vector<pair<IkParameterization, vector<dReal> > >, 3> vsolutionresults;
         vector<pair<IkParameterization, vector<dReal> > >& vwrongsolutions = vsolutionresults[0];     // wrong solution is returned
         vector<pair<IkParameterization, vector<dReal> > >& vnosolutions = vsolutionresults[1];     // no solution found
         vector<pair<IkParameterization, vector<dReal> > >& vnofullsolutions = vsolutionresults[2];     // solution returned, but not all of them

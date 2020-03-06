@@ -41,7 +41,7 @@ int JitterActiveDOF(RobotBasePtr robot,int nMaxIterations,dReal fRand,const Plan
     bool bConstraint = !!neighstatefn;
 
     // have to test with perturbations since very small changes in angles can produce collision inconsistencies
-    boost::array<dReal,3> perturbations = { { 0,1e-5f,-1e-5f}};
+    std::array<dReal,3> perturbations = { { 0,1e-5f,-1e-5f}};
     FOREACH(itperturbation,perturbations) {
         if( bConstraint ) {
             FOREACH(it,deltadof) {
@@ -2153,7 +2153,7 @@ int DynamicsCollisionConstraint::_SetAndCheckState(PlannerBase::PlannerParameter
     if( (options & CFO_CheckWithPerturbation) && _perturbation > 0 ) {
         // only check collision constraints with the perturbation since they are the only ones that don't have settable limits
         _vperturbedvalues.resize(vdofvalues.size());
-        boost::array<dReal,3> perturbations = {{_perturbation,-_perturbation}};
+        std::array<dReal,3> perturbations = {{_perturbation,-_perturbation}};
         FOREACH(itperturbation,perturbations) {
             for(size_t i = 0; i < vdofvalues.size(); ++i) {
                 _vperturbedvalues[i] = vdofvalues[i] + *itperturbation * params->_vConfigResolution.at(i);

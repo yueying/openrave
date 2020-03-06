@@ -29,7 +29,7 @@ using namespace std;
 #include <stdio.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 

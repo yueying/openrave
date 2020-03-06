@@ -25,9 +25,10 @@
 #include <set>
 #include <vector>
 #include <string>
+#include <array>
 
 #include <rapidjson/document.h>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/multi_array.hpp>
 
 #include <openrave/interfacehashes.h>
@@ -808,7 +809,7 @@ namespace OpenRAVE
 		class OPENRAVE_API MimicInfo
 		{
 		public:
-			boost::array< std::string, 3>  _equations;         ///< the original equations
+			std::array< std::string, 3>  _equations;         ///< the original equations
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
 				dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
@@ -819,7 +820,7 @@ namespace OpenRAVE
 		class OPENRAVE_API Mimic
 		{
 		public:
-			boost::array< std::string, 3>  _equations;         ///< the original equations
+			std::array< std::string, 3>  _equations;         ///< the original equations
 
 			struct DOFFormat
 			{
@@ -872,30 +873,30 @@ namespace OpenRAVE
 			std::string name_;         ///< the unique joint name
 			std::string _linkname0, _linkname1; ///< attaching links, all axes and anchors are defined in the link pointed to by _linkname0 coordinate system. _linkname0 is usually the parent link.
 			Vector _vanchor; ///< the anchor of the rotation axes defined in _linkname0's coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
-			boost::array<Vector, 3> axes_vector_;                ///< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
+			std::array<Vector, 3> axes_vector_;                ///< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
 			std::vector<dReal> _vcurrentvalues; ///< joint values at initialization. passed into Joint::_ComputeInternalInformation
 
-			boost::array<dReal, 3> _vresolution;              ///< interpolation resolution
-			boost::array<dReal, 3> _vmaxvel;                  ///< the soft maximum velocity (rad/s) to move the joint when planning
-			boost::array<dReal, 3> _vhardmaxvel;              ///< the hard maximum velocity, robot cannot exceed this velocity. used for verification checking
-			boost::array<dReal, 3> _vmaxaccel;                ///< the soft maximum acceleration (rad/s^2) of the joint
-			boost::array<dReal, 3> _vhardmaxaccel;            ///< the hard maximum acceleration (rad/s^2), robot cannot exceed this acceleration. used for verification checking
-			boost::array<dReal, 3> _vmaxjerk;                 ///< the soft maximum jerk (rad/s^3) of the joint
-			boost::array<dReal, 3> _vhardmaxjerk;             ///< the hard maximum jerk (rad/s^3), robot cannot exceed this jerk. used for verification checking
-			boost::array<dReal, 3> _vmaxtorque;               ///< maximum torque (N.m, kg m^2/s^2) that should be applied to the joint. Usually this is computed from the motor nominal torque and gear ratio. Ignore if values are 0.
-			boost::array<dReal, 3> _vmaxinertia;             ///< maximum inertia (kg m^2) that the joint can exhibit. Usually this is set for safety reasons. Ignore if values are 0.
-			boost::array<dReal, 3> _vweights;                ///< the weights of the joint for computing distance metrics.
+			std::array<dReal, 3> _vresolution;              ///< interpolation resolution
+			std::array<dReal, 3> _vmaxvel;                  ///< the soft maximum velocity (rad/s) to move the joint when planning
+			std::array<dReal, 3> _vhardmaxvel;              ///< the hard maximum velocity, robot cannot exceed this velocity. used for verification checking
+			std::array<dReal, 3> _vmaxaccel;                ///< the soft maximum acceleration (rad/s^2) of the joint
+			std::array<dReal, 3> _vhardmaxaccel;            ///< the hard maximum acceleration (rad/s^2), robot cannot exceed this acceleration. used for verification checking
+			std::array<dReal, 3> _vmaxjerk;                 ///< the soft maximum jerk (rad/s^3) of the joint
+			std::array<dReal, 3> _vhardmaxjerk;             ///< the hard maximum jerk (rad/s^3), robot cannot exceed this jerk. used for verification checking
+			std::array<dReal, 3> _vmaxtorque;               ///< maximum torque (N.m, kg m^2/s^2) that should be applied to the joint. Usually this is computed from the motor nominal torque and gear ratio. Ignore if values are 0.
+			std::array<dReal, 3> _vmaxinertia;             ///< maximum inertia (kg m^2) that the joint can exhibit. Usually this is set for safety reasons. Ignore if values are 0.
+			std::array<dReal, 3> _vweights;                ///< the weights of the joint for computing distance metrics.
 
 			/// \brief internal offset parameter that determines the branch the angle centers on
 			///
 			/// Wrap offsets are needed for rotation joints since the range is limited to 2*pi.
 			/// This allows the wrap offset to be set so the joint can function in [-pi+offset,pi+offset]..
 			/// \param iaxis the axis to get the offset from
-			boost::array<dReal, 3> _voffsets;
-			boost::array<dReal, 3> _vlowerlimit, _vupperlimit;         ///< joint limits
+			std::array<dReal, 3> _voffsets;
+			std::array<dReal, 3> _vlowerlimit, _vupperlimit;         ///< joint limits
 			TrajectoryBasePtr _trajfollow; ///< used if joint type is JointTrajectory
 
-			boost::array<MimicInfoPtr, 3> _vmimic;          ///< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
+			std::array<MimicInfoPtr, 3> _vmimic;          ///< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
 			std::map<std::string, std::vector<dReal> > _mapFloatParameters; ///< custom key-value pairs that could not be fit in the current model
 			std::map<std::string, std::vector<int> > _mapIntParameters; ///< custom key-value pairs that could not be fit in the current model
@@ -909,7 +910,7 @@ namespace OpenRAVE
 			/// at its lower limit. The most common identification on revolute joints at -pi and pi. 'circularity' means the
 			/// joint does not stop at limits.
 			/// Although currently not developed, it could be possible to support identification for joints that are not revolute.
-			boost::array<uint8_t, 3> _bIsCircular;
+			std::array<uint8_t, 3> _bIsCircular;
 
 			bool is_active_;                 ///< if true, should belong to the DOF of the body, unless it is a mimic joint (_ComputeInternalInformation decides this)
 
@@ -920,7 +921,7 @@ namespace OpenRAVE
 			{
 				JointControlInfo_RobotController();
 				int robotId;
-				boost::array<int16_t, 3> robotControllerDOFIndex; ///< indicates which DOF in the robot controller controls which joint axis. -1 if not specified/not valid.
+				std::array<int16_t, 3> robotControllerDOFIndex; ///< indicates which DOF in the robot controller controls which joint axis. -1 if not specified/not valid.
 			};
 			typedef std::shared_ptr<JointControlInfo_RobotController> JointControlInfo_RobotControllerPtr;
 
@@ -928,11 +929,11 @@ namespace OpenRAVE
 			{
 				JointControlInfo_IO();
 				int deviceId;
-				boost::array< std::vector<std::string>, 3 > vMoveIONames;       ///< io names for controlling positions of this joint.
-				boost::array< std::vector<std::string>, 3 > vUpperLimitIONames; ///< io names for detecting if the joint is at its upper limit
-				boost::array< std::vector<uint8_t>, 3 > vUpperLimitSensorIsOn;  ///< if true, the corresponding upper limit sensor reads 1 when the joint is at its upper limit. otherwise, the upper limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
-				boost::array< std::vector<std::string>, 3 > vLowerLimitIONames; ///< io names for detecting if the joint is at its lower limit
-				boost::array< std::vector<uint8_t>, 3 > vLowerLimitSensorIsOn;  ///< if true, the corresponding lower limit sensor reads 1 when the joint is at its lower limit. otherwise, the lower limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
+				std::array< std::vector<std::string>, 3 > vMoveIONames;       ///< io names for controlling positions of this joint.
+				std::array< std::vector<std::string>, 3 > vUpperLimitIONames; ///< io names for detecting if the joint is at its upper limit
+				std::array< std::vector<uint8_t>, 3 > vUpperLimitSensorIsOn;  ///< if true, the corresponding upper limit sensor reads 1 when the joint is at its upper limit. otherwise, the upper limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
+				std::array< std::vector<std::string>, 3 > vLowerLimitIONames; ///< io names for detecting if the joint is at its lower limit
+				std::array< std::vector<uint8_t>, 3 > vLowerLimitSensorIsOn;  ///< if true, the corresponding lower limit sensor reads 1 when the joint is at its lower limit. otherwise, the lower limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
 			};
 			typedef std::shared_ptr<JointControlInfo_IO> JointControlInfo_IOPtr;
 
@@ -1398,7 +1399,7 @@ namespace OpenRAVE
 		protected:
 			JointInfo _info;
 
-			boost::array< MimicPtr, 3> _vmimic;          ///< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
+			std::array< MimicPtr, 3> _vmimic;          ///< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
 			/** \brief computes the partial velocities with respect to all dependent DOFs specified by Mimic::_vmimicdofs.
 
@@ -1437,7 +1438,7 @@ namespace OpenRAVE
 			/// \brief Return the velocity of the specified joint axis only.
 			virtual dReal _GetVelocity(int axis, const std::pair<Vector, Vector>&linkparentvelocity, const std::pair<Vector, Vector>&linkchildvelocity) const;
 
-			boost::array<dReal, 3> _doflastsetvalues; ///< the last set value by the kinbody (_voffsets not applied). For revolute joints that have a range greater than 2*pi, it is only possible to recover the joint value from the link positions mod 2*pi. In order to recover the branch, multiplies of 2*pi are added/subtracted to this value that is closest to _doflastsetvalues. For circular joints, the last set value can be ignored since they always return a value from [-pi,pi)
+			std::array<dReal, 3> _doflastsetvalues; ///< the last set value by the kinbody (_voffsets not applied). For revolute joints that have a range greater than 2*pi, it is only possible to recover the joint value from the link positions mod 2*pi. In order to recover the branch, multiplies of 2*pi are added/subtracted to this value that is closest to _doflastsetvalues. For circular joints, the last set value can be ignored since they always return a value from [-pi,pi)
 
 		private:
 			/// Sensitive variables that should not be modified.
@@ -1445,11 +1446,11 @@ namespace OpenRAVE
 			//@{
 			int dofindex;                   ///< the degree of freedom index in the body's DOF array, does not index in KinBody::_vecjoints!
 			int jointindex;                 ///< the joint index into KinBody::_vecjoints
-			boost::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         ///< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
+			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         ///< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
 
 			KinBodyWeakPtr _parent;               ///< body that joint belong to
-			boost::array<LinkPtr, 2> _attachedbodies;         ///< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
-			boost::array<Vector, 3> _vaxes;                ///< normalized axes, this can be different from _info.axes_vector_ and reflects how _tRight and _tLeft are computed
+			std::array<LinkPtr, 2> _attachedbodies;         ///< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
+			std::array<Vector, 3> _vaxes;                ///< normalized axes, this can be different from _info.axes_vector_ and reflects how _tRight and _tLeft are computed
 			Transform _tRight, _tLeft;         ///< transforms used to get body[1]'s transformation with respect to body[0]'s: Tbody1 = Tbody0 * tLeft * JointOffsetLeft * JointRotation * JointOffsetRight * tRight
 			Transform _tRightNoOffset, _tLeftNoOffset;         ///< same as _tLeft and _tRight except it doesn't not include the offset
 			Transform _tinvRight, _tinvLeft;         ///< the inverse transformations of tRight and tLeft
@@ -2228,7 +2229,7 @@ namespace OpenRAVE
 			\param[in] dofaccelerations The dof accelerations of the current robot state. If the size is 0, assumes all accelerations are 0 (this should be faster)
 			\param[in] externalforcetorque [optional] Specifies all the external forces/torques acting on the links at their center of mass.
 		 */
-		virtual void ComputeInverseDynamics(boost::array< std::vector<dReal>, 3>& doftorquecomponents, const std::vector<dReal>& dofaccelerations, const ForceTorqueMap& externalforcetorque = ForceTorqueMap()) const;
+		virtual void ComputeInverseDynamics(std::array< std::vector<dReal>, 3>& doftorquecomponents, const std::vector<dReal>& dofaccelerations, const ForceTorqueMap& externalforcetorque = ForceTorqueMap()) const;
 
 		/// \brief sets a self-collision checker to be used whenever \ref CheckSelfCollision is called
 		///
@@ -2611,8 +2612,8 @@ namespace OpenRAVE
 
 		mutable std::vector<std::list<UserDataWeakPtr> > _vlistRegisteredCallbacks; ///< callbacks to call when particular properties of the body change. _vlistRegisteredCallbacks[index] is the list of change callbacks where 1<<index is part of KinBodyProperty, this makes it easy to find out if any particular bits have callbacks. The registration/de-registration of the lists can happen at any point and does not modify the kinbody state exposed to the user, hence it is mutable.
 
-		mutable boost::array<std::vector<int>, 4> _vNonAdjacentLinks; ///< contains cached versions of the non-adjacent links depending on values in AdjacentOptions. Declared as mutable since data is cached.
-		mutable boost::array<std::set<int>, 4> _cacheSetNonAdjacentLinks; ///< used for caching return value of GetNonAdjacentLinks.
+		mutable std::array<std::vector<int>, 4> _vNonAdjacentLinks; ///< contains cached versions of the non-adjacent links depending on values in AdjacentOptions. Declared as mutable since data is cached.
+		mutable std::array<std::set<int>, 4> _cacheSetNonAdjacentLinks; ///< used for caching return value of GetNonAdjacentLinks.
 		mutable int _nNonAdjacentLinkCache; ///< specifies what information is currently valid in the AdjacentOptions.  Declared as mutable since data is cached. If 0x80000000 (ie < 0), then everything needs to be recomputed including _setNonAdjacentLinks[0].
 		std::vector<Transform> _vInitialLinkTransformations; ///< the initial transformations of each link specifying at least one pose where the robot is collision free
 

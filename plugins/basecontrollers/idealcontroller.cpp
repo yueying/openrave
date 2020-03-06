@@ -568,7 +568,7 @@ private:
 
 	std::vector<int> dof_indices_;
 	std::vector<uint8_t> _dofcircular;
-	boost::array< std::vector<dReal>, 3> _vlower, _vupper; ///< position, velocity, acceleration limits
+	std::array< std::vector<dReal>, 3> _vlower, _vupper; ///< position, velocity, acceleration limits
 	int _nControlTransformation;
 	ofstream flog;
 	int cmdid;

@@ -170,8 +170,8 @@ public:
             }
         }
 
-        static const boost::array<string, 11>& GetTags() {
-            static const boost::array<string, 11> tags = {{"friction","selfcollision", "gravity", "contact", "erp", "cfm", "elastic_reduction_parameter", "constraint_force_mixing", "dcontactapprox", "numiterations", "surfacelayer" }};
+        static const std::array<string, 11>& GetTags() {
+            static const std::array<string, 11> tags = {{"friction","selfcollision", "gravity", "contact", "erp", "cfm", "elastic_reduction_parameter", "constraint_force_mixing", "dcontactapprox", "numiterations", "surfacelayer" }};
             return tags;
         }
 

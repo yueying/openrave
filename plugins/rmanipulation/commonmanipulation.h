@@ -168,7 +168,7 @@ public:
         /// \param tTaskFrameInManip the frame inside the manipulator frame to move
         /// \param vfreedoms The freedoms along tTargetWorldFrame which are constraints are applied to
         /// \param errorthresh the threshold of the error on the constraints
-        GripperJacobianConstrains(RobotBase::ManipulatorPtr pmanip, const Transform& tTargetWorldFrame, const Transform& tTaskFrameInManip, const boost::array<T,6>& vfreedoms, T errorthresh=1e-3) : _pmanip(pmanip), _vfreedoms(vfreedoms) {
+        GripperJacobianConstrains(RobotBase::ManipulatorPtr pmanip, const Transform& tTargetWorldFrame, const Transform& tTaskFrameInManip, const std::array<T,6>& vfreedoms, T errorthresh=1e-3) : _pmanip(pmanip), _vfreedoms(vfreedoms) {
             _errorthresh2 = errorthresh*errorthresh;
             _probot = _pmanip->GetRobot();
             _tTargetFrameLeft = tTargetWorldFrame;
@@ -337,7 +337,7 @@ protected:
         Transform _tTargetFrameLeft, _tTargetFrameRight,_tOriginalEE;
         Vector _vOriginalEEAxisAngle;
         vector<dReal> _vlower, _vupper, _viweights;
-        boost::array<T,6> _vfreedoms;
+        std::array<T,6> _vfreedoms;
         T _errorthresh2;
         std::vector<dReal> _vjacobian;
         boost::numeric::ublas::matrix<T> _J, _Jt, _invJJt, _invJ, _error, _qdelta;

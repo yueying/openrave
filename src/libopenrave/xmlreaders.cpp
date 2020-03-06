@@ -279,7 +279,7 @@ BaseXMLReader::ProcessElement GeometryInfoReader::startElement(const std::string
         }
     }
 
-    static boost::array<string,14> tags = { { "translation", "rotationmat", "rotationaxis", "quat", "diffusecolor", "ambientcolor", "transparency", "render", "extents", "halfextents", "fullextents", "radius", "height", "name"}};
+    static std::array<string,14> tags = { { "translation", "rotationmat", "rotationaxis", "quat", "diffusecolor", "ambientcolor", "transparency", "render", "extents", "halfextents", "fullextents", "radius", "height", "name"}};
     if( find(tags.begin(),tags.end(),xmlname) != tags.end() ) {
         return PE_Support;
     }
@@ -505,7 +505,7 @@ BaseXMLReader::ProcessElement ElectricMotorActuatorInfoReader::startElement(cons
         return PE_Support;
     }
 
-    static boost::array<string, 18> tags = { { "gear_ratio", "assigned_power_rating", "max_speed", "no_load_speed", "stall_torque", "nominal_speed_torque_point", "max_speed_torque_point", "nominal_torque", "rotor_inertia", "torque_constant", "nominal_voltage", "speed_constant", "starting_current", "terminal_resistance", "coloumb_friction", "viscous_friction", "model_type", "max_instantaneous_torque", } };
+    static std::array<string, 18> tags = { { "gear_ratio", "assigned_power_rating", "max_speed", "no_load_speed", "stall_torque", "nominal_speed_torque_point", "max_speed_torque_point", "nominal_torque", "rotor_inertia", "torque_constant", "nominal_voltage", "speed_constant", "starting_current", "terminal_resistance", "coloumb_friction", "viscous_friction", "model_type", "max_instantaneous_torque", } };
     if( find(tags.begin(),tags.end(),xmlname) != tags.end() ) {
         return PE_Support;
     }

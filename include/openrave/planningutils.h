@@ -462,7 +462,7 @@ protected:
     int _filtermask;
     int _torquelimitmode; ///< 1 if should use instantaneous max torque, 0 if should use nominal torque
     dReal _perturbation;
-    boost::array< boost::function<bool() >, 2> _usercheckfns;
+    std::array< boost::function<bool() >, 2> _usercheckfns;
 
     // for dynamics
     ConfigurationSpecification _specvel;

@@ -106,7 +106,7 @@ public:
                 return PE_Support;
             }
 
-            static boost::array<string, 6> tags = {{ "mimic_pos", "mimic_vel", "mimic_accel", "parentlink", "linkdensity", "circular" }};
+            static std::array<string, 6> tags = {{ "mimic_pos", "mimic_vel", "mimic_accel", "parentlink", "linkdensity", "circular" }};
             if( find(tags.begin(),tags.end(),name) == tags.end() ) {
                 return PE_Pass;
             }

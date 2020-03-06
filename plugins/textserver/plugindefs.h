@@ -40,7 +40,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>

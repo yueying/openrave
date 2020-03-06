@@ -360,9 +360,9 @@ static bool _ParseSpecialSTLFile(EnvironmentBasePtr penv, const std::string& fil
             if( !!scene->_scene && !!scene->_scene->mRootNode && !!scene->_scene->HasMeshes() ) {
                 if( _AssimpCreateGeometries(scene->_scene,scene->_scene->mRootNode, vscale, listGeometries) ) {
                     FOREACH(itgeom, listGeometries) {
-                        itgeom->_vDiffuseColor = vcolor;
+                        itgeom->diffuse_color_vec_ = vcolor;
                         if( bTransformOffset ) {
-                            itgeom->_meshcollision.ApplyTransform(toffset.inverse());
+                            itgeom->mesh_collision_.ApplyTransform(toffset.inverse());
                         }
                     }
                     return true;
@@ -1025,16 +1025,16 @@ public:
                                 extension = info->_filenamerender.substr(info->_filenamerender.find_last_of('.')+1);
                             }
                             FOREACH(itnewgeom,listGeometries) {
-                                itnewgeom->_bVisible = info->is_visible_;
-                                itnewgeom->_bModifiable = info->is_modifiable_;
+                                itnewgeom->is_visible_ = info->is_visible_;
+                                itnewgeom->is_modifiable_ = info->is_modifiable_;
                                 itnewgeom->_t = info->_t;
-                                itnewgeom->_fTransparency = info->transparency_;
+                                itnewgeom->transparency_ = info->transparency_;
                                 itnewgeom->_filenamerender = string("__norenderif__:")+extension;
-                                FOREACH(it,itnewgeom->_meshcollision.vertices) {
+                                FOREACH(it,itnewgeom->mesh_collision_.vertices) {
                                     *it = tmres * *it;
                                 }
                                 if( geomreader->IsOverwriteDiffuse() ) {
-                                    itnewgeom->_vDiffuseColor = info->diffuse_color_vec_;
+                                    itnewgeom->diffuse_color_vec_ = info->diffuse_color_vec_;
                                 }
                                 if( geomreader->IsOverwriteAmbient() ) {
                                     itnewgeom->_vAmbientColor = info->_vAmbientColor;
@@ -1462,7 +1462,7 @@ public:
             return PE_Support;
         }
 
-        static boost::array<string, 24> tags = { { "body", "offsetfrom", "weight", "lostop", "histop", "limits", "limitsrad", "limitsdeg", "maxvel", "maxveldeg", "hardmaxvel", "maxaccel", "maxacceldeg", "maxtorque", "maxinertia", "maxforce", "resolution", "anchor", "axis", "axis1", "axis2", "axis3", "mode", "initial" }};
+        static std::array<string, 24> tags = { { "body", "offsetfrom", "weight", "lostop", "histop", "limits", "limitsrad", "limitsdeg", "maxvel", "maxveldeg", "hardmaxvel", "maxaccel", "maxacceldeg", "maxtorque", "maxinertia", "maxforce", "resolution", "anchor", "axis", "axis1", "axis2", "axis3", "mode", "initial" }};
         if( find(tags.begin(),tags.end(),xmlname) != tags.end() ) {
             _processingtag = xmlname;
             return PE_Support;
@@ -1724,7 +1724,7 @@ private:
     Vector _vanchor, _vScaleGeometry;
     bool _bNegateJoint;
     string _processingtag;
-    boost::array<KinBody::LinkPtr,2> attachedbodies;
+    std::array<KinBody::LinkPtr,2> attachedbodies;
     std::vector<dReal> _vinitialvalues;
 };
 
@@ -2157,7 +2157,7 @@ public:
             return PE_Support;
         }
 
-        static boost::array<string, 10> tags = { { "translation", "rotationmat", "rotationaxis", "quat", "jointvalues", "adjacent", "modelsdir", "diffusecolor", "transparency", "ambientcolor"}};
+        static std::array<string, 10> tags = { { "translation", "rotationmat", "rotationaxis", "quat", "jointvalues", "adjacent", "modelsdir", "diffusecolor", "transparency", "ambientcolor"}};
         if( find(tags.begin(),tags.end(),xmlname) != tags.end() ) {
             _processingtag = xmlname;
             return PE_Support;
@@ -2323,7 +2323,7 @@ public:
                 // overwrite the color
                 FOREACH(itlink, _pchain->_veclinks) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
-                        (*itgeom)->_info._vDiffuseColor = _diffusecol;
+                        (*itgeom)->_info.diffuse_color_vec_ = _diffusecol;
                     }
                 }
             }
@@ -2339,7 +2339,7 @@ public:
                 // overwrite the color
                 FOREACH(itlink, _pchain->_veclinks) {
                     FOREACH(itgeom, (*itlink)->_vGeometries) {
-                        (*itgeom)->_info._fTransparency = _transparency;
+                        (*itgeom)->_info.transparency_ = _transparency;
                     }
                 }
             }
@@ -3324,7 +3324,7 @@ public:
             return PE_Support;
         }
 
-        static boost::array<string, 9> tags = { { "bkgndcolor", "camrotaxis", "camrotationaxis", "camrotmat", "camtrans", "camfocal", "bkgndcolor", "plugin", "unit"}};
+        static std::array<string, 9> tags = { { "bkgndcolor", "camrotaxis", "camrotationaxis", "camrotmat", "camtrans", "camfocal", "bkgndcolor", "plugin", "unit"}};
         if( find(tags.begin(),tags.end(),xmlname) != tags.end() ) {
             _processingtag = xmlname;
             return PE_Support;

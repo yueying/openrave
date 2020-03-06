@@ -252,7 +252,7 @@ protected:
     bool EvaluateConstraints(ostream& sout, istream& sinput)
     {
         Transform tTargetWorldFrame, tConstraintTaskFrame;
-        boost::array<double,6> vfreedoms = { { 1,1,1,1,1,1}};
+        std::array<double,6> vfreedoms = { { 1,1,1,1,1,1}};
         string cmd;
         list< vector<dReal> > listconfigs;
         double errorthresh=1e-3;

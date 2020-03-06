@@ -1559,7 +1559,7 @@ const std::vector<int>& RobotBase::GetNonAdjacentLinks(int adjacentoptions) cons
     if( (_nNonAdjacentLinkCache&adjacentoptions) != adjacentoptions ) {
         int requestedoptions = (~_nNonAdjacentLinkCache)&adjacentoptions;
         // find out what needs to computed
-        boost::array<uint8_t,4> compute={ { 0,0,0,0}};
+        std::array<uint8_t,4> compute={ { 0,0,0,0}};
         if( requestedoptions & AO_Enabled ) {
             for(size_t i = 0; i < compute.size(); ++i) {
                 if( i & AO_Enabled ) {

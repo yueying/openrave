@@ -355,7 +355,7 @@ protected:
             return PE_Support;
         }
 
-        static boost::array<std::string,17> tags = {{"fstandoff","targetbody","ftargetroll","vtargetdirection","vtargetposition","vmanipulatordirection", "btransformrobot","breturntrajectory","bonlycontacttarget","btightgrasp","bavoidcontact","vavoidlinkgeometry","fcoarsestep","ffinestep","ftranslationstepmult","fgraspingnoise","vintersectplane"}};
+        static std::array<std::string,17> tags = {{"fstandoff","targetbody","ftargetroll","vtargetdirection","vtargetposition","vmanipulatordirection", "btransformrobot","breturntrajectory","bonlycontacttarget","btightgrasp","bavoidcontact","vavoidlinkgeometry","fcoarsestep","ffinestep","ftranslationstepmult","fgraspingnoise","vintersectplane"}};
         _bProcessingGrasp = find(tags.begin(),tags.end(),name) != tags.end();
         return _bProcessingGrasp ? PE_Support : PE_Pass;
     }

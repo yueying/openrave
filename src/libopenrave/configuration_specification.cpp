@@ -397,11 +397,11 @@ namespace OpenRAVE
 
 	void ConfigurationSpecification::AddDerivativeGroups(int deriv, bool adddeltatime)
 	{
-		static const boost::array<std::string, 4> s_GroupsJointValues = {
+		static const std::array<std::string, 4> s_GroupsJointValues = {
 			{"joint_values","joint_velocities", "joint_accelerations", "joint_jerks"} };
-		static const boost::array<std::string, 4> s_GroupsAffine = {
+		static const std::array<std::string, 4> s_GroupsAffine = {
 			{"affine_transform","affine_velocities","ikparam_accelerations", "affine_jerks"} };
-		static const boost::array<std::string, 4> s_GroupsIkparam = {
+		static const std::array<std::string, 4> s_GroupsIkparam = {
 			{"ikparam_values","ikparam_velocities","affine_accelerations", "ikparam_jerks"} };
 		if (_vgroups.size() == 0) {
 			return;
@@ -549,12 +549,12 @@ namespace OpenRAVE
 	ConfigurationSpecification ConfigurationSpecification::GetTimeDerivativeSpecification(int timederivative) const
 	{
 		ConfigurationSpecification vspec;
-		const boost::array<std::string, 3> posgroups = { {"joint_values","affine_transform","ikparam_values"} };
-		const boost::array<std::string, 3> velgroups = { {"joint_velocities","affine_velocities","ikparam_velocities"} };
-		const boost::array<std::string, 3> accgroups = { {"joint_accelerations","affine_accelerations","ikparam_accelerations"} };
-		const boost::array<std::string, 3> jerkgroups = { {"joint_jerks","affine_jerks","ikparam_jerks"} };
-		const boost::array<std::string, 3> snapgroups = { {"joint_snaps","affine_snaps","ikparam_snaps"} };
-		const boost::array<std::string, 3>* pgroup = NULL;
+		const std::array<std::string, 3> posgroups = { {"joint_values","affine_transform","ikparam_values"} };
+		const std::array<std::string, 3> velgroups = { {"joint_velocities","affine_velocities","ikparam_velocities"} };
+		const std::array<std::string, 3> accgroups = { {"joint_accelerations","affine_accelerations","ikparam_accelerations"} };
+		const std::array<std::string, 3> jerkgroups = { {"joint_jerks","affine_jerks","ikparam_jerks"} };
+		const std::array<std::string, 3> snapgroups = { {"joint_snaps","affine_snaps","ikparam_snaps"} };
+		const std::array<std::string, 3>* pgroup = NULL;
 		if (timederivative == 0) {
 			pgroup = &posgroups;
 		}
@@ -761,7 +761,7 @@ namespace OpenRAVE
 
 	ConfigurationSpecification& ConfigurationSpecification::operator+= (const ConfigurationSpecification& r)
 	{
-		const static boost::array<std::string, 7> s_InterpolationOrder = { {"next","linear","quadratic","cubic","quartic","quintic","sextic"} };
+		const static std::array<std::string, 7> s_InterpolationOrder = { {"next","linear","quadratic","cubic","quartic","quintic","sextic"} };
 		std::list< std::vector<Group>::const_iterator > listaddgroups;
 		std::stringstream ss;
 		std::vector<int> vindices;
@@ -1837,7 +1837,7 @@ namespace OpenRAVE
 
 	std::string ConfigurationSpecification::GetInterpolationDerivative(const std::string& interpolation, int deriv)
 	{
-		const static boost::array<std::string, 7> s_InterpolationOrder = { {"next","linear","quadratic","cubic","quartic","quintic","sextic"} };
+		const static std::array<std::string, 7> s_InterpolationOrder = { {"next","linear","quadratic","cubic","quartic","quintic","sextic"} };
 		for (int i = 0; i < (int)s_InterpolationOrder.size(); ++i) {
 			if (interpolation == s_InterpolationOrder[i]) {
 				if (i < deriv) {

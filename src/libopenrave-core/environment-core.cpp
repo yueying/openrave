@@ -91,7 +91,7 @@
 		}
 
 		if (!localchecker) {
-			boost::array<string, 4> checker_prefs = { { "fcl_", "ode", "bullet", "pqp"} };     // ode takes priority since bullet has some bugs with deleting bodies
+			std::array<string, 4> checker_prefs = { { "fcl_", "ode", "bullet", "pqp"} };     // ode takes priority since bullet has some bugs with deleting bodies
 			FOREACH(itchecker, checker_prefs) {
 				localchecker = RaveCreateCollisionChecker(shared_from_this(), *itchecker);
 				if (!!localchecker) {

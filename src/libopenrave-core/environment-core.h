@@ -1127,7 +1127,7 @@ public:
                     }
                     string norender = string("__norenderif__:")+extension;
                     FOREACH(itinfo,listGeometries) {
-                        itinfo->_bVisible = true;
+                        itinfo->is_visible_ = true;
                         itinfo->_filenamerender = norender;
                     }
                     listGeometries.front()._filenamerender = fullfilename;
@@ -1282,7 +1282,7 @@ public:
                     }
                     string norender = string("__norenderif__:")+extension;
                     FOREACH(itinfo,listGeometries) {
-                        itinfo->_bVisible = true;
+                        itinfo->is_visible_ = true;
                         itinfo->_filenamerender = norender;
                     }
                     listGeometries.front()._filenamerender = fullfilename;
@@ -2686,7 +2686,7 @@ protected:
     }
     static bool _IsRigidModelFile(const std::string& filename)
     {
-        static boost::array<std::string,21> s_geometryextentsions = { { "iv","vrml","wrl","stl","blend","3ds","ase","obj","ply","dxf","lwo","lxo","ac","ms3d","x","mesh.xml","irrmesh","irr","nff","off","raw"}};
+        static std::array<std::string,21> s_geometryextentsions = { { "iv","vrml","wrl","stl","blend","3ds","ase","obj","ply","dxf","lwo","lxo","ac","ms3d","x","mesh.xml","irrmesh","irr","nff","off","raw"}};
         FOREACH(it, s_geometryextentsions) {
             if( filename.size() > it->size()+1 ) {
                 size_t len = filename.size();

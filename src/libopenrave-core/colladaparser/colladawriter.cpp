@@ -1652,14 +1652,14 @@ private:
             daeSafeCast<domCommon_param>(ptarget->add(COLLADA_TYPE_PARAM))->setValue(targetjointid.c_str());
 
             int iaxis = 0;
-            boost::array<string,3> sequations;
+            std::array<string,3> sequations;
             for(int itype = 0; itype < 3; ++itype) {
                 sequations[itype] = pjoint->GetMimicEquation(iaxis,itype,"mathml");
                 FOREACH(itmapping,mapjointnames) {
                     boost::algorithm::replace_all(sequations[itype],itmapping->first,itmapping->second);
                 }
             }
-            boost::array<const char*,3> sequationids = { { "position","first_partial","second_partial"}};
+            std::array<const char*,3> sequationids = { { "position","first_partial","second_partial"}};
 
             domTechniqueRef pftec = daeSafeCast<domTechnique>(pf->add(COLLADA_ELEMENT_TECHNIQUE));
             pftec->setProfile("OpenRAVE");

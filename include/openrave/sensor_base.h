@@ -132,9 +132,9 @@ public:
         Vector rotation;         ///< quaternion
         Vector angular_velocity;
         Vector linear_acceleration;
-        boost::array<dReal,9> rotation_covariance;         ///< Row major about x, y, z axes
-        boost::array<dReal,9> angular_velocity_covariance;         ///< Row major about x, y, z axes
-        boost::array<dReal,9> linear_acceleration_covariance;         ///< Row major x, y z axes
+        std::array<dReal,9> rotation_covariance;         ///< Row major about x, y, z axes
+        std::array<dReal,9> angular_velocity_covariance;         ///< Row major about x, y, z axes
+        std::array<dReal,9> linear_acceleration_covariance;         ///< Row major x, y z axes
     };
 
     /// \brief odometry data storing full 6D pose and velocity
@@ -146,8 +146,8 @@ public:
         }
         Transform pose;         ///< measured pose
         Vector linear_velocity, angular_velocity;         ///< measured velocity
-        boost::array<dReal,36> pose_covariance;         ///< Row major of 6x6 matrix about linear x, y, z axes
-        boost::array<dReal,36> velocity_covariance;         ///< Row major of 6x6 matrix about rotational x, y, z axes
+        std::array<dReal,36> pose_covariance;         ///< Row major of 6x6 matrix about linear x, y, z axes
+        std::array<dReal,36> velocity_covariance;         ///< Row major of 6x6 matrix about rotational x, y, z axes
     };
 
     /// \brief tactle data
@@ -158,7 +158,7 @@ public:
             return ST_Tactile;
         }
         std::vector<Vector> forces;         /// xyz force of each individual element
-        boost::array<dReal,9> force_covariance;         ///< row major 3x3 matrix of the uncertainty on the xyz force measurements
+        std::array<dReal,9> force_covariance;         ///< row major 3x3 matrix of the uncertainty on the xyz force measurements
     };
 
     /// \brief An actuator for modeling motors and other mechanisms that produce torque/force. The actuator has only one degree of freedom.
@@ -219,9 +219,9 @@ public:
         virtual SensorType GetType() const {
             return ST_Laser;
         }
-        boost::array<dReal,2> min_angle;         ///< Start for the laser scan [rad].
-        boost::array<dReal,2> max_angle;         ///< End angles for the laser scan [rad].
-        boost::array<dReal,2> resolution;         ///< Angular resolutions for each axis of rotation [rad].
+        std::array<dReal,2> min_angle;         ///< Start for the laser scan [rad].
+        std::array<dReal,2> max_angle;         ///< End angles for the laser scan [rad].
+        std::array<dReal,2> resolution;         ///< Angular resolutions for each axis of rotation [rad].
         dReal min_range, max_range;         ///< Maximum range [m].
         dReal time_increment;         ///< time between individual measurements [seconds]
         dReal time_scan;         ///< time between scans [seconds]

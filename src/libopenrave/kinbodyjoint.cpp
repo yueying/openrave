@@ -121,10 +121,10 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
     openravejson::SetJsonValueByKey(value, "currentValues", _vcurrentvalues, allocator);
     openravejson::SetJsonValueByKey(value, "resolutions", _vresolution, allocator, dof);
 
-    boost::array<dReal, 3> newvmaxvel = _vmaxvel;
-    boost::array<dReal, 3> newvmaxaccel = _vmaxaccel;
-    boost::array<dReal, 3> newvlowerlimit = _vlowerlimit;
-    boost::array<dReal, 3> newvupperlimit = _vupperlimit;
+    std::array<dReal, 3> newvmaxvel = _vmaxvel;
+    std::array<dReal, 3> newvmaxaccel = _vmaxaccel;
+    std::array<dReal, 3> newvlowerlimit = _vlowerlimit;
+    std::array<dReal, 3> newvupperlimit = _vupperlimit;
     for(size_t i = 0; i < 3; i++) {
         newvmaxvel[i] *= fjointmult;
         newvmaxaccel[i] *= fjointmult;
@@ -248,7 +248,7 @@ void KinBody::JointInfo::DeserializeJSON(const rapidjson::Value& value, dReal un
         _vupperlimit[ic] *= fjointmult;
     }
 
-    boost::array<MimicInfoPtr, 3> newmimic;
+    std::array<MimicInfoPtr, 3> newmimic;
     if (value.HasMember("mimics"))
     {
         for (rapidjson::SizeType i = 0; i < value["mimics"].Size(); ++i) {

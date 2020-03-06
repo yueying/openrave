@@ -589,7 +589,7 @@ protected:
         params->_nMaxIterations = 4000;
         int nMaxJitterIterations = 1000;
         // constraint stuff
-        boost::array<double,6> vconstraintfreedoms = { { 0,0,0,0,0,0}};
+        std::array<double,6> vconstraintfreedoms = { { 0,0,0,0,0,0}};
         Transform tConstraintTargetWorldFrame, tConstraintTaskFrame;
         double constrainterrorthresh=0;
         int goalsamples = 40;

@@ -79,7 +79,7 @@ protected:
     dReal _ComputeMinimumTimeAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity)
     {
         dReal bestmintime = 0;
-        const boost::array<DOFAffine,4> testdofs={{DOF_X,DOF_Y,DOF_Z,DOF_RotationAxis}};
+        const std::array<DOFAffine,4> testdofs={{DOF_X,DOF_Y,DOF_Z,DOF_RotationAxis}};
         dReal distxyz = 0;
         dReal fivel=0;
         FOREACHC(itdof,testdofs) {
@@ -119,7 +119,7 @@ protected:
     {
         if( *(itdata+_timeoffset) > 0 ) {
             dReal invdeltatime = 1.0 / *(itdata+_timeoffset);
-            const boost::array<DOFAffine,4> testdofs={{DOF_X,DOF_Y,DOF_Z,DOF_RotationAxis}};
+            const std::array<DOFAffine,4> testdofs={{DOF_X,DOF_Y,DOF_Z,DOF_RotationAxis}};
             FOREACHC(itdof,testdofs) {
                 if( affinedofs & *itdof ) {
                     int index = RaveGetIndexFromAffineDOF(affinedofs,*itdof);

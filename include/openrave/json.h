@@ -77,7 +77,7 @@ template <typename K, typename V>
 inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const std::map<K, V>& m);
 
 template <typename T, std::size_t N>
-inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const boost::array<T, N>& a, std::size_t n = (std::size_t)-1);
+inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const std::array<T, N>& a, std::size_t n = (std::size_t)-1);
 
 template <typename T>
 inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const std::vector<T>& v, std::size_t n = (std::size_t)-1);
@@ -160,9 +160,9 @@ inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::Allo
     }
 }
 
-/// \brief serialize a boost::array as json
+/// \brief serialize a std::array as json
 template <typename T, std::size_t N>
-inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const boost::array<T, N>& a, std::size_t n)
+inline void RaveSerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, const std::array<T, N>& a, std::size_t n)
 {
     RAVE_SERIALIZEJSON_CLEAR_ARRAY(value);
     for (std::size_t i = 0; i < a.size() && i < n; ++i)
@@ -264,7 +264,7 @@ inline void RaveDeserializeJSON(const rapidjson::Value &value, std::vector<T>& v
 template <typename K, typename V>
 inline void RaveDeserializeJSON(const rapidjson::Value &value, std::map<K, V>& m);
 template <typename T, std::size_t N>
-inline void RaveDeserializeJSON(const rapidjson::Value &value, boost::array<T, N>& a);
+inline void RaveDeserializeJSON(const rapidjson::Value &value, std::array<T, N>& a);
 template <typename T>
 inline void RaveDeserializeJSON(const rapidjson::Value &value, RaveVector<T>& v);
 template <typename T>
@@ -358,7 +358,7 @@ inline void RaveDeserializeJSON(const rapidjson::Value &value, std::map<K, V>& m
 }
 
 template <typename T, std::size_t N>
-inline void RaveDeserializeJSON(const rapidjson::Value &value, boost::array<T, N>& a)
+inline void RaveDeserializeJSON(const rapidjson::Value &value, std::array<T, N>& a)
 {
     if (!value.IsArray() || value.Size() > N) {
         throw OPENRAVE_EXCEPTION_FORMAT0("failed to deserialize json, value cannot be decoded as an array", ORE_InvalidArguments);

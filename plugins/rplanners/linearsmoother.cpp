@@ -1231,7 +1231,7 @@ protected:
     {
         PlannerParametersConstPtr parameters = GetParameters();
         // have to also test with tolerances!
-        boost::array<dReal,3> perturbations = {{ 0,_parameters->_pointtolerance,-_parameters->_pointtolerance }}; // note that it is using _parameters in order to avoid casting parameters, which might not work
+        std::array<dReal,3> perturbations = {{ 0,_parameters->_pointtolerance,-_parameters->_pointtolerance }}; // note that it is using _parameters in order to avoid casting parameters, which might not work
         std::vector<dReal> anew(a.size()), bnew(b.size());
         FOREACH(itperturbation,perturbations) {
             for(size_t i = 0; i < a.size(); ++i) {

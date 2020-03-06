@@ -27,9 +27,9 @@ public:
 		struct COLLISIONMAP
 		{
 			boost::multi_array<uint8_t, N> vfreespace;         // 1 for free space, 0 for collision
-			boost::array<dReal, N> fmin, fmax, fidelta;
-			boost::array<string, N> jointnames;
-			boost::array<int, N> jointindices;
+			std::array<dReal, N> fmin, fmax, fidelta;
+			std::array<string, N> jointnames;
+			std::array<int, N> jointindices;
 		};
 		typedef COLLISIONMAP<2> COLLISIONPAIR;
 		XMLData() : XMLReadable("collisionmap") 
@@ -59,7 +59,7 @@ public:
 				XMLData::COLLISIONPAIR& pair = _cmdata->listmaps.back();
 				for (AttributesList::const_iterator itatt = atts.begin(); itatt != atts.end(); ++itatt) {
 					if (itatt->first == "dims") {
-						boost::array<size_t, 2> dims = { { 0,0} };
+						std::array<size_t, 2> dims = { { 0,0} };
 						stringstream ss(itatt->second);
 						ss >> dims[0] >> dims[1];
 						pair.vfreespace.resize(dims);
@@ -207,7 +207,7 @@ For joints J2xJ3, the index operation is::\n\n\
 		std::shared_ptr<XMLData> cmdata = std::dynamic_pointer_cast<XMLData>(GetReadableInterface("collisionmap"));
 		if (!!cmdata) {
 			vector<dReal> values;
-			boost::array<int, 2> indices = { { 0,0} };
+			std::array<int, 2> indices = { { 0,0} };
 			FOREACHC(itmap, cmdata->listmaps) {
 				size_t i = 0;
 				const XMLData::COLLISIONPAIR& curmap = *itmap;     // for debugging

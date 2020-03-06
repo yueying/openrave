@@ -950,7 +950,7 @@ void KinBody::SetDOFVelocities(const std::vector<dReal>& vDOFVelocities, const V
 
     std::vector<uint8_t> vlinkscomputed(_veclinks.size(),0);
     vlinkscomputed[0] = 1;
-    boost::array<dReal,3> dummyvalues; // dummy values for a joint
+    std::array<dReal,3> dummyvalues; // dummy values for a joint
 
     for(size_t ijoint = 0; ijoint < _vTopologicallySortedJointsAll.size(); ++ijoint) {
         JointPtr pjoint = _vTopologicallySortedJointsAll[ijoint];
@@ -1563,7 +1563,7 @@ void KinBody::SetDOFValues(const std::vector<dReal>& vJointValues, uint32_t chec
         pJointValues = &_vTempJoints[0];
     }
 
-    boost::array<dReal,3> dummyvalues; // dummy values for a joint
+    std::array<dReal,3> dummyvalues; // dummy values for a joint
     std::vector<dReal> vtempvalues, veval;
 
     // have to compute the angles ahead of time since they are dependent on the link transformations
@@ -2809,7 +2809,7 @@ void KinBody::ComputeInverseDynamics(std::vector<dReal>& doftorques, const std::
     }
 }
 
-void KinBody::ComputeInverseDynamics(boost::array< std::vector<dReal>, 3>& vDOFTorqueComponents, const std::vector<dReal>& vDOFAccelerations, const KinBody::ForceTorqueMap& mapExternalForceTorque) const
+void KinBody::ComputeInverseDynamics(std::array< std::vector<dReal>, 3>& vDOFTorqueComponents, const std::vector<dReal>& vDOFAccelerations, const KinBody::ForceTorqueMap& mapExternalForceTorque) const
 {
     CHECK_INTERNAL_COMPUTATION;
     FOREACH(itdoftorques,vDOFTorqueComponents) {
@@ -2821,9 +2821,9 @@ void KinBody::ComputeInverseDynamics(boost::array< std::vector<dReal>, 3>& vDOFT
 
     Vector vgravity = GetEnv()->GetPhysicsEngine()->GetGravity();
     std::vector<dReal> vDOFVelocities;
-    boost::array< std::vector<pair<Vector, Vector> >, 3> vLinkVelocities; // [0] = all zeros, [1] = dof velocities only, [2] = only velocities due to base link
-    boost::array< std::vector<pair<Vector, Vector> >, 3> vLinkAccelerations; // [0] = dofaccel only, [1] = dofvel only, [2] - gravity + external only (dofaccel=0, dofvel=0)
-    boost::array<int,3> linkaccelsimilar = {{-1,-1,-1}}; // used for tracking which vLinkAccelerations indices are similar to each other (to avoid computation)
+    std::array< std::vector<pair<Vector, Vector> >, 3> vLinkVelocities; // [0] = all zeros, [1] = dof velocities only, [2] = only velocities due to base link
+    std::array< std::vector<pair<Vector, Vector> >, 3> vLinkAccelerations; // [0] = dofaccel only, [1] = dofvel only, [2] - gravity + external only (dofaccel=0, dofvel=0)
+    std::array<int,3> linkaccelsimilar = {{-1,-1,-1}}; // used for tracking which vLinkAccelerations indices are similar to each other (to avoid computation)
 
     vLinkVelocities[0].resize(_veclinks.size());
     _ComputeDOFLinkVelocities(vDOFVelocities, vLinkVelocities[1], false);
@@ -2899,8 +2899,8 @@ void KinBody::ComputeInverseDynamics(boost::array< std::vector<dReal>, 3>& vDOFT
         }
     }
 
-    boost::array< std::vector<Vector>, 3> vLinkCOMLinearAccelerations, vLinkCOMMomentOfInertia;
-    boost::array< std::vector< std::pair<Vector, Vector> >, 3> vLinkForceTorques;
+    std::array< std::vector<Vector>, 3> vLinkCOMLinearAccelerations, vLinkCOMMomentOfInertia;
+    std::array< std::vector< std::pair<Vector, Vector> >, 3> vLinkForceTorques;
     for(size_t j = 0; j < 3; ++j) {
         if( vLinkAccelerations[j].size() > 0 ) {
             vLinkCOMLinearAccelerations[j].resize(_veclinks.size());
@@ -3065,7 +3065,7 @@ void KinBody::_ComputeLinkAccelerations(const std::vector<dReal>& vDOFVelocities
     }
 
     vector<dReal> vtempvalues, veval;
-    boost::array<dReal,3> dummyvelocities = {{0,0,0}}, dummyaccelerations={{0,0,0}}; // dummy values for a joint
+    std::array<dReal,3> dummyvelocities = {{0,0,0}}, dummyaccelerations={{0,0,0}}; // dummy values for a joint
 
     // set accelerations of all links as if they were the base link
     for(size_t ilink = 0; ilink < vLinkAccelerations.size(); ++ilink) {
@@ -3329,7 +3329,7 @@ void KinBody::_ComputeInternalInformation()
                     bmimic = true;
                 }
             }
-            if( !bmimic && (*itjoint)->_info._bIsActive ) {
+            if( !bmimic && (*itjoint)->_info.is_active_ ) {
                 _vecjoints.push_back(*itjoint);
                 itjoint = _vPassiveJoints.erase(itjoint);
             }
@@ -3347,7 +3347,7 @@ void KinBody::_ComputeInternalInformation()
                     break;
                 }
             }
-            if( bmimic || !(*itjoint)->_info._bIsActive ) {
+            if( bmimic || !(*itjoint)->_info.is_active_) {
                 _vPassiveJoints.push_back(*itjoint);
                 itjoint = _vecjoints.erase(itjoint);
             }
@@ -3360,13 +3360,13 @@ void KinBody::_ComputeInternalInformation()
         FOREACH(itjoint,_vecjoints) {
             (*itjoint)->jointindex = jointindex++;
             (*itjoint)->dofindex = dofindex;
-            (*itjoint)->_info._bIsActive = true;
+            (*itjoint)->_info.is_active_ = true;
             dofindex += (*itjoint)->GetDOF();
         }
         FOREACH(itjoint,_vPassiveJoints) {
             (*itjoint)->jointindex = -1;
             (*itjoint)->dofindex = -1;
-            (*itjoint)->_info._bIsActive = false;
+            (*itjoint)->_info.is_active_ = false;
         }
     }
 

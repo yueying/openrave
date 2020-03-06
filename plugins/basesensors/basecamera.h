@@ -35,7 +35,7 @@ public:
                 }
                 return PE_Ignore;
             }
-            static boost::array<string, 18> tags = { { "sensor", "kk", "width", "height", "framerate", "power", "color", "focal_length","image_dimensions","intrinsic","measurement_time", "format", "distortion_model", "distortion_coeffs", "sensor_reference", "target_region", "gain", "hardware_id"}};
+            static std::array<string, 18> tags = { { "sensor", "kk", "width", "height", "framerate", "power", "color", "focal_length","image_dimensions","intrinsic","measurement_time", "format", "distortion_model", "distortion_coeffs", "sensor_reference", "target_region", "gain", "hardware_id"}};
             if( find(tags.begin(),tags.end(),name) == tags.end() ) {
                 return PE_Pass;
             }
@@ -489,7 +489,7 @@ protected:
             points[5] = Vector(0.5f,0,0);
             points[6] = Vector(0,0.5f,0);
 
-            boost::array<int,16> inds = { { 0,1,2,3,4,1,4,0,2,3,0,0,5,0,0,6}};
+            std::array<int,16> inds = { { 0,1,2,3,4,1,4,0,2,3,0,0,5,0,0,6}};
             vector<RaveVector<float> > viconpoints(inds.size());
             vector<float> vcolors(inds.size()*3);
 
