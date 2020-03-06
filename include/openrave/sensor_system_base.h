@@ -84,9 +84,9 @@ public:
             *this = *pdata;
         }
 
-        std::string sid;         ///< global id for the system id
+        std::string sid;         //!< global id for the system id
         int id;
-        std::string strOffsetLink;         ///< the link where the markers are attached (if any)
+        std::string strOffsetLink;         //!< the link where the markers are attached (if any)
         Transform transOffset,transPreOffset;         // final offset = transOffset * transReturnedFromVision * transPreOffset
 
         friend class SimpleSensorSystem;
@@ -150,7 +150,7 @@ protected:
 
         std::shared_ptr<XMLData> _initdata;
         uint64_t lastupdated;
-        Transform tnew;         ///< most recent transform that is was set
+        Transform tnew;         //!< most recent transform that is was set
 
         bool bPresent;
         bool bEnabled;
@@ -209,7 +209,7 @@ protected:
     std::string _xmlid;
     BODIES _mapbodies;
     boost::mutex _mutex;
-    uint64_t _expirationtime;     ///< expiration time in us
+    uint64_t _expirationtime;     //!< expiration time in us
     bool _bShutdown;
     boost::thread _threadUpdate;
 };

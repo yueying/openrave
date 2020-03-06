@@ -206,21 +206,21 @@ protected:
             KinBody::JointPtr pjoint(new KinBody::Joint(pbody));
             // support mimic joints, so have to look at mJointIndex!
             if( node->mFramePivot->mType == 1 ) {
-                pjoint->_info._type = KinBody::JointRevolute;
-                pjoint->_info._vlowerlimit[0] = -PI;
-                pjoint->_info._vupperlimit[0] = PI;
+                pjoint->_info.type_ = KinBody::JointRevolute;
+                pjoint->_info.lower_limit_vector_[0] = -PI;
+                pjoint->_info.upper_limit_vector_[0] = PI;
             }
             else if( node->mFramePivot->mType == 2 ) {
-                pjoint->_info._type = KinBody::JointPrismatic;
-                pjoint->_info._vlowerlimit[0] = -10000*_vScaleGeometry.x;
-                pjoint->_info._vupperlimit[0] = 10000*_vScaleGeometry.x;
+                pjoint->_info.type_ = KinBody::JointPrismatic;
+                pjoint->_info.lower_limit_vector_[0] = -10000*_vScaleGeometry.x;
+                pjoint->_info.upper_limit_vector_[0] = 10000*_vScaleGeometry.x;
             }
             else if( node->mFramePivot->mType == 5 ) {
                 RAVELOG_WARN(str(boost::format("frame %s is some type of geometry scaling joint?\n")%node->mName));
                 pjoint.reset();
                 //pjoint->type_ = KinBody::JointPrismatic;
-                //pjoint->_vlowerlimit[0] = -10000;
-                //pjoint->_vupperlimit[0] = 10000;
+                //pjoint->lower_limit_vector_[0] = -10000;
+                //pjoint->upper_limit_vector_[0] = 10000;
             }
             else {
                 if( node->mFramePivot->mType != 0 ) {
@@ -234,9 +234,9 @@ protected:
                 pchildlink.reset(new KinBody::Link(pbody));
                 pchildlink->_info.name_ = _prefix+node->mName;
                 pchildlink->_info._t = tflipyz*tpivot*tflipyz.inverse();
-                pchildlink->_info._bStatic = false;
-                pchildlink->_info._bIsEnabled = true;
-                pchildlink->_index = pbody->_veclinks.size();
+                pchildlink->_info.is_static_ = false;
+                pchildlink->_info.is_enabled_ = true;
+                pchildlink->index_ = pbody->_veclinks.size();
                 pbody->_veclinks.push_back(pchildlink);
                 RAVELOG_VERBOSE_FORMAT("level=%d adding child xlink %s", level%pchildlink->_info.name_);
             }
@@ -254,7 +254,7 @@ protected:
                 }
 
                 pjoint->_info.name_ = _prefix+node->mFramePivot->mName;
-                pjoint->_info._bIsCircular[0] = false;
+                pjoint->_info.is_circular_[0] = false;
                 std::vector<Vector> vaxes(1);
                 Transform t = tflipyz*tnode; // i guess we don't apply the pivot for the joint axis...?
                 if( !!plink ) {
@@ -305,7 +305,7 @@ protected:
 //                        // possibly connected to the base?
 //                        pjoint->_info.type_ = KinBody::JointHinge;
 //                        pjoint->_info._bIsActive = false;
-//                        pjoint->_info._vlowerlimit[0] = pjoint->_info._vupperlimit[0] = 0;
+//                        pjoint->_info.lower_limit_vector_[0] = pjoint->_info.upper_limit_vector_[0] = 0;
 //                        pjoint->_vmimic[0].reset(); // remove any mimic
 //                        pbody->_vPassiveJoints.push_back(pjoint);
 //                    }
@@ -332,9 +332,9 @@ protected:
                 // link is expected and one doesn't exist, so create it
                 plink.reset(new KinBody::Link(pbody));
                 plink->_info.name_ = _prefix+node->mName;
-                plink->_info._bStatic = false;
-                plink->_info._bIsEnabled = true;
-                plink->_index = pbody->_veclinks.size();
+                plink->_info.is_static_ = false;
+                plink->_info.is_enabled_ = true;
+                plink->index_ = pbody->_veclinks.size();
                 pbody->_veclinks.push_back(plink);
                 RAVELOG_VERBOSE_FORMAT("level=%d adding xlink %s", level%plink->_info.name_);
             }

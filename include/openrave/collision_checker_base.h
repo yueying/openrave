@@ -34,10 +34,10 @@ namespace OpenRAVE
 /// options for collision checker
 enum CollisionOptions
 {
-    CO_Distance = 1, ///< Compute distance measurements, this is usually slow and not all checkers support it.
-    CO_UseTolerance = 2, ///< not used
-    CO_Contacts = 4, ///< Return the contact points of the collision in the \ref CollisionReport. Note that this takes longer to compute.
-    CO_RayAnyHit = 8, ///< When performing collision with rays, if this is set, algorithm just returns any hit instead of the closest (can be faster)
+    CO_Distance = 1, //!< Compute distance measurements, this is usually slow and not all checkers support it.
+    CO_UseTolerance = 2, //!< not used
+    CO_Contacts = 4, //!< Return the contact points of the collision in the \ref CollisionReport. Note that this takes longer to compute.
+    CO_RayAnyHit = 8, //!< When performing collision with rays, if this is set, algorithm just returns any hit instead of the closest (can be faster)
 
     /** Allows planners to greatly reduce redundant collision checks.
         If set and the target object is a robot, then only the links controlled by the currently set active DOFs and their attached bodies will be checked for collisions.
@@ -46,8 +46,8 @@ enum CollisionOptions
         - links that do not remove with respect to each other as a result of moving the active dofs.
      */
     CO_ActiveDOFs = 0x10,
-    CO_AllLinkCollisions = 0x20, ///< if set then all the link collisions will be returned inside CollisionReport::vLinkColliding. Collision is slower because more pairs have to be checked.
-    CO_AllGeometryContacts = 0x40, ///< if set, then will return the contacts of all the colliding geometries of two links. Do not need to explore all pairs of links once the first pair is found. This option can be slow.
+    CO_AllLinkCollisions = 0x20, //!< if set then all the link collisions will be returned inside CollisionReport::vLinkColliding. Collision is slower because more pairs have to be checked.
+    CO_AllGeometryContacts = 0x40, //!< if set, then will return the contacts of all the colliding geometries of two links. Do not need to explore all pairs of links once the first pair is found. This option can be slow.
 };
 
 /** \brief <b>[interface]</b> Responsible for all collision checking queries of the environment. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_collisionchecker.
@@ -261,7 +261,7 @@ public:
     CollisionOptionsStateSaver(CollisionCheckerBasePtr p, int newoptions, bool required=true);
     virtual ~CollisionOptionsStateSaver();
 private:
-    int _oldoptions;     ///< saved options
+    int _oldoptions;     //!< saved options
     CollisionCheckerBasePtr _p;
 };
 

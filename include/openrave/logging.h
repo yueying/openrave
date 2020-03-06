@@ -113,7 +113,7 @@ enum DebugLevel {
     Level_Debug=4,
     Level_Verbose=5,
     Level_OutputMask=0xf,
-    Level_VerifyPlans=0x80000000, ///< if set, should verify every plan returned. the verification is left up to the planners or the modules calling the planners. See \ref planningutils::ValidateTrajectory
+    Level_VerifyPlans=0x80000000, //!< if set, should verify every plan returned. the verification is left up to the planners or the modules calling the planners. See \ref planningutils::ValidateTrajectory
 };
 
 #define OPENRAVECOLOR_FATALLEVEL 5 // magenta

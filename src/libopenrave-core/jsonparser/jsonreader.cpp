@@ -534,8 +534,8 @@ protected:
     std::string _uri;
     std::vector<std::string> _vOpenRAVESchemeAliases;
     boost::shared_ptr<rapidjson::Document> _doc;
-    std::map<std::string, boost::shared_ptr<rapidjson::Document> > _docs; ///< key is filename
-    std::map<boost::shared_ptr<rapidjson::Document>, std::map<std::string, rapidjson::Value::ValueIterator> > _objects; ///< key is pointer to doc
+    std::map<std::string, boost::shared_ptr<rapidjson::Document> > _docs; //!< key is filename
+    std::map<boost::shared_ptr<rapidjson::Document>, std::map<std::string, rapidjson::Value::ValueIterator> > _objects; //!< key is pointer to doc
 };
 
 

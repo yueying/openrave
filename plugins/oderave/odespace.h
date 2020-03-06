@@ -66,8 +66,8 @@ public:
             dCleanupODEAllDataForThread();
 #endif
         }
-        dWorldID world;          ///< the dynamics world
-        dSpaceID space;          ///< the collision world
+        dWorldID world;          //!< the dynamics world
+        dSpaceID space;          //!< the collision world
         dJointGroupID contactgroup;
         boost::mutex _mutex;
     };
@@ -206,19 +206,19 @@ public:
             return _pbody.lock();
         }
 
-        KinBodyWeakPtr _pbody;         ///< body associated with this structure
+        KinBodyWeakPtr _pbody;         //!< body associated with this structure
         int nLastStamp;
 
-		std::vector<std::shared_ptr<LINK> > vlinks;         ///< if body is disabled, then geom is static (it can't be connected to a joint!)
+		std::vector<std::shared_ptr<LINK> > vlinks;         //!< if body is disabled, then geom is static (it can't be connected to a joint!)
 		std::vector<OpenRAVE::dReal> _vdofbranches;
 
-        ///< the pointer to this Link is the userdata
+        //!< the pointer to this Link is the userdata
         std::vector<dJointID> vjoints;
 		std::vector<dJointFeedback> vjointfeedback;
         OpenRAVE::UserDataPtr _geometrycallback, _staticcallback;
         std::weak_ptr<ODESpace> _odespace;
 
-        dSpaceID space;                             ///< space that contanis all the collision objects of this chain
+        dSpaceID space;                             //!< space that contanis all the collision objects of this chain
         dJointGroupID jointgroup;
 
 private:
@@ -729,7 +729,7 @@ private:
     std::string _userdatakey;
     std::string _geometrygroup;
     SynchronizeCallbackFn _synccallback;
-    std::set<KinBodyConstPtr> _setInitializedBodies; ///< set of bodies that have been initialized and user data is set
+    std::set<KinBodyConstPtr> _setInitializedBodies; //!< set of bodies that have been initialized and user data is set
     bool _bUsingPhysics;
 };
 

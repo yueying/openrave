@@ -44,8 +44,8 @@ protected:
     virtual void _Pick(osg::ref_ptr<osgViewer::View> view, const osgGA::GUIEventAdapter& ea, int buttonPressed);
     HandleRayPickFn _handleRayPickFn;
     DragFn _dragfn;
-    //bool _select; ///< if true, then will call the _selectLinkFn with the raypicked node
-    bool _bDoPickCallOnButtonRelease; ///< if true, then on button release can call _Pick
+    //bool _select; //!< if true, then will call the _selectLinkFn with the raypicked node
+    bool _bDoPickCallOnButtonRelease; //!< if true, then on button release can call _Pick
 };
 
 }

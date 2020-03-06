@@ -26,8 +26,8 @@ namespace OpenRAVE
 	/// \brief action to perform whenever a collision is detected between objects
 	enum CollisionAction
 	{
-		CA_DefaultAction = 0, ///< let the physics/collision engine resolve the action
-		CA_Ignore = 1, ///< do nothing
+		CA_DefaultAction = 0, //!< let the physics/collision engine resolve the action
+		CA_Ignore = 1, //!< do nothing
 	};
 	OPENRAVE_CLASS_FORWARD(CollisionReport);
 	/// \brief Holds information about a particular collision that occured.
@@ -45,9 +45,9 @@ namespace OpenRAVE
 				depth = d;
 			}
 
-			Vector pos;  ///< where the contact occured
-			Vector norm; ///< the normals of the faces
-			dReal depth; ///< the penetration depth, positive means the surfaces are penetrating, negative means the surfaces are not colliding (used for distance queries)
+			Vector pos;  //!< where the contact occured
+			Vector norm; //!< the normals of the faces
+			dReal depth; //!< the penetration depth, positive means the surfaces are penetrating, negative means the surfaces are not colliding (used for distance queries)
 		};
 
 		CollisionReport() 
@@ -62,20 +62,20 @@ namespace OpenRAVE
 		virtual void Reset(int coloptions = 0);
 		virtual std::string __str__() const;
 
-		KinBody::LinkConstPtr plink1, plink2; ///< the colliding links if a collision involves a bodies. Collisions do not always occur with 2 bodies like ray collisions, so these fields can be empty.
+		KinBody::LinkConstPtr plink1, plink2; //!< the colliding links if a collision involves a bodies. Collisions do not always occur with 2 bodies like ray collisions, so these fields can be empty.
 
-		std::vector<std::pair<KinBody::LinkConstPtr, KinBody::LinkConstPtr> > vLinkColliding; ///< all link collision pairs. Set when CO_AllCollisions is enabled.
+		std::vector<std::pair<KinBody::LinkConstPtr, KinBody::LinkConstPtr> > vLinkColliding; //!< all link collision pairs. Set when CO_AllCollisions is enabled.
 
-		std::vector<CONTACT> contacts; ///< the convention is that the normal will be "out" of plink1's surface. Filled if CO_UseContacts option is set.
+		std::vector<CONTACT> contacts; //!< the convention is that the normal will be "out" of plink1's surface. Filled if CO_UseContacts option is set.
 
-		int options; ///< the options that the CollisionReport was called with. It is overwritten by the options set on the collision checker writing the report
+		int options; //!< the options that the CollisionReport was called with. It is overwritten by the options set on the collision checker writing the report
 
-		dReal minDistance; ///< minimum distance from last query, filled if CO_Distance option is set
-		int numWithinTol; ///< number of objects within tolerance of this object, filled if CO_UseTolerance option is set
+		dReal minDistance; //!< minimum distance from last query, filled if CO_Distance option is set
+		int numWithinTol; //!< number of objects within tolerance of this object, filled if CO_UseTolerance option is set
 
-		uint8_t nKeepPrevious; ///< if 1, will keep all previous data when resetting the collision checker. otherwise will reset
+		uint8_t nKeepPrevious; //!< if 1, will keep all previous data when resetting the collision checker. otherwise will reset
 
-		//KinBody::Link::GeomConstPtr pgeom1, pgeom2; ///< the specified geometries hit for the given links
+		//KinBody::Link::GeomConstPtr pgeom1, pgeom2; //!< the specified geometries hit for the given links
 	};
 	
 	

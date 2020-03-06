@@ -29,7 +29,7 @@ namespace OpenRAVE
 /// basic options for physics engine
 enum PhysicsEngineOptions
 {
-    PEO_SelfCollisions = 1, ///< if set, physics engine will use contact forces from self-collisions
+    PEO_SelfCollisions = 1, //!< if set, physics engine will use contact forces from self-collisions
 };
 
 /** \brief <b>[interface]</b> The physics engine interfaces supporting simulations and dynamics. See \ref arch_physicsengine.

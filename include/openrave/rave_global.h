@@ -551,19 +551,19 @@ namespace OpenRAVE
 		std::map<int, EnvironmentBase*> environments_map_;
 		std::list<boost::function<void()> > destroy_callbacks_list_;
 		std::string home_directory_;
-		std::string default_viewer_type_; ///< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
+		std::string default_viewer_type_; //!< the default viewer type from the environment variable OPENRAVE_DEFAULT_VIEWER
 		std::vector<std::string> database_directory_vector_;
 		int global_environment_id_;
 		SpaceSamplerBasePtr default_space_sampler_;
 #ifdef USE_CRLIBM
 		long long _crlibm_fpu_state;
-		bool is_crlibm_init_; ///< true if crlibm is initialized
+		bool is_crlibm_init_; //!< true if crlibm is initialized
 #endif
 		int data_access_options_;
 
 		std::vector<std::string> data_dirs_vector_;
 #ifdef HAVE_BOOST_FILESYSTEM
-		std::vector<boost::filesystem::path> boost_data_dirs_vector_; ///< \brief returns absolute filenames of the data
+		std::vector<boost::filesystem::path> boost_data_dirs_vector_; //!< \brief returns absolute filenames of the data
 #endif
 
 #if OPENRAVE_LOG4CXX

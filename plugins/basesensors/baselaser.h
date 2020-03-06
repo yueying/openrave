@@ -430,7 +430,7 @@ protected:
 
     std::shared_ptr<LaserGeomData> _pgeom;
     std::shared_ptr<LaserSensorData> _pdata;
-    vector<int> _databodyids;     ///< if non 0, for each point in _data, specifies the body that was hit
+    vector<int> _databodyids;     //!< if non 0, for each point in _data, specifies the body that was hit
     CollisionReportPtr _report;
 
     // more geom stuff

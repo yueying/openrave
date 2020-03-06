@@ -311,11 +311,11 @@ protected:
         return newuri;
     }
 
-    std::string _vForceResolveOpenRAVEScheme; ///< if specified, writer will attempt to convert a local system URI (**file:/**) to a a relative path with respect to $OPENRAVE_DATA paths and use **customscheme** as the scheme
-    std::list<std::string> _listExternalRefExports; ///< body names to try to export externally
-    bool _bExternalRefAllBodies; ///< if true, attempts to externally write all bodies
+    std::string _vForceResolveOpenRAVEScheme; //!< if specified, writer will attempt to convert a local system URI (**file:/**) to a a relative path with respect to $OPENRAVE_DATA paths and use **customscheme** as the scheme
+    std::list<std::string> _listExternalRefExports; //!< body names to try to export externally
+    bool _bExternalRefAllBodies; //!< if true, attempts to externally write all bodies
     
-    std::map<int, int> _mapBodyIds; ///< map from body environment id to unique json ids
+    std::map<int, int> _mapBodyIds; //!< map from body environment id to unique json ids
 
     rapidjson::Document& _doc;
 };

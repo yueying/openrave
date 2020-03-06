@@ -70,7 +70,7 @@ public:
         }
     }
 
-    int32_t _priority; ///< has to be 32bit
+    int32_t _priority; //!< has to be 32bit
     IkSolverBase::IkFilterCallbackFn _filterfn;
     IkSolverBaseWeakPtr _iksolverweak;
     std::list<UserDataWeakPtr>::iterator _iterator;

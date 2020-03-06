@@ -35,28 +35,28 @@ namespace OpenRAVE
 	enum IkParameterizationType
 	{
 		IKP_None = 0,
-		IKP_Transform6D = 0x67000001,     ///< end effector reaches desired 6D transformation
-		IKP_Rotation3D = 0x34000002,     ///< end effector reaches desired 3D rotation
-		IKP_Translation3D = 0x33000003,     ///< end effector origin reaches desired 3D translation
-		IKP_Direction3D = 0x23000004,     ///< direction on end effector coordinate system reaches desired direction
-		IKP_Ray4D = 0x46000005,     ///< ray on end effector coordinate system reaches desired global ray
-		IKP_Lookat3D = 0x23000006,     ///< direction on end effector coordinate system points to desired 3D position
-		IKP_TranslationDirection5D = 0x56000007,     ///< end effector origin and direction reaches desired 3D translation and direction. Can be thought of as Ray IK where the origin of the ray must coincide.
-		IKP_TranslationXY2D = 0x22000008,     ///< 2D translation along XY plane
-		IKP_TranslationXYOrientation3D = 0x33000009,     ///< 2D translation along XY plane and 1D rotation around Z axis. The offset of the rotation is measured starting at +X, so at +X is it 0, at +Y it is pi/2.
-		IKP_TranslationLocalGlobal6D = 0x3600000a,     ///< local point on end effector origin reaches desired 3D global point
+		IKP_Transform6D = 0x67000001,     //!< end effector reaches desired 6D transformation
+		IKP_Rotation3D = 0x34000002,     //!< end effector reaches desired 3D rotation
+		IKP_Translation3D = 0x33000003,     //!< end effector origin reaches desired 3D translation
+		IKP_Direction3D = 0x23000004,     //!< direction on end effector coordinate system reaches desired direction
+		IKP_Ray4D = 0x46000005,     //!< ray on end effector coordinate system reaches desired global ray
+		IKP_Lookat3D = 0x23000006,     //!< direction on end effector coordinate system points to desired 3D position
+		IKP_TranslationDirection5D = 0x56000007,     //!< end effector origin and direction reaches desired 3D translation and direction. Can be thought of as Ray IK where the origin of the ray must coincide.
+		IKP_TranslationXY2D = 0x22000008,     //!< 2D translation along XY plane
+		IKP_TranslationXYOrientation3D = 0x33000009,     //!< 2D translation along XY plane and 1D rotation around Z axis. The offset of the rotation is measured starting at +X, so at +X is it 0, at +Y it is pi/2.
+		IKP_TranslationLocalGlobal6D = 0x3600000a,     //!< local point on end effector origin reaches desired 3D global point
 
-		IKP_TranslationXAxisAngle4D = 0x4400000b, ///< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with x-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
-		IKP_TranslationYAxisAngle4D = 0x4400000c, ///< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with y-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
-		IKP_TranslationZAxisAngle4D = 0x4400000d, ///< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with z-axis like a cone, angle is from 0-pi. Axes are defined in the manipulator base link's coordinate system.
+		IKP_TranslationXAxisAngle4D = 0x4400000b, //!< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with x-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
+		IKP_TranslationYAxisAngle4D = 0x4400000c, //!< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with y-axis  like a cone, angle is from 0-pi. Axes defined in the manipulator base link's coordinate system)
+		IKP_TranslationZAxisAngle4D = 0x4400000d, //!< end effector origin reaches desired 3D translation, manipulator direction makes a specific angle with z-axis like a cone, angle is from 0-pi. Axes are defined in the manipulator base link's coordinate system.
 
-		IKP_TranslationXAxisAngleZNorm4D = 0x4400000e, ///< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to z-axis and be rotated at a certain angle starting from the x-axis (defined in the manipulator base link's coordinate system)
-		IKP_TranslationYAxisAngleXNorm4D = 0x4400000f, ///< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to x-axis and be rotated at a certain angle starting from the y-axis (defined in the manipulator base link's coordinate system)
-		IKP_TranslationZAxisAngleYNorm4D = 0x44000010, ///< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to y-axis and be rotated at a certain angle starting from the z-axis (defined in the manipulator base link's coordinate system)
+		IKP_TranslationXAxisAngleZNorm4D = 0x4400000e, //!< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to z-axis and be rotated at a certain angle starting from the x-axis (defined in the manipulator base link's coordinate system)
+		IKP_TranslationYAxisAngleXNorm4D = 0x4400000f, //!< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to x-axis and be rotated at a certain angle starting from the y-axis (defined in the manipulator base link's coordinate system)
+		IKP_TranslationZAxisAngleYNorm4D = 0x44000010, //!< end effector origin reaches desired 3D translation, manipulator direction needs to be orthogonal to y-axis and be rotated at a certain angle starting from the z-axis (defined in the manipulator base link's coordinate system)
 
-		IKP_NumberOfParameterizations = 16,     ///< number of parameterizations (does not count IKP_None)
+		IKP_NumberOfParameterizations = 16,     //!< number of parameterizations (does not count IKP_None)
 
-		IKP_VelocityDataBit = 0x00008000, ///< bit is set if the data represents the time-derivate velocity of an IkParameterization
+		IKP_VelocityDataBit = 0x00008000, //!< bit is set if the data represents the time-derivate velocity of an IkParameterization
 		IKP_Transform6DVelocity = IKP_Transform6D | IKP_VelocityDataBit,
 		IKP_Rotation3DVelocity = IKP_Rotation3D | IKP_VelocityDataBit,
 		IKP_Translation3DVelocity = IKP_Translation3D | IKP_VelocityDataBit,
@@ -74,8 +74,8 @@ namespace OpenRAVE
 		IKP_TranslationYAxisAngleXNorm4DVelocity = IKP_TranslationYAxisAngleXNorm4D | IKP_VelocityDataBit,
 		IKP_TranslationZAxisAngleYNorm4DVelocity = IKP_TranslationZAxisAngleYNorm4D | IKP_VelocityDataBit,
 
-		IKP_UniqueIdMask = 0x0000ffff, ///< the mask for the unique ids
-		IKP_CustomDataBit = 0x00010000, ///< bit is set if the ikparameterization contains custom data, this is only used when serializing the ik parameterizations
+		IKP_UniqueIdMask = 0x0000ffff, //!< the mask for the unique ids
+		IKP_CustomDataBit = 0x00010000, //!< bit is set if the ikparameterization contains custom data, this is only used when serializing the ik parameterizations
 	};
 
 	/// \brief returns a string of the ik parameterization type names

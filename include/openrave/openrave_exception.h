@@ -41,17 +41,17 @@ namespace OpenRAVE
 	enum OpenRAVEErrorCode
 	{
 		ORE_Failed = 0,
-		ORE_InvalidArguments = 1, ///< passed in input arguments are not valid
+		ORE_InvalidArguments = 1, //!< passed in input arguments are not valid
 		ORE_EnvironmentNotLocked = 2,
-		ORE_CommandNotSupported = 3, ///< string command could not be parsed or is not supported
+		ORE_CommandNotSupported = 3, //!< string command could not be parsed or is not supported
 		ORE_Assert = 4,
-		ORE_InvalidPlugin = 5, ///< shared object is not a valid plugin
-		ORE_InvalidInterfaceHash = 6, ///< interface hashes do not match between plugins
-		ORE_NotImplemented = 7, ///< function is not implemented by the interface.
-		ORE_InconsistentConstraints = 8, ///< returned solutions or trajectories do not follow the constraints of the planner/module. The constraints invalidated here are planning constraints, not programming constraints.
-		ORE_NotInitialized = 9, ///< when object is used without it getting fully initialized
-		ORE_InvalidState = 10, ///< the state of the object is not consistent with its parameters, or cannot be used. This is usually due to a programming error where a vector is not the correct length, etc.
-		ORE_Timeout = 11, ///< process timed out
+		ORE_InvalidPlugin = 5, //!< shared object is not a valid plugin
+		ORE_InvalidInterfaceHash = 6, //!< interface hashes do not match between plugins
+		ORE_NotImplemented = 7, //!< function is not implemented by the interface.
+		ORE_InconsistentConstraints = 8, //!< returned solutions or trajectories do not follow the constraints of the planner/module. The constraints invalidated here are planning constraints, not programming constraints.
+		ORE_NotInitialized = 9, //!< when object is used without it getting fully initialized
+		ORE_InvalidState = 10, //!< the state of the object is not consistent with its parameters, or cannot be used. This is usually due to a programming error where a vector is not the correct length, etc.
+		ORE_Timeout = 11, //!< process timed out
 	};
 
 	/// \brief Exception that all OpenRAVE internal methods throw; the error codes are held in \ref OpenRAVEErrorCode.

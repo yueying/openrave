@@ -55,12 +55,12 @@ public:
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale=1.0);
 
         std::string name_;
-        std::string _sBaseLinkName, _sEffectorLinkName; ///< name of the base and effector links of the robot used to determine the chain
+        std::string _sBaseLinkName, _sEffectorLinkName; //!< name of the base and effector links of the robot used to determine the chain
         Transform _tLocalTool;
-        std::vector<dReal> _vChuckingDirection; ///< the normal direction to move joints for the hand to grasp something
+        std::vector<dReal> _vChuckingDirection; //!< the normal direction to move joints for the hand to grasp something
         Vector _vdirection;
-        std::string _sIkSolverXMLId; ///< xml id of the IkSolver interface to attach
-        std::vector<std::string> _vGripperJointNames;         ///< names of the gripper joints
+        std::string _sIkSolverXMLId; //!< xml id of the IkSolver interface to attach
+        std::vector<std::string> _vGripperJointNames;         //!< names of the gripper joints
     };
     typedef std::shared_ptr<ManipulatorInfo> ManipulatorInfoPtr;
     typedef std::shared_ptr<ManipulatorInfo const> ManipulatorInfoConstPtr;
@@ -406,12 +406,12 @@ protected:
         /// \brief compute internal information from user-set info
         virtual void _ComputeInternalInformation();
 
-        ManipulatorInfo _info; ///< user-set information
+        ManipulatorInfo _info; //!< user-set information
 private:
         RobotBaseWeakPtr __probot;
-        LinkPtr __pBase, __pEffector; ///< contains weak links to robot
+        LinkPtr __pBase, __pEffector; //!< contains weak links to robot
         std::vector<int> __vgripperdofindices, __varmdofindices;
-        ConfigurationSpecification __armspec; ///< reflects __varmdofindices
+        ConfigurationSpecification __armspec; //!< reflects __varmdofindices
         mutable IkSolverBasePtr __pIkSolver;
         mutable std::string __hashstructure, __hashkinematicsstructure;
         mutable std::map<IkParameterizationType, std::string> __maphashikstructure;
@@ -446,10 +446,10 @@ public:
         }
 
         std::string name_;
-        std::string _linkname; ///< the robot link that the sensor is attached to
-        Transform _trelative;         ///< relative transform of the sensor with respect to the attached link
-        std::string _sensorname; ///< name of the sensor interface to create, in other words the sensor type
-        SensorBase::SensorGeometryPtr _sensorgeometry; ///< the sensor geometry to initialize the sensor with
+        std::string _linkname; //!< the robot link that the sensor is attached to
+        Transform _trelative;         //!< relative transform of the sensor with respect to the attached link
+        std::string _sensorname; //!< name of the sensor interface to create, in other words the sensor type
+        SensorBase::SensorGeometryPtr _sensorgeometry; //!< the sensor geometry to initialize the sensor with
         virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale=1.0, int options=0) const;
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale=1.0);
 
@@ -526,12 +526,12 @@ private:
         /// \brief compute internal information from user-set info
         //virtual void _ComputeInternalInformation();
 
-        AttachedSensorInfo _info; ///< user specified data
+        AttachedSensorInfo _info; //!< user specified data
 
         RobotBaseWeakPtr _probot;
-        SensorBasePtr _psensor; ///< initialized by _ComputeInternalInformation when added to the environment
-        LinkWeakPtr pattachedlink;         ///< the robot link that the sensor is attached to
-        SensorBase::SensorDataPtr pdata;         ///< pointer to a preallocated data using psensor->CreateSensorData()
+        SensorBasePtr _psensor; //!< initialized by _ComputeInternalInformation when added to the environment
+        LinkWeakPtr pattachedlink;         //!< the robot link that the sensor is attached to
+        SensorBase::SensorDataPtr pdata;         //!< pointer to a preallocated data using psensor->CreateSensorData()
         mutable std::string __hashstructure;
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
@@ -567,15 +567,15 @@ public:
         virtual void DeserializeJSON(const rapidjson::Value &value, dReal unit_scale=1.0);
 
 
-        std::string name_; ///< the name of the connected body info
-        std::string _linkname; ///< the robot link that the body is attached to
+        std::string name_; //!< the name of the connected body info
+        std::string _linkname; //!< the robot link that the body is attached to
         std::string _uri;  //< the uri where the connected body came from. this is used when writing back to the filename.
-        Transform _trelative;  ///< relative transform of the body with respect to the attached link. The link transforms are multiplied by the transform of _linkname and _trelative to put them on the real robot.
-        std::vector<KinBody::LinkInfoPtr> _vLinkInfos; ///< extracted link infos representing the connected body. The names are the original "desired" names. Should not consider _linkname and _trelative.
-        std::vector<KinBody::JointInfoPtr> _vJointInfos; ///< extracted joint infos (inluding passive) representing the connected body. The names are the original "desired" names.
-        std::vector<RobotBase::ManipulatorInfoPtr> _vManipulatorInfos; ///< extracted manip infos representing the connected body. The names are the original "desired" names.
-        std::vector<RobotBase::AttachedSensorInfoPtr> _vAttachedSensorInfos; ///< extracted sensor infos representing the connected body. The names are the original "desired" names.
-        bool _bIsActive; ///< if true, then add the connected body. Otherwise do not add it.
+        Transform _trelative;  //!< relative transform of the body with respect to the attached link. The link transforms are multiplied by the transform of _linkname and _trelative to put them on the real robot.
+        std::vector<KinBody::LinkInfoPtr> _vLinkInfos; //!< extracted link infos representing the connected body. The names are the original "desired" names. Should not consider _linkname and _trelative.
+        std::vector<KinBody::JointInfoPtr> _vJointInfos; //!< extracted joint infos (inluding passive) representing the connected body. The names are the original "desired" names.
+        std::vector<RobotBase::ManipulatorInfoPtr> _vManipulatorInfos; //!< extracted manip infos representing the connected body. The names are the original "desired" names.
+        std::vector<RobotBase::AttachedSensorInfoPtr> _vAttachedSensorInfos; //!< extracted sensor infos representing the connected body. The names are the original "desired" names.
+        bool _bIsActive; //!< if true, then add the connected body. Otherwise do not add it.
     };
     typedef std::shared_ptr<ConnectedBodyInfo> ConnectedBodyInfoPtr;
     typedef std::shared_ptr<ConnectedBodyInfo const> ConnectedBodyInfoConstPtr;
@@ -662,18 +662,18 @@ public:
         }
 
 private:
-        ConnectedBodyInfo _info; ///< user specified data (to be serialized and saved), should not contain dynamically generated parameters.
+        ConnectedBodyInfo _info; //!< user specified data (to be serialized and saved), should not contain dynamically generated parameters.
 
-        std::string _nameprefix; ///< the name prefix to use for all the resolved link names.
-        std::string _dummyPassiveJointName; ///< the joint that is used to attach the connected body to the robot link
-        KinBody::JointPtr _pDummyJointCache; ///< cached Joint used for _dummyPassiveJointName
-        std::vector< std::pair<std::string, RobotBase::LinkPtr> > _vResolvedLinkNames; ///< for every entry in _info._vLinkInfos, the resolved link names added to the robot. Also serves as cache for pointers
-        std::vector< std::pair<std::string, RobotBase::JointPtr> > _vResolvedJointNames; ///< for every entry in _info._vJointInfos, the resolved link names. Also serves as cache for pointers.
-        std::vector< std::pair<std::string, RobotBase::ManipulatorPtr> > _vResolvedManipulatorNames; ///< for every entry in _info._vManipInfos. Also serves as cache for pointers
-        std::vector< std::pair<std::string, RobotBase::AttachedSensorPtr> > _vResolvedAttachedSensorNames; ///< for every entry in _info._vAttachedSensorResolvedNames. Also serves as cache for pointers
+        std::string _nameprefix; //!< the name prefix to use for all the resolved link names.
+        std::string _dummyPassiveJointName; //!< the joint that is used to attach the connected body to the robot link
+        KinBody::JointPtr _pDummyJointCache; //!< cached Joint used for _dummyPassiveJointName
+        std::vector< std::pair<std::string, RobotBase::LinkPtr> > _vResolvedLinkNames; //!< for every entry in _info._vLinkInfos, the resolved link names added to the robot. Also serves as cache for pointers
+        std::vector< std::pair<std::string, RobotBase::JointPtr> > _vResolvedJointNames; //!< for every entry in _info._vJointInfos, the resolved link names. Also serves as cache for pointers.
+        std::vector< std::pair<std::string, RobotBase::ManipulatorPtr> > _vResolvedManipulatorNames; //!< for every entry in _info._vManipInfos. Also serves as cache for pointers
+        std::vector< std::pair<std::string, RobotBase::AttachedSensorPtr> > _vResolvedAttachedSensorNames; //!< for every entry in _info._vAttachedSensorResolvedNames. Also serves as cache for pointers
 
-        RobotBaseWeakPtr _pattachedrobot; ///< the robot that the body is attached to
-        LinkWeakPtr _pattachedlink;         ///< the robot link that the body is attached to
+        RobotBaseWeakPtr _pattachedrobot; //!< the robot that the body is attached to
+        LinkWeakPtr _pattachedlink;         //!< the robot link that the body is attached to
         mutable std::string __hashstructure;
 
         friend class ColladaReader;
@@ -714,7 +714,7 @@ protected:
         std::vector<Transform> _vtManipsLocalTool;
         std::vector<Vector> _vvManipsLocalDirection;
         std::vector<IkSolverBasePtr> _vpManipsIkSolver;
-        std::vector<uint8_t> _vConnectedBodyActiveStates; ///< GetConnectedBodyActiveStates
+        std::vector<uint8_t> _vConnectedBodyActiveStates; //!< GetConnectedBodyActiveStates
 private:
         virtual void _RestoreRobot(std::shared_ptr<RobotBase> robot);
     };
@@ -1121,17 +1121,17 @@ protected:
     virtual void _PostprocessChangedParameters(uint32_t parameters);
 
     virtual void _UpdateAttachedSensors();
-    std::vector<ManipulatorPtr> _vecManipulators; ///< \see GetManipulators
+    std::vector<ManipulatorPtr> _vecManipulators; //!< \see GetManipulators
     ManipulatorPtr _pManipActive;
 
-    std::vector<AttachedSensorPtr> _vecAttachedSensors; ///< \see GetAttachedSensors
+    std::vector<AttachedSensorPtr> _vecAttachedSensors; //!< \see GetAttachedSensors
 
-    std::vector<ConnectedBodyPtr> _vecConnectedBodies;  ///< \see GetConnectedBodies
+    std::vector<ConnectedBodyPtr> _vecConnectedBodies;  //!< \see GetConnectedBodies
 
     std::vector<int> _vActiveDOFIndices, _vAllDOFIndices;
     Vector vActvAffineRotationAxis;
-    int _nActiveDOF; ///< Active degrees of freedom; if -1, use robot dofs
-    int _nAffineDOFs; ///< dofs describe what affine transformations are allowed
+    int _nActiveDOF; //!< Active degrees of freedom; if -1, use robot dofs
+    int _nAffineDOFs; //!< dofs describe what affine transformations are allowed
 
     Vector _vTranslationLowerLimits, _vTranslationUpperLimits, _vTranslationMaxVels, _vTranslationResolutions, _vTranslationWeights;
     /// the xyz components are used if the rotation axis is solely about X,Y,or Z; otherwise the W component is used.

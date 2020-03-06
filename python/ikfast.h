@@ -59,11 +59,11 @@ public:
         indices.fill(0xFF);
     }
 
-    T fmul = 0.0, foffset = 0.0; ///< joint value is fmul*sol[freeind]+foffset
-    signed char freeind = -1; ///< if >= 0, mimics another joint
-    unsigned char jointtype = 0x01; ///< joint type, 0x01 is revolute, 0x11 is slider
-    unsigned char maxsolutions = 0; ///< max possible indices, 0 if controlled by free index or a free joint itself
-    std::array<unsigned char, IKSINGLEDOFSOLUTIONBASE_INDICES_SIZE> indices; ///< unique index of the solution used to keep track on what part it came from. sometimes a solution can be repeated for different indices. store at least another repeated root
+    T fmul = 0.0, foffset = 0.0; //!< joint value is fmul*sol[freeind]+foffset
+    signed char freeind = -1; //!< if >= 0, mimics another joint
+    unsigned char jointtype = 0x01; //!< joint type, 0x01 is revolute, 0x11 is slider
+    unsigned char maxsolutions = 0; //!< max possible indices, 0 if controlled by free index or a free joint itself
+    std::array<unsigned char, IKSINGLEDOFSOLUTIONBASE_INDICES_SIZE> indices; //!< unique index of the solution used to keep track on what part it came from. sometimes a solution can be repeated for different indices. store at least another repeated root
 
     virtual void Print() const {
         std::cout << "(" << ((jointtype == 0x01) ? "R" : "P") << ", "
@@ -307,7 +307,7 @@ public:
         }
     }
 
-    std::vector< IkSingleDOFSolutionBase<T> > _vbasesol;       ///< solution and their offsets if joints are mimiced
+    std::vector< IkSingleDOFSolutionBase<T> > _vbasesol;       //!< solution and their offsets if joints are mimiced
     std::vector<int> _vfree;
 };
 

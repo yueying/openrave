@@ -38,8 +38,8 @@ namespace OpenRAVE
 		PluginInfo() : version(0)
 		{
 		}
-		std::map<InterfaceType, std::vector<std::string> > interfacenames;     ///< offered interfaces
-		int version;     ///< OPENRAVE_VERSION
+		std::map<InterfaceType, std::vector<std::string> > interfacenames;     //!< offered interfaces
+		int version;     //!< OPENRAVE_VERSION
 	};
 
 }

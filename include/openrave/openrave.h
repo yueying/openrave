@@ -69,16 +69,16 @@ class ConfigurationSpecification;
 
 
 
-///< Cloning Options for interfaces and environments
+//!< Cloning Options for interfaces and environments
 enum CloningOptions 
 {
-    Clone_Bodies = 1, ///< clone all the bodies/robots of the environment, exclude attached interfaces like sensors/controllers
-    Clone_Viewer = 2, ///< clone the viewer type, although figures won't be copied, new viewer does try to match views
-    Clone_Simulation = 4, ///< clone the physics engine and simulation state (ie, timesteps, gravity)
-    Clone_RealControllers = 8, ///< if specified, will clone the real controllers of all the robots, otherwise each robot gets ideal controller
-    Clone_Sensors = 0x0010, ///< if specified, will clone the sensors attached to the robot and added to the environment
-    Clone_Modules = 0x0020, ///< if specified, will clone the modules attached to the environment
-    Clone_IgnoreAttachedBodies = 0x00010001, ///< if set, then ignore cloning any attached bodies so _listAttachedBodies becomes empty. Usually used to control grabbing states.
+    Clone_Bodies = 1, //!< clone all the bodies/robots of the environment, exclude attached interfaces like sensors/controllers
+    Clone_Viewer = 2, //!< clone the viewer type, although figures won't be copied, new viewer does try to match views
+    Clone_Simulation = 4, //!< clone the physics engine and simulation state (ie, timesteps, gravity)
+    Clone_RealControllers = 8, //!< if specified, will clone the real controllers of all the robots, otherwise each robot gets ideal controller
+    Clone_Sensors = 0x0010, //!< if specified, will clone the sensors attached to the robot and added to the environment
+    Clone_Modules = 0x0020, //!< if specified, will clone the modules attached to the environment
+    Clone_IgnoreAttachedBodies = 0x00010001, //!< if set, then ignore cloning any attached bodies so _listAttachedBodies becomes empty. Usually used to control grabbing states.
     Clone_All = 0xffffffff,
 };
 
@@ -93,18 +93,18 @@ namespace OpenRAVE
 enum DOFAffine
 {
     DOF_NoTransform = 0,
-    DOF_X = 1,     ///< can move in the x direction
-    DOF_Y = 2,     ///< can move in the y direction
-    DOF_Z = 4,     ///< can move in the z direction
-    DOF_XYZ=DOF_X|DOF_Y|DOF_Z,     ///< moves in xyz direction
+    DOF_X = 1,     //!< can move in the x direction
+    DOF_Y = 2,     //!< can move in the y direction
+    DOF_Z = 4,     //!< can move in the z direction
+    DOF_XYZ=DOF_X|DOF_Y|DOF_Z,     //!< moves in xyz direction
 
     // DOF_RotationX fields are mutually exclusive
-    DOF_RotationAxis = 8,     ///< can rotate around an axis (1 dof)
-    DOF_Rotation3D = 16,     ///< can rotate freely (3 dof), the parameterization is
-                             ///< theta * v, where v is the rotation axis and theta is the angle about that axis
-    DOF_RotationQuat = 32,     ///< can rotate freely (4 dof), parameterization is a quaternion. In order for limits to work correctly, the quaternion is in the space of _vRotationQuatLimitStart. _vRotationQuatLimitStart is always left-multiplied before setting the transform!
-    DOF_RotationMask=(DOF_RotationAxis|DOF_Rotation3D|DOF_RotationQuat), ///< mask for all bits representing 3D rotations
-    DOF_Transform = (DOF_XYZ|DOF_RotationQuat), ///< translate and rotate freely in 3D space
+    DOF_RotationAxis = 8,     //!< can rotate around an axis (1 dof)
+    DOF_Rotation3D = 16,     //!< can rotate freely (3 dof), the parameterization is
+                             //!< theta * v, where v is the rotation axis and theta is the angle about that axis
+    DOF_RotationQuat = 32,     //!< can rotate freely (4 dof), parameterization is a quaternion. In order for limits to work correctly, the quaternion is in the space of _vRotationQuatLimitStart. _vRotationQuatLimitStart is always left-multiplied before setting the transform!
+    DOF_RotationMask=(DOF_RotationAxis|DOF_Rotation3D|DOF_RotationQuat), //!< mask for all bits representing 3D rotations
+    DOF_Transform = (DOF_XYZ|DOF_RotationQuat), //!< translate and rotate freely in 3D space
 };
 
 /** \brief Given a mask of affine dofs and a dof inside that mask, returns the index where the value could be found.

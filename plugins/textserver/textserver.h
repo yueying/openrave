@@ -642,7 +642,7 @@ private:
         RAVELOG_VERBOSE("Closing socket connection\n");
     }
 
-    int _nPort;     ///< port used for listening to incoming connections
+    int _nPort;     //!< port used for listening to incoming connections
 
     std::shared_ptr<boost::thread> _servthread, _workerthread;
     list<std::shared_ptr<boost::thread> > _listReadThreads;
@@ -668,7 +668,7 @@ private:
     map<int, GraphHandlePtr> _mapFigureIds;
     int _nNextFigureId;
 
-    bool _bWorking;     ///< worker thread processing current work items
+    bool _bWorking;     //!< worker thread processing current work items
 
 protected:
     // all the server functions

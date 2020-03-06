@@ -46,9 +46,9 @@ public:
         return tmanip.rotate(vManipDir).dot3(vGlobalDir);
     }
 
-    Vector vManipDir; ///< direction on the manipulator
-    Vector vGlobalDir; ///< direction in world coordinates
-    dReal fCosAngleThresh; ///< the cos angle threshold
+    Vector vManipDir; //!< direction on the manipulator
+    Vector vGlobalDir; //!< direction in world coordinates
+    dReal fCosAngleThresh; //!< the cos angle threshold
 };
 
 typedef std::shared_ptr<ManipDirectionThresh> ManipDirectionThreshPtr;
@@ -1058,30 +1058,30 @@ protected:
     std::vector<int> _vActiveIndices;
     int _nActiveAffineDOFs;
     Vector _vActiveAffineAxis;
-    std::vector<KinBody::LinkPtr> _vLinks; ///< links tracking for linkdistthresh
-    std::vector<AABB> _vLinkAABBs; ///< indexed according to _vLinks
-    std::vector<Transform> _vOriginalTransforms, _vOriginalInvTransforms; ///< indexed according to _vLinks
+    std::vector<KinBody::LinkPtr> _vLinks; //!< links tracking for linkdistthresh
+    std::vector<AABB> _vLinkAABBs; //!< indexed according to _vLinks
+    std::vector<Transform> _vOriginalTransforms, _vOriginalInvTransforms; //!< indexed according to _vLinks
     CollisionReportPtr _report;
 
-    OpenRAVE::NeighStateFn _neighstatefn; ///< if initialized, then use this function to get nearest neighbor
-    ///< Advantage of using neightstatefn is that user constraints can be met like maintaining a certain orientation of the gripper.
+    OpenRAVE::NeighStateFn _neighstatefn; //!< if initialized, then use this function to get nearest neighbor
+    //!< Advantage of using neightstatefn is that user constraints can be met like maintaining a certain orientation of the gripper.
 
-    UserDataPtr _limitscallback, _grabbedcallback; ///< limits,grabbed change handles
+    UserDataPtr _limitscallback, _grabbedcallback; //!< limits,grabbed change handles
 
     /// \return Return 0 if jitter failed and constraints are not satisfied. -1 if constraints are originally satisfied. 1 if jitter succeeded, configuration is different, and constraints are satisfied.
 
     uint32_t _nRandomGeneratorSeed;
-    uint32_t _nNumIterations; ///< maintains the iteration count from start of SetSeed to how many iterations Sample has undergone. Used to consecutively call Sample without re-sampling the same _curdof. When > 0, then will skip some commonly tested configurations not randomized
-    int _maxiterations; ///< number of different configurations to test
-    dReal _maxjitter; ///< The max deviation of a dof value to jitter. value +- maxjitter
-    dReal _perturbation; ///< Test with perturbations since very small changes in angles can produce collision inconsistencies
-    dReal _linkdistthresh, _linkdistthresh2; ///< the maximum distance to allow a link to move. If 0, then will disable checking
+    uint32_t _nNumIterations; //!< maintains the iteration count from start of SetSeed to how many iterations Sample has undergone. Used to consecutively call Sample without re-sampling the same _curdof. When > 0, then will skip some commonly tested configurations not randomized
+    int _maxiterations; //!< number of different configurations to test
+    dReal _maxjitter; //!< The max deviation of a dof value to jitter. value +- maxjitter
+    dReal _perturbation; //!< Test with perturbations since very small changes in angles can produce collision inconsistencies
+    dReal _linkdistthresh, _linkdistthresh2; //!< the maximum distance to allow a link to move. If 0, then will disable checking
 
     std::vector<dReal> _curdof, _newdof2, _deltadof, _deltadof2, _vonesample;
 
-    CacheTreePtr _cache; ///< caches the visisted configurations
+    CacheTreePtr _cache; //!< caches the visisted configurations
     int _cachehit;
-    dReal _neighdistthresh; ///< the minimum distance that nodes can be with respect to each other for the cache
+    dReal _neighdistthresh; //!< the minimum distance that nodes can be with respect to each other for the cache
 
     // for biasing
     SpaceSamplerBasePtr _ssampler;
@@ -1095,14 +1095,14 @@ protected:
     std::vector< std::vector<dReal> > _vbiasnullspace; // configuration nullspace that does not constraint rotation. vectors are unit
 
     // manip constraints
-    ManipDirectionThreshPtr _pConstraintToolDirection; ///< constrain direction
-    ManipPositionConstraintsPtr _pConstraintToolPosition; ///< constraint position
+    ManipDirectionThreshPtr _pConstraintToolDirection; //!< constrain direction
+    ManipPositionConstraintsPtr _pConstraintToolPosition; //!< constraint position
 
     //Vector vManipConstraintBoxMin, vManipConstraintBoxMax; // constraint position
 
-    bool _bSetResultOnRobot; ///< if true, will set the final result on the robot DOF values
-    bool _busebiasing; ///< if true will bias the end effector along a certain direction using the jacobian and nullspace.
-    bool _bResetIterationsOnSample; ///< if true, when Sample or SampleSequence is called, will reset the _nNumIterations to 0. O
+    bool _bSetResultOnRobot; //!< if true, will set the final result on the robot DOF values
+    bool _busebiasing; //!< if true will bias the end effector along a certain direction using the jacobian and nullspace.
+    bool _bResetIterationsOnSample; //!< if true, when Sample or SampleSequence is called, will reset the _nNumIterations to 0. O
 };
 
 SpaceSamplerBasePtr CreateConfigurationJitterer(EnvironmentBasePtr penv, std::istream& sinput)

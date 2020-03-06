@@ -30,10 +30,10 @@ namespace OpenRAVE
 enum IntervalType 
 {
     // Interval type (lower sixteen bits)
-    IT_Open=0, ///< (a,b)
-    IT_OpenStart=1, ///< (a,b]
-    IT_OpenEnd=2, ///< [a,b)
-    IT_Closed=3, ///< [a,b]
+    IT_Open=0, //!< (a,b)
+    IT_OpenStart=1, //!< (a,b]
+    IT_OpenEnd=2, //!< [a,b)
+    IT_Closed=3, //!< [a,b]
     IT_IntervalMask=0xffff,
     // Interpolation mode (higher sixteen bits)
     IT_Default=0x00000000,
@@ -189,7 +189,7 @@ private:
         return OPENRAVE_SPACESAMPLER_HASH;
     }
 
-    std::list<UserDataWeakPtr> __listRegisteredCallbacks; ///< internally managed callbacks
+    std::list<UserDataWeakPtr> __listRegisteredCallbacks; //!< internally managed callbacks
 
     friend class CustomSamplerCallbackData;
 };

@@ -340,14 +340,14 @@ public:
 private:
         ConstraintTrajectoryTimingParametersPtr _parameters;
         bool _bHasParameters;
-        int _envid; ///< useful for logging
+        int _envid; //!< useful for logging
 
         // Cache
         std::vector<dReal> _vswitchtimes;
         std::vector<dReal> _q0, _q1, _dq0, _dq1;
         std::vector<uint8_t> _vsearchsegments;
         std::vector<RampOptimizer::RampND> _cacheRampNDVectIn, _cacheRampNDVectOut;
-        std::vector<dReal> _vcacheintermediateconfigurations; ///< for keeping intermediate configurations that are checked in CheckPathAllConstraints
+        std::vector<dReal> _vcacheintermediateconfigurations; //!< for keeping intermediate configurations that are checked in CheckPathAllConstraints
 
     }; // end class MyRampNDFeasibilityChecker
 
@@ -3341,7 +3341,7 @@ protected:
     /// Members
     int _environmentid;
     ConstraintTrajectoryTimingParametersPtr _parameters;
-    SpaceSamplerBasePtr _uniformsampler;        ///< used for planning, seed is controlled
+    SpaceSamplerBasePtr _uniformsampler;        //!< used for planning, seed is controlled
     ConstraintFilterReturnPtr _constraintreturn;
     MyRampNDFeasibilityChecker _feasibilitychecker;
     std::shared_ptr<ManipConstraintChecker2> _manipconstraintchecker;
@@ -3349,29 +3349,29 @@ protected:
     PlannerProgress _progress;
     bool _bUsePerturbation;
     bool _bmanipconstraints;
-    std::vector<ZeroVelPointInfo> _vZeroVelPointInfos; ///< keeps track of all zero-velocity points so that we can focus on shortcutting around these points.
+    std::vector<ZeroVelPointInfo> _vZeroVelPointInfos; //!< keeps track of all zero-velocity points so that we can focus on shortcutting around these points.
     RampOptimizer::ParabolicInterpolator _interpolator;
-    dReal _maxInitialRampTime; ///< max duration of traj segment between two consecutive waypoints
+    dReal _maxInitialRampTime; //!< max duration of traj segment between two consecutive waypoints
                                /// after calling _SetMileStones. this serves as a cap for how far a
                                /// pair of sampled time instants t0, t1 can be.
 
     // for logging
-    SpaceSamplerBasePtr _logginguniformsampler; ///< used for logging, seed is randomly set
-    uint32_t _fileIndexMod; ///< maximum number of trajectory index allowed when saving
-    DebugLevel _dumplevel;  ///< minimum debug level which triggers trajectory saving
-    std::vector<int> _vShortcutStats; ///< keeps track of the number of times a shortcut iter finishes with each ShortcutStatus
+    SpaceSamplerBasePtr _logginguniformsampler; //!< used for logging, seed is randomly set
+    uint32_t _fileIndexMod; //!< maximum number of trajectory index allowed when saving
+    DebugLevel _dumplevel;  //!< minimum debug level which triggers trajectory saving
+    std::vector<int> _vShortcutStats; //!< keeps track of the number of times a shortcut iter finishes with each ShortcutStatus
 
     /// Caching stuff
     RampOptimizer::ParabolicPath _cacheparabolicpath, _cacheparabolicpath2;
-    std::vector<dReal> _cacheWaypoints; ///< stores concatenated waypoints obtained from the input trajectory
-    std::vector<std::vector<dReal> > _cacheWaypointVect; ///< each element is a vector storing a waypoint
-    std::vector<dReal> _cacheX0Vect, _cacheX1Vect, _cacheV0Vect, _cacheV1Vect, _cacheTVect; ///< used in PlanPath and _Shortcut
+    std::vector<dReal> _cacheWaypoints; //!< stores concatenated waypoints obtained from the input trajectory
+    std::vector<std::vector<dReal> > _cacheWaypointVect; //!< each element is a vector storing a waypoint
+    std::vector<dReal> _cacheX0Vect, _cacheX1Vect, _cacheV0Vect, _cacheV1Vect, _cacheTVect; //!< used in PlanPath and _Shortcut
     RampOptimizer::RampND _cacheRampND, _cacheRemRampND;
-    std::vector<RampOptimizer::RampND> _cacheRampNDVect; ///< use cases: 1. being passed to _ComputeRampWithZeroVelEndpoints when retrieving cubic waypoints from input traj
+    std::vector<RampOptimizer::RampND> _cacheRampNDVect; //!< use cases: 1. being passed to _ComputeRampWithZeroVelEndpoints when retrieving cubic waypoints from input traj
                                                          ///             2. in _SetMileStones: being passed to _ComputeRampWithZeroVelEndpoints
                                                          ///             3. handles the finalized set of RampNDs before writing to OpenRAVE trajectory
                                                          ///             4. in _Shortcut
-    std::vector<RampOptimizer::RampND> _cacheRampNDVectOut; ///< used to handle output from Check function in PlanPath, also used in _Shortcut
+    std::vector<RampOptimizer::RampND> _cacheRampNDVectOut; //!< used to handle output from Check function in PlanPath, also used in _Shortcut
 
     // in SegmentFeasible2
     std::vector<dReal> _cacheCurPos, _cacheNewPos, _cacheCurVel, _cacheNewVel;
@@ -3381,9 +3381,9 @@ protected:
     std::vector<std::vector<dReal> > _cacheNewWaypointsVect;
 
     // in _ComputeRampWithZeroVelEndpoints
-    std::vector<dReal> _cacheX0Vect1, _cacheX1Vect1; ///< need to have another copies of x0 and x1 vectors. For v0 and v1 vectors, we can reuse to ones above.
-    std::vector<dReal> _cacheVellimits, _cacheAccelLimits; ///< stores current velocity and acceleration limits, also used in _Shortcut
-    std::vector<RampOptimizer::RampND> _cacheRampNDVectOut1; ///< stores output from the check function, also used in _Shortcut
+    std::vector<dReal> _cacheX0Vect1, _cacheX1Vect1; //!< need to have another copies of x0 and x1 vectors. For v0 and v1 vectors, we can reuse to ones above.
+    std::vector<dReal> _cacheVellimits, _cacheAccelLimits; //!< stores current velocity and acceleration limits, also used in _Shortcut
+    std::vector<RampOptimizer::RampND> _cacheRampNDVectOut1; //!< stores output from the check function, also used in _Shortcut
 
     // in _Shortcut
     std::vector<uint8_t> _vVisitedDiscretizationCache;

@@ -41,7 +41,7 @@ namespace OpenRAVE
 	private:
 		std::string _parentname;     /// XML filename
 		std::string _fieldname;
-		std::shared_ptr<std::ostream> _osrecord;     ///< used to store the xml data
+		std::shared_ptr<std::ostream> _osrecord;     //!< used to store the xml data
 		std::shared_ptr<BaseXMLReader> _pcurreader;
 	};
 }

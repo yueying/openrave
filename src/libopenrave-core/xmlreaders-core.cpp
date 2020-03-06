@@ -880,9 +880,9 @@ public:
             _plink->_info.name_ = linkname;
         }
         if( bStaticSet ) {
-            _plink->_info._bStatic = bStatic;
+            _plink->_info.is_static_ = bStatic;
         }
-        _plink->_info._bIsEnabled = bIsEnabled;
+        _plink->_info.is_enabled_ = bIsEnabled;
     }
     virtual ~LinkXMLReader() {
     }
@@ -1224,7 +1224,7 @@ public:
             }
 
             totalmass.GetMassFrame(_plink->_info._tMassFrame, _plink->_info._vinertiamoments);
-            _plink->_info._mass =totalmass.fTotalMass;
+            _plink->_info.mass_ =totalmass.fTotalMass;
             tOrigTrans = _plink->GetTransform();
 
             Transform cur;
@@ -1312,20 +1312,20 @@ public:
     boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
-    MASS _mass;                            ///< current mass of the object
+    MASS _mass;                            //!< current mass of the object
     KinBody::LinkPtr& _plink;
     KinBodyPtr _pparent;
-    KinBody::LinkPtr _offsetfrom;                            ///< all transformations are relative to the this body
+    KinBody::LinkPtr _offsetfrom;                            //!< all transformations are relative to the this body
     bool _bSkipGeometry;
     Vector _vScaleGeometry;
     Transform tOrigTrans;
 
     // Mass
-    MassType _masstype;                   ///< if true, mass is craeted so that it mimics the geometry
+    MassType _masstype;                   //!< if true, mass is craeted so that it mimics the geometry
     string _processingtag;         /// if not empty, currently processing
     MASS _massCustom;
     float _fMassDensity, _fTotalMass;
-    Vector _vMassExtents;                   ///< used only if mass is a box
+    Vector _vMassExtents;                   //!< used only if mass is a box
 };
 
 bool CreateGeometries(EnvironmentBasePtr penv, const std::string& filename, const Vector &vscale, std::list<KinBody::GeometryInfo>& listGeometries)
@@ -1341,7 +1341,7 @@ public:
         _bNegateJoint = false;
         _pparent = pparent;
         _pjoint.reset(new KinBody::Joint(pparent));
-        _pjoint->_info._type = KinBody::JointHinge;
+        _pjoint->_info.type_ = KinBody::JointHinge;
         _vScaleGeometry = Vector(1,1,1);
 
         FOREACHC(itatt,atts) {
@@ -1350,23 +1350,23 @@ public:
             }
             else if( itatt->first == "type" ) {
                 if( _stricmp(itatt->second.c_str(), "hinge") == 0 ) {
-                    _pjoint->_info._type = KinBody::JointHinge;
+                    _pjoint->_info.type_ = KinBody::JointHinge;
                 }
                 else if( _stricmp(itatt->second.c_str(), "slider") == 0 ) {
-                    _pjoint->_info._type = KinBody::JointSlider;
+                    _pjoint->_info.type_ = KinBody::JointSlider;
                 }
                 else if( _stricmp(itatt->second.c_str(), "universal") == 0 ) {
-                    _pjoint->_info._type = KinBody::JointUniversal;
+                    _pjoint->_info.type_ = KinBody::JointUniversal;
                 }
                 else if( _stricmp(itatt->second.c_str(), "hinge2") == 0 ) {
-                    _pjoint->_info._type = KinBody::JointHinge2;
+                    _pjoint->_info.type_ = KinBody::JointHinge2;
                 }
                 else if( _stricmp(itatt->second.c_str(), "spherical") == 0 ) {
-                    _pjoint->_info._type = KinBody::JointSpherical;
+                    _pjoint->_info.type_ = KinBody::JointSpherical;
                 }
                 else {
                     RAVELOG_WARN(str(boost::format("unrecognized joint type: %s, setting to hinge\n")%itatt->second));
-                    _pjoint->_info._type = KinBody::JointHinge;
+                    _pjoint->_info.type_ = KinBody::JointHinge;
                 }
             }
             else if( itatt->first == "enable" ) {
@@ -1405,9 +1405,9 @@ public:
                 _pjoint->_vmimic[0]->_equations[2] = itatt->second;
             }
             else if( itatt->first == "circular" ) {
-                _pjoint->_info._bIsCircular[0] = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
+                _pjoint->_info.is_circular_[0] = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
                 for(int i = 1; i < _pjoint->GetDOF(); ++i) {
-                    _pjoint->_info._bIsCircular[i] = _pjoint->_info._bIsCircular[0];
+                    _pjoint->_info.is_circular_[i] = _pjoint->_info.is_circular_[0];
                 }
             }
             else if( itatt->first == "scalegeometry" ) {
@@ -1424,8 +1424,8 @@ public:
         _vAxes.resize(_pjoint->GetDOF());
         if( _pjoint->GetType() == KinBody::JointSlider ) {
             for(int i = 0; i < _pjoint->GetDOF(); ++i) {
-                _pjoint->_info._vlowerlimit.at(i) = -10;
-                _pjoint->_info._vupperlimit.at(i) = 10;
+                _pjoint->_info.lower_limit_vector_.at(i) = -10;
+                _pjoint->_info.upper_limit_vector_.at(i) = 10;
             }
         }
         else if( _pjoint->GetType() == KinBody::JointSpherical ) {
@@ -1433,17 +1433,17 @@ public:
             _vAxes.at(1) = Vector(0,1,0);
             _vAxes.at(2) = Vector(0,0,1);
             for(int i = 0; i < _pjoint->GetDOF(); ++i) {
-                _pjoint->_info._vlowerlimit.at(i) = -100;
-                _pjoint->_info._vupperlimit.at(i) = 100;
+                _pjoint->_info.lower_limit_vector_.at(i) = -100;
+                _pjoint->_info.upper_limit_vector_.at(i) = 100;
             }
         }
         else {
             for(int i = 0; i < _pjoint->GetDOF(); ++i) {
-                _pjoint->_info._vlowerlimit.at(i) = -PI;
-                _pjoint->_info._vupperlimit.at(i) = PI;
+                _pjoint->_info.lower_limit_vector_.at(i) = -PI;
+                _pjoint->_info.upper_limit_vector_.at(i) = PI;
             }
         }
-        FOREACH(it,_pjoint->_info._vweights) {
+        FOREACH(it,_pjoint->_info.weights_vector_) {
             *it = 1;
         }
     }
@@ -1473,7 +1473,7 @@ public:
     virtual bool endElement(const std::string& xmlname)
     {
         int numindices = _pjoint->GetDOF();
-        dReal fRatio = _pjoint->_info._type == KinBody::JointSlider ? (dReal)1 : (dReal)PI / 180.0f;         // most, but not all, joint take degrees
+        dReal fRatio = _pjoint->_info.type_ == KinBody::JointSlider ? (dReal)1 : (dReal)PI / 180.0f;         // most, but not all, joint take degrees
 
         if( !!_pcurreader ) {
             if( _pcurreader->endElement(xmlname) ) {
@@ -1498,11 +1498,11 @@ public:
 
             string defaultname = "J_";
             // check if joint needs an artificial offset, only for revolute joints that have identifying points!
-            if(( _pjoint->_info._type == KinBody::JointUniversal) ||( _pjoint->_info._type == KinBody::JointHinge2) ||( _pjoint->_info._type == KinBody::JointHinge) ) {
+            if(( _pjoint->_info.type_ == KinBody::JointUniversal) ||( _pjoint->_info.type_ == KinBody::JointHinge2) ||( _pjoint->_info.type_ == KinBody::JointHinge) ) {
                 for(int i = 0; i < numindices; ++i) {
-                    if(( _pjoint->_info._vlowerlimit[i] < -PI) ||( _pjoint->_info._vupperlimit[i] > PI) ) {
+                    if(( _pjoint->_info.lower_limit_vector_[i] < -PI) ||( _pjoint->_info.upper_limit_vector_[i] > PI) ) {
                         // TODO, necessary?
-                        _pjoint->_info._voffsets[i] = 0.5f * (_pjoint->_info._vlowerlimit[i] + _pjoint->_info._vupperlimit[i]);
+                        _pjoint->_info.offsets_vector_[i] = 0.5f * (_pjoint->_info.lower_limit_vector_[i] + _pjoint->_info.upper_limit_vector_[i]);
                     }
                 }
             }
@@ -1526,7 +1526,7 @@ public:
         }
         else if( xmlname == "weight" ) {
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->_info._vweights.at(i);
+                _ss >> _pjoint->_info.weights_vector_.at(i);
             }
         }
         else if( xmlname == "initial" ) {
@@ -1560,8 +1560,8 @@ public:
             vector<dReal> values = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
             if( (int)values.size() == 2*_pjoint->GetDOF() ) {
                 for(int i = 0; i < _pjoint->GetDOF(); ++i ) {
-                    _pjoint->_info._vlowerlimit.at(i) = fmult*min(values[2*i+0],values[2*i+1]);
-                    _pjoint->_info._vupperlimit.at(i) = fmult*max(values[2*i+0],values[2*i+1]);
+                    _pjoint->_info.lower_limit_vector_.at(i) = fmult*min(values[2*i+0],values[2*i+1]);
+                    _pjoint->_info.upper_limit_vector_.at(i) = fmult*max(values[2*i+0],values[2*i+1]);
                 }
             }
             else {
@@ -1572,60 +1572,60 @@ public:
             _bNegateJoint = true;
             RAVELOG_ERROR(str(boost::format("%s: <lostop> is deprecated, please use <limits> (now in radians), <limitsrad>, or <limitsdeg> tag and negate your joint axis!\n")%_pparent->GetName()));
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->_info._vlowerlimit.at(i);
-                _pjoint->_info._vlowerlimit.at(i) *= fRatio;
+                _ss >> _pjoint->_info.lower_limit_vector_.at(i);
+                _pjoint->_info.lower_limit_vector_.at(i) *= fRatio;
             }
         }
         else if( xmlname == "histop" ) {
             _bNegateJoint = true;
             RAVELOG_ERROR(str(boost::format("%s: <histop> deprecated, please use <limits> (now in radians), <limitsrad>, <limitsdeg> tag and negate your joint axis!\n")%_pparent->GetName()));
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->_info._vupperlimit.at(i);
-                _pjoint->_info._vupperlimit.at(i) *= fRatio;
+                _ss >> _pjoint->_info.upper_limit_vector_.at(i);
+                _pjoint->_info.upper_limit_vector_.at(i) *= fRatio;
             }
         }
         else if( xmlname == "maxvel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vmaxvel[idof];
+                _ss >> _pjoint->_info.max_velocity_vector_[idof];
             }
         }
         else if( xmlname == "maxveldeg" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vmaxvel[idof];
-                _pjoint->_info._vmaxvel[idof] *= PI/180.0;
+                _ss >> _pjoint->_info.max_velocity_vector_[idof];
+                _pjoint->_info.max_velocity_vector_[idof] *= PI/180.0;
             }
         }
         else if( xmlname == "hardmaxvel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vhardmaxvel[idof];
+                _ss >> _pjoint->_info.hard_max_velocity_vector_[idof];
             }
         }
         else if( xmlname == "maxaccel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vmaxaccel[idof];
+                _ss >> _pjoint->_info.max_accelerate_vector_[idof];
             }
         }
         else if( xmlname == "maxacceldeg" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vmaxaccel[idof];
-                _pjoint->_info._vmaxaccel[idof] *= PI/180.0;
+                _ss >> _pjoint->_info.max_accelerate_vector_[idof];
+                _pjoint->_info.max_accelerate_vector_[idof] *= PI/180.0;
             }
         }
         else if( xmlname == "maxtorque" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vmaxtorque[idof];
+                _ss >> _pjoint->_info.max_torque_vector_[idof];
             }
         }
         else if( xmlname == "maxinertia" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->_info._vmaxinertia[idof];
+                _ss >> _pjoint->_info.max_inertia_vector_[idof];
             }
         }
         else if( xmlname == "resolution" ) {
             dReal fResolution = 0.02;
             _ss >> fResolution;
             fResolution *= fRatio;
-            FOREACH(itvalue, _pjoint->_info._vresolution) {
+            FOREACH(itvalue, _pjoint->_info.resolution_vector_) {
                 *itvalue = fResolution;
             }
         }
@@ -1641,7 +1641,7 @@ public:
         }
         else {
             // could be type specific
-            switch(_pjoint->_info._type) {
+            switch(_pjoint->_info.type_) {
             case KinBody::JointHinge:
                 if( xmlname == "anchor" ) {
                     _ss >> _vanchor.x >> _vanchor.y >> _vanchor.z;
@@ -1693,7 +1693,7 @@ public:
                 }
                 break;
             default:
-                throw OpenRAVEException(str(boost::format(_("bad joint type: 0x%x"))%_pjoint->_info._type));
+                throw OpenRAVEException(str(boost::format(_("bad joint type: 0x%x"))%_pjoint->_info.type_));
                 break;
             }
         }
@@ -1717,7 +1717,7 @@ public:
     boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
-    KinBody::LinkPtr _offsetfrom;         ///< all transforms are relative to this body
+    KinBody::LinkPtr _offsetfrom;         //!< all transforms are relative to this body
     KinBodyPtr _pparent;
     KinBody::JointPtr& _pjoint;
     std::vector<Vector> _vAxes;
@@ -2173,9 +2173,9 @@ public:
                     if( !_plink )
                         throw OpenRAVEException(_("link should be valid"));
 
-                    if( _plink->_index < 0 ) {
+                    if( _plink->index_ < 0 ) {
                         // not in array yet
-                        _plink->_index = (int)_pchain->_veclinks.size();
+                        _plink->index_ = (int)_pchain->_veclinks.size();
                         _pchain->_veclinks.push_back(_plink);
                         _vTransforms.push_back(Transform());
                     }
@@ -2376,15 +2376,15 @@ protected:
     Transform _trans;
 
     // default mass type passed to every LinkXMLReader
-    int rootoffset, rootjoffset, rootjpoffset, roottransoffset;                         ///< the initial number of links when KinBody is created (so that global translations and rotations only affect the new links)
-    MassType _masstype;                     ///< if true, mass is craeted so that it mimics the geometry
-    float _fMassValue;                       ///< density or total mass
+    int rootoffset, rootjoffset, rootjpoffset, roottransoffset;                         //!< the initial number of links when KinBody is created (so that global translations and rotations only affect the new links)
+    MassType _masstype;                     //!< if true, mass is craeted so that it mimics the geometry
+    float _fMassValue;                       //!< density or total mass
     Vector _vMassExtents;
 
-    std::vector<Transform> _vTransforms;             ///< original transforms of the bodies for offsetfrom
+    std::vector<Transform> _vTransforms;             //!< original transforms of the bodies for offsetfrom
 
     string _strModelsDir, _bodyname;
-    string _prefix;         ///< add this prefix to all names of links and joints
+    string _prefix;         //!< add this prefix to all names of links and joints
     KinBody::LinkPtr _plink;
     KinBody::JointPtr _pjoint;
 
@@ -2819,7 +2819,7 @@ protected:
     RobotBase::AttachedSensorPtr& _psensor;
     InterfaceBasePtr _psensorinterface;
     string _processingtag;
-    string args;         ///< arguments to pass to sensor when initializing
+    string args;         //!< arguments to pass to sensor when initializing
     Vector _vScaleGeometry;
 };
 
@@ -3095,7 +3095,7 @@ public:
 
 protected:
     RobotBasePtr _probot;
-    InterfaceBasePtr _pcontroller;         ///< controller to set the robot at
+    InterfaceBasePtr _pcontroller;         //!< controller to set the robot at
     string _robotname;
     string _prefix;
     string _processingtag;
@@ -3106,8 +3106,8 @@ protected:
     Transform _trans;
     bool _bSkipGeometry;
     Vector _vScaleGeometry;
-    int rootoffset, roottransoffset;                         ///< the initial number of links when Robot is created (so that global translations and rotations only affect the new links)
-    int rootjoffset, rootjpoffset;         ///< the initial number of joints when Robot is created
+    int rootoffset, roottransoffset;                         //!< the initial number of links when Robot is created (so that global translations and rotations only affect the new links)
+    int rootjoffset, rootjpoffset;         //!< the initial number of joints when Robot is created
     std::set<RobotBase::ManipulatorPtr> _setInitialManipulators;
     std::set<RobotBase::AttachedSensorPtr> _setInitialSensors;
 };
@@ -3468,7 +3468,7 @@ protected:
     EnvironmentBasePtr _penv;
     InterfaceBasePtr _pinterface;         // current processed interface
     Vector vBkgndColor;
-    Transform _tCamera;         ///< default camera transformationn
+    Transform _tCamera;         //!< default camera transformationn
     float _fCameraFocalDistance;
     string _processingtag;
     bool bTransSpecified;
@@ -3628,8 +3628,8 @@ public:
 protected:
     EnvironmentBasePtr _penv;
     InterfaceBasePtr _pinterface;         // current processed interface
-    AttributesList _atts;         ///< attributes to always set on newly created interfaces
-    bool _bAddToEnvironment; ///< if true, will add interface to environment
+    AttributesList _atts;         //!< attributes to always set on newly created interfaces
+    bool _bAddToEnvironment; //!< if true, will add interface to environment
 };
 
 BaseXMLReaderPtr CreateInterfaceReader(EnvironmentBasePtr penv, const AttributesList &atts,bool bAddToEnvironment)

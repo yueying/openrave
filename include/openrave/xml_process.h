@@ -60,9 +60,9 @@ namespace OpenRAVE
 	public:
 		enum ProcessElement
 		{
-			PE_Pass = 0,     ///< current tag was not supported, so pass onto another class
-			PE_Support = 1,     ///< current tag will be processed by this class
-			PE_Ignore = 2,     ///< current tag and all its children should be ignored
+			PE_Pass = 0,     //!< current tag was not supported, so pass onto another class
+			PE_Support = 1,     //!< current tag will be processed by this class
+			PE_Ignore = 2,     //!< current tag and all its children should be ignored
 		};
 		BaseXMLReader()
 		{

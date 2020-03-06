@@ -25,11 +25,11 @@ public:
 public:
         ConveyorLink(const std::string& name, Transform tinernal, KinBodyPtr parent) : Link(parent) {
             _info._t = tinernal;
-            _info._mass = 0.01; // just an estimate
+            _info.mass_ = 0.01; // just an estimate
             _info._vinertiamoments = Vector(1,1,1);
             _info.name_ = name;
-            _info._bStatic = false;
-            _info._bIsEnabled = true;
+            _info.is_static_ = false;
+            _info.is_enabled_ = true;
         }
     };
 
@@ -38,10 +38,10 @@ public:
 public:
         ConveyorJoint(const std::string& name, TrajectoryBasePtr trajfollow, std::shared_ptr<KinBody::Mimic> mimic, bool bIsCircular, KinBodyPtr parent) : Joint(parent, KinBody::JointTrajectory) {
             _info.name_ = name;
-            _info._vlowerlimit[0] = 0;
-            _info._vupperlimit[0] = trajfollow->GetDuration();
+            _info.lower_limit_vector_[0] = 0;
+            _info.upper_limit_vector_[0] = trajfollow->GetDuration();
             _vmimic[0] = mimic;
-            _info._bIsCircular[0] = bIsCircular;
+            _info.is_circular_[0] = bIsCircular;
             _info._trajfollow = trajfollow;
         }
 
@@ -58,11 +58,11 @@ public:
         ConveyorInfo() : XMLReadable("conveyorjoint"), _fLinkDensity(10), _bIsCircular(true), _bCreated(false) {
         }
         std::shared_ptr<KinBody::Mimic> _mimic; // always has to mimic
-        KinBody::LinkPtr _linkParent; ///< base link attached
-        TrajectoryBasePtr _trajfollow; ///< trajectory to following in base link's coordinate system
-        int _fLinkDensity; ///< number of links to create per unit of time in the trajectory
-        std::list<GeometryInfo> _listGeometries; ///< geometry to attach to each child link
-        std::string _namebase; ///< base name of joint
+        KinBody::LinkPtr _linkParent; //!< base link attached
+        TrajectoryBasePtr _trajfollow; //!< trajectory to following in base link's coordinate system
+        int _fLinkDensity; //!< number of links to create per unit of time in the trajectory
+        std::list<GeometryInfo> _listGeometries; //!< geometry to attach to each child link
+        std::string _namebase; //!< base name of joint
         bool _bIsCircular;
 
         bool _bCreated;

@@ -49,10 +49,10 @@ namespace OpenRAVE
 		GT_None = 0,
 		GT_Box = 1,
 		GT_Sphere = 2,
-		GT_Cylinder = 3, ///< oriented towards z-axis
+		GT_Cylinder = 3, //!< oriented towards z-axis
 		GT_TriMesh = 4,
-		GT_Container = 5, ///< a container shaped geometry that has inner and outer extents. container opens on +Z. The origin is at the bottom of the base.
-		GT_Cage = 6, ///< a container shaped geometry with removable side walls. The side walls can be on any of the four sides. The origin is at the bottom of the base. The inner volume of the cage is measured from the base to the highest wall.
+		GT_Container = 5, //!< a container shaped geometry that has inner and outer extents. container opens on +Z. The origin is at the bottom of the base.
+		GT_Cage = 6, //!< a container shaped geometry with removable side walls. The side walls can be on any of the four sides. The origin is at the bottom of the base. The inner volume of the cage is measured from the base to the highest wall.
 	};
 
 	/** \brief <b>[interface]</b> A kinematic body of links and joints. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_kinbody.
@@ -64,49 +64,49 @@ namespace OpenRAVE
 		/// \brief A set of properties for the kinbody. These properties are used to describe a set of variables used in KinBody.
 		enum KinBodyProperty
 		{
-			Prop_JointMimic = 0x1,     ///< joint mimic equations
-			Prop_JointLimits = 0x2,     ///< regular limits
+			Prop_JointMimic = 0x1,     //!< joint mimic equations
+			Prop_JointLimits = 0x2,     //!< regular limits
 			Prop_JointOffset = 0x4,
-			Prop_JointProperties = 0x8,     ///< resolution, weights
-			Prop_JointAccelerationVelocityTorqueLimits = 0x10,     ///< velocity + acceleration + jerk + torque
-			Prop_Joints = Prop_JointMimic | Prop_JointLimits | Prop_JointOffset | Prop_JointProperties | Prop_JointAccelerationVelocityTorqueLimits, ///< all properties of all joints
+			Prop_JointProperties = 0x8,     //!< resolution, weights
+			Prop_JointAccelerationVelocityTorqueLimits = 0x10,     //!< velocity + acceleration + jerk + torque
+			Prop_Joints = Prop_JointMimic | Prop_JointLimits | Prop_JointOffset | Prop_JointProperties | Prop_JointAccelerationVelocityTorqueLimits, //!< all properties of all joints
 
-			Prop_Name = 0x20,     ///< name changed
-			Prop_LinkDraw = 0x40,     ///< toggle link geometries rendering
-			Prop_LinkGeometry = 0x80,     ///< the current geometry of the link changed
-			Prop_LinkTransforms = 0x100, ///< if any of the link transforms changed, this implies the DOF values of the robot changed
-			Prop_LinkGeometryGroup = 0x200, ///< the geometry informations of some geometry group changed
-			Prop_LinkStatic = 0x400,     ///< static property of link changed
-			Prop_LinkEnable = 0x800,     ///< enable property of link changed
-			Prop_LinkDynamics = 0x1000,     ///< mass/inertia properties of link changed
-			Prop_Links = Prop_LinkDraw | Prop_LinkGeometry | Prop_LinkStatic | Prop_LinkGeometryGroup | Prop_LinkEnable | Prop_LinkDynamics,     ///< all properties of all links
-			Prop_JointCustomParameters = 0x2000, ///< when Joint::SetFloatParameters(), Joint::SetIntParameters(), and Joint::SetStringParameters() are called
-			Prop_LinkCustomParameters = 0x4000, ///< when Link::SetFloatParameters(), Link::SetIntParameters(), Link::SetStringParameters() are called
-			Prop_BodyAttached = 0x8000, ///< if attached bodies changed
+			Prop_Name = 0x20,     //!< name changed
+			Prop_LinkDraw = 0x40,     //!< toggle link geometries rendering
+			Prop_LinkGeometry = 0x80,     //!< the current geometry of the link changed
+			Prop_LinkTransforms = 0x100, //!< if any of the link transforms changed, this implies the DOF values of the robot changed
+			Prop_LinkGeometryGroup = 0x200, //!< the geometry informations of some geometry group changed
+			Prop_LinkStatic = 0x400,     //!< static property of link changed
+			Prop_LinkEnable = 0x800,     //!< enable property of link changed
+			Prop_LinkDynamics = 0x1000,     //!< mass/inertia properties of link changed
+			Prop_Links = Prop_LinkDraw | Prop_LinkGeometry | Prop_LinkStatic | Prop_LinkGeometryGroup | Prop_LinkEnable | Prop_LinkDynamics,     //!< all properties of all links
+			Prop_JointCustomParameters = 0x2000, //!< when Joint::SetFloatParameters(), Joint::SetIntParameters(), and Joint::SetStringParameters() are called
+			Prop_LinkCustomParameters = 0x4000, //!< when Link::SetFloatParameters(), Link::SetIntParameters(), Link::SetStringParameters() are called
+			Prop_BodyAttached = 0x8000, //!< if attached bodies changed
 
 			// robot only
 			// 0x00010000
-			Prop_RobotSensors = 0x00020000,     ///< [robot only] all properties of all sensors
+			Prop_RobotSensors = 0x00020000,     //!< [robot only] all properties of all sensors
 			Prop_Sensors = 0x00020000,
-			Prop_RobotSensorPlacement = 0x00040000,     ///< [robot only] relative sensor placement of sensors
+			Prop_RobotSensorPlacement = 0x00040000,     //!< [robot only] relative sensor placement of sensors
 			Prop_SensorPlacement = 0x00040000,
-			Prop_RobotActiveDOFs = 0x00080000,     ///< [robot only] active dofs changed
-			Prop_RobotManipulatorTool = 0x00100000, ///< [robot only] the tool coordinate system changed
-			Prop_RobotManipulatorName = 0x00200000, ///< [robot only] the manipulator name
+			Prop_RobotActiveDOFs = 0x00080000,     //!< [robot only] active dofs changed
+			Prop_RobotManipulatorTool = 0x00100000, //!< [robot only] the tool coordinate system changed
+			Prop_RobotManipulatorName = 0x00200000, //!< [robot only] the manipulator name
 			Prop_RobotManipulatorSolver = 0x00400000,
-			Prop_RobotManipulators = Prop_RobotManipulatorTool | Prop_RobotManipulatorName | Prop_RobotManipulatorSolver,     ///< [robot only] all properties of all manipulators
-			Prop_RobotGrabbed = 0x01000000, ///< [robot only] if grabbed bodies changed
+			Prop_RobotManipulators = Prop_RobotManipulatorTool | Prop_RobotManipulatorName | Prop_RobotManipulatorSolver,     //!< [robot only] all properties of all manipulators
+			Prop_RobotGrabbed = 0x01000000, //!< [robot only] if grabbed bodies changed
 
-			Prop_BodyRemoved = 0x10000000, ///< if a KinBody is removed from the environment
+			Prop_BodyRemoved = 0x10000000, //!< if a KinBody is removed from the environment
 		};
 
 		/// \brief used for specifying the type of limit checking and the messages associated with it
 		enum CheckLimitsAction
 		{
-			CLA_Nothing = 0, ///< no checking
+			CLA_Nothing = 0, //!< no checking
 			CLA_CheckLimits = 1, /// < checks and warns if the limits are overboard (default)
-			CLA_CheckLimitsSilent = 2, ///< checks the limits and silently clamps the joint values (used if the code expects bad values as part of normal operation)
-			CLA_CheckLimitsThrow = 3, ///< check the limits and throws if something went wrong
+			CLA_CheckLimitsSilent = 2, //!< checks the limits and silently clamps the joint values (used if the code expects bad values as part of normal operation)
+			CLA_CheckLimitsThrow = 3, //!< check the limits and throws if something went wrong
 		};
 
 		/// \brief Describes the properties of a geometric primitive.
@@ -153,25 +153,25 @@ namespace OpenRAVE
 			/// \brief computes the bounding box in the world. geometry_world is for the world transform.
 			AABB ComputeAABB(const Transform& geometry_world) const;
 
-			///< \param multiply all translational values by unit_scale
+			//!< \param multiply all translational values by unit_scale
 			virtual void SerializeJSON(rapidjson::Value &value, 
 				rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
 
-			///< \param multiply all translational values by unit_scale
+			//!< \param multiply all translational values by unit_scale
 			virtual void DeserializeJSON(const rapidjson::Value &value, const dReal unit_scale = 1);
 
-			Transform _t; ///< Local transformation of the geom primitive with respect to the link's coordinate system.
+			Transform _t; //!< Local transformation of the geom primitive with respect to the link's coordinate system.
 
 			/// for boxes, first 3 values are half extents. For containers, the first 3 values are the full outer extents.
 			/// For GT_Cage, this is the base box extents with the origin being at the -Z center.
 			Vector geom_data_vec_;
 
-			///< For GT_Container, the first 3 values are the full inner extents.
-			///< For GT_Cage, if any are non-zero, then force the full inner extents (bottom center) to be this much, starting at the base center top
+			//!< For GT_Container, the first 3 values are the full inner extents.
+			//!< For GT_Cage, if any are non-zero, then force the full inner extents (bottom center) to be this much, starting at the base center top
 			Vector _vGeomData2;
-			Vector _vGeomData3; ///< For containers, the first 3 values is the bottom cross XY full extents and Z height from bottom face.
+			Vector _vGeomData3; //!< For containers, the first 3 values is the bottom cross XY full extents and Z height from bottom face.
 
-			///< For containers, the first 3 values are the full extents of the bottom pad (a box attached to the container
+			//!< For containers, the first 3 values are the full extents of the bottom pad (a box attached to the container
 			///  beneath the container bottom). This geometry only valid if the first 3 values are all positive. The origin
 			///  of the container will still be at the outer bottom of the container.
 			Vector _vGeomData4;
@@ -191,12 +191,12 @@ namespace OpenRAVE
 				Vector vExtents;
 				SideWallType type;
 			};
-			std::vector<SideWall> side_walls_vector_; ///< used by GT_Cage
+			std::vector<SideWall> side_walls_vector_; //!< used by GT_Cage
 
-			///< for sphere it is radius
-			///< for cylinder, first 2 values are radius and height
-			///< for trimesh, none
-			RaveVector<float> diffuse_color_vec_, _vAmbientColor; ///< hints for how to color the meshes
+			//!< for sphere it is radius
+			//!< for cylinder, first 2 values are radius and height
+			//!< for trimesh, none
+			RaveVector<float> diffuse_color_vec_, _vAmbientColor; //!< hints for how to color the meshes
 
 			/// \brief trimesh representation of the collision data of this object in this local coordinate system
 			///
@@ -205,9 +205,9 @@ namespace OpenRAVE
 			/// If empty, will be automatically computed from the geometry's type and render data
 			TriMesh mesh_collision_;
 
-			GeometryType type_; ///< the type of geometry primitive
+			GeometryType type_; //!< the type of geometry primitive
 
-			std::string name_; ///< the name of the geometry
+			std::string name_; //!< the name of the geometry
 
 			/// \brief filename for render model (optional)
 			///
@@ -221,11 +221,11 @@ namespace OpenRAVE
 			/// The user should call mesh_collision_ = *env->ReadTrimeshURI(_filenamecollision) by themselves.
 			std::string _filenamecollision;
 
-			Vector render_scale_vec_; ///< render scale of the object (x,y,z) from _filenamerender
-			Vector collision_scale_vec_; ///< render scale of the object (x,y,z) from _filenamecollision
-			float transparency_; ///< value from 0-1 for the transparency of the rendered object, 0 is opaque
-			bool is_visible_; ///< if true, geometry is visible as part of the 3d model (default is true)
-			bool is_modifiable_; ///< if true, object geometry can be dynamically modified (default is true)
+			Vector render_scale_vec_; //!< render scale of the object (x,y,z) from _filenamerender
+			Vector collision_scale_vec_; //!< render scale of the object (x,y,z) from _filenamecollision
+			float transparency_; //!< value from 0-1 for the transparency of the rendered object, 0 is opaque
+			bool is_visible_; //!< if true, geometry is visible as part of the 3d model (default is true)
+			bool is_modifiable_; //!< if true, object geometry can be dynamically modified (default is true)
 		};
 		typedef std::shared_ptr<GeometryInfo> GeometryInfoPtr;
 		typedef std::shared_ptr<GeometryInfo const> GeometryInfoConstPtr;
@@ -258,22 +258,22 @@ namespace OpenRAVE
 			/// the frame for inertia and center of mass of the link in the link's coordinate system
 			Transform _tMassFrame;
 			/// mass of link
-			dReal _mass;
+			dReal mass_;
 			/// inertia along the axes of _tMassFrame
 			Vector _vinertiamoments;
-			std::map<std::string, std::vector<dReal> > _mapFloatParameters; ///< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::vector<int> > _mapIntParameters; ///< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::string > _mapStringParameters; ///< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<dReal> > _mapFloatParameters; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<int> > _mapIntParameters; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::string > _mapStringParameters; //!< custom key-value pairs that could not be fit in the current model
 			/// force the following links to be treated as adjacent to this link
 			std::vector<std::string> _vForcedAdjacentLinks;
 			/// \brief Indicates a static body that does not move with respect to the root link.
 			///
 			//// Static should be used when an object has infinite mass and
 			/// shouldn't be affected by physics (including gravity). Collision still works.
-			bool _bStatic;
+			bool is_static_;
 
 			/// \true false if the link is disabled. disabled links do not participate in collision detection
-			bool _bIsEnabled;
+			bool is_enabled_;
 			bool __padding0, __padding1; // for 4-byte alignment
 		};
 		typedef std::shared_ptr<LinkInfo> LinkInfoPtr;
@@ -283,7 +283,7 @@ namespace OpenRAVE
 		class OPENRAVE_API Link : public std::enable_shared_from_this<Link>
 		{
 		public:
-			Link(KinBodyPtr parent);         ///< pass in a ODE world
+			Link(KinBodyPtr parent);         //!< pass in a ODE world
 			virtual ~Link();
 
 			/// \deprecated (12/10/18)
@@ -427,7 +427,7 @@ namespace OpenRAVE
 
 			protected:
 				std::weak_ptr<Link> _parent;
-				KinBody::GeometryInfo _info; ///< geometry info
+				KinBody::GeometryInfo _info; //!< geometry info
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
 				friend class OpenRAVEXMLParser::LinkXMLReader;
@@ -456,9 +456,9 @@ namespace OpenRAVE
 			/// \brief Indicates a static body that does not move with respect to the root link.
 			///
 			//// Static should be used when an object has infinite mass and
-			///< shouldn't be affected by physics (including gravity). Collision still works.
+			//!< shouldn't be affected by physics (including gravity). Collision still works.
 			inline bool IsStatic() const {
-				return _info._bStatic;
+				return _info.is_static_;
 			}
 
 			/// \brief Enables a Link. An enabled link takes part in collision detection and physics simulations
@@ -480,16 +480,16 @@ namespace OpenRAVE
 			/// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
 			inline KinBodyPtr GetParent(bool trylock = false) const {
 				if (trylock) {
-					return _parent.lock();
+					return parent_.lock();
 				}
 				else {
-					return KinBodyPtr(_parent);
+					return KinBodyPtr(parent_);
 				}
 			}
 
 			/// \brief unique index into parent KinBody::GetLinks vector
 			inline int GetIndex() const {
-				return _index;
+				return index_;
 			}
 			inline const TriMesh& GetCollisionData() const {
 				return _collision;
@@ -572,7 +572,7 @@ namespace OpenRAVE
 				return _info._vinertiamoments;
 			}
 			inline dReal GetMass() const {
-				return _info._mass;
+				return _info.mass_;
 			}
 
 			/// \brief sets a link to be static.
@@ -731,20 +731,20 @@ namespace OpenRAVE
 			/// \param parameterschanged if true, will
 			virtual void _Update(bool parameterschanged = true, uint32_t extraParametersChanged = 0);
 
-			std::vector<GeometryPtr> _vGeometries;         ///< \see GetGeometries
+			std::vector<GeometryPtr> _vGeometries;         //!< \see GetGeometries
 
-			LinkInfo _info; ///< parameter information of the link
+			LinkInfo _info; //!< parameter information of the link
 
 		private:
 			/// Sensitive variables that are auto-generated and should not be modified by the user.
 			/// @name Private Link Variables
 			//@{
-			int _index;                  ///< \see GetIndex
-			KinBodyWeakPtr _parent;         ///< \see GetParent
-			std::vector<int> _vParentLinks;         ///< \see GetParentLinks, IsParentLink
-			std::vector<int> _vRigidlyAttachedLinks;         ///< \see IsRigidlyAttached, GetRigidlyAttachedLinks
-			TriMesh _collision; ///< triangles for collision checking, triangles are always the triangulation
-								///< of the body when it is at the identity transformation
+			int index_;                  //!< \see GetIndex
+			KinBodyWeakPtr parent_;         //!< \see GetParent
+			std::vector<int> _vParentLinks;         //!< \see GetParentLinks, IsParentLink
+			std::vector<int> _vRigidlyAttachedLinks;         //!< \see IsRigidlyAttached, GetRigidlyAttachedLinks
+			TriMesh _collision; //!< triangles for collision checking, triangles are always the triangulation
+								//!< of the body when it is at the identity transformation
 			//@}
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
@@ -790,15 +790,15 @@ namespace OpenRAVE
 			JointUniversal = 0x80000001,
 			JointHinge2 = 0x80000002,
 			JointSpherical = 0x80000003,
-			JointTrajectory = 0x80000004, ///< there is no axis defined, instead the relative transformation is directly output from the trajectory affine_transform structure
+			JointTrajectory = 0x80000004, //!< there is no axis defined, instead the relative transformation is directly output from the trajectory affine_transform structure
 		};
 
 		enum JointControlMode 
 		{
-			JCM_None = 0, ///< unspecified
-			JCM_RobotController = 1, ///< joint controlled by the robot controller
-			JCM_IO = 2,              ///< joint controlled by I/O signals
-			JCM_ExternalDevice = 3,  ///< joint controlled by an external device
+			JCM_None = 0, //!< unspecified
+			JCM_RobotController = 1, //!< joint controlled by the robot controller
+			JCM_IO = 2,              //!< joint controlled by I/O signals
+			JCM_ExternalDevice = 3,  //!< joint controlled by an external device
 		};
 
 		class Joint;
@@ -809,7 +809,7 @@ namespace OpenRAVE
 		class OPENRAVE_API MimicInfo
 		{
 		public:
-			std::array< std::string, 3>  _equations;         ///< the original equations
+			std::array< std::string, 3>  _equations;         //!< the original equations
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
 				dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
@@ -820,13 +820,13 @@ namespace OpenRAVE
 		class OPENRAVE_API Mimic
 		{
 		public:
-			std::array< std::string, 3>  _equations;         ///< the original equations
+			std::array< std::string, 3>  _equations;         //!< the original equations
 
 			struct DOFFormat
 			{
-				int16_t jointindex;         ///< the index into the joints, if >= GetJoints.size(), then points to the passive joints
-				int16_t dofindex : 14;         ///< if >= 0, then points to a DOF of the robot that is NOT mimiced
-				uint8_t axis : 2;         ///< the axis of the joint index
+				int16_t jointindex;         //!< the index into the joints, if >= GetJoints.size(), then points to the passive joints
+				int16_t dofindex : 14;         //!< if >= 0, then points to a DOF of the robot that is NOT mimiced
+				uint8_t axis : 2;         //!< the axis of the joint index
 				bool operator <(const DOFFormat& r) const;
 				bool operator ==(const DOFFormat& r) const;
 				std::shared_ptr<Joint> GetJoint(KinBody &parent) const;
@@ -834,8 +834,8 @@ namespace OpenRAVE
 			};
 			struct DOFHierarchy
 			{
-				int16_t dofindex;         ///< >=0 dof index
-				uint16_t dofformatindex;         ///< index into _vdofformat to follow the computation
+				int16_t dofindex;         //!< >=0 dof index
+				uint16_t dofformatindex;         //!< index into _vdofformat to follow the computation
 				bool operator ==(const DOFHierarchy& r) const {
 					return dofindex == r.dofindex && dofformatindex == r.dofformatindex;
 				}
@@ -843,10 +843,10 @@ namespace OpenRAVE
 
 			/// @name automatically set
 			//@{
-			std::vector< DOFFormat > _vdofformat;         ///< the format of the values the equation takes order is important.
-			std::vector<DOFHierarchy> _vmimicdofs;         ///< all dof indices that the equations depends on. DOFHierarchy::dofindex can repeat
+			std::vector< DOFFormat > _vdofformat;         //!< the format of the values the equation takes order is important.
+			std::vector<DOFHierarchy> _vmimicdofs;         //!< all dof indices that the equations depends on. DOFHierarchy::dofindex can repeat
 			OpenRAVEFunctionParserRealPtr _posfn;
-			std::vector<OpenRAVEFunctionParserRealPtr > _velfns, _accelfns;         ///< the velocity and acceleration partial derivatives with respect to each of the values in _vdofformat
+			std::vector<OpenRAVEFunctionParserRealPtr > _velfns, _accelfns;         //!< the velocity and acceleration partial derivatives with respect to each of the values in _vdofformat
 			//@}
 		};
 		typedef std::shared_ptr<Mimic> MimicPtr;
@@ -869,38 +869,38 @@ namespace OpenRAVE
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 
-			JointType _type; /// The joint type
-			std::string name_;         ///< the unique joint name
-			std::string _linkname0, _linkname1; ///< attaching links, all axes and anchors are defined in the link pointed to by _linkname0 coordinate system. _linkname0 is usually the parent link.
-			Vector _vanchor; ///< the anchor of the rotation axes defined in _linkname0's coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
-			std::array<Vector, 3> axes_vector_;                ///< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
-			std::vector<dReal> _vcurrentvalues; ///< joint values at initialization. passed into Joint::_ComputeInternalInformation
+			JointType type_; /// The joint type
+			std::string name_;         //!< the unique joint name
+			std::string _linkname0, _linkname1; //!< attaching links, all axes and anchors are defined in the link pointed to by _linkname0 coordinate system. _linkname0 is usually the parent link.
+			Vector _vanchor; //!< the anchor of the rotation axes defined in _linkname0's coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
+			std::array<Vector, 3> axes_vector_;                //!< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
+			std::vector<dReal> _vcurrentvalues; //!< joint values at initialization. passed into Joint::_ComputeInternalInformation
 
-			std::array<dReal, 3> _vresolution;              ///< interpolation resolution
-			std::array<dReal, 3> _vmaxvel;                  ///< the soft maximum velocity (rad/s) to move the joint when planning
-			std::array<dReal, 3> _vhardmaxvel;              ///< the hard maximum velocity, robot cannot exceed this velocity. used for verification checking
-			std::array<dReal, 3> _vmaxaccel;                ///< the soft maximum acceleration (rad/s^2) of the joint
-			std::array<dReal, 3> _vhardmaxaccel;            ///< the hard maximum acceleration (rad/s^2), robot cannot exceed this acceleration. used for verification checking
-			std::array<dReal, 3> _vmaxjerk;                 ///< the soft maximum jerk (rad/s^3) of the joint
-			std::array<dReal, 3> _vhardmaxjerk;             ///< the hard maximum jerk (rad/s^3), robot cannot exceed this jerk. used for verification checking
-			std::array<dReal, 3> _vmaxtorque;               ///< maximum torque (N.m, kg m^2/s^2) that should be applied to the joint. Usually this is computed from the motor nominal torque and gear ratio. Ignore if values are 0.
-			std::array<dReal, 3> _vmaxinertia;             ///< maximum inertia (kg m^2) that the joint can exhibit. Usually this is set for safety reasons. Ignore if values are 0.
-			std::array<dReal, 3> _vweights;                ///< the weights of the joint for computing distance metrics.
+			std::array<dReal, 3> resolution_vector_;              //!< interpolation resolution
+			std::array<dReal, 3> max_velocity_vector_;                  //!< the soft maximum velocity (rad/s) to move the joint when planning
+			std::array<dReal, 3> hard_max_velocity_vector_;              //!< the hard maximum velocity, robot cannot exceed this velocity. used for verification checking
+			std::array<dReal, 3> max_accelerate_vector_;                //!< the soft maximum acceleration (rad/s^2) of the joint
+			std::array<dReal, 3> hard_max_accelerate_vector_;            //!< the hard maximum acceleration (rad/s^2), robot cannot exceed this acceleration. used for verification checking
+			std::array<dReal, 3> max_jerk_vector_;                 //!< the soft maximum jerk (rad/s^3) of the joint
+			std::array<dReal, 3> hard_max_jerk_vector_;             //!< the hard maximum jerk (rad/s^3), robot cannot exceed this jerk. used for verification checking
+			std::array<dReal, 3> max_torque_vector_;               //!< maximum torque (N.m, kg m^2/s^2) that should be applied to the joint. Usually this is computed from the motor nominal torque and gear ratio. Ignore if values are 0.
+			std::array<dReal, 3> max_inertia_vector_;             //!< maximum inertia (kg m^2) that the joint can exhibit. Usually this is set for safety reasons. Ignore if values are 0.
+			std::array<dReal, 3> weights_vector_;                //!< the weights of the joint for computing distance metrics.
 
 			/// \brief internal offset parameter that determines the branch the angle centers on
 			///
 			/// Wrap offsets are needed for rotation joints since the range is limited to 2*pi.
 			/// This allows the wrap offset to be set so the joint can function in [-pi+offset,pi+offset]..
 			/// \param iaxis the axis to get the offset from
-			std::array<dReal, 3> _voffsets;
-			std::array<dReal, 3> _vlowerlimit, _vupperlimit;         ///< joint limits
-			TrajectoryBasePtr _trajfollow; ///< used if joint type is JointTrajectory
+			std::array<dReal, 3> offsets_vector_;
+			std::array<dReal, 3> lower_limit_vector_, upper_limit_vector_;         //!< joint limits
+			TrajectoryBasePtr _trajfollow; //!< used if joint type is JointTrajectory
 
-			std::array<MimicInfoPtr, 3> _vmimic;          ///< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
+			std::array<MimicInfoPtr, 3> _vmimic;          //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
-			std::map<std::string, std::vector<dReal> > _mapFloatParameters; ///< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::vector<int> > _mapIntParameters; ///< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::string > _mapStringParameters; ///< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<dReal> > _mapFloatParameters; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<int> > _mapIntParameters; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::string > _mapStringParameters; //!< custom key-value pairs that could not be fit in the current model
 
 			ElectricMotorActuatorInfoPtr _infoElectricMotor;
 
@@ -910,18 +910,18 @@ namespace OpenRAVE
 			/// at its lower limit. The most common identification on revolute joints at -pi and pi. 'circularity' means the
 			/// joint does not stop at limits.
 			/// Although currently not developed, it could be possible to support identification for joints that are not revolute.
-			std::array<uint8_t, 3> _bIsCircular;
+			std::array<uint8_t, 3> is_circular_;
 
-			bool is_active_;                 ///< if true, should belong to the DOF of the body, unless it is a mimic joint (_ComputeInternalInformation decides this)
+			bool is_active_;                 //!< if true, should belong to the DOF of the body, unless it is a mimic joint (_ComputeInternalInformation decides this)
 
-			/// \brief _controlMode specifies how this joint is controlled. For possible control modes, see enum JointControlMode.
-			JointControlMode _controlMode;
+			/// \brief control_mode_ specifies how this joint is controlled. For possible control modes, see enum JointControlMode.
+			JointControlMode control_mode_;
 
 			struct OPENRAVE_API JointControlInfo_RobotController
 			{
 				JointControlInfo_RobotController();
 				int robotId;
-				std::array<int16_t, 3> robotControllerDOFIndex; ///< indicates which DOF in the robot controller controls which joint axis. -1 if not specified/not valid.
+				std::array<int16_t, 3> robotControllerDOFIndex; //!< indicates which DOF in the robot controller controls which joint axis. -1 if not specified/not valid.
 			};
 			typedef std::shared_ptr<JointControlInfo_RobotController> JointControlInfo_RobotControllerPtr;
 
@@ -929,18 +929,18 @@ namespace OpenRAVE
 			{
 				JointControlInfo_IO();
 				int deviceId;
-				std::array< std::vector<std::string>, 3 > vMoveIONames;       ///< io names for controlling positions of this joint.
-				std::array< std::vector<std::string>, 3 > vUpperLimitIONames; ///< io names for detecting if the joint is at its upper limit
-				std::array< std::vector<uint8_t>, 3 > vUpperLimitSensorIsOn;  ///< if true, the corresponding upper limit sensor reads 1 when the joint is at its upper limit. otherwise, the upper limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
-				std::array< std::vector<std::string>, 3 > vLowerLimitIONames; ///< io names for detecting if the joint is at its lower limit
-				std::array< std::vector<uint8_t>, 3 > vLowerLimitSensorIsOn;  ///< if true, the corresponding lower limit sensor reads 1 when the joint is at its lower limit. otherwise, the lower limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
+				std::array< std::vector<std::string>, 3 > vMoveIONames;       //!< io names for controlling positions of this joint.
+				std::array< std::vector<std::string>, 3 > vUpperLimitIONames; //!< io names for detecting if the joint is at its upper limit
+				std::array< std::vector<uint8_t>, 3 > vUpperLimitSensorIsOn;  //!< if true, the corresponding upper limit sensor reads 1 when the joint is at its upper limit. otherwise, the upper limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
+				std::array< std::vector<std::string>, 3 > vLowerLimitIONames; //!< io names for detecting if the joint is at its lower limit
+				std::array< std::vector<uint8_t>, 3 > vLowerLimitSensorIsOn;  //!< if true, the corresponding lower limit sensor reads 1 when the joint is at its lower limit. otherwise, the lower limit sensor reads 0 when the joint is at its upper limit. the default value is 1.
 			};
 			typedef std::shared_ptr<JointControlInfo_IO> JointControlInfo_IOPtr;
 
 			struct OPENRAVE_API JointControlInfo_ExternalDevice
 			{
 				JointControlInfo_ExternalDevice();
-				std::string externalDeviceId; ///< id for the external device
+				std::string externalDeviceId; //!< id for the external device
 			};
 			typedef std::shared_ptr<JointControlInfo_ExternalDevice> JointControlInfo_ExternalDevicePtr;
 
@@ -982,44 +982,44 @@ namespace OpenRAVE
 			}
 
 			inline dReal GetMaxVel(int iaxis = 0) const {
-				return _info._vmaxvel[iaxis];
+				return _info.max_velocity_vector_[iaxis];
 			}
 			inline dReal GetMaxAccel(int iaxis = 0) const {
-				return _info._vmaxaccel[iaxis];
+				return _info.max_accelerate_vector_[iaxis];
 			}
 			inline dReal GetMaxJerk(int iaxis = 0) const {
-				return _info._vmaxjerk[iaxis];
+				return _info.max_jerk_vector_[iaxis];
 			}
 
 			inline dReal GetHardMaxVel(int iaxis = 0) const {
-				return _info._vhardmaxvel[iaxis];
+				return _info.hard_max_velocity_vector_[iaxis];
 			}
 			inline dReal GetHardMaxAccel(int iaxis = 0) const {
-				return _info._vhardmaxaccel[iaxis];
+				return _info.hard_max_accelerate_vector_[iaxis];
 			}
 			inline dReal GetHardMaxJerk(int iaxis = 0) const {
-				return _info._vhardmaxjerk[iaxis];
+				return _info.hard_max_jerk_vector_[iaxis];
 			}
 
-			///< \brief gets the max instantaneous torque of the joint
+			//!< \brief gets the max instantaneous torque of the joint
 			///
 			/// If _infoElectricMotor is filled, the will compute the max instantaneous torque depending on the current speed of the joint.
 			dReal GetMaxTorque(int iaxis = 0) const;
 
-			///< \brief gets the max instantaneous torque limits of the joint
+			//!< \brief gets the max instantaneous torque limits of the joint
 			///
 			/// If _infoElectricMotor is filled, the will compute the nominal torque limits depending on the current speed of the joint.
 			/// \return min and max of torque limits
 			std::pair<dReal, dReal> GetInstantaneousTorqueLimits(int iaxis = 0) const;
 
-			///< \brief gets the nominal torque limits of the joint
+			//!< \brief gets the nominal torque limits of the joint
 			///
 			/// If _infoElectricMotor is filled, the will compute the nominal torque limits depending on the current speed of the joint.
 			/// \return min and max of torque limits
 			std::pair<dReal, dReal> GetNominalTorqueLimits(int iaxis = 0) const;
 
 			inline dReal GetMaxInertia(int iaxis = 0) const {
-				return _info._vmaxinertia[iaxis];
+				return _info.max_inertia_vector_[iaxis];
 			}
 
 			/// \brief Get the degree of freedom index in the body's DOF array.
@@ -1054,7 +1054,7 @@ namespace OpenRAVE
 			}
 
 			inline KinBody::JointType GetType() const {
-				return _info._type;
+				return _info.type_;
 			}
 
 			/// \brief gets all resolutions for the joint axes
@@ -1262,7 +1262,7 @@ namespace OpenRAVE
 			/// \param iaxis the axis to get the offset from
 			inline dReal GetWrapOffset(int iaxis = 0) const
 			{
-				return _info._voffsets.at(iaxis);
+				return _info.offsets_vector_.at(iaxis);
 			}
 
 			inline dReal GetOffset(int iaxis = 0) const RAVE_DEPRECATED {
@@ -1377,7 +1377,7 @@ namespace OpenRAVE
 
 			/// \brief return controlMode for this joint
 			inline JointControlMode GetControlMode() const {
-				return _info._controlMode;
+				return _info.control_mode_;
 			}
 
 			/// \brief Updates several fields in \ref _info depending on the current state of the joint.
@@ -1399,7 +1399,7 @@ namespace OpenRAVE
 		protected:
 			JointInfo _info;
 
-			std::array< MimicPtr, 3> _vmimic;          ///< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
+			std::array< MimicPtr, 3> _vmimic;          //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
 			/** \brief computes the partial velocities with respect to all dependent DOFs specified by Mimic::_vmimicdofs.
 
@@ -1412,7 +1412,7 @@ namespace OpenRAVE
 
 			/** \brief Compute internal transformations and specify the attached links of the joint.
 
-				Called after the joint protected parameters {vAxes, vanchor, and _voffsets}  have been initialized. vAxes and vanchor should be in the frame of plink0.
+				Called after the joint protected parameters {vAxes, vanchor, and offsets_vector_}  have been initialized. vAxes and vanchor should be in the frame of plink0.
 				Compute the left and right multiplications of the joint transformation and cleans up the attached bodies.
 				After function completes, the following parameters are initialized: _tRight, _tLeft, _tinvRight, _tinvLeft, _attachedbodies. _attachedbodies does not necessarily contain the links in the same order as they were input.
 				\param plink0 the first attaching link, all axes and anchors are defined in its coordinate system
@@ -1438,22 +1438,22 @@ namespace OpenRAVE
 			/// \brief Return the velocity of the specified joint axis only.
 			virtual dReal _GetVelocity(int axis, const std::pair<Vector, Vector>&linkparentvelocity, const std::pair<Vector, Vector>&linkchildvelocity) const;
 
-			std::array<dReal, 3> _doflastsetvalues; ///< the last set value by the kinbody (_voffsets not applied). For revolute joints that have a range greater than 2*pi, it is only possible to recover the joint value from the link positions mod 2*pi. In order to recover the branch, multiplies of 2*pi are added/subtracted to this value that is closest to _doflastsetvalues. For circular joints, the last set value can be ignored since they always return a value from [-pi,pi)
+			std::array<dReal, 3> _doflastsetvalues; //!< the last set value by the kinbody (offsets_vector_ not applied). For revolute joints that have a range greater than 2*pi, it is only possible to recover the joint value from the link positions mod 2*pi. In order to recover the branch, multiplies of 2*pi are added/subtracted to this value that is closest to _doflastsetvalues. For circular joints, the last set value can be ignored since they always return a value from [-pi,pi)
 
 		private:
 			/// Sensitive variables that should not be modified.
 			/// @name Private Joint Variables
 			//@{
-			int dofindex;                   ///< the degree of freedom index in the body's DOF array, does not index in KinBody::_vecjoints!
-			int jointindex;                 ///< the joint index into KinBody::_vecjoints
-			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         ///< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
+			int dofindex;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::_vecjoints!
+			int jointindex;                 //!< the joint index into KinBody::_vecjoints
+			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         //!< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
 
-			KinBodyWeakPtr _parent;               ///< body that joint belong to
-			std::array<LinkPtr, 2> _attachedbodies;         ///< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
-			std::array<Vector, 3> _vaxes;                ///< normalized axes, this can be different from _info.axes_vector_ and reflects how _tRight and _tLeft are computed
-			Transform _tRight, _tLeft;         ///< transforms used to get body[1]'s transformation with respect to body[0]'s: Tbody1 = Tbody0 * tLeft * JointOffsetLeft * JointRotation * JointOffsetRight * tRight
-			Transform _tRightNoOffset, _tLeftNoOffset;         ///< same as _tLeft and _tRight except it doesn't not include the offset
-			Transform _tinvRight, _tinvLeft;         ///< the inverse transformations of tRight and tLeft
+			KinBodyWeakPtr _parent;               //!< body that joint belong to
+			std::array<LinkPtr, 2> _attachedbodies;         //!< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
+			std::array<Vector, 3> _vaxes;                //!< normalized axes, this can be different from _info.axes_vector_ and reflects how _tRight and _tLeft are computed
+			Transform _tRight, _tLeft;         //!< transforms used to get body[1]'s transformation with respect to body[0]'s: Tbody1 = Tbody0 * tLeft * JointOffsetLeft * JointRotation * JointOffsetRight * tRight
+			Transform _tRightNoOffset, _tLeftNoOffset;         //!< same as _tLeft and _tRight except it doesn't not include the offset
+			Transform _tinvRight, _tinvLeft;         //!< the inverse transformations of tRight and tLeft
 			bool _bInitialized;
 			//@}
 #ifdef RAVE_PRIVATE
@@ -1486,17 +1486,17 @@ namespace OpenRAVE
 			}
 			virtual ~BodyState() {
 			}
-			KinBodyPtr pbody; ///< pointer to the body. if using this, make sure the environment is locked.
-			std::vector<Transform> vectrans; ///< \see KinBody::GetLinkTransformations
-			std::vector<uint8_t> vLinkEnableStates; ///< \see KinBody::GetLinkEnableStates
-			std::vector<uint8_t> vConnectedBodyActiveStates; ///< IsActive state of ConnectedBody \see RobotBase::GetConnectedBodyActiveStates
-			std::vector<dReal> jointvalues; ///< \see KinBody::GetDOFValues
-			std::string strname;         ///< \see KinBody::GetName
-			std::string uri; ///< \see KinBody::GetURI
-			int updatestamp; ///< \see KinBody::GetUpdateStamp
-			int environmentid; ///< \see KinBody::GetEnvironmentId
-			std::string activeManipulatorName; ///< the currently active manpiulator set for the body
-			Transform activeManipulatorTransform; ///< the active manipulator's transform
+			KinBodyPtr pbody; //!< pointer to the body. if using this, make sure the environment is locked.
+			std::vector<Transform> vectrans; //!< \see KinBody::GetLinkTransformations
+			std::vector<uint8_t> vLinkEnableStates; //!< \see KinBody::GetLinkEnableStates
+			std::vector<uint8_t> vConnectedBodyActiveStates; //!< IsActive state of ConnectedBody \see RobotBase::GetConnectedBodyActiveStates
+			std::vector<dReal> jointvalues; //!< \see KinBody::GetDOFValues
+			std::string strname;         //!< \see KinBody::GetName
+			std::string uri; //!< \see KinBody::GetURI
+			int updatestamp; //!< \see KinBody::GetUpdateStamp
+			int environmentid; //!< \see KinBody::GetEnvironmentId
+			std::string activeManipulatorName; //!< the currently active manpiulator set for the body
+			Transform activeManipulatorTransform; //!< the active manipulator's transform
 		};
 		typedef std::shared_ptr<KinBody::BodyState> BodyStatePtr;
 		typedef std::shared_ptr<KinBody::BodyState const> BodyStateConstPtr;
@@ -1547,17 +1547,17 @@ namespace OpenRAVE
 		/// \brief Parameters passed into the state savers to control what information gets saved.
 		enum SaveParameters
 		{
-			Save_LinkTransformation = 0x00000001, ///< [default] save link transformations and joint branches
-			Save_LinkEnable = 0x00000002, ///< [default] save link enable states
-			Save_LinkVelocities = 0x00000004, ///< save the link velocities
-			Save_JointMaxVelocityAndAcceleration = 0x00000008, ///< save the max joint velocities and accelerations for the controller DOF
-			Save_JointWeights = 0x00000010, ///< saves the dof weights
-			Save_JointLimits = 0x00000020, ///< saves the dof limits
-			Save_ActiveDOF = 0x00010000, ///< [robot only], saves and restores the current active degrees of freedom
-			Save_ActiveManipulator = 0x00020000, ///< [robot only], saves the active manipulator
-			Save_GrabbedBodies = 0x00040000, ///< saves the grabbed state of the bodies. This does not affect the configuraiton of those bodies.
-			Save_ActiveManipulatorToolTransform = 0x00080000, ///< [robot only], saves the active manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
-			Save_ManipulatorsToolTransform = 0x00100000, ///< [robot only], saves every manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
+			Save_LinkTransformation = 0x00000001, //!< [default] save link transformations and joint branches
+			Save_LinkEnable = 0x00000002, //!< [default] save link enable states
+			Save_LinkVelocities = 0x00000004, //!< save the link velocities
+			Save_JointMaxVelocityAndAcceleration = 0x00000008, //!< save the max joint velocities and accelerations for the controller DOF
+			Save_JointWeights = 0x00000010, //!< saves the dof weights
+			Save_JointLimits = 0x00000020, //!< saves the dof limits
+			Save_ActiveDOF = 0x00010000, //!< [robot only], saves and restores the current active degrees of freedom
+			Save_ActiveManipulator = 0x00020000, //!< [robot only], saves the active manipulator
+			Save_GrabbedBodies = 0x00040000, //!< saves the grabbed state of the bodies. This does not affect the configuraiton of those bodies.
+			Save_ActiveManipulatorToolTransform = 0x00080000, //!< [robot only], saves the active manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
+			Save_ManipulatorsToolTransform = 0x00100000, //!< [robot only], saves every manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
 		};
 
 		/// \brief holds all user-set grabbed object information used to initialize kinbody
@@ -1566,10 +1566,10 @@ namespace OpenRAVE
 		class OPENRAVE_API GrabbedInfo
 		{
 		public:
-			std::string _grabbedname; ///< the name of the body to grab
-			std::string _robotlinkname;  ///< the name of the body link that is grabbing the body
-			Transform _trelative; ///< transform of first link of body relative to _robotlinkname's transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
-			std::set<int> _setRobotLinksToIgnore; ///< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
+			std::string _grabbedname; //!< the name of the body to grab
+			std::string _robotlinkname;  //!< the name of the body link that is grabbing the body
+			Transform _trelative; //!< transform of first link of body relative to _robotlinkname's transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
+			std::set<int> _setRobotLinksToIgnore; //!< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 		};
@@ -1603,7 +1603,7 @@ namespace OpenRAVE
 			virtual void SetRestoreOnDestructor(bool restore);
 		protected:
 			KinBodyPtr _pbody;
-			int _options;         ///< saved options
+			int _options;         //!< saved options
 			std::vector<Transform> _vLinkTransforms;
 			std::vector<uint8_t> _vEnabledLinks;
 			std::vector<std::pair<Vector, Vector> > _vLinkVelocities;
@@ -1649,7 +1649,7 @@ namespace OpenRAVE
 		protected:
 			KinBody& _body;
 
-			int _options;         ///< saved options
+			int _options;         //!< saved options
 			std::vector<Transform> _vLinkTransforms;
 			std::vector<uint8_t> _vEnabledLinks;
 			std::vector<std::pair<Vector, Vector> > _vLinkVelocities;
@@ -1657,7 +1657,7 @@ namespace OpenRAVE
 			std::vector<dReal> _vMaxVelocities, _vMaxAccelerations, _vMaxJerks, _vDOFWeights, _vDOFLimits[2];
 			std::vector<UserDataPtr> _vGrabbedBodies;
 			bool _bRestoreOnDestructor;
-			bool _bReleased; ///< if true, then body should not be restored
+			bool _bReleased; //!< if true, then body should not be restored
 		private:
 			virtual void _RestoreKinBody(KinBody& body);
 		};
@@ -2334,8 +2334,8 @@ namespace OpenRAVE
 		/// \brief specifies the type of adjacent link information to receive
 		enum AdjacentOptions
 		{
-			AO_Enabled = 1,     ///< return only enabled link pairs
-			AO_ActiveDOFs = 2,     ///< return only link pairs that have an active in its path
+			AO_Enabled = 1,     //!< return only enabled link pairs
+			AO_ActiveDOFs = 2,     //!< return only link pairs that have an active in its path
 		};
 
 		/// \brief return all possible link pairs that could get in collision.
@@ -2454,7 +2454,7 @@ namespace OpenRAVE
 		virtual void Release(KinBody &body);
 
 		/// Release all grabbed bodies.
-		virtual void ReleaseAllGrabbed();     ///< release all bodies
+		virtual void ReleaseAllGrabbed();     //!< release all bodies
 
 		void ReleaseAllGrabbedWithLink(LinkPtr pBodyLinkToGrabWith) {
 			ReleaseAllGrabbedWithLink(*pBodyLinkToGrabWith);
@@ -2587,46 +2587,46 @@ namespace OpenRAVE
 		virtual void _InitAndAddJoint(JointPtr pjoint);
 
 	public:
-		int _environmentid; ///< \see GetEnvironmentId
+		int _environmentid; //!< \see GetEnvironmentId
 
 	protected:
-		std::string name_; ///< name of body
-		std::vector<JointPtr> _vecjoints; ///< \see GetJoints
-		std::vector<JointPtr> _vTopologicallySortedJoints; ///< \see GetDependencyOrderedJoints
-		std::vector<JointPtr> _vTopologicallySortedJointsAll; ///< Similar to _vDependencyOrderedJoints except includes _vecjoints and _vPassiveJoints
-		std::vector<int> _vTopologicallySortedJointIndicesAll; ///< the joint indices of the joints in _vTopologicallySortedJointsAll. Passive joint indices have _vecjoints.size() added to them.
-		std::vector<JointPtr> _vDOFOrderedJoints; ///< all joints of the body ordered on how they are arranged within the degrees of freedom
-		std::vector<LinkPtr> _veclinks; ///< \see GetLinks
-		std::vector<int> _vDOFIndices; ///< cached start joint indices, indexed by dof indices
-		std::vector<std::pair<int16_t, int16_t> > _vAllPairsShortestPaths; ///< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into _vecjoints or _vPassiveJoints. If the second value is greater or equal to  _vecjoints.size() then it indexes into _vPassiveJoints.
-		std::vector<int8_t> _vJointsAffectingLinks; ///< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
-		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > _vClosedLoops; ///< \see GetClosedLoops
-		std::vector< std::vector< std::pair<int16_t, int16_t> > > _vClosedLoopIndices; ///< \see GetClosedLoops
-		std::vector<JointPtr> _vPassiveJoints; ///< \see GetPassiveJoints()
-		std::set<int> _setAdjacentLinks; ///< a set of which links are connected to which if link i and j are connected then
-										 ///< i|(j<<16) will be in the set where i<j.
-		std::vector< std::pair<std::string, std::string> > _vForcedAdjacentLinks; ///< internally stores forced adjacent links
-		std::list<KinBodyWeakPtr> _listAttachedBodies; ///< list of bodies that are directly attached to this body (can have duplicates)
+		std::string name_; //!< name of body
+		std::vector<JointPtr> _vecjoints; //!< \see GetJoints
+		std::vector<JointPtr> _vTopologicallySortedJoints; //!< \see GetDependencyOrderedJoints
+		std::vector<JointPtr> _vTopologicallySortedJointsAll; //!< Similar to _vDependencyOrderedJoints except includes _vecjoints and _vPassiveJoints
+		std::vector<int> _vTopologicallySortedJointIndicesAll; //!< the joint indices of the joints in _vTopologicallySortedJointsAll. Passive joint indices have _vecjoints.size() added to them.
+		std::vector<JointPtr> _vDOFOrderedJoints; //!< all joints of the body ordered on how they are arranged within the degrees of freedom
+		std::vector<LinkPtr> _veclinks; //!< \see GetLinks
+		std::vector<int> _vDOFIndices; //!< cached start joint indices, indexed by dof indices
+		std::vector<std::pair<int16_t, int16_t> > _vAllPairsShortestPaths; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into _vecjoints or _vPassiveJoints. If the second value is greater or equal to  _vecjoints.size() then it indexes into _vPassiveJoints.
+		std::vector<int8_t> _vJointsAffectingLinks; //!< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
+		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > _vClosedLoops; //!< \see GetClosedLoops
+		std::vector< std::vector< std::pair<int16_t, int16_t> > > _vClosedLoopIndices; //!< \see GetClosedLoops
+		std::vector<JointPtr> _vPassiveJoints; //!< \see GetPassiveJoints()
+		std::set<int> _setAdjacentLinks; //!< a set of which links are connected to which if link i and j are connected then
+										 //!< i|(j<<16) will be in the set where i<j.
+		std::vector< std::pair<std::string, std::string> > _vForcedAdjacentLinks; //!< internally stores forced adjacent links
+		std::list<KinBodyWeakPtr> _listAttachedBodies; //!< list of bodies that are directly attached to this body (can have duplicates)
 
-		std::vector<UserDataPtr> _vGrabbedBodies; ///< vector of grabbed bodies
+		std::vector<UserDataPtr> _vGrabbedBodies; //!< vector of grabbed bodies
 
-		mutable std::vector<std::list<UserDataWeakPtr> > _vlistRegisteredCallbacks; ///< callbacks to call when particular properties of the body change. _vlistRegisteredCallbacks[index] is the list of change callbacks where 1<<index is part of KinBodyProperty, this makes it easy to find out if any particular bits have callbacks. The registration/de-registration of the lists can happen at any point and does not modify the kinbody state exposed to the user, hence it is mutable.
+		mutable std::vector<std::list<UserDataWeakPtr> > _vlistRegisteredCallbacks; //!< callbacks to call when particular properties of the body change. _vlistRegisteredCallbacks[index] is the list of change callbacks where 1<<index is part of KinBodyProperty, this makes it easy to find out if any particular bits have callbacks. The registration/de-registration of the lists can happen at any point and does not modify the kinbody state exposed to the user, hence it is mutable.
 
-		mutable std::array<std::vector<int>, 4> _vNonAdjacentLinks; ///< contains cached versions of the non-adjacent links depending on values in AdjacentOptions. Declared as mutable since data is cached.
-		mutable std::array<std::set<int>, 4> _cacheSetNonAdjacentLinks; ///< used for caching return value of GetNonAdjacentLinks.
-		mutable int _nNonAdjacentLinkCache; ///< specifies what information is currently valid in the AdjacentOptions.  Declared as mutable since data is cached. If 0x80000000 (ie < 0), then everything needs to be recomputed including _setNonAdjacentLinks[0].
-		std::vector<Transform> _vInitialLinkTransformations; ///< the initial transformations of each link specifying at least one pose where the robot is collision free
+		mutable std::array<std::vector<int>, 4> _vNonAdjacentLinks; //!< contains cached versions of the non-adjacent links depending on values in AdjacentOptions. Declared as mutable since data is cached.
+		mutable std::array<std::set<int>, 4> _cacheSetNonAdjacentLinks; //!< used for caching return value of GetNonAdjacentLinks.
+		mutable int _nNonAdjacentLinkCache; //!< specifies what information is currently valid in the AdjacentOptions.  Declared as mutable since data is cached. If 0x80000000 (ie < 0), then everything needs to be recomputed including _setNonAdjacentLinks[0].
+		std::vector<Transform> _vInitialLinkTransformations; //!< the initial transformations of each link specifying at least one pose where the robot is collision free
 
 		ConfigurationSpecification _spec;
-		CollisionCheckerBasePtr _selfcollisionchecker; ///< optional checker to use for self-collisions
+		CollisionCheckerBasePtr _selfcollisionchecker; //!< optional checker to use for self-collisions
 
 
-		mutable int _nUpdateStampId; ///< \see GetUpdateStamp
-		uint32_t _nParametersChanged; ///< set of parameters that changed and need callbacks
+		mutable int _nUpdateStampId; //!< \see GetUpdateStamp
+		uint32_t _nParametersChanged; //!< set of parameters that changed and need callbacks
 		ManageDataPtr _pManageData;
-		uint32_t _nHierarchyComputed; ///< 2 if the joint heirarchy and other cached information is computed. 1 if the hierarchy information is computing
-		bool _bMakeJoinedLinksAdjacent; ///< if true, then automatically add adjacent links to the adjacency list so that their self-collisions are ignored.
-		bool _bAreAllJoints1DOFAndNonCircular; ///< if true, then all controllable joints  of the robot are guaranteed to be either revolute or prismatic and non-circular. This allows certain functions that do operations on the joint values (like SubtractActiveDOFValues) to be optimized without calling Joint functions.
+		uint32_t _nHierarchyComputed; //!< 2 if the joint heirarchy and other cached information is computed. 1 if the hierarchy information is computing
+		bool _bMakeJoinedLinksAdjacent; //!< if true, then automatically add adjacent links to the adjacency list so that their self-collisions are ignored.
+		bool _bAreAllJoints1DOFAndNonCircular; //!< if true, then all controllable joints  of the robot are guaranteed to be either revolute or prismatic and non-circular. This allows certain functions that do operations on the joint values (like SubtractActiveDOFValues) to be optimized without calling Joint functions.
 	private:
 		mutable std::string __hashkinematics;
 		mutable std::vector<dReal> _vTempJoints;

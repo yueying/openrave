@@ -38,36 +38,36 @@ namespace OpenRAVE
 	/// \brief Enumeration of all the interfaces.
 	enum InterfaceType
 	{
-		PT_Planner = 1, ///< describes \ref PlannerBase interface
-		PT_Robot = 2, ///< describes \ref RobotBase interface
-		PT_SensorSystem = 3, ///< describes \ref SensorSystemBase interface
-		PT_Controller = 4, ///< describes \ref ControllerBase interface
-		PT_Module = 5, ///< describes \ref ModuleBase interface
-		PT_ProblemInstance = 5, ///< describes \ref ModuleBase interface
-		PT_IkSolver = 6, ///< describes \ref IkSolverBase interface
-		PT_InverseKinematicsSolver = 6, ///< describes \ref IkSolverBase interface
-		PT_KinBody = 7, ///< describes \ref KinBody
-		PT_PhysicsEngine = 8, ///< describes \ref PhysicsEngineBase
-		PT_Sensor = 9, ///< describes \ref SensorBase
-		PT_CollisionChecker = 10, ///< describes \ref CollisionCheckerBase
-		PT_Trajectory = 11, ///< describes \ref TrajectoryBase
-		PT_Viewer = 12, ///< describes \ref ViewerBase
-		PT_SpaceSampler = 13, ///< describes \ref SamplerBase
-		PT_NumberOfInterfaces = 13 ///< number of interfaces, do not forget to update
+		PT_Planner = 1, //!< describes \ref PlannerBase interface
+		PT_Robot = 2, //!< describes \ref RobotBase interface
+		PT_SensorSystem = 3, //!< describes \ref SensorSystemBase interface
+		PT_Controller = 4, //!< describes \ref ControllerBase interface
+		PT_Module = 5, //!< describes \ref ModuleBase interface
+		PT_ProblemInstance = 5, //!< describes \ref ModuleBase interface
+		PT_IkSolver = 6, //!< describes \ref IkSolverBase interface
+		PT_InverseKinematicsSolver = 6, //!< describes \ref IkSolverBase interface
+		PT_KinBody = 7, //!< describes \ref KinBody
+		PT_PhysicsEngine = 8, //!< describes \ref PhysicsEngineBase
+		PT_Sensor = 9, //!< describes \ref SensorBase
+		PT_CollisionChecker = 10, //!< describes \ref CollisionCheckerBase
+		PT_Trajectory = 11, //!< describes \ref TrajectoryBase
+		PT_Viewer = 12, //!< describes \ref ViewerBase
+		PT_SpaceSampler = 13, //!< describes \ref SamplerBase
+		PT_NumberOfInterfaces = 13 //!< number of interfaces, do not forget to update
 	};
 
 	/// serialization options for interfaces
 	enum SerializationOptions
 	{
-		SO_Kinematics = 0x01, ///< kinematics information
-		SO_Dynamics = 0x02, ///< dynamics information
-		SO_BodyState = 0x04, ///< state of the body
-		SO_NamesAndFiles = 0x08, ///< resource files and names
-		SO_RobotManipulators = 0x10, ///< serialize robot manipulators
-		SO_RobotSensors = 0x20, ///< serialize robot sensors
-		SO_Geometry = 0x40, ///< geometry information (for collision detection)
-		SO_InverseKinematics = 0x80, ///< information necessary for inverse kinematics. If Transform6D, then don't include the manipulator local transform
-		SO_JointLimits = 0x100 ///< information of joint limits including velocity, acceleration, jerk, torque and inertia limits
+		SO_Kinematics = 0x01, //!< kinematics information
+		SO_Dynamics = 0x02, //!< dynamics information
+		SO_BodyState = 0x04, //!< state of the body
+		SO_NamesAndFiles = 0x08, //!< resource files and names
+		SO_RobotManipulators = 0x10, //!< serialize robot manipulators
+		SO_RobotSensors = 0x20, //!< serialize robot sensors
+		SO_Geometry = 0x40, //!< geometry information (for collision detection)
+		SO_InverseKinematics = 0x80, //!< information necessary for inverse kinematics. If Transform6D, then don't include the manipulator local transform
+		SO_JointLimits = 0x100 //!< information of joint limits including velocity, acceleration, jerk, torque and inertia limits
 	};
 
 	class OPENRAVE_LOCAL CaseInsensitiveCompare
@@ -291,8 +291,8 @@ namespace OpenRAVE
 				: fn(newfn), help(newhelp) 
 			{
 			}
-			InterfaceCommandFn fn; ///< command function to run
-			std::string help; ///< help string explaining command arguments
+			InterfaceCommandFn fn; //!< command function to run
+			std::string help; //!< help string explaining command arguments
 		};
 
 		/// \brief Registers a command and its help string. <b>[multi-thread safe]</b>
@@ -323,8 +323,8 @@ namespace OpenRAVE
 				: fn(newfn), help(newhelp) 
 			{
 			}
-			InterfaceJSONCommandFn fn; ///< command function to run
-			std::string help; ///< help string explaining command arguments
+			InterfaceJSONCommandFn fn; //!< command function to run
+			std::string help; //!< help string explaining command arguments
 		};
 
 		/// \brief Registers a command and its help string. <b>[multi-thread safe]</b>
@@ -342,7 +342,7 @@ namespace OpenRAVE
 
 		virtual const char* GetHash() const = 0;
 		std::string description_;     /// \see GetDescription()
-		std::string str_uri_; ///< \see GetURI
+		std::string str_uri_; //!< \see GetURI
 
 		virtual boost::shared_mutex& GetInterfaceMutex() const 
 		{
@@ -362,20 +362,20 @@ namespace OpenRAVE
 			throw OpenRAVEException("InterfaceBase copying not allowed");
 		}
 
-		mutable boost::shared_mutex mutex_interface_; ///< internal mutex for protecting data from methods that might be access from any thread (those methods should be commented).
-		InterfaceType type_; ///< \see GetInterfaceType
-		UserDataPtr plugin_; ///< handle to plugin that controls the executable code. As long as this plugin pointer is present, module will not be unloaded.
-		std::string plugin_name_; ///< the name of the plugin, necessary?
-		std::string xml_str_id_; ///< \see GetXMLId
-		EnvironmentBasePtr environment_; ///< \see GetEnv
-		mutable std::map<std::string, UserDataPtr> user_data_map_; ///< \see GetUserData
+		mutable boost::shared_mutex mutex_interface_; //!< internal mutex for protecting data from methods that might be access from any thread (those methods should be commented).
+		InterfaceType type_; //!< \see GetInterfaceType
+		UserDataPtr plugin_; //!< handle to plugin that controls the executable code. As long as this plugin pointer is present, module will not be unloaded.
+		std::string plugin_name_; //!< the name of the plugin, necessary?
+		std::string xml_str_id_; //!< \see GetXMLId
+		EnvironmentBasePtr environment_; //!< \see GetEnv
+		mutable std::map<std::string, UserDataPtr> user_data_map_; //!< \see GetUserData
 
-		READERSMAP readable_interfaces_map_; ///< pointers to extra interfaces that are included with this object
+		READERSMAP readable_interfaces_map_; //!< pointers to extra interfaces that are included with this object
 		typedef std::map<std::string, std::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
-		CMDMAP commands_map_; ///< all registered commands
+		CMDMAP commands_map_; //!< all registered commands
 
 		typedef std::map<std::string, std::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
-		JSONCMDMAP json_commands_map_; ///< all registered commands
+		JSONCMDMAP json_commands_map_; //!< all registered commands
 
 
 #ifdef RAVE_PRIVATE

@@ -221,25 +221,25 @@ protected:
 
     virtual bool event(QEvent *event);
 
-    OSGGroupPtr _osgSceneRoot; ///< root scene node
-    OSGGroupPtr _osgFigureRoot; ///< the node that all the figures are drawn into
-    OSGMatrixTransformPtr _osgWorldAxis; ///< the node that draws the rgb axes on the lower right corner
+    OSGGroupPtr _osgSceneRoot; //!< root scene node
+    OSGGroupPtr _osgFigureRoot; //!< the node that all the figures are drawn into
+    OSGMatrixTransformPtr _osgWorldAxis; //!< the node that draws the rgb axes on the lower right corner
 
-    std::string _userdatakey; ///< the key to use for KinBody::GetUserData and KinBody::SetUserData
-    OSGGroupPtr _osgLightsGroup; ///< Scene Node with lights
-    OSGGroupPtr _osgLightsGroupData; ///< Scene Data to romove after each repaint
-    OSGGroupPtr _osgDraggerRoot; ///< Parent of dragger and selection
-    std::vector<osg::ref_ptr<osgManipulator::Dragger> > _draggers; ///< There is only one dragger at the same time
-    OSGMatrixTransformPtr _draggerMatrix; ///< Transform applied by dragger
-    OSGGroupPtr _osgSelectedNodeByDragger; ///< Object selected by dragger
-    OSGMatrixTransformPtr _osgCameraHUD; ///< MatrixTransform node that gets displayed in the heads up display
+    std::string _userdatakey; //!< the key to use for KinBody::GetUserData and KinBody::SetUserData
+    OSGGroupPtr _osgLightsGroup; //!< Scene Node with lights
+    OSGGroupPtr _osgLightsGroupData; //!< Scene Data to romove after each repaint
+    OSGGroupPtr _osgDraggerRoot; //!< Parent of dragger and selection
+    std::vector<osg::ref_ptr<osgManipulator::Dragger> > _draggers; //!< There is only one dragger at the same time
+    OSGMatrixTransformPtr _draggerMatrix; //!< Transform applied by dragger
+    OSGGroupPtr _osgSelectedNodeByDragger; //!< Object selected by dragger
+    OSGMatrixTransformPtr _osgCameraHUD; //!< MatrixTransform node that gets displayed in the heads up display
 
-    KinBodyItemPtr _selectedItem; ///< render item selected
-    std::string _draggerName; ///< Actual dragger selected
+    KinBodyItemPtr _selectedItem; //!< render item selected
+    std::string _draggerName; //!< Actual dragger selected
 
-    osg::ref_ptr<OSGPickHandler> _picker; ///<  Pick handler for joint selection
-    osg::ref_ptr<osgGA::GUIEventHandler> _keyhandler; ///<  Pick handler for joint selection
-    osg::Matrixf _viewCameraMatrix; ///< stored matrix transform
+    osg::ref_ptr<OSGPickHandler> _picker; //!<  Pick handler for joint selection
+    osg::ref_ptr<osgGA::GUIEventHandler> _keyhandler; //!<  Pick handler for joint selection
+    osg::Matrixf _viewCameraMatrix; //!< stored matrix transform
 
     std::vector<osg::ref_ptr<osg::PositionAttitudeTransform> > _vLightTransform;
     osg::ref_ptr<osg::StateSet> _lightStateSet;
@@ -249,19 +249,19 @@ protected:
     osg::ref_ptr<osgViewer::View> _osghudview;
     osg::ref_ptr<OpenRAVETrackball> _osgCameraManipulator;
 
-    osg::ref_ptr<osgText::Text> _osgHudText; ///< the HUD text in the upper left corner
-    std::string _strUserText, _strSelectedItemText, _strRayInfoText; ///< the user hud text
+    osg::ref_ptr<osgText::Text> _osgHudText; //!< the HUD text in the upper left corner
+    std::string _strUserText, _strSelectedItemText, _strRayInfoText; //!< the user hud text
 
-    osg::ref_ptr<Skybox> _osgSkybox;  ///< the skybox moving together with camera
+    osg::ref_ptr<Skybox> _osgSkybox;  //!< the skybox moving together with camera
 
-    QTimer _timer; ///< Timer for repaint
+    QTimer _timer; //!< Timer for repaint
     EnvironmentBasePtr _penv;
 
-    boost::function<bool(int)> _onKeyDown; ///< call whenever key press is detected
-    bool _bSwitchMouseLeftMiddleButton;  ///< whether to switch mouse left button and middle button (camera control mode)
-    bool _bLightOn; ///< whether lights are on or not
-    bool _bIsSelectiveActive; ///< if true, then can select a new
-    double _zNear; ///< In OSG, znear and zfar are updated by CullVisitor, which
+    boost::function<bool(int)> _onKeyDown; //!< call whenever key press is detected
+    bool _bSwitchMouseLeftMiddleButton;  //!< whether to switch mouse left button and middle button (camera control mode)
+    bool _bLightOn; //!< whether lights are on or not
+    bool _bIsSelectiveActive; //!< if true, then can select a new
+    double _zNear; //!< In OSG, znear and zfar are updated by CullVisitor, which
                    ///  causing getProjectionMatrixAsXXX to return negative
                    ///  values. Therefore, we manage zNear ourselves
 

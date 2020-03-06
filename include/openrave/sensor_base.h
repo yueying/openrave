@@ -66,8 +66,8 @@ public:
         /// Serialize the sensor data to stream in XML format
         virtual bool serialize(std::ostream& O) const;
 
-        uint64_t __stamp;         ///< time stamp of the sensor data in microseconds. If 0, then the data is uninitialized! (floating-point precision is bad here). This can be either simulation or real time depending on the sensor.
-        Transform __trans;             ///< the coordinate system the sensor was when the measurement was taken, this is taken directly from SensorBase::GetTransform
+        uint64_t __stamp;         //!< time stamp of the sensor data in microseconds. If 0, then the data is uninitialized! (floating-point precision is bad here). This can be either simulation or real time depending on the sensor.
+        Transform __trans;             //!< the coordinate system the sensor was when the measurement was taken, this is taken directly from SensorBase::GetTransform
     };
     typedef std::shared_ptr<SensorBase::SensorData> SensorDataPtr;
     typedef std::shared_ptr<SensorBase::SensorData const> SensorDataConstPtr;
@@ -85,8 +85,8 @@ public:
            If positions is empty, assume the origin is t.trans for all rays.
          */
         std::vector<RaveVector<dReal> > positions;
-        std::vector<RaveVector<dReal> > ranges;         ///< Range and direction readings in the form of direction*distance. The direction is in world coordinates. The values should be returned in the order laser detected them in.
-        std::vector<dReal> intensity;         ///< Intensity readings.
+        std::vector<RaveVector<dReal> > ranges;         //!< Range and direction readings in the form of direction*distance. The direction is in world coordinates. The values should be returned in the order laser detected them in.
+        std::vector<dReal> intensity;         //!< Intensity readings.
 
         virtual bool serialize(std::ostream& O) const;
     };
@@ -96,7 +96,7 @@ public:
         virtual SensorType GetType() {
             return ST_Camera;
         }
-        std::vector<uint8_t> vimagedata;         ///< rgb image data, if camera only outputs in grayscale, fill each channel with the same value
+        std::vector<uint8_t> vimagedata;         //!< rgb image data, if camera only outputs in grayscale, fill each channel with the same value
         virtual bool serialize(std::ostream& O) const;
     };
 
@@ -107,8 +107,8 @@ public:
         virtual SensorType GetType() {
             return ST_JointEncoder;
         }
-        std::vector<dReal> encoderValues;         ///< measured joint angles in radians
-        std::vector<dReal> encoderVelocity;         ///< measured joint velocity in radians
+        std::vector<dReal> encoderValues;         //!< measured joint angles in radians
+        std::vector<dReal> encoderVelocity;         //!< measured joint velocity in radians
     };
 
     /// \brief Stores force data
@@ -118,8 +118,8 @@ public:
         virtual SensorType GetType() {
             return ST_Force6D;
         }
-        Vector force;         ///< Force in X Y Z, in newtons
-        Vector torque;         ///< Torque in X Y Z, in newtonmeters
+        Vector force;         //!< Force in X Y Z, in newtons
+        Vector torque;         //!< Torque in X Y Z, in newtonmeters
     };
 
     /// \brief Stores IMU data
@@ -129,12 +129,12 @@ public:
         virtual SensorType GetType() {
             return ST_IMU;
         }
-        Vector rotation;         ///< quaternion
+        Vector rotation;         //!< quaternion
         Vector angular_velocity;
         Vector linear_acceleration;
-        std::array<dReal,9> rotation_covariance;         ///< Row major about x, y, z axes
-        std::array<dReal,9> angular_velocity_covariance;         ///< Row major about x, y, z axes
-        std::array<dReal,9> linear_acceleration_covariance;         ///< Row major x, y z axes
+        std::array<dReal,9> rotation_covariance;         //!< Row major about x, y, z axes
+        std::array<dReal,9> angular_velocity_covariance;         //!< Row major about x, y, z axes
+        std::array<dReal,9> linear_acceleration_covariance;         //!< Row major x, y z axes
     };
 
     /// \brief odometry data storing full 6D pose and velocity
@@ -144,10 +144,10 @@ public:
         virtual SensorType GetType() {
             return ST_Odometry;
         }
-        Transform pose;         ///< measured pose
-        Vector linear_velocity, angular_velocity;         ///< measured velocity
-        std::array<dReal,36> pose_covariance;         ///< Row major of 6x6 matrix about linear x, y, z axes
-        std::array<dReal,36> velocity_covariance;         ///< Row major of 6x6 matrix about rotational x, y, z axes
+        Transform pose;         //!< measured pose
+        Vector linear_velocity, angular_velocity;         //!< measured velocity
+        std::array<dReal,36> pose_covariance;         //!< Row major of 6x6 matrix about linear x, y, z axes
+        std::array<dReal,36> velocity_covariance;         //!< Row major of 6x6 matrix about rotational x, y, z axes
     };
 
     /// \brief tactle data
@@ -158,7 +158,7 @@ public:
             return ST_Tactile;
         }
         std::vector<Vector> forces;         /// xyz force of each individual element
-        std::array<dReal,9> force_covariance;         ///< row major 3x3 matrix of the uncertainty on the xyz force measurements
+        std::array<dReal,9> force_covariance;         //!< row major 3x3 matrix of the uncertainty on the xyz force measurements
     };
 
     /// \brief An actuator for modeling motors and other mechanisms that produce torque/force. The actuator has only one degree of freedom.
@@ -167,11 +167,11 @@ public:
 public:
         /// \brief the state of the actuator
         enum ActuatorState {
-            AS_Undefined=0,         ///< returned when no state is defined
-            AS_Idle=1,          ///< this actuator is idle
-            AS_Moving=2,         ///< this actuator is in motion from previous commands
-            AS_Stalled=3,         ///< the actuator is stalled, needs to be unstalled by sending a ready signal
-            AS_Braked=4,         ///< the actuator is braked
+            AS_Undefined=0,         //!< returned when no state is defined
+            AS_Idle=1,          //!< this actuator is idle
+            AS_Moving=2,         //!< this actuator is in motion from previous commands
+            AS_Stalled=3,         //!< the actuator is stalled, needs to be unstalled by sending a ready signal
+            AS_Braked=4,         //!< the actuator is braked
         };
 
         ActuatorSensorData() : state(AS_Undefined), measuredcurrent(0), measuredtemperature(0), appliedcurrent(0) {
@@ -181,9 +181,9 @@ public:
         }
 
         ActuatorState state;
-        dReal measuredcurrent;         ///< measured current from the actuator
-        dReal measuredtemperature;         ///< measured temperature from the actuator
-        dReal appliedcurrent;         ///< current sent to the actuator
+        dReal measuredcurrent;         //!< measured current from the actuator
+        dReal measuredtemperature;         //!< measured temperature from the actuator
+        dReal appliedcurrent;         //!< current sent to the actuator
     };
 
     /// permanent properties of the sensors
@@ -205,7 +205,7 @@ public:
             hardware_id = r.hardware_id;
             return *this;
         }
-        std::string hardware_id; ///< optional hardware identifier of the sensor
+        std::string hardware_id; //!< optional hardware identifier of the sensor
     };
     typedef std::shared_ptr<SensorBase::SensorGeometry> SensorGeometryPtr;
     typedef std::shared_ptr<SensorBase::SensorGeometry const> SensorGeometryConstPtr;
@@ -219,12 +219,12 @@ public:
         virtual SensorType GetType() const {
             return ST_Laser;
         }
-        std::array<dReal,2> min_angle;         ///< Start for the laser scan [rad].
-        std::array<dReal,2> max_angle;         ///< End angles for the laser scan [rad].
-        std::array<dReal,2> resolution;         ///< Angular resolutions for each axis of rotation [rad].
-        dReal min_range, max_range;         ///< Maximum range [m].
-        dReal time_increment;         ///< time between individual measurements [seconds]
-        dReal time_scan;         ///< time between scans [seconds]
+        std::array<dReal,2> min_angle;         //!< Start for the laser scan [rad].
+        std::array<dReal,2> max_angle;         //!< End angles for the laser scan [rad].
+        std::array<dReal,2> resolution;         //!< Angular resolutions for each axis of rotation [rad].
+        dReal min_range, max_range;         //!< Maximum range [m].
+        dReal time_increment;         //!< time between individual measurements [seconds]
+        dReal time_scan;         //!< time between scans [seconds]
     };
 
     typedef std::shared_ptr<LaserGeomData> LaserGeomDataPtr;
@@ -257,13 +257,13 @@ public:
 			rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options=0) const;
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale);
 
-        std::string sensor_reference; ///< name of sensor that whose data is referenced. This sensor transforms the data in a particular way.
-        std::string target_region; ///< name of the kinbody that describes the region of interest for the camera. 
-        CameraIntrinsics intrinsics;         ///< intrinsic matrix
-        int width, height;         ///< width and height of image
-        dReal measurement_time; ///< specifies time used to take one image (also known as exposure).
-        dReal gain; ///< camera gain setting
-        CameraIntrinsics& KK;         ///< \deprecated (14/01/15)
+        std::string sensor_reference; //!< name of sensor that whose data is referenced. This sensor transforms the data in a particular way.
+        std::string target_region; //!< name of the kinbody that describes the region of interest for the camera. 
+        CameraIntrinsics intrinsics;         //!< intrinsic matrix
+        int width, height;         //!< width and height of image
+        dReal measurement_time; //!< specifies time used to take one image (also known as exposure).
+        dReal gain; //!< camera gain setting
+        CameraIntrinsics& KK;         //!< \deprecated (14/01/15)
     };
     typedef std::shared_ptr<CameraGeomData> CameraGeomDataPtr;
     typedef std::shared_ptr<CameraGeomData const> CameraGeomDataConstPtr;
@@ -276,7 +276,7 @@ public:
         virtual SensorType GetType() const {
             return ST_JointEncoder;
         }
-        std::vector<dReal> resolution;         ///< the delta value of one encoder tick
+        std::vector<dReal> resolution;         //!< the delta value of one encoder tick
     };
     class OPENRAVE_API Force6DGeomData : public SensorGeometry
     {
@@ -295,7 +295,7 @@ public:
         virtual SensorType GetType() const {
             return ST_IMU;
         }
-        dReal time_measurement;         ///< time between measurements
+        dReal time_measurement;         //!< time between measurements
     };
     class OPENRAVE_API OdometryGeomData : public SensorGeometry
     {
@@ -305,7 +305,7 @@ public:
         virtual SensorType GetType() const {
             return ST_Odometry;
         }
-        std::string targetid;         ///< id of the target whose odometry/pose messages are being published for
+        std::string targetid;         //!< id of the target whose odometry/pose messages are being published for
     };
 
     class OPENRAVE_API TactileGeomData : public SensorGeometry
@@ -320,15 +320,15 @@ public:
         /// LuGre friction model?
         struct Friction
         {
-            dReal sigma_0;         ///< the stiffness coefficient of the contacting surfaces
-            dReal sigma_1;         ///< the friction damping coefficient.
-            dReal mu_s;         ///< static friction coefficient
-            dReal mu_d;         ///< dynamic friction coefficient
+            dReal sigma_0;         //!< the stiffness coefficient of the contacting surfaces
+            dReal sigma_1;         //!< the friction damping coefficient.
+            dReal mu_s;         //!< static friction coefficient
+            dReal mu_d;         //!< dynamic friction coefficient
         };
-        std::vector<Vector> positions;         ///< 3D positions of all the elements in the sensor frame
-        dReal thickness;         ///< the thickness of the tactile sensors (used for determining contact and computing force)
-        ///dReal normal_force_stiffness, normal_force_damping; ///< simple model for determining contact force from depressed distance... necessary?
-        std::map<std::string, Friction> _mapfriction;         ///< friction coefficients references by target objects
+        std::vector<Vector> positions;         //!< 3D positions of all the elements in the sensor frame
+        dReal thickness;         //!< the thickness of the tactile sensors (used for determining contact and computing force)
+        ///dReal normal_force_stiffness, normal_force_damping; //!< simple model for determining contact force from depressed distance... necessary?
+        std::map<std::string, Friction> _mapfriction;         //!< friction coefficients references by target objects
     };
 
     class OPENRAVE_API ActuatorGeomData : public SensorGeometry
@@ -339,14 +339,14 @@ public:
         virtual SensorType GetType() const {
             return ST_Actuator;
         }
-        dReal maxtorque;         ///< Maximum possible torque actuator can apply (on output side). This includes the actuator's rotor, if one exists.
-        dReal maxcurrent;         ///< Maximum permissible current of the actuator. If this current value is exceeded for a prolonged period of time, then an error could occur (due to heat, etc).
-        dReal nominalcurrent;          ///< Rated current of the actuator.
-        dReal maxvelocity;         ///< Maximum permissible velocity of the system (on output side).
-        dReal maxacceleration;         ///< Maximum permissible acceleration of the system (on output side).
-        dReal maxjerk;         ///< Maximum permissible jerking of the system (on output side). The jerk results from a sudden change in acceleration.
-        dReal staticfriction;         ///< minimum torque that must be applied for actuator to overcome static friction
-        dReal viscousfriction;         ///< friction depending on the velocity of the actuator
+        dReal maxtorque;         //!< Maximum possible torque actuator can apply (on output side). This includes the actuator's rotor, if one exists.
+        dReal maxcurrent;         //!< Maximum permissible current of the actuator. If this current value is exceeded for a prolonged period of time, then an error could occur (due to heat, etc).
+        dReal nominalcurrent;          //!< Rated current of the actuator.
+        dReal maxvelocity;         //!< Maximum permissible velocity of the system (on output side).
+        dReal maxacceleration;         //!< Maximum permissible acceleration of the system (on output side).
+        dReal maxjerk;         //!< Maximum permissible jerking of the system (on output side). The jerk results from a sudden change in acceleration.
+        dReal staticfriction;         //!< minimum torque that must be applied for actuator to overcome static friction
+        dReal viscousfriction;         //!< friction depending on the velocity of the actuator
     };
 
     SensorBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Sensor, penv) {
@@ -362,15 +362,15 @@ public:
     /// \brief A set of commands used for run-time sensor configuration.
     enum ConfigureCommand
     {
-        CC_PowerOn=0x10,     ///< turns the sensor on, starts gathering data and using processor cycles. If the power is already on, servers as a reset. (off by default)
-        CC_PowerOff=0x11,     ///< turns the sensor off, stops gathering data (off by default).
-        CC_PowerCheck=0x12,     ///< returns whether power is on
-        CC_RenderDataOn=0x20,     ///< turns on any rendering of the sensor data (off by default)
-        CC_RenderDataOff=0x21,     ///< turns off any rendering of the sensor data (off by default)
-        CC_RenderDataCheck=0x23,     ///< returns whether data rendering is on
-        CC_RenderGeometryOn=0x30,     ///< turns on any rendering of the sensor geometry (on by default)
-        CC_RenderGeometryOff=0x31,     ///< turns off any rendering of the sensor geometry (on by default)
-        CC_RenderGeometryCheck=0x32,     ///< returns whether geometry rendering is on
+        CC_PowerOn=0x10,     //!< turns the sensor on, starts gathering data and using processor cycles. If the power is already on, servers as a reset. (off by default)
+        CC_PowerOff=0x11,     //!< turns the sensor off, stops gathering data (off by default).
+        CC_PowerCheck=0x12,     //!< returns whether power is on
+        CC_RenderDataOn=0x20,     //!< turns on any rendering of the sensor data (off by default)
+        CC_RenderDataOff=0x21,     //!< turns off any rendering of the sensor data (off by default)
+        CC_RenderDataCheck=0x23,     //!< returns whether data rendering is on
+        CC_RenderGeometryOn=0x30,     //!< turns on any rendering of the sensor geometry (on by default)
+        CC_RenderGeometryOff=0x31,     //!< turns off any rendering of the sensor geometry (on by default)
+        CC_RenderGeometryCheck=0x32,     //!< returns whether geometry rendering is on
     };
 
     /// \brief Configures properties of the sensor like power.
@@ -437,7 +437,7 @@ public:
     virtual void Serialize(BaseXMLWriterPtr writer, int options=0) const;
 
 protected:
-    std::string name_;     ///< name of the sensor
+    std::string name_;     //!< name of the sensor
 
 private:
     virtual const char* GetHash() const {

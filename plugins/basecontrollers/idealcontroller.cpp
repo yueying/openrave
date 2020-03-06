@@ -544,9 +544,9 @@ private:
 		}
 	}
 
-	RobotBaseWeakPtr robot_;               ///< controlled body
-	dReal _fSpeed;                    ///< how fast the robot should go
-	TrajectoryBasePtr _ptraj;         ///< computed trajectory robot needs to follow in chunks of _pbody->GetDOF()
+	RobotBaseWeakPtr robot_;               //!< controlled body
+	dReal _fSpeed;                    //!< how fast the robot should go
+	TrajectoryBasePtr _ptraj;         //!< computed trajectory robot needs to follow in chunks of _pbody->GetDOF()
 	bool _bTrajHasJoints, _bTrajHasTransform;
 	std::vector< pair<int, int> > _vgrablinks; /// (data offset, link index) pairs
 	struct GrabBody
@@ -558,17 +558,17 @@ private:
 		int offset;
 		int robotlinkindex;
 		KinBodyPtr pbody;
-		std::shared_ptr<Transform> trelativepose; ///< relative pose of body with link when grabbed. if it doesn't exist, then do not pre-transform the pose
+		std::shared_ptr<Transform> trelativepose; //!< relative pose of body with link when grabbed. if it doesn't exist, then do not pre-transform the pose
 	};
 	std::vector<GrabBody> _vgrabbodylinks;
 	dReal _fCommandTime;
 
-	std::vector<dReal> _vecdesired;         ///< desired values of the joints
+	std::vector<dReal> _vecdesired;         //!< desired values of the joints
 	Transform _tdesired;
 
 	std::vector<int> dof_indices_;
 	std::vector<uint8_t> _dofcircular;
-	std::array< std::vector<dReal>, 3> _vlower, _vupper; ///< position, velocity, acceleration limits
+	std::array< std::vector<dReal>, 3> _vlower, _vupper; //!< position, velocity, acceleration limits
 	int _nControlTransformation;
 	ofstream flog;
 	int cmdid;

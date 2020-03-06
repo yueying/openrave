@@ -594,10 +594,10 @@ void RobotBase::_ComputeConnectedBodiesInformation()
         KinBody::JointInfo& dummyJointInfo = connectedBody._pDummyJointCache->_info;
         dummyJointInfo.name_ = connectedBody._dummyPassiveJointName;
         dummyJointInfo.is_active_ = false;
-        dummyJointInfo._type = KinBody::JointType::JointPrismatic;
-        dummyJointInfo._vmaxaccel[0] = 0.0;
-        dummyJointInfo._vmaxvel[0] = 0.0;
-        dummyJointInfo._vupperlimit[0] = 0;
+        dummyJointInfo.type_ = KinBody::JointType::JointPrismatic;
+        dummyJointInfo.max_accelerate_vector_[0] = 0.0;
+        dummyJointInfo.max_velocity_vector_[0] = 0.0;
+        dummyJointInfo.upper_limit_vector_[0] = 0;
 
         dummyJointInfo._linkname0 = connectedBodyInfo._linkname;
         dummyJointInfo._linkname1 = connectedBody._vResolvedLinkNames.at(0).first;

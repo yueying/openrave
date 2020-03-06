@@ -18,9 +18,12 @@
 #include <algorithm>
 #include <openrave/kinbody.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
-	KinBody::LinkInfo::LinkInfo() : _mass(0), _bStatic(false), _bIsEnabled(true) {
+	KinBody::LinkInfo::LinkInfo() 
+		: mass_(0), is_static_(false), is_enabled_(true) 
+	{
 	}
 
 	KinBody::LinkInfo::LinkInfo(const LinkInfo& other)
@@ -28,7 +31,8 @@ namespace OpenRAVE {
 		*this = other;
 	}
 
-	void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
+	void KinBody::LinkInfo::SerializeJSON(rapidjson::Value &value,
+		rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 	{
 		openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
@@ -39,7 +43,7 @@ namespace OpenRAVE {
 
 		openravejson::SetJsonValueByKey(value, "transform", tmpTransform, allocator);
 		openravejson::SetJsonValueByKey(value, "massTransform", tmpMassTransform, allocator);
-		openravejson::SetJsonValueByKey(value, "mass", _mass, allocator);
+		openravejson::SetJsonValueByKey(value, "mass", mass_, allocator);
 		openravejson::SetJsonValueByKey(value, "intertialMoments", _vinertiamoments, allocator);
 
 		if (_mapFloatParameters.size() > 0) {
@@ -89,8 +93,8 @@ namespace OpenRAVE {
 			value.AddMember("extraGeometries", extraGeometriesValue, allocator);
 		}
 
-		openravejson::SetJsonValueByKey(value, "isStatic", _bStatic, allocator);
-		openravejson::SetJsonValueByKey(value, "isEnabled", _bIsEnabled, allocator);
+		openravejson::SetJsonValueByKey(value, "isStatic", is_static_, allocator);
+		openravejson::SetJsonValueByKey(value, "isEnabled", is_enabled_, allocator);
 	}
 
 	void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value &value, dReal unit_scale)
@@ -98,7 +102,7 @@ namespace OpenRAVE {
 		openravejson::LoadJsonValueByKey(value, "name", name_);
 		openravejson::LoadJsonValueByKey(value, "transform", _t);
 		openravejson::LoadJsonValueByKey(value, "massTransform", _tMassFrame);
-		openravejson::LoadJsonValueByKey(value, "mass", _mass);
+		openravejson::LoadJsonValueByKey(value, "mass", mass_);
 		openravejson::LoadJsonValueByKey(value, "intertialMoments", _vinertiamoments);
 		openravejson::LoadJsonValueByKey(value, "floatParameters", _mapFloatParameters);
 		openravejson::LoadJsonValueByKey(value, "intParameters", _mapIntParameters);
@@ -161,41 +165,42 @@ namespace OpenRAVE {
 		name_ = other.name_;
 		_t = other._t;
 		_tMassFrame = other._tMassFrame;
-		_mass = other._mass;
+		mass_ = other.mass_;
 		_vinertiamoments = other._vinertiamoments;
 		_mapFloatParameters = other._mapFloatParameters;
 		_mapIntParameters = other._mapIntParameters;
 		_mapStringParameters = other._mapStringParameters;
 		_vForcedAdjacentLinks = other._vForcedAdjacentLinks;
-		_bStatic = other._bStatic;
-		_bIsEnabled = other._bIsEnabled;
+		is_static_ = other.is_static_;
+		is_enabled_ = other.is_enabled_;
 
 		return *this;
 	}
 
 	KinBody::Link::Link(KinBodyPtr parent)
 	{
-		_parent = parent;
-		_index = -1;
+		parent_ = parent;
+		index_ = -1;
 	}
 
 	KinBody::Link::~Link()
 	{
 	}
 
-	void KinBody::Link::Enable(bool bEnable)
+	void KinBody::Link::Enable(bool is_enable)
 	{
-		if (_info._bIsEnabled != bEnable) {
+		if (_info.is_enabled_ != is_enable)
+		{
 			KinBodyPtr parent = GetParent();
 			parent->_nNonAdjacentLinkCache &= ~AO_Enabled;
-			_info._bIsEnabled = bEnable;
+			_info.is_enabled_ = is_enable;
 			GetParent()->_PostprocessChangedParameters(Prop_LinkEnable);
 		}
 	}
 
 	bool KinBody::Link::IsEnabled() const
 	{
-		return _info._bIsEnabled;
+		return _info.is_enabled_;
 	}
 
 	bool KinBody::Link::SetVisible(bool visible)
@@ -226,7 +231,7 @@ namespace OpenRAVE {
 
 	void KinBody::Link::GetParentLinks(std::vector< std::shared_ptr<Link> >& vParentLinks) const
 	{
-		KinBodyConstPtr parent(_parent);
+		KinBodyConstPtr parent(parent_);
 		vParentLinks.resize(_vParentLinks.size());
 		for (size_t i = 0; i < _vParentLinks.size(); ++i) {
 			vParentLinks[i] = parent->GetLinks().at(_vParentLinks[i]);
@@ -291,7 +296,7 @@ namespace OpenRAVE {
 
 	void KinBody::Link::SetMass(dReal mass)
 	{
-		_info._mass = mass;
+		_info.mass_ = mass;
 		GetParent()->_PostprocessChangedParameters(Prop_LinkDynamics);
 	}
 
@@ -363,7 +368,7 @@ namespace OpenRAVE {
 
 	void KinBody::Link::serialize(std::ostream& o, int options) const
 	{
-		o << _index << " ";
+		o << index_ << " ";
 		if (options & SO_Geometry) {
 			o << _vGeometries.size() << " ";
 			FOREACHC(it, _vGeometries) {
@@ -372,15 +377,15 @@ namespace OpenRAVE {
 		}
 		if (options & SO_Dynamics) {
 			SerializeRound(o, _info._tMassFrame);
-			SerializeRound(o, _info._mass);
+			SerializeRound(o, _info.mass_);
 			SerializeRound3(o, _info._vinertiamoments);
 		}
 	}
 
 	void KinBody::Link::SetStatic(bool bStatic)
 	{
-		if (_info._bStatic != bStatic) {
-			_info._bStatic = bStatic;
+		if (_info.is_static_ != bStatic) {
+			_info.is_static_ = bStatic;
 			GetParent()->_PostprocessChangedParameters(Prop_LinkStatic);
 		}
 	}
@@ -614,10 +619,10 @@ namespace OpenRAVE {
 	{
 		_vGeometries.swap(link->_vGeometries);
 		FOREACH(itgeom, _vGeometries) {
-			(*itgeom)->_parent = shared_from_this();
+			(*itgeom)->parent_ = shared_from_this();
 		}
 		FOREACH(itgeom, link->_vGeometries) {
-			(*itgeom)->_parent = link;
+			(*itgeom)->parent_ = link;
 		}
 		_Update();
 		link->_Update();
@@ -636,7 +641,7 @@ namespace OpenRAVE {
 
 	void KinBody::Link::GetRigidlyAttachedLinks(std::vector<std::shared_ptr<Link> >& vattachedlinks) const
 	{
-		KinBodyPtr parent(_parent);
+		KinBodyPtr parent(parent_);
 		vattachedlinks.resize(0);
 		FOREACHC(it, _vRigidlyAttachedLinks) {
 			vattachedlinks.push_back(parent->GetLinks().at(*it));

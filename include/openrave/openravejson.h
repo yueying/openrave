@@ -53,7 +53,7 @@ namespace OpenRAVE
 		enum OpenRAVEJSONErrorCode
 		{
 			ORJE_Failed = 0,
-			ORJE_InvalidArguments = 1  ///< passed in input arguments are not valid
+			ORJE_InvalidArguments = 1  //!< passed in input arguments are not valid
 		};
 
 		inline const char* GetErrorCodeString(OpenRAVEJSONErrorCode error)

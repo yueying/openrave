@@ -95,9 +95,9 @@ class ODECollisionChecker : public OpenRAVE::CollisionCheckerBase
         const std::vector<KinBody::LinkConstPtr>* pvlinkexcluded;
 
         bool _bCollision;
-        bool _bStopChecking; ///< if true, should stop checking for new collisions
+        bool _bStopChecking; //!< if true, should stop checking for new collisions
 private:
-        vector<uint8_t> _vactivelinks;     ///< active links for _pbody, only valid if _pbody is a robot
+        vector<uint8_t> _vactivelinks;     //!< active links for _pbody, only valid if _pbody is a robot
         bool bActiveDOFs;
         bool _bHasCallbacks;
         std::list<EnvironmentBase::CollisionCallbackFn> _listcallbacks;

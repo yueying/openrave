@@ -520,7 +520,7 @@ protected:
     // more geom stuff
     vector<uint8_t> _vimagedata;
     RaveVector<float> _vColor;
-    SensorBaseWeakPtr _psensor_reference; ///< weak pointer to the sensor reference. Used to keep track of name changes!
+    SensorBaseWeakPtr _psensor_reference; //!< weak pointer to the sensor reference. Used to keep track of name changes!
 
     Transform _trans;
     dReal _fTimeToImage;
@@ -533,7 +533,7 @@ protected:
     mutable boost::mutex _mutexdata;
 
     bool _bRenderGeometry, _bRenderData;
-    bool _bPower;     ///< if true, gather data, otherwise don't
+    bool _bPower;     //!< if true, gather data, otherwise don't
 
     friend class BaseCameraXMLReader;
 };

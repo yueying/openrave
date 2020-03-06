@@ -32,47 +32,47 @@ namespace OpenRAVE {
 /// By default, the lower 16 bits are set while the upper 16bits are zero.
 enum ConstraintFilterOptions
 {
-    CFO_CheckEnvCollisions=1, ///< will check environment collisions with the robot (checked by default)
-    CFO_CheckSelfCollisions=2, ///< will check the self-collision of the robot (checked by default).
-    CFO_CheckTimeBasedConstraints=4, ///< checks any constraints that are depending on velocity. For example workspace accel constraints or dynamics.
-    CFO_BreakOnFirstValidation=0x8, ///< if set, will break as soon as any constraint is violated (even if more than one are violated, the return code will only show one constraint breaking)
-    CFO_CheckUserConstraints=0x00008000, ///< user-defined functions which don't fit any of the above descriptions
-    CFO_CheckWithPerturbation=0x00010000, ///< when checking collisions, perturbs all the joint values a little and checks again. This forces the line to be away from grazing collisions.
-    CFO_FillCheckedConfiguration=0x00020000, ///< if set, will fill \ref ConstraintFilterReturn::_configurations and \ref ConstraintFilterReturn::_configurationtimes
-    CFO_FillCollisionReport=0x00040000, ///< if set, will fill \ref ConstraintFilterReturn::_report if in environment or self-collision
-    CFO_FinalValuesNotReached=0x40000000, ///< if set, then the final values of the interpolation have not been reached, although a close interpolation has been computed. This happens when manipulator constraints are used.
-    CFO_StateSettingError=0x80000000, ///< error when the state setting function (or neighbor function) breaks
-    CFO_RecommendedOptions = 0x0000ffff, ///< recommended options that all plugins should use by default
+    CFO_CheckEnvCollisions=1, //!< will check environment collisions with the robot (checked by default)
+    CFO_CheckSelfCollisions=2, //!< will check the self-collision of the robot (checked by default).
+    CFO_CheckTimeBasedConstraints=4, //!< checks any constraints that are depending on velocity. For example workspace accel constraints or dynamics.
+    CFO_BreakOnFirstValidation=0x8, //!< if set, will break as soon as any constraint is violated (even if more than one are violated, the return code will only show one constraint breaking)
+    CFO_CheckUserConstraints=0x00008000, //!< user-defined functions which don't fit any of the above descriptions
+    CFO_CheckWithPerturbation=0x00010000, //!< when checking collisions, perturbs all the joint values a little and checks again. This forces the line to be away from grazing collisions.
+    CFO_FillCheckedConfiguration=0x00020000, //!< if set, will fill \ref ConstraintFilterReturn::_configurations and \ref ConstraintFilterReturn::_configurationtimes
+    CFO_FillCollisionReport=0x00040000, //!< if set, will fill \ref ConstraintFilterReturn::_report if in environment or self-collision
+    CFO_FinalValuesNotReached=0x40000000, //!< if set, then the final values of the interpolation have not been reached, although a close interpolation has been computed. This happens when manipulator constraints are used.
+    CFO_StateSettingError=0x80000000, //!< error when the state setting function (or neighbor function) breaks
+    CFO_RecommendedOptions = 0x0000ffff, //!< recommended options that all plugins should use by default
 };
 
 /// \brief the status of the PlanPath method. Used when PlanPath can be called multiple times to resume planning.
 enum PlannerStatusCode
 {
-    PS_Failed = 0, ///< planner failed
-    PS_HasSolution = 1, ///< planner succeeded
-    PS_Interrupted = 2, ///< planning was interrupted, but can be resumed by calling PlanPath again
-    PS_InterruptedWithSolution = 3, ///< planning was interrupted, but a valid path/solution was returned. Can call PlanPath again to refine results
-    PS_FailedDueToCollision = 0x00030000, ///< planner failed due to collision constraints
-    PS_FailedDueToInitial = 0x00040000, ///< failed due to initial configurations
-    PS_FailedDueToGoal = 0x00080000, ///< failed due to goal configurations
-    PS_FailedDueToKinematics = 0x00100000, ///< failed due to kinematics constraints
-    PS_FailedDueToIK = 0x00200000, ///< failed due to inverse kinematics (could be due to collisions or velocity constraints, but don't know)
-    PS_FailedDueToVelocityConstraints = 0x00400000, ///< failed due to velocity constraints
-    PS_FailedDueToCustomFilter = 0x00800000, ///< failed due to custom filter
-    PS_FailedDueToTimeBasedConstraints = 0x01000000, ///< failed due to time based constraints such as torque
+    PS_Failed = 0, //!< planner failed
+    PS_HasSolution = 1, //!< planner succeeded
+    PS_Interrupted = 2, //!< planning was interrupted, but can be resumed by calling PlanPath again
+    PS_InterruptedWithSolution = 3, //!< planning was interrupted, but a valid path/solution was returned. Can call PlanPath again to refine results
+    PS_FailedDueToCollision = 0x00030000, //!< planner failed due to collision constraints
+    PS_FailedDueToInitial = 0x00040000, //!< failed due to initial configurations
+    PS_FailedDueToGoal = 0x00080000, //!< failed due to goal configurations
+    PS_FailedDueToKinematics = 0x00100000, //!< failed due to kinematics constraints
+    PS_FailedDueToIK = 0x00200000, //!< failed due to inverse kinematics (could be due to collisions or velocity constraints, but don't know)
+    PS_FailedDueToVelocityConstraints = 0x00400000, //!< failed due to velocity constraints
+    PS_FailedDueToCustomFilter = 0x00800000, //!< failed due to custom filter
+    PS_FailedDueToTimeBasedConstraints = 0x01000000, //!< failed due to time based constraints such as torque
 };
 
 enum PlanningOptions
 {
-    PO_NoStatusDetail = 1, ///< if set, then do not output any PlannerStatus details, just the finish code. This allows system to be faster.
+    PO_NoStatusDetail = 1, //!< if set, then do not output any PlannerStatus details, just the finish code. This allows system to be faster.
 };
 
 /// \brief action to send to the planner while it is planning. This is usually done by the user-specified planner callback function
 enum PlannerAction
 {
-    PA_None=0, ///< no action
-    PA_Interrupt=1, ///< interrupt the planner and return to user
-    PA_ReturnWithAnySolution=2, ///< return quickly with any path
+    PA_None=0, //!< no action
+    PA_Interrupt=1, //!< interrupt the planner and return to user
+    PA_ReturnWithAnySolution=2, //!< return quickly with any path
 };
 
 /// \brief options to supply to the _neighstatefn depending on how the neighbor should be computed.
@@ -80,16 +80,16 @@ enum PlannerAction
 /// The neighbor function takes a current position q and delta movement qdelta
 enum NeighborStateOptions
 {
-    NSO_GoalToInitial=1, ///< if set, then q is coming from a goal state, else it is coming from an initial state.
-    NSO_OnlyHardConstraints=2, ///< if set, then the new neighbor should be as close as possible to q+qdelta, otherwise can prioritize other constraints and only use q+qdelta as a hint. This is used in smoothers when the path is already determined and user just wants to verify that hard constraints are met only; do not modify q+qdelta unless hard constraints fail.
+    NSO_GoalToInitial=1, //!< if set, then q is coming from a goal state, else it is coming from an initial state.
+    NSO_OnlyHardConstraints=2, //!< if set, then the new neighbor should be as close as possible to q+qdelta, otherwise can prioritize other constraints and only use q+qdelta as a hint. This is used in smoothers when the path is already determined and user just wants to verify that hard constraints are met only; do not modify q+qdelta unless hard constraints fail.
 };
 
 /// \brief the status of _neighstatefn method. The first bit indicates if _neighstatefn call is successful. The second bit indicates, in case the call is successful, if the returned state is obtained from linear interpolation.
 enum NeighborStateStatus
 {
-    NSS_Failed = 0, ///< _neighstatefn failed. The state Filter(q + qdelta) cannot be computed.
-    NSS_Reached = 1, ///< _neighstatefn successful and the returned state is q + qdelta, i.e. linearly interpolated from q.
-    NSS_SuccessfulWithDeviation = 3, ///< _neighstatefn successful but due to constraints, the returned state differs from q + qdelta.
+    NSS_Failed = 0, //!< _neighstatefn failed. The state Filter(q + qdelta) cannot be computed.
+    NSS_Reached = 1, //!< _neighstatefn successful and the returned state is q + qdelta, i.e. linearly interpolated from q.
+    NSS_SuccessfulWithDeviation = 3, //!< _neighstatefn successful but due to constraints, the returned state differs from q + qdelta.
 };
 
 /// \brief Return values for the constraint validation function.
@@ -110,14 +110,14 @@ public:
         _report.Reset();
     }
 
-    std::vector<dReal> _configurations; ///< N*dof vector of the configurations used to check constraints. If the constraints were invalid, they stop at the first invalid constraint
-    std::vector<dReal> _configurationtimes; ///< N vector of the times where each configuration was sampled at. If timeelapsed is set in the check path constraints function, then this is scaled by this time. Otherwise it is a value in [0,1] that describes the interpolation coefficient: 0 is the initial configuration, 1 is the final configuration.
+    std::vector<dReal> _configurations; //!< N*dof vector of the configurations used to check constraints. If the constraints were invalid, they stop at the first invalid constraint
+    std::vector<dReal> _configurationtimes; //!< N vector of the times where each configuration was sampled at. If timeelapsed is set in the check path constraints function, then this is scaled by this time. Otherwise it is a value in [0,1] that describes the interpolation coefficient: 0 is the initial configuration, 1 is the final configuration.
 
-    std::vector<dReal> _invalidvalues, _invalidvelocities; ///< if the constraint returned with an error, contains invalid configuration where it failed
-    dReal _fTimeWhenInvalid; ///< if the constraint has an elapsed time, will contain the time when invalidated
-    int _returncode; ///< if == 0, the constraint is good. If != 0 means constraint was violated and bitmasks in ConstraintFilterOptions can be used to find what constraint was violated.
-    CollisionReport _report; ///< if in collision (_returncode&(CFO_CheckEnvCollisions|CFO_CheckSelfCollisions)), then stores the collision report
-    bool _bHasRampDeviatedFromInterpolation; ///< if true, then it means that the checked ramp that passed is different from the interpolation expected on the start and end points, and the new points are filled in _configurations
+    std::vector<dReal> _invalidvalues, _invalidvelocities; //!< if the constraint returned with an error, contains invalid configuration where it failed
+    dReal _fTimeWhenInvalid; //!< if the constraint has an elapsed time, will contain the time when invalidated
+    int _returncode; //!< if == 0, the constraint is good. If != 0 means constraint was violated and bitmasks in ConstraintFilterOptions can be used to find what constraint was violated.
+    CollisionReport _report; //!< if in collision (_returncode&(CFO_CheckEnvCollisions|CFO_CheckSelfCollisions)), then stores the collision report
+    bool _bHasRampDeviatedFromInterpolation; //!< if true, then it means that the checked ramp that passed is different from the interpolation expected on the start and end points, and the new points are filled in _configurations
 };
 
 typedef std::shared_ptr<ConstraintFilterReturn> ConstraintFilterReturnPtr;
@@ -465,7 +465,7 @@ protected:
     virtual ProcessElement startElement(const std::string& name, const AttributesList& atts);
     virtual bool endElement(const std::string& name);
     virtual void characters(const std::string& ch);
-    std::stringstream _ss;         ///< holds the data read by characters
+    std::stringstream _ss;         //!< holds the data read by characters
     std::shared_ptr<std::stringstream> _sslocal;
     /// all the top-level XML parameter tags (lower case) that are handled by this parameter structure, should be registered in the constructor
     std::vector<std::string> _vXMLParameters;
@@ -474,7 +474,7 @@ protected:
 private:
     /// prevent copy constructors since it gets complicated with virtual functions
     PlannerParameters(const PlannerParameters &r);
-    BaseXMLReaderPtr __pcurreader;         ///< temporary reader
+    BaseXMLReaderPtr __pcurreader;         //!< temporary reader
     std::string __processingtag;
     int _plannerparametersdepth;
 
@@ -513,12 +513,12 @@ public:
         return statusCode&PS_HasSolution;
     }
 
-    PlannerParametersConstPtr parameters; ///< parameters used in the planner
-    std::string description;        ///< Optional, the description of how/why the error happended. Displayed to the user by the UI. It will automatically be filled with a generic message corresponding to statusCode if not provided.
+    PlannerParametersConstPtr parameters; //!< parameters used in the planner
+    std::string description;        //!< Optional, the description of how/why the error happended. Displayed to the user by the UI. It will automatically be filled with a generic message corresponding to statusCode if not provided.
     uint32_t statusCode; // combination of PS_X fields (PlannerStatusCode)
     IkParameterization ikparam;      // Optional,  the ik parameter that failed to find a solution.
     std::vector<dReal> jointValues; // Optional,  the robot's joint values in rad or m
-    CollisionReportPtr report;       ///< Optional,  collision report at the time of the error. Ideally should contents contacts information.
+    CollisionReportPtr report;       //!< Optional,  collision report at the time of the error. Ideally should contents contacts information.
 
     std::string errorOrigin;        // Auto, a string representing the code path of the error. Automatically filled on construction.
 };
@@ -636,8 +636,8 @@ private:
         return OPENRAVE_PLANNER_HASH;
     }
 
-    std::list<UserDataWeakPtr> __listRegisteredCallbacks; ///< internally managed callbacks
-    PlannerBasePtr __cachePostProcessPlanner; ///< cached version of the post process planner
+    std::list<UserDataWeakPtr> __listRegisteredCallbacks; //!< internally managed callbacks
+    PlannerBasePtr __cachePostProcessPlanner; //!< cached version of the post process planner
 
     friend class CustomPlannerCallbackData;
 };

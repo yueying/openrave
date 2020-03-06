@@ -147,10 +147,10 @@ public:
         InstanceModelBinding(domInstance_nodeRef inode, domNodeRef node, domInstance_kinematics_modelRef ikmodel, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>(), const std::string& idsuffix=std::string()) : _inode(inode), _node(node), _ikmodel(ikmodel), _idsuffix(idsuffix) {
             _listInstanceScopeKModel = listInstanceScope;
         }
-        domInstance_nodeRef _inode; ///< optional instance node that the visual node could have come from
-        domNodeRef _node; ///< visual nod
+        domInstance_nodeRef _inode; //!< optional instance node that the visual node could have come from
+        domNodeRef _node; //!< visual nod
         domInstance_kinematics_modelRef _ikmodel;
-        std::string _idsuffix; ///< if _node is instantiated (cloned), then this holds the suffix used to instantiate
+        std::string _idsuffix; //!< if _node is instantiated (cloned), then this holds the suffix used to instantiate
         domInstance_physics_modelRef _ipmodel;
         std::list<daeElementRef> _listInstanceScopeKModel;
         domKinematics_modelRef _kmodel; // the resolved model from _ikmodel
@@ -188,13 +188,13 @@ public:
 
         daeElementRef pvisualtrans;
         domAxis_constraintRef pkinematicaxis;
-        dReal jointvalue; ///< this value is in degrees/meters
-        domInstance_nodeRef ivisualnode; ///< if the visual node comes from instantiating, this points to the instance_node element
-        domNodeRef visualnode; ///< the visual node
+        dReal jointvalue; //!< this value is in degrees/meters
+        domInstance_nodeRef ivisualnode; //!< if the visual node comes from instantiating, this points to the instance_node element
+        domNodeRef visualnode; //!< the visual node
         domKinematics_axis_infoRef kinematics_axis_info;
         domMotion_axis_infoRef motion_axis_info;
         KinBody::JointPtr _pjoint;
-        std::string _jointsidref; ///< the sid of the joint
+        std::string _jointsidref; //!< the sid of the joint
         std::list<daeElementRef> _listInstanceScopeAxis; // <joint>
         int _iaxis;
     };
@@ -205,12 +205,12 @@ public:
 public:
         KinBody::LinkPtr _link;
         domNodeRef _node;
-        std::shared_ptr<daeURI> _nodeurifromphysics; ///< node URL from instance_rigid_body
+        std::shared_ptr<daeURI> _nodeurifromphysics; //!< node URL from instance_rigid_body
         domLinkRef _domlink;
         domInstance_rigid_bodyRef _irigidbody;
         domRigid_bodyRef _rigidbody;
-        domNodeRef _nodephysicsoffset; ///< the physics rigid body is in this coordinate system
-        domInstance_physics_modelRef _ipmodel; ///< parent to _irigidbody
+        domNodeRef _nodephysicsoffset; //!< the physics rigid body is in this coordinate system
+        domInstance_physics_modelRef _ipmodel; //!< parent to _irigidbody
     };
 
     /// \brief inter-collada bindings for a kinematics scene
@@ -1410,8 +1410,8 @@ public:
         }
         KinBody::LinkPtr plink(new KinBody::Link(pkinbody));
         plink->_info.name_ = name;
-        plink->_info._mass = 1.0;
-        plink->_info._bStatic = false;
+        plink->_info.mass_ = 1.0;
+        plink->_info.is_static_ = false;
         plink->_info._t = getNodeParentTransform(pdomnode) * _ExtractFullTransform(pdomnode);
         bool bhasgeometry = ExtractGeometries(pdomnode, plink->_info._t, plink, bindings, vprocessednodes);
         if( !bhasgeometry ) {
@@ -1420,7 +1420,7 @@ public:
 
         RAVELOG_INFO(str(boost::format("Loading non-kinematics node '%s'")%name));
         pkinbody->SetName(name);
-        plink->_index = (int) pkinbody->_veclinks.size();
+        plink->index_ = (int) pkinbody->_veclinks.size();
         pkinbody->_veclinks.push_back(plink);
         return pkinbody;
     }
@@ -1646,7 +1646,7 @@ public:
                                 }
                                 bool bControlMode = pelt->getElementName() == std::string("controlMode");
                                 if( bControlMode ) {
-                                    pjoint->_info._controlMode = (KinBody::JointControlMode)boost::lexical_cast<int>(pelt->getCharData());
+                                    pjoint->_info.control_mode_ = (KinBody::JointControlMode)boost::lexical_cast<int>(pelt->getCharData());
                                     continue;
                                 }
                                 bool bJCIRobotController = pelt->getElementName() == std::string("jointcontrolinfo_robotcontroller");
@@ -1742,7 +1742,7 @@ public:
                             // vUpper/LowerLimitSensorIsOn would be meaningless without vUpper/LowerLimitIONames. If the
                             // sizes of the two are not equal, resize vUpperLimitSensorIsOn to have the same size as
                             // vUpperLimitIONames and fill in the default value (1) if necessary.
-                            if( pjoint->_info._controlMode == KinBody::JointControlMode::JCM_IO ) {
+                            if( pjoint->_info.control_mode_ == KinBody::JointControlMode::JCM_IO ) {
                                 for( int ijointaxis = 0; ijointaxis < pjoint->GetDOF(); ++ijointaxis ) {
                                     if( pjoint->_info._jci_io->vUpperLimitIONames.at(ijointaxis).size() != pjoint->_info._jci_io->vUpperLimitSensorIsOn.at(ijointaxis).size() ) {
                                         pjoint->_info._jci_io->vUpperLimitSensorIsOn[ijointaxis].resize(pjoint->_info._jci_io->vUpperLimitIONames.at(ijointaxis).size(), 1);
@@ -1788,10 +1788,10 @@ public:
         if( !plink ) {
             plink.reset(new KinBody::Link(pkinbody));
             plink->_info.name_ = linkname;
-            plink->_info._mass = 1e-10;
+            plink->_info.mass_ = 1e-10;
             plink->_info._vinertiamoments = Vector(1e-7,1e-7,1e-7);
-            plink->_info._bStatic = false;
-            plink->_index = (int) pkinbody->_veclinks.size();
+            plink->_info.is_static_ = false;
+            plink->index_ = (int) pkinbody->_veclinks.size();
             pkinbody->_veclinks.push_back(plink);
         }
         else {
@@ -1852,7 +1852,7 @@ public:
         if( !!rigidbody && !!rigidbody->getTechnique_common() ) {
             domRigid_body::domTechnique_commonRef rigiddata = rigidbody->getTechnique_common();
             if( !!rigiddata->getMass() ) {
-                plink->_info._mass = rigiddata->getMass()->getValue();
+                plink->_info.mass_ = rigiddata->getMass()->getValue();
             }
             Transform tmassframe = trigidoffset;
             if( !!rigiddata->getMass_frame() ) {
@@ -1865,7 +1865,7 @@ public:
             }
             plink->_info._tMassFrame = plink->_info._t.inverse() * tmassframe;
             if( !!rigiddata->getDynamic() ) {
-                plink->_info._bStatic = !rigiddata->getDynamic()->getValue();
+                plink->_info.is_static_ = !rigiddata->getDynamic()->getValue();
             }
         }
         else {
@@ -1963,7 +1963,7 @@ public:
                 KinBody::JointPtr pjoint(new KinBody::Joint(pkinbody));
                 int jointtype = vdomaxes.getCount();
                 pjoint->_info.is_active_ = true;     // if not active, put into the passive list
-                FOREACH(it,pjoint->_info._vweights) {
+                FOREACH(it,pjoint->_info.weights_vector_) {
                     *it = 1;
                 }
 
@@ -1992,21 +1992,21 @@ public:
                     }
                     domAxis_constraintRef pdomaxis = vdomaxes[ic];
                     if( strcmp(pdomaxis->getElementName(), "revolute") == 0 ) {
-                        pjoint->_info._type = KinBody::JointRevolute;
-                        pjoint->_info._vmaxvel[ic] = 0.5;
+                        pjoint->_info.type_ = KinBody::JointRevolute;
+                        pjoint->_info.max_velocity_vector_[ic] = 0.5;
                     }
                     else if( strcmp(pdomaxis->getElementName(), "prismatic") == 0 ) {
-                        pjoint->_info._type = KinBody::JointPrismatic;
+                        pjoint->_info.type_ = KinBody::JointPrismatic;
                         vaxisunits[ic] = _GetUnitScale(pdomaxis,_fGlobalScale);
                         jointtype |= 1<<(4+ic);
-                        pjoint->_info._vmaxvel[ic] = 0.01;
+                        pjoint->_info.max_velocity_vector_[ic] = 0.01;
                     }
                     else {
                         RAVELOG_WARN(str(boost::format("unsupported joint type: %s\n")%pdomaxis->getElementName()));
                     }
                 }
 
-                pjoint->_info._type = (KinBody::JointType)jointtype;
+                pjoint->_info.type_ = (KinBody::JointType)jointtype;
                 _mapJointUnits[pjoint] = vaxisunits;
                 if( pjoint->_info.is_active_ ) {
                     pjoint->jointindex = (int) pkinbody->_vecjoints.size();
@@ -2048,8 +2048,8 @@ public:
                     ss <<"_dummy" << pkinbody->_veclinks.size();
                     pchildlink.reset(new KinBody::Link(pkinbody));
                     pchildlink->_info.name_ = ss.str();
-                    pchildlink->_info._bStatic = false;
-                    pchildlink->_index = (int)pkinbody->_veclinks.size();
+                    pchildlink->_info.is_static_ = false;
+                    pchildlink->index_ = (int)pkinbody->_veclinks.size();
                     pkinbody->_veclinks.push_back(pchildlink);
                 }
 
@@ -2083,7 +2083,7 @@ public:
                         fjointmult = _GetUnitScale(kinematics_axis_info,_fGlobalScale);
                     }
 
-                    pjoint->_info._voffsets[ic] = 0;     // to overcome -pi to pi boundary
+                    pjoint->_info.offsets_vector_[ic] = 0;     // to overcome -pi to pi boundary
                     if (pkinbody->IsRobot() && !motion_axis_info) {
                         RAVELOG_WARN(str(boost::format("No motion axis info for joint %s\n")%pjoint->GetName()));
                     }
@@ -2096,14 +2096,14 @@ public:
                             domKinematics_newparamRef param = motion_axis_info->getNewparam_array()[iparam];
                             if ( !!param->getSid() ) {
                                 if ( std::string(param->getSid()) == "hardMaxVel" ) {
-                                    pjoint->_info._vhardmaxvel[ic] = fjointmult * param->getFloat()->getValue();
-                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info._vhardmaxvel[ic]);
+                                    pjoint->_info.hard_max_velocity_vector_[ic] = fjointmult * param->getFloat()->getValue();
+                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info.hard_max_velocity_vector_[ic]);
                                 } else if ( std::string(param->getSid()) == "hardMaxAccel" ) {
-                                    pjoint->_info._vhardmaxaccel[ic] = fjointmult * param->getFloat()->getValue();
-                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info._vhardmaxaccel[ic]);
+                                    pjoint->_info.hard_max_accelerate_vector_[ic] = fjointmult * param->getFloat()->getValue();
+                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info.hard_max_accelerate_vector_[ic]);
                                 } else if ( std::string(param->getSid()) == "hardMaxJerk" ) {
-                                    pjoint->_info._vhardmaxjerk[ic] = fjointmult * param->getFloat()->getValue();
-                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info._vhardmaxjerk[ic]);
+                                    pjoint->_info.hard_max_jerk_vector_[ic] = fjointmult * param->getFloat()->getValue();
+                                    RAVELOG_VERBOSE_FORMAT("... %s: %f...", param->getSid() % pjoint->_info.hard_max_jerk_vector_[ic]);
                                 }
                             }
                         }
@@ -2111,35 +2111,35 @@ public:
                         // Read soft limits. Soft limits are defined as <speed>, <acceleration>, <jerk> tag.
                         // In below, we check the consistency between hard limit (_vhadmaxXXX) and soft limit (_vmaxXXX). If soft limit is larger than soft limit, it is invalid and overwrite soft limit by hard limit.
                         if (!!motion_axis_info->getSpeed()) {
-                            pjoint->_info._vmaxvel[ic] = resolveFloat(motion_axis_info->getSpeed(),motion_axis_info);
+                            pjoint->_info.max_velocity_vector_[ic] = resolveFloat(motion_axis_info->getSpeed(),motion_axis_info);
                             if( !_bBackCompatValuesInRadians ) {
-                                pjoint->_info._vmaxvel[ic] *= fjointmult;
+                                pjoint->_info.max_velocity_vector_[ic] *= fjointmult;
                             }
-                            if ( pjoint->_info._vhardmaxvel[ic] != 0.0 && pjoint->_info._vhardmaxvel[ic] < pjoint->_info._vmaxvel[ic] ) {
-                                RAVELOG_VERBOSE_FORMAT("... Joint Speed : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info._vmaxvel[ic] % pjoint->_info._vhardmaxvel[ic]);
-                                pjoint->_info._vmaxvel[ic] = pjoint->_info._vhardmaxvel[ic];
+                            if ( pjoint->_info.hard_max_velocity_vector_[ic] != 0.0 && pjoint->_info.hard_max_velocity_vector_[ic] < pjoint->_info.max_velocity_vector_[ic] ) {
+                                RAVELOG_VERBOSE_FORMAT("... Joint Speed : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info.max_velocity_vector_[ic] % pjoint->_info.hard_max_velocity_vector_[ic]);
+                                pjoint->_info.max_velocity_vector_[ic] = pjoint->_info.hard_max_velocity_vector_[ic];
                             }
                             RAVELOG_VERBOSE("... Joint Speed: %f...\n",pjoint->GetMaxVel());
                         }
                         if (!!motion_axis_info->getAcceleration()) {
-                            pjoint->_info._vmaxaccel[ic] = resolveFloat(motion_axis_info->getAcceleration(),motion_axis_info);
+                            pjoint->_info.max_accelerate_vector_[ic] = resolveFloat(motion_axis_info->getAcceleration(),motion_axis_info);
                             if( !_bBackCompatValuesInRadians ) {
-                                pjoint->_info._vmaxaccel[ic] *= fjointmult;
+                                pjoint->_info.max_accelerate_vector_[ic] *= fjointmult;
                             }
-                            if ( pjoint->_info._vhardmaxaccel[ic] != 0.0 && pjoint->_info._vhardmaxaccel[ic] < pjoint->_info._vmaxaccel[ic] ) {
-                                RAVELOG_VERBOSE_FORMAT("... Joint Acceleration : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info._vmaxaccel[ic] % pjoint->_info._vhardmaxaccel[ic]);
-                                pjoint->_info._vmaxaccel[ic] = pjoint->_info._vhardmaxaccel[ic];
+                            if ( pjoint->_info.hard_max_accelerate_vector_[ic] != 0.0 && pjoint->_info.hard_max_accelerate_vector_[ic] < pjoint->_info.max_accelerate_vector_[ic] ) {
+                                RAVELOG_VERBOSE_FORMAT("... Joint Acceleration : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info.max_accelerate_vector_[ic] % pjoint->_info.hard_max_accelerate_vector_[ic]);
+                                pjoint->_info.max_accelerate_vector_[ic] = pjoint->_info.hard_max_accelerate_vector_[ic];
                             }
                             RAVELOG_VERBOSE("... Joint Acceleration: %f...\n",pjoint->GetMaxAccel());
                         }
                         if (!!motion_axis_info->getJerk()) {
-                            pjoint->_info._vmaxjerk[ic] = resolveFloat(motion_axis_info->getJerk(),motion_axis_info);
+                            pjoint->_info.max_jerk_vector_[ic] = resolveFloat(motion_axis_info->getJerk(),motion_axis_info);
                             if( !_bBackCompatValuesInRadians ) {
-                                pjoint->_info._vmaxjerk[ic] *= fjointmult;
+                                pjoint->_info.max_jerk_vector_[ic] *= fjointmult;
                             }
-                            if ( pjoint->_info._vhardmaxjerk[ic] != 0.0 && pjoint->_info._vhardmaxjerk[ic] < pjoint->_info._vmaxjerk[ic] ) {
-                                RAVELOG_VERBOSE_FORMAT("... Joint Jerk : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info._vmaxjerk[ic] % pjoint->_info._vhardmaxjerk[ic]);
-                                pjoint->_info._vmaxjerk[ic] = pjoint->_info._vhardmaxjerk[ic];
+                            if ( pjoint->_info.hard_max_jerk_vector_[ic] != 0.0 && pjoint->_info.hard_max_jerk_vector_[ic] < pjoint->_info.max_jerk_vector_[ic] ) {
+                                RAVELOG_VERBOSE_FORMAT("... Joint Jerk : Tried to set soft limit as %f but it exceeds hard limit. Therefore, reset to hard limit %f for consistency...\n", pjoint->_info.max_jerk_vector_[ic] % pjoint->_info.hard_max_jerk_vector_[ic]);
+                                pjoint->_info.max_jerk_vector_[ic] = pjoint->_info.hard_max_jerk_vector_[ic];
                             }
                             RAVELOG_VERBOSE("... Joint Jerk: %f...\n",pjoint->GetMaxJerk());
                         }
@@ -2157,17 +2157,17 @@ public:
 
                         if (joint_locked) {     // If joint is locked set limits to the static value.
                             RAVELOG_WARN("lock joint!!\n");
-                            pjoint->_info._vlowerlimit.at(ic) = 0;
-                            pjoint->_info._vupperlimit.at(ic) = 0;
+                            pjoint->_info.lower_limit_vector_.at(ic) = 0;
+                            pjoint->_info.upper_limit_vector_.at(ic) = 0;
                         }
                         else if (!!kinematics_axis_info->getLimits()) {     // If there are articulated system kinematics limits
                             has_soft_limits = true;
-                            pjoint->_info._vlowerlimit.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMin(),kinematics_axis_info));
-                            pjoint->_info._vupperlimit.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMax(),kinematics_axis_info));
+                            pjoint->_info.lower_limit_vector_.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMin(),kinematics_axis_info));
+                            pjoint->_info.upper_limit_vector_.at(ic) = fjointmult*(dReal)(resolveFloat(kinematics_axis_info->getLimits()->getMax(),kinematics_axis_info));
                             if( pjoint->IsRevolute(ic) ) {
-                                if(( pjoint->_info._vlowerlimit.at(ic) < -PI) ||( pjoint->_info._vupperlimit[ic] > PI) ) {
+                                if(( pjoint->_info.lower_limit_vector_.at(ic) < -PI) ||( pjoint->_info.upper_limit_vector_[ic] > PI) ) {
                                     // TODO, necessary?
-                                    pjoint->_info._voffsets[ic] = 0.5f * (pjoint->_info._vlowerlimit.at(ic) + pjoint->_info._vupperlimit[ic]);
+                                    pjoint->_info.offsets_vector_[ic] = 0.5f * (pjoint->_info.lower_limit_vector_.at(ic) + pjoint->_info.upper_limit_vector_[ic]);
                                 }
                             }
                         }
@@ -2190,7 +2190,7 @@ public:
                                 else if( paramsid == "planning_weight" ) {
                                     if( !!axisparam->getFloat() ) {
                                         if( axisparam->getFloat()->getValue() > 0 ) {
-                                            pjoint->_info._vweights[ic] = axisparam->getFloat()->getValue();
+                                            pjoint->_info.weights_vector_[ic] = axisparam->getFloat()->getValue();
                                         }
                                         else {
                                             RAVELOG_WARN(str(boost::format("bad joint weight %f")%axisparam->getFloat()->getValue()));
@@ -2203,7 +2203,7 @@ public:
                                 else if( paramsid == "discretization_resolution" ) {
                                     if( !!axisparam->getFloat() ) {
                                         if( axisparam->getFloat()->getValue() > 0 ) {
-                                            pjoint->_info._vresolution[ic] = axisparam->getFloat()->getValue();
+                                            pjoint->_info.resolution_vector_[ic] = axisparam->getFloat()->getValue();
                                         }
                                         else {
                                             RAVELOG_WARN(str(boost::format("bad joint resolution %f")%axisparam->getFloat()->getValue()));
@@ -2223,33 +2223,33 @@ public:
                             // contains the hard limits (prioritize over soft limits)
                             RAVELOG_VERBOSE_FORMAT("There are LIMITS in joint %s", pjoint->GetName());
                             dReal fscale = pjoint->IsRevolute(ic) ? (PI/180.0f) : _GetUnitScale(pdomaxis,_fGlobalScale);
-                            pjoint->_info._vlowerlimit.at(ic) = (dReal)pdomaxis->getLimits()->getMin()->getValue()*fscale;
-                            pjoint->_info._vupperlimit.at(ic) = (dReal)pdomaxis->getLimits()->getMax()->getValue()*fscale;
+                            pjoint->_info.lower_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMin()->getValue()*fscale;
+                            pjoint->_info.upper_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMax()->getValue()*fscale;
                             if( pjoint->IsRevolute(ic) ) {
-                                if(( pjoint->_info._vlowerlimit[ic] < -PI) ||( pjoint->_info._vupperlimit[ic] > PI) ) {
+                                if(( pjoint->_info.lower_limit_vector_[ic] < -PI) ||( pjoint->_info.upper_limit_vector_[ic] > PI) ) {
                                     // TODO, necessary?
-                                    pjoint->_info._voffsets[ic] = 0.5f * (pjoint->_info._vlowerlimit[ic] + pjoint->_info._vupperlimit[ic]);
+                                    pjoint->_info.offsets_vector_[ic] = 0.5f * (pjoint->_info.lower_limit_vector_[ic] + pjoint->_info.upper_limit_vector_[ic]);
                                 }
                             }
                         }
                     }
 
                     if( !!is_circular ) {
-                        pjoint->_info._bIsCircular.at(ic) = *is_circular;
+                        pjoint->_info.is_circular_.at(ic) = *is_circular;
                     }
 
                     if( !has_soft_limits && !has_hard_limits && !joint_locked ) {
                         RAVELOG_VERBOSE(str(boost::format("There are NO LIMITS in joint %s ...\n")%pjoint->GetName()));
                         if( pjoint->IsRevolute(ic) ) {
                             if( !is_circular ) {
-                                pjoint->_info._bIsCircular.at(ic) = true;
+                                pjoint->_info.is_circular_.at(ic) = true;
                             }
-                            pjoint->_info._vlowerlimit.at(ic) = -PI;
-                            pjoint->_info._vupperlimit.at(ic) = PI;
+                            pjoint->_info.lower_limit_vector_.at(ic) = -PI;
+                            pjoint->_info.upper_limit_vector_.at(ic) = PI;
                         }
                         else {
-                            pjoint->_info._vlowerlimit.at(ic) =-1000000;
-                            pjoint->_info._vupperlimit.at(ic) = 1000000;
+                            pjoint->_info.lower_limit_vector_.at(ic) =-1000000;
+                            pjoint->_info.upper_limit_vector_.at(ic) = 1000000;
                         }
                     }
 
@@ -4675,10 +4675,10 @@ private:
                             bool bIsEnabled=true;
                             if( resolveCommon_bool_or_param(pelt, referenceElt, bIsEnabled) ) {
                                 if( bAndWithPrevious ) {
-                                    plink->_info._bIsEnabled &= bIsEnabled;
+                                    plink->_info.is_enabled_ &= bIsEnabled;
                                 }
                                 else {
-                                    plink->_info._bIsEnabled = bIsEnabled;
+                                    plink->_info.is_enabled_ = bIsEnabled;
                                 }
                             }
                         }
@@ -5510,21 +5510,21 @@ private:
     std::map<std::string,KinBody::JointPtr> _mapJointSids;
     string _prefix;
     int _nGlobalSensorId, _nGlobalManipulatorId, _nGlobalIndex;
-    bool _bResetGlobalDae;  ///< Global Dae will be reset in destructor if true. have to manually reset if set to false
+    bool _bResetGlobalDae;  //!< Global Dae will be reset in destructor if true. have to manually reset if set to false
     std::string _filename;
     std::set<KinBody::LinkPtr> _setInitialLinks;
     std::set<KinBody::JointPtr> _setInitialJoints;
     std::set<RobotBase::ManipulatorPtr> _setInitialManipulators;
     std::set<RobotBase::AttachedSensorPtr> _setInitialSensors;
     std::vector<std::string> _vOpenRAVESchemeAliases;
-    std::map<std::string,daeURI> _mapInverseResolvedURIList; ///< holds a list of inverse resolved relationships file:// -> openrave://
-    std::map<domNodeRef, std::pair<domInstance_nodeRef, std::string> > _mapInstantiatedNodes; ///< holds a map of the instantiated (cloned) node and the original instance_node elements. Also contains the idsuffix used to instantiate the node.
+    std::map<std::string,daeURI> _mapInverseResolvedURIList; //!< holds a list of inverse resolved relationships file:// -> openrave://
+    std::map<domNodeRef, std::pair<domInstance_nodeRef, std::string> > _mapInstantiatedNodes; //!< holds a map of the instantiated (cloned) node and the original instance_node elements. Also contains the idsuffix used to instantiate the node.
 
-    bool _bOpeningZAE; ///< true if currently opening a zae
+    bool _bOpeningZAE; //!< true if currently opening a zae
     bool _bSkipGeometry;
-    bool _bReadGeometryGroups; ///< if true, then read the bind_instance_geometry tag to initialize all the geometry groups
-    bool _bBackCompatValuesInRadians; ///< if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
-    bool _bExtractConnectedBodies; ///< if true, calls ExtractRobotConnectedBodies and initializes the connected bodies.
+    bool _bReadGeometryGroups; //!< if true, then read the bind_instance_geometry tag to initialize all the geometry groups
+    bool _bBackCompatValuesInRadians; //!< if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
+    bool _bExtractConnectedBodies; //!< if true, calls ExtractRobotConnectedBodies and initializes the connected bodies.
 };
 
 bool RaveParseColladaURI(EnvironmentBasePtr penv, const std::string& uri,const AttributesList& atts)
