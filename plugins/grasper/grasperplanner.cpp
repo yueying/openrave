@@ -120,8 +120,8 @@ public:
             pbase = _vlinks.at(0);
         }
 
-        if( (int)_parameters->vinitialconfig.size() == _robot->GetActiveDOF() ) {
-            _robot->SetActiveDOFValues(_parameters->vinitialconfig,KinBody::CLA_CheckLimitsSilent);
+        if( (int)_parameters->initial_config_vector_.size() == _robot->GetActiveDOF() ) {
+            _robot->SetActiveDOFValues(_parameters->initial_config_vector_,KinBody::CLA_CheckLimitsSilent);
         }
 
         Transform tbase = pbase->GetTransform(), trobot = _robot->GetTransform();
@@ -390,8 +390,8 @@ public:
         std::vector<dReal> vlowerlim, vupperlim;
         _robot->GetActiveDOFLimits(vlowerlim,vupperlim);
         vector<dReal> vchuckingdir(_robot->GetActiveDOF(),0);
-        if( (int)_parameters->vgoalconfig.size() == _robot->GetActiveDOF() ) {
-            vchuckingdir = _parameters->vgoalconfig;
+        if( (int)_parameters->goal_config_vector_.size() == _robot->GetActiveDOF() ) {
+            vchuckingdir = _parameters->goal_config_vector_;
         }
         else {
             // get chucking direction from manipulators

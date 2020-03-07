@@ -125,13 +125,13 @@ public:
             params->SetRobotActiveJoints(robot);
             params->_nRRTExtentType = 1; // one step
             params->_goalfn = boost::bind(&MoveUnsync::Eval,pgoalfn,_1);
-            params->_nMaxIterations = 5000;
-            robot->GetActiveDOFValues(params->vinitialconfig);
-            params->_fStepLength = 0.04f;
+            params->max_iterations_ = 5000;
+            robot->GetActiveDOFValues(params->initial_config_vector_);
+            params->step_length_ = 0.04f;
 
-            if( pgoalfn->Eval(params->vinitialconfig) <= pgoalfn->GetGoalThresh() ) {
+            if( pgoalfn->Eval(params->initial_config_vector_) <= pgoalfn->GetGoalThresh() ) {
                 // already done
-                ptraj->Insert(0,params->vinitialconfig);
+                ptraj->Insert(0,params->initial_config_vector_);
                 return true;
             }
 

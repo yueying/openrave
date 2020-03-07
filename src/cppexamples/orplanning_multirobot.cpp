@@ -40,7 +40,7 @@ public:
         ConfigurationSpecification spec = probot1->GetActiveManipulator()->GetArmConfigurationSpecification() + probot2->GetActiveManipulator()->GetArmConfigurationSpecification();
         PlannerBase::PlannerParametersPtr params(new PlannerBase::PlannerParameters());
         params->SetConfigurationSpecification(penv,spec); // set the joint configuration
-        params->_nMaxIterations = 4000; // max iterations before failure
+        params->max_iterations_ = 4000; // max iterations before failure
         params->Validate();
 
         // create the planner parameters
@@ -51,8 +51,8 @@ public:
             {
                 EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
 
-                params->_getstatefn(params->vinitialconfig);
-                params->vgoalconfig.resize(params->GetDOF());
+                params->_getstatefn(params->initial_config_vector_);
+                params->goal_config_vector_.resize(params->GetDOF());
 
                 // find a set of free joint values for the robot
                 {
@@ -60,18 +60,18 @@ public:
 					{
                         for(int i = 0; i < params->GetDOF(); ++i)
 						{
-                            params->vgoalconfig[i] = params->_vConfigLowerLimit[i] 
-								+ (params->_vConfigUpperLimit[i]-params->_vConfigLowerLimit[i])*RaveRandomFloat();
+                            params->goal_config_vector_[i] = params->config_lower_limit_vector_[i] 
+								+ (params->config_upper_limit_vector_[i]-params->config_lower_limit_vector_[i])*RaveRandomFloat();
                         }
-                        params->_setstatevaluesfn(params->vgoalconfig,0);
-						/*if( params->_checkpathconstraintsfn(params->vgoalconfig,params->vgoalconfig,
+                        params->_setstatevaluesfn(params->goal_config_vector_,0);
+						/*if( params->_checkpathconstraintsfn(params->goal_config_vector_,params->goal_config_vector_,
 							IT_OpenStart,PlannerBase::ConfigurationListPtr()) )
 						{
 							break;
 						}*/
                     }
                     // restore robot state
-                    params->_setstatevaluesfn(params->vinitialconfig,0);
+                    params->_setstatevaluesfn(params->initial_config_vector_,0);
                 }
 
                 RAVELOG_INFO("starting to plan\n");

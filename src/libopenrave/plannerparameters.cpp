@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -38,14 +38,14 @@ typedef bai::base64_from_binary<    // convert binary values to base64 character
         > base64_text;
 
 WorkspaceTrajectoryParameters::WorkspaceTrajectoryParameters(EnvironmentBasePtr penv) : maxdeviationangle(0.15*PI), maintaintiming(false), greedysearch(true), ignorefirstcollision(0), ignorefirstcollisionee(0), ignorelastcollisionee(0), minimumcompletetime(0), _penv(penv), _bProcessing(false) {
-    _vXMLParameters.push_back("maxdeviationangle");
-    _vXMLParameters.push_back("maintaintiming");
-    _vXMLParameters.push_back("greedysearch");
-    _vXMLParameters.push_back("ignorefirstcollision");
-    _vXMLParameters.push_back("ignorefirstcollisionee");
-    _vXMLParameters.push_back("ignorelastcollisionee");
-    _vXMLParameters.push_back("minimumcompletetime");
-    _vXMLParameters.push_back("workspacetrajectory");
+    xml_parameters_vector_.push_back("maxdeviationangle");
+    xml_parameters_vector_.push_back("maintaintiming");
+    xml_parameters_vector_.push_back("greedysearch");
+    xml_parameters_vector_.push_back("ignorefirstcollision");
+    xml_parameters_vector_.push_back("ignorefirstcollisionee");
+    xml_parameters_vector_.push_back("ignorelastcollisionee");
+    xml_parameters_vector_.push_back("minimumcompletetime");
+    xml_parameters_vector_.push_back("workspacetrajectory");
 }
 
 // save the extra data to XML

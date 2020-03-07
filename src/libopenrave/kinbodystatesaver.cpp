@@ -146,7 +146,7 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
             }
         }
         if( bchanged ) {
-            pbody->_nNonAdjacentLinkCache &= ~AO_Enabled;
+            pbody->non_adjacent_link_cache_ &= ~AO_Enabled;
             pbody->_PostprocessChangedParameters(Prop_LinkEnable);
         }
     }
@@ -294,7 +294,7 @@ void KinBody::KinBodyStateSaverRef::_RestoreKinBody(KinBody& body)
             }
         }
         if( bchanged ) {
-            body._nNonAdjacentLinkCache &= ~AO_Enabled;
+            body.non_adjacent_link_cache_ &= ~AO_Enabled;
             body._PostprocessChangedParameters(Prop_LinkEnable);
         }
     }

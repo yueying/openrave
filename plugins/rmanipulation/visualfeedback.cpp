@@ -1299,7 +1299,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         std::shared_ptr<ostream> pOutputTrajStream;
 
         PlannerBase::PlannerParametersPtr params(new PlannerBase::PlannerParameters());
-        params->_nMaxIterations = 4000;
+        params->max_iterations_ = 4000;
         int affinedofs=0;
         string cmd, plannername="BiRRT";
         dReal fSampleGoalProb = 0.001f;
@@ -1318,7 +1318,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
                 sinput >> affinedofs;
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_;
             }
             else if( cmd == "execute" ) {
                 sinput >> bExecute;
@@ -1327,7 +1327,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
                 sinput >> strtrajfilename;
             }
             else if( cmd == "smoothpath" ) {
-                sinput >> params->_sPostProcessingPlanner;
+                sinput >> params->post_processing_planner_;
             }
             else if( cmd == "planner" ) {
                 sinput >> plannername;
@@ -1355,19 +1355,19 @@ Visibility computation checks occlusion with other objects using ray sampling in
         _robot->RegrabAll();
 
         params->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(params->vinitialconfig);
+        _robot->GetActiveDOFValues(params->initial_config_vector_);
 
         params->_samplegoalfn = boost::bind(&GoalSampleFunction::Sample,pgoalsampler,_1);
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
         ptraj->Init(_robot->GetActiveConfigurationSpecification());
-        ptraj->Insert(0,params->vinitialconfig);
+        ptraj->Insert(0,params->initial_config_vector_);
 
         // jitter for initial collision
         if( !planningutils::JitterActiveDOF(_robot) ) {
             RAVELOG_WARN("jitter failed for initial\n");
             return false;
         }
-        _robot->GetActiveDOFValues(params->vinitialconfig);
+        _robot->GetActiveDOFValues(params->initial_config_vector_);
 
         PlannerBasePtr planner = RaveCreatePlanner(GetEnv(),plannername);
         if( !planner ) {
@@ -1412,7 +1412,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         std::shared_ptr<ostream> pOutputTrajStream;
 
         std::shared_ptr<GraspSetParameters> params(new GraspSetParameters(GetEnv()));
-        params->_nMaxIterations = 4000;
+        params->max_iterations_ = 4000;
         string cmd, plannername="GraspGradient";
         params->_fVisibiltyGraspThresh = 0.05f;
         bool bUseVisibility = false;
@@ -1427,7 +1427,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
                 pOutputTrajStream = std::shared_ptr<ostream>(&sout,utils::null_deleter());
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_;
             }
             else if( cmd == "visgraspthresh" ) {
                 sinput >> params->_fVisibiltyGraspThresh;
@@ -1484,7 +1484,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
         }
 
         params->_ptarget = _targetlink->GetParent();
-        _robot->GetActiveDOFValues(params->vinitialconfig);
+        _robot->GetActiveDOFValues(params->initial_config_vector_);
 
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
         ptraj->Init(_robot->GetActiveConfigurationSpecification());

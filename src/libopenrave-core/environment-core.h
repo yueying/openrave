@@ -2226,7 +2226,7 @@ protected:
                         //pnewrobot->ReleaseAllGrabbed(); // will re-grab later?
                         listToCopyState.push_back(*itrobot);
                     }
-                    pnewrobot->_environmentid = (*itrobot)->GetEnvironmentId();
+                    pnewrobot->environment_id_ = (*itrobot)->GetEnvironmentId();
                     BOOST_ASSERT( _mapBodies.find(pnewrobot->GetEnvironmentId()) == _mapBodies.end() );
                     bodies_vector_.push_back(pnewrobot);
                     robots_vector_.push_back(pnewrobot);
@@ -2258,7 +2258,7 @@ protected:
                     else {
                         listToCopyState.push_back(*itbody);
                     }
-                    pnewbody->_environmentid = (*itbody)->GetEnvironmentId();
+                    pnewbody->environment_id_ = (*itbody)->GetEnvironmentId();
                     bodies_vector_.push_back(pnewbody);
                     _mapBodies[pnewbody->GetEnvironmentId()] = pnewbody;
                 }
@@ -2482,15 +2482,15 @@ protected:
         boost::mutex::scoped_lock locknetworkid(_mutexEnvironmentIds);
         int id = environment_index_++;
         BOOST_ASSERT( _mapBodies.find(id) == _mapBodies.end() );
-        pbody->_environmentid=id;
+        pbody->environment_id_=id;
         _mapBodies[id] = pbody;
     }
 
     virtual void RemoveEnvironmentId(KinBodyPtr pbody)
     {
         boost::mutex::scoped_lock locknetworkid(_mutexEnvironmentIds);
-        _mapBodies.erase(pbody->_environmentid);
-        pbody->_environmentid = 0;
+        _mapBodies.erase(pbody->environment_id_);
+        pbody->environment_id_ = 0;
         pbody->_DeinitializeInternalInformation();
     }
 

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -28,8 +28,8 @@ class OPENRAVE_API ExplorationParameters : public PlannerBase::PlannerParameters
 {
 public:
     ExplorationParameters() : _fExploreProb(0), _nExpectedDataSize(100), _bProcessingExploration(false) {
-        _vXMLParameters.push_back("exploreprob");
-        _vXMLParameters.push_back("expectedsize");
+        xml_parameters_vector_.push_back("exploreprob");
+        xml_parameters_vector_.push_back("expectedsize");
     }
 
     dReal _fExploreProb; //!< explore close to the neighbors already added
@@ -96,11 +96,11 @@ class OPENRAVE_API RAStarParameters : public PlannerBase::PlannerParameters
 {
 public:
     RAStarParameters() : fRadius(0.1f), fDistThresh(0.03f), fGoalCoeff(1), nMaxChildren(5), nMaxSampleTries(10), _bProcessingRA(false) {
-        _vXMLParameters.push_back("radius");
-        _vXMLParameters.push_back("distthresh");
-        _vXMLParameters.push_back("goalcoeff");
-        _vXMLParameters.push_back("maxchildren");
-        _vXMLParameters.push_back("maxsampletries");
+        xml_parameters_vector_.push_back("radius");
+        xml_parameters_vector_.push_back("distthresh");
+        xml_parameters_vector_.push_back("goalcoeff");
+        xml_parameters_vector_.push_back("maxchildren");
+        xml_parameters_vector_.push_back("maxsampletries");
     }
 
     dReal fRadius;          //!< _pDistMetric thresh is the radius that children must be within parents
@@ -173,11 +173,11 @@ class OPENRAVE_API GraspSetParameters : public PlannerBase::PlannerParameters
 {
 public:
     GraspSetParameters(EnvironmentBasePtr penv) : _nGradientSamples(5), _fVisibiltyGraspThresh(0), _fGraspDistThresh(1.4f), _penv(penv),_bProcessingGS(false) {
-        _vXMLParameters.push_back("grasps");
-        _vXMLParameters.push_back("target");
-        _vXMLParameters.push_back("numgradsamples");
-        _vXMLParameters.push_back("visgraspthresh");
-        _vXMLParameters.push_back("graspdistthresh");
+        xml_parameters_vector_.push_back("grasps");
+        xml_parameters_vector_.push_back("target");
+        xml_parameters_vector_.push_back("numgradsamples");
+        xml_parameters_vector_.push_back("visgraspthresh");
+        xml_parameters_vector_.push_back("graspdistthresh");
     }
 
     std::vector<Transform> _vgrasps;     //!< grasps with respect to the target object
@@ -265,23 +265,23 @@ class OPENRAVE_API GraspParameters : public PlannerBase::PlannerParameters
 {
 public:
     GraspParameters(EnvironmentBasePtr penv) : PlannerBase::PlannerParameters(), fstandoff(0), ftargetroll(0), vtargetdirection(0,0,1), btransformrobot(false), breturntrajectory(false), bonlycontacttarget(true), btightgrasp(false), bavoidcontact(false), fcoarsestep(0.1f), ffinestep(0.001f), ftranslationstepmult(0.1f), fgraspingnoise(0), _penv(penv) {
-        _vXMLParameters.push_back("fstandoff");
-        _vXMLParameters.push_back("targetbody");
-        _vXMLParameters.push_back("ftargetroll");
-        _vXMLParameters.push_back("vtargetdirection");
-        _vXMLParameters.push_back("vtargetposition");
-        _vXMLParameters.push_back("vmanipulatordirection");
-        _vXMLParameters.push_back("btransformrobot");
-        _vXMLParameters.push_back("breturntrajectory");
-        _vXMLParameters.push_back("bonlycontacttarget");
-        _vXMLParameters.push_back("btightgrasp");
-        _vXMLParameters.push_back("bavoidcontact");
-        _vXMLParameters.push_back("vavoidlinkgeometry");
-        _vXMLParameters.push_back("fcoarsestep");
-        _vXMLParameters.push_back("ffinestep");
-        _vXMLParameters.push_back("ftranslationstepmult");
-        _vXMLParameters.push_back("fgraspingnoise");
-        _vXMLParameters.push_back("vintersectplane");
+        xml_parameters_vector_.push_back("fstandoff");
+        xml_parameters_vector_.push_back("targetbody");
+        xml_parameters_vector_.push_back("ftargetroll");
+        xml_parameters_vector_.push_back("vtargetdirection");
+        xml_parameters_vector_.push_back("vtargetposition");
+        xml_parameters_vector_.push_back("vmanipulatordirection");
+        xml_parameters_vector_.push_back("btransformrobot");
+        xml_parameters_vector_.push_back("breturntrajectory");
+        xml_parameters_vector_.push_back("bonlycontacttarget");
+        xml_parameters_vector_.push_back("btightgrasp");
+        xml_parameters_vector_.push_back("bavoidcontact");
+        xml_parameters_vector_.push_back("vavoidlinkgeometry");
+        xml_parameters_vector_.push_back("fcoarsestep");
+        xml_parameters_vector_.push_back("ffinestep");
+        xml_parameters_vector_.push_back("ftranslationstepmult");
+        xml_parameters_vector_.push_back("fgraspingnoise");
+        xml_parameters_vector_.push_back("vintersectplane");
         _bProcessingGrasp = false;
     }
 
@@ -436,20 +436,20 @@ typedef std::shared_ptr<GraspParameters const> GraspParametersConstPtr;
 
 /** \brief parameters for timing/smoothing trajectories
 
-    PlannerBase::PlannerParameters::_fStepLength is used for the control time of the robot identifying the discretization of the trajectory time. if 0, will ignore discretization of time.
+    PlannerBase::PlannerParameters::step_length_ is used for the control time of the robot identifying the discretization of the trajectory time. if 0, will ignore discretization of time.
  **/
 class OPENRAVE_API TrajectoryTimingParameters : public PlannerBase::PlannerParameters
 {
 public:
     TrajectoryTimingParameters() : _interpolation(""), _pointtolerance(0.2), _hastimestamps(false), _hasvelocities(false), _outputaccelchanges(true), _multidofinterp(0), verifyinitialpath(1), _bProcessing(false) {
-        _fStepLength = 0; // reset to 0 since it is being used
-        _vXMLParameters.push_back("interpolation");
-        _vXMLParameters.push_back("hastimestamps");
-        _vXMLParameters.push_back("hasvelocities");
-        _vXMLParameters.push_back("pointtolerance");
-        _vXMLParameters.push_back("outputaccelchanges");
-        _vXMLParameters.push_back("multidofinterp");
-        _vXMLParameters.push_back("verifyinitialpath");
+        step_length_ = 0; // reset to 0 since it is being used
+        xml_parameters_vector_.push_back("interpolation");
+        xml_parameters_vector_.push_back("hastimestamps");
+        xml_parameters_vector_.push_back("hasvelocities");
+        xml_parameters_vector_.push_back("pointtolerance");
+        xml_parameters_vector_.push_back("outputaccelchanges");
+        xml_parameters_vector_.push_back("multidofinterp");
+        xml_parameters_vector_.push_back("verifyinitialpath");
     }
 
     std::string _interpolation;
@@ -538,21 +538,21 @@ class OPENRAVE_API ConstraintTrajectoryTimingParameters : public TrajectoryTimin
 {
 public:
     ConstraintTrajectoryTimingParameters() : TrajectoryTimingParameters(), maxlinkspeed(0), maxlinkaccel(0), maxmanipspeed(0), maxmanipaccel(0), vConstraintManipDir(0,0,1), vConstraintGlobalDir(0,0,1), fCosManipAngleThresh(-1), mingripperdistance(0), velocitydistancethresh(0), maxmergeiterations(1000), minswitchtime(0.2),nshortcutcycles(1), fSearchVelAccelMult(0.8), durationImprovementCutoffRatio(0.001), _bCProcessing(false) {
-        _vXMLParameters.push_back("maxlinkspeed");
-        _vXMLParameters.push_back("maxlinkaccel");
-        _vXMLParameters.push_back("manipname");
-        _vXMLParameters.push_back("maxmanipspeed");
-        _vXMLParameters.push_back("maxmanipaccel");
-        _vXMLParameters.push_back("constraintmanipdir");
-        _vXMLParameters.push_back("constraintglobaldir");
-        _vXMLParameters.push_back("cosmanipanglethresh");
-        _vXMLParameters.push_back("mingripperdistance");
-        _vXMLParameters.push_back("velocitydistancethresh");
-        _vXMLParameters.push_back("maxmergeiterations");
-        _vXMLParameters.push_back("minswitchtime");
-        _vXMLParameters.push_back("nshortcutcycles");
-        _vXMLParameters.push_back("searchvelaccelmult");
-        _vXMLParameters.push_back("durationimprovementcutoffratio");
+        xml_parameters_vector_.push_back("maxlinkspeed");
+        xml_parameters_vector_.push_back("maxlinkaccel");
+        xml_parameters_vector_.push_back("manipname");
+        xml_parameters_vector_.push_back("maxmanipspeed");
+        xml_parameters_vector_.push_back("maxmanipaccel");
+        xml_parameters_vector_.push_back("constraintmanipdir");
+        xml_parameters_vector_.push_back("constraintglobaldir");
+        xml_parameters_vector_.push_back("cosmanipanglethresh");
+        xml_parameters_vector_.push_back("mingripperdistance");
+        xml_parameters_vector_.push_back("velocitydistancethresh");
+        xml_parameters_vector_.push_back("maxmergeiterations");
+        xml_parameters_vector_.push_back("minswitchtime");
+        xml_parameters_vector_.push_back("nshortcutcycles");
+        xml_parameters_vector_.push_back("searchvelaccelmult");
+        xml_parameters_vector_.push_back("durationimprovementcutoffratio");
     }
 
     dReal maxlinkspeed; //!< max speed in m/s that any point on any link goes. 0 means no speed limit
@@ -718,7 +718,7 @@ class OPENRAVE_API RRTParameters : public PlannerBase::PlannerParameters
 {
 public:
     RRTParameters() : _minimumgoalpaths(1), _bProcessing(false) {
-        _vXMLParameters.push_back("minimumgoalpaths");
+        xml_parameters_vector_.push_back("minimumgoalpaths");
     }
 
     size_t _minimumgoalpaths; //!< minimum number of goals to connect to before exiting. the goal with the shortest path is returned.
@@ -776,9 +776,9 @@ class OPENRAVE_API BasicRRTParameters : public RRTParameters
 {
 public:
     BasicRRTParameters() : RRTParameters(), _fGoalBiasProb(0.05f), _nRRTExtentType(0), _nMinIterations(0), _bProcessingBasic(false) {
-        _vXMLParameters.push_back("goalbias");
-        _vXMLParameters.push_back("nrrtextenttype");
-        _vXMLParameters.push_back("nminiterations");
+        xml_parameters_vector_.push_back("goalbias");
+        xml_parameters_vector_.push_back("nrrtextenttype");
+        xml_parameters_vector_.push_back("nminiterations");
     }
 
     dReal _fGoalBiasProb;

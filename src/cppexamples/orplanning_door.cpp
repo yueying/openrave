@@ -181,17 +181,17 @@ public:
         _ptarget->SetActiveDOFs(v);
 
         params->_configurationspecification = _probot->GetActiveConfigurationSpecification() + _ptarget->GetActiveConfigurationSpecification();
-        _probot->GetActiveDOFLimits(params->_vConfigLowerLimit,params->_vConfigUpperLimit);
-        _pdoorjoint->GetLimits(params->_vConfigLowerLimit,params->_vConfigUpperLimit,true);
+        _probot->GetActiveDOFLimits(params->config_lower_limit_vector_,params->config_upper_limit_vector_);
+        _pdoorjoint->GetLimits(params->config_lower_limit_vector_,params->config_upper_limit_vector_,true);
 
-        _probot->GetActiveDOFVelocityLimits(params->_vConfigVelocityLimit);
-        params->_vConfigVelocityLimit.push_back(100);
+        _probot->GetActiveDOFVelocityLimits(params->config_velocity_limit_vector_);
+        params->config_velocity_limit_vector_.push_back(100);
 
-        _probot->GetActiveDOFAccelerationLimits(params->_vConfigAccelerationLimit);
-        params->_vConfigAccelerationLimit.push_back(100);
+        _probot->GetActiveDOFAccelerationLimits(params->config_acceleration_limit_vector_);
+        params->config_acceleration_limit_vector_.push_back(100);
 
-        _probot->GetActiveDOFResolutions(params->_vConfigResolution);
-        params->_vConfigResolution.push_back(0.05);
+        _probot->GetActiveDOFResolutions(params->config_resolution_vector_);
+        params->config_resolution_vector_.push_back(0.05);
 
         _robotdistmetric.reset(new planningutils::SimpleDistanceMetric(_probot));
         _doordistmetric.reset(new planningutils::SimpleDistanceMetric(_ptarget));
@@ -280,7 +280,7 @@ public:
             probot->SetActiveDOFValues(vpreshape);
 
             doorconfig->SetPlannerParameters(params);
-            params->_nMaxIterations = 150; // max iterations before failure
+            params->max_iterations_ = 150; // max iterations before failure
 
             trobotorig = probot->GetTransform();
         }
@@ -304,14 +304,14 @@ public:
                         probot->SetTransform(tnew);
 
                         try {
-                            params->_getstatefn(params->vinitialconfig);
-                            params->_setstatevaluesfn(params->vinitialconfig,0);
-                            params->_getstatefn(params->vinitialconfig);
+                            params->_getstatefn(params->initial_config_vector_);
+                            params->_setstatevaluesfn(params->initial_config_vector_,0);
+                            params->_getstatefn(params->initial_config_vector_);
 
-                            params->vgoalconfig = params->vinitialconfig;
-                            params->vgoalconfig.back() = RaveRandomFloat()*1.5; // in radians
-                            params->_setstatevaluesfn(params->vgoalconfig,0);
-                            params->_getstatefn(params->vgoalconfig);
+                            params->goal_config_vector_ = params->initial_config_vector_;
+                            params->goal_config_vector_.back() = RaveRandomFloat()*1.5; // in radians
+                            params->_setstatevaluesfn(params->goal_config_vector_,0);
+                            params->_getstatefn(params->goal_config_vector_);
                             break;
                         }
                         catch(const OpenRAVEException& ex) {
@@ -321,14 +321,14 @@ public:
                 }
                 else {
                     try {
-                        params->_getstatefn(params->vinitialconfig);
-                        params->_setstatevaluesfn(params->vinitialconfig,0);
-                        params->_getstatefn(params->vinitialconfig);
+                        params->_getstatefn(params->initial_config_vector_);
+                        params->_setstatevaluesfn(params->initial_config_vector_,0);
+                        params->_getstatefn(params->initial_config_vector_);
 
-                        params->vgoalconfig = params->vinitialconfig;
-                        params->vgoalconfig.back() = RaveRandomFloat()*1.5; // in radians
-                        params->_setstatevaluesfn(params->vgoalconfig,0);
-                        params->_getstatefn(params->vgoalconfig);
+                        params->goal_config_vector_ = params->initial_config_vector_;
+                        params->goal_config_vector_.back() = RaveRandomFloat()*1.5; // in radians
+                        params->_setstatevaluesfn(params->goal_config_vector_,0);
+                        params->_getstatefn(params->goal_config_vector_);
                     }
                     catch(const OpenRAVEException& ex) {
                         RAVELOG_WARN("initial set failed\n");

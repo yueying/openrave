@@ -126,11 +126,11 @@ public:
     class RAStarParameters : public PlannerBase::PlannerParameters {
 public:
         RAStarParameters() : fRadius(0.1f), fDistThresh(0.03f), fGoalCoeff(1), nMaxChildren(5), nMaxSampleTries(10), _bProcessingRA(false) {
-            _vXMLParameters.push_back("radius");
-            _vXMLParameters.push_back("distthresh");
-            _vXMLParameters.push_back("goalcoeff");
-            _vXMLParameters.push_back("maxchildren");
-            _vXMLParameters.push_back("maxsampletries");
+            xml_parameters_vector_.push_back("radius");
+            xml_parameters_vector_.push_back("distthresh");
+            xml_parameters_vector_.push_back("goalcoeff");
+            xml_parameters_vector_.push_back("maxchildren");
+            xml_parameters_vector_.push_back("maxsampletries");
         }
 
         dReal fRadius;              //!< _pDistMetric thresh is the radius that children must be within parents
@@ -330,7 +330,7 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
         _spatialtree._pDistMetric = parameters->_distmetricfn;
 
         _jointResolutionInv.resize(0);
-        FOREACH(itj, parameters->_vConfigResolution) {
+        FOREACH(itj, parameters->config_resolution_vector_) {
             if( *itj != 0 )
                 _jointResolutionInv.push_back(1 / *itj);
             else {
@@ -353,17 +353,17 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
         RobotBase::RobotStateSaver saver(_robot);
         Node* pcurrent=NULL, *pbest = NULL;
 
-        if( _parameters->CheckPathAllConstraints(_parameters->vinitialconfig,_parameters->vinitialconfig,std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart) != 0 ) {
+        if( _parameters->CheckPathAllConstraints(_parameters->initial_config_vector_,_parameters->initial_config_vector_,std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart) != 0 ) {
             return PlannerStatus(PS_Failed);
         }
 
-        if( _parameters->SetStateValues(_parameters->vinitialconfig) != 0 ) {
+        if( _parameters->SetStateValues(_parameters->initial_config_vector_) != 0 ) {
             return PlannerStatus(PS_Failed);
         }
-        pcurrent = CreateNode(0, NULL, _parameters->vinitialconfig);
+        pcurrent = CreateNode(0, NULL, _parameters->initial_config_vector_);
 
         vector<dReal> tempconfig(GetDOF());
-        int nMaxIter = _parameters->_nMaxIterations > 0 ? _parameters->_nMaxIterations : 8000;
+        int nMaxIter = _parameters->max_iterations_ > 0 ? _parameters->max_iterations_ : 8000;
 
         while(1) {
             if( _sortedtree.blocks.size() == 0 ) {
@@ -457,7 +457,7 @@ Rosen Diankov, James Kuffner. \"Randomized Statistical Path Planning. Intl. Conf
         if( _parameters->_configurationspecification != ptraj->GetConfigurationSpecification() ) {
             ptraj->Init(_parameters->_configurationspecification);
         }
-        ptraj->Insert(ptraj->GetNumWaypoints(),_parameters->vinitialconfig);
+        ptraj->Insert(ptraj->GetNumWaypoints(),_parameters->initial_config_vector_);
 
         list<Node*>::reverse_iterator itcur, itprev;
         itcur = vecnodes.rbegin();

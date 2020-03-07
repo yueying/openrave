@@ -51,16 +51,16 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_ <= 0 ) {
+            _parameters->max_iterations_ = 100;
         }
-        if( _parameters->_fStepLength <= 0 ) {
-            _parameters->_fStepLength = 0.04;
+        if( _parameters->step_length_ <= 0 ) {
+            _parameters->step_length_ = 0.04;
         }
         _linearretimer->InitPlan(RobotBasePtr(), _parameters);
         _puniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
         if( !!_puniformsampler ) {
-            _puniformsampler->SetSeed(_parameters->_nRandomGeneratorSeed);
+            _puniformsampler->SetSeed(_parameters->random_generator_seed_);
         }
 
         _logginguniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
@@ -165,7 +165,7 @@ public:
 #endif
 
         RAVELOG_DEBUG_FORMAT("env=%d, path optimizing - computation time=%fs\n", GetEnv()->GetId()%(0.001f*(float)(utils::GetMilliTime()-basetime)));
-        if( parameters->_sPostProcessingPlanner.size() == 0 ) {
+        if( parameters->post_processing_planner_.size() == 0 ) {
             // no other planner so at least retime
             PlannerStatus status = _linearretimer->PlanPath(ptraj, planningoptions);
             if( status.GetStatusCode() != PS_HasSolution ) {
@@ -189,9 +189,9 @@ protected:
 
         int dof = parameters->GetDOF();
         int nrejected = 0;
-        int iiter = parameters->_nMaxIterations;
+        int iiter = parameters->max_iterations_;
         int itercount = 0;
-        int numiters = (int)parameters->_nMaxIterations;
+        int numiters = (int)parameters->max_iterations_;
         std::vector<dReal> vnewconfig0(dof), vnewconfig1(dof);
 
         int numshortcuts = 0; // keep track of the number of successful shortcuts
@@ -222,11 +222,11 @@ protected:
             nrejected++;
 
             dReal expectedtotaldistance = parameters->_distmetricfn(itstartnode->first, itendnode->first);
-            if( expectedtotaldistance > totaldistance - 0.1*parameters->_fStepLength ) {
+            if( expectedtotaldistance > totaldistance - 0.1*parameters->step_length_ ) {
                 // The shortest possible distance between the start and the end of the shortcut (according to
                 // _distmetricfn) is not really short so reject it.
 #ifdef PROGRESS_DEBUG
-                RAVELOG_DEBUG_FORMAT("env=%d, iter=%d/%d, rejecting since it may not make significant improvement. originalSegmentDistance=%.15e, expectedNewDistance=%.15e, diff=%.15e, fStepLength=%.15e", GetEnv()->GetId()%itercount%numiters%totaldistance%expectedtotaldistance%(totaldistance - expectedtotaldistance)%parameters->_fStepLength);
+                RAVELOG_DEBUG_FORMAT("env=%d, iter=%d/%d, rejecting since it may not make significant improvement. originalSegmentDistance=%.15e, expectedNewDistance=%.15e, diff=%.15e, fStepLength=%.15e", GetEnv()->GetId()%itercount%numiters%totaldistance%expectedtotaldistance%(totaldistance - expectedtotaldistance)%parameters->step_length_);
 #endif
                 continue;
             }
@@ -281,11 +281,11 @@ protected:
             ++itdist;
             BOOST_ASSERT(itdist==_vtempdists.end());
 
-            if( newtotaldistance > totaldistance-0.1*parameters->_fStepLength ) {
+            if( newtotaldistance > totaldistance-0.1*parameters->step_length_ ) {
                 // new path is not that good, so reject
                 nrejected++;
 #ifdef PROGRESS_DEBUG
-                RAVELOG_DEBUG_FORMAT("env=%d, iter=%d/%d, rejecting since it does not make significant improvement. originalSegmentDistance=%.15e, newSegmentDistance=%.15e, diff=%.15e, fStepLength=%.15e", GetEnv()->GetId()%itercount%numiters%totaldistance%newtotaldistance%(totaldistance - newtotaldistance)%parameters->_fStepLength);
+                RAVELOG_DEBUG_FORMAT("env=%d, iter=%d/%d, rejecting since it does not make significant improvement. originalSegmentDistance=%.15e, newSegmentDistance=%.15e, diff=%.15e, fStepLength=%.15e", GetEnv()->GetId()%itercount%numiters%totaldistance%newtotaldistance%(totaldistance - newtotaldistance)%parameters->step_length_);
 #endif
                 continue;
             }
@@ -337,7 +337,7 @@ protected:
         int ndof = parameters->GetDOF();
         int itercount = 0;
         int nrejected = 0;
-        int numiters = parameters->_nMaxIterations;
+        int numiters = parameters->max_iterations_;
         std::list< std::pair< std::vector<dReal>, dReal > >::iterator itstartnode, itendnode, itnode;
 
         std::list< std::pair< std::vector<dReal>, dReal > > listshortcutpath; // for keeping shortcut path
@@ -388,10 +388,10 @@ protected:
 
             dReal fExpectedDOFDistance = itendnode->first.at(idof) - itstartnode->first.at(idof);
             // RAVELOG_DEBUG_FORMAT("env=%d, prevdofdist=%.15e; newdofdist=%.15e; diff=%.15e", GetEnv()->GetId()%totalDOFDistance%RaveFabs(expectedDOFDistance)%(totalDOFDistance - RaveFabs(expectedDOFDistance)));
-            if( RaveFabs(fExpectedDOFDistance) > fTotalDOFDistance - 0.1*parameters->_vConfigResolution.at(idof) ) {
+            if( RaveFabs(fExpectedDOFDistance) > fTotalDOFDistance - 0.1*parameters->config_resolution_vector_.at(idof) ) {
                 // Even after a successful shortcut, the resulting path wouldn't be that much shorter. So skipping.
 #ifdef PROGRESS_DEBUG
-                RAVELOG_DEBUG_FORMAT("env=%d, iter=%d/%d, rejecting since it may not make significant improvement. originalDOFDistance=%.15e, expectedDOFDistance=%.15e, diff=%.15e, dofresolution=%.15e", GetEnv()->GetId()%iiter%numiters%fTotalDOFDistance%fExpectedDOFDistance%(fTotalDOFDistance - fExpectedDOFDistance)%parameters->_vConfigResolution.at(idof));
+                RAVELOG_DEBUG_FORMAT("env=%d, iter=%d/%d, rejecting since it may not make significant improvement. originalDOFDistance=%.15e, expectedDOFDistance=%.15e, diff=%.15e, dofresolution=%.15e", GetEnv()->GetId()%iiter%numiters%fTotalDOFDistance%fExpectedDOFDistance%(fTotalDOFDistance - fExpectedDOFDistance)%parameters->config_resolution_vector_.at(idof));
 #endif
                 continue;
             }
@@ -493,7 +493,7 @@ protected:
                 while( itnewconfig != _filterreturn->_configurations.end() ) {
                     std::copy(itnewconfig, itnewconfig + ndof, vnewconfig.begin());
                     fNewDOFDistance += RaveFabs(vnewconfig.at(idof) - listshortcutpath.back().first.at(idof));
-                    if( fNewDOFDistance > fTotalDOFDistance - 0.1*parameters->_vConfigResolution.at(idof) ) {
+                    if( fNewDOFDistance > fTotalDOFDistance - 0.1*parameters->config_resolution_vector_.at(idof) ) {
                         // The distance the DOF idof travels is too much that this shortcut would not be useful
                         bSuccess = false;
                         break;
@@ -564,7 +564,7 @@ protected:
             dq = q1;
             parameters->_diffstatefn(dq, q0);
             int i, numSteps = 1;
-            vector<dReal>::const_iterator itres = parameters->_vConfigResolution.begin();
+            vector<dReal>::const_iterator itres = parameters->config_resolution_vector_.begin();
             for (i = 0; i < parameters->GetDOF(); i++,itres++) {
                 int steps;
                 if( *itres != 0 ) {

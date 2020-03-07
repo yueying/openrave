@@ -96,7 +96,7 @@ protected:
             for(int iroot = 0; iroot < nroots; ++iroot ) {
                 if( times[iroot] > 0 && times[iroot] < deltatime ) {
                     dReal pos = c0 + times[iroot] * (c1 + times[iroot] * (c2 + times[iroot]*c3));
-                    if( pos < _parameters->_vConfigLowerLimit[idof]-g_fEpsilonJointLimit || pos > _parameters->_vConfigUpperLimit[idof]+g_fEpsilonJointLimit ) {
+                    if( pos < _parameters->config_lower_limit_vector_[idof]-g_fEpsilonJointLimit || pos > _parameters->config_upper_limit_vector_[idof]+g_fEpsilonJointLimit ) {
                         return false;
                     }
                 }
@@ -104,10 +104,10 @@ protected:
             // check velocity limits a1*t + a0 = 0
             dReal a1 = 6*c3, a0 = 2*c2;
             // check acceleration limits
-            if( RaveFabs(a0) > _parameters->_vConfigAccelerationLimit.at(idof)+g_fEpsilonJointLimit ) {
+            if( RaveFabs(a0) > _parameters->config_acceleration_limit_vector_.at(idof)+g_fEpsilonJointLimit ) {
                 return false;
             }
-            if( RaveFabs(a0+a1*deltatime) > _parameters->_vConfigAccelerationLimit.at(idof)+g_fEpsilonJointLimit ) {
+            if( RaveFabs(a0+a1*deltatime) > _parameters->config_acceleration_limit_vector_.at(idof)+g_fEpsilonJointLimit ) {
                 return false;
             }
 
@@ -115,7 +115,7 @@ protected:
                 dReal vtime = -a0/a1;
                 if( vtime > 0 && vtime < deltatime ) {
                     dReal vellimit = c1 + vtime * (2*c2 + vtime * 3*c3 );
-                    if( RaveFabs(vellimit) > _parameters->_vConfigVelocityLimit.at(idof)+g_fEpsilonJointLimit ) {
+                    if( RaveFabs(vellimit) > _parameters->config_velocity_limit_vector_.at(idof)+g_fEpsilonJointLimit ) {
                         return false;
                     }
                 }
@@ -132,7 +132,7 @@ protected:
             _v0pos[i] = *(itdataprev+info->gpos.offset+i);
             dReal posdiff = *(itorgdiff+info->orgposoffset+i);
             _v1pos[i] = _v0pos[i] + posdiff;
-            dReal testmintime = RaveFabs(posdiff) / _parameters->_vConfigVelocityLimit.at(i);
+            dReal testmintime = RaveFabs(posdiff) / _parameters->config_velocity_limit_vector_.at(i);
             if( mintime < testmintime ) {
                 mintime = testmintime;
             }
@@ -147,7 +147,7 @@ protected:
             else {
                 _v1vel[i] = 0;
             }
-            dReal testmintime = RaveFabs(_v1vel[i]-_v0vel[i]) / _parameters->_vConfigAccelerationLimit.at(i);
+            dReal testmintime = RaveFabs(_v1vel[i]-_v0vel[i]) / _parameters->config_acceleration_limit_vector_.at(i);
             if( mintime < testmintime ) {
                 mintime = testmintime;
             }

@@ -654,12 +654,12 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
     }
     // only reset the cache if the dof values are different
     if( _vActiveDOFIndices.size() != vJointIndices.size() ) {
-        _nNonAdjacentLinkCache &= ~AO_ActiveDOFs;
+        non_adjacent_link_cache_ &= ~AO_ActiveDOFs;
     }
     else {
         for(size_t i = 0; i < vJointIndices.size(); ++i) {
             if( _vActiveDOFIndices[i] != vJointIndices[i] ) {
-                _nNonAdjacentLinkCache &= ~AO_ActiveDOFs;
+                non_adjacent_link_cache_ &= ~AO_ActiveDOFs;
                 break;
             }
         }
@@ -794,7 +794,7 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
         // first set the affine transformation of the first link before setting joints
         const dReal* pAffineValues = &velocities[_vActiveDOFIndices.size()];
 
-        _veclinks.at(0)->GetVelocity(linearvel, angularvel);
+        links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
         if( _nAffineDOFs & OpenRAVE::DOF_X ) linearvel.x = *pAffineValues++;
         if( _nAffineDOFs & OpenRAVE::DOF_Y ) linearvel.y = *pAffineValues++;
@@ -853,7 +853,7 @@ void RobotBase::GetActiveDOFVelocities(std::vector<dReal>& velocities) const
         return;
     }
     Vector linearvel, angularvel;
-    _veclinks.at(0)->GetVelocity(linearvel, angularvel);
+    links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
     if( _nAffineDOFs & OpenRAVE::DOF_X ) *pVelocities++ = linearvel.x;
     if( _nAffineDOFs & OpenRAVE::DOF_Y ) *pVelocities++ = linearvel.y;
@@ -1556,8 +1556,8 @@ bool CompareNonAdjacentFarthest(int pair0, int pair1); // defined in kinbody.cpp
 const std::vector<int>& RobotBase::GetNonAdjacentLinks(int adjacentoptions) const
 {
     KinBody::GetNonAdjacentLinks(0); // need to call to set the cache
-    if( (_nNonAdjacentLinkCache&adjacentoptions) != adjacentoptions ) {
-        int requestedoptions = (~_nNonAdjacentLinkCache)&adjacentoptions;
+    if( (non_adjacent_link_cache_&adjacentoptions) != adjacentoptions ) {
+        int requestedoptions = (~non_adjacent_link_cache_)&adjacentoptions;
         // find out what needs to computed
         std::array<uint8_t,4> compute={ { 0,0,0,0}};
         if( requestedoptions & AO_Enabled ) {
@@ -1580,40 +1580,40 @@ const std::vector<int>& RobotBase::GetNonAdjacentLinks(int adjacentoptions) cons
 
         // compute it
         if( compute.at(AO_Enabled) ) {
-            _vNonAdjacentLinks.at(AO_Enabled).resize(0);
-            FOREACHC(itset, _vNonAdjacentLinks[0]) {
-                KinBody::LinkConstPtr plink1(_veclinks.at(*itset&0xffff)), plink2(_veclinks.at(*itset>>16));
+            non_adjacent_links_vector_.at(AO_Enabled).resize(0);
+            FOREACHC(itset, non_adjacent_links_vector_[0]) {
+                KinBody::LinkConstPtr plink1(links_vector_.at(*itset&0xffff)), plink2(links_vector_.at(*itset>>16));
                 if( plink1->IsEnabled() && plink2->IsEnabled() ) {
-                    _vNonAdjacentLinks[AO_Enabled].push_back(*itset);
+                    non_adjacent_links_vector_[AO_Enabled].push_back(*itset);
                 }
             }
-            std::sort(_vNonAdjacentLinks[AO_Enabled].begin(), _vNonAdjacentLinks[AO_Enabled].end(), CompareNonAdjacentFarthest);
+            std::sort(non_adjacent_links_vector_[AO_Enabled].begin(), non_adjacent_links_vector_[AO_Enabled].end(), CompareNonAdjacentFarthest);
         }
         if( compute.at(AO_ActiveDOFs) ) {
-            _vNonAdjacentLinks.at(AO_ActiveDOFs).resize(0);
-            FOREACHC(itset, _vNonAdjacentLinks[0]) {
+            non_adjacent_links_vector_.at(AO_ActiveDOFs).resize(0);
+            FOREACHC(itset, non_adjacent_links_vector_[0]) {
                 FOREACHC(it, GetActiveDOFIndices()) {
                     if( IsDOFInChain(*itset&0xffff,*itset>>16,*it) ) {
-                        _vNonAdjacentLinks[AO_ActiveDOFs].push_back(*itset);
+                        non_adjacent_links_vector_[AO_ActiveDOFs].push_back(*itset);
                         break;
                     }
                 }
             }
-            std::sort(_vNonAdjacentLinks[AO_ActiveDOFs].begin(), _vNonAdjacentLinks[AO_ActiveDOFs].end(), CompareNonAdjacentFarthest);
+            std::sort(non_adjacent_links_vector_[AO_ActiveDOFs].begin(), non_adjacent_links_vector_[AO_ActiveDOFs].end(), CompareNonAdjacentFarthest);
         }
         if( compute.at(AO_Enabled|AO_ActiveDOFs) ) {
-            _vNonAdjacentLinks.at(AO_Enabled|AO_ActiveDOFs).resize(0);
-            FOREACHC(itset, _vNonAdjacentLinks[AO_ActiveDOFs]) {
-                KinBody::LinkConstPtr plink1(_veclinks.at(*itset&0xffff)), plink2(_veclinks.at(*itset>>16));
+            non_adjacent_links_vector_.at(AO_Enabled|AO_ActiveDOFs).resize(0);
+            FOREACHC(itset, non_adjacent_links_vector_[AO_ActiveDOFs]) {
+                KinBody::LinkConstPtr plink1(links_vector_.at(*itset&0xffff)), plink2(links_vector_.at(*itset>>16));
                 if( plink1->IsEnabled() && plink2->IsEnabled() ) {
-                    _vNonAdjacentLinks[AO_Enabled|AO_ActiveDOFs].push_back(*itset);
+                    non_adjacent_links_vector_[AO_Enabled|AO_ActiveDOFs].push_back(*itset);
                 }
             }
-            std::sort(_vNonAdjacentLinks[AO_Enabled|AO_ActiveDOFs].begin(), _vNonAdjacentLinks[AO_Enabled|AO_ActiveDOFs].end(), CompareNonAdjacentFarthest);
+            std::sort(non_adjacent_links_vector_[AO_Enabled|AO_ActiveDOFs].begin(), non_adjacent_links_vector_[AO_Enabled|AO_ActiveDOFs].end(), CompareNonAdjacentFarthest);
         }
-        _nNonAdjacentLinkCache |= requestedoptions;
+        non_adjacent_link_cache_ |= requestedoptions;
     }
-    return _vNonAdjacentLinks.at(adjacentoptions);
+    return non_adjacent_links_vector_.at(adjacentoptions);
 }
 
 void RobotBase::SetNonCollidingConfiguration()
@@ -1963,8 +1963,8 @@ void RobotBase::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
 {
     KinBody::Clone(preference,cloningoptions);
     RobotBaseConstPtr r = RaveInterfaceConstCast<RobotBase>(preference);
-    _selfcollisionchecker.reset();
-    if( !!r->_selfcollisionchecker ) {
+    self_collision_checker_.reset();
+    if( !!r->self_collision_checker_ ) {
         // TODO clone the self collision checker?
     }
     __hashrobotstructure = r->__hashrobotstructure;

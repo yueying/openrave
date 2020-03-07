@@ -205,7 +205,7 @@ protected:
         std::shared_ptr<ostream> pOutputTrajStream;
         params->ignorefirstcollision = 0.1;     // 0.1**2 * 5 * 0.5 = 0.025 m
         string plannername = "workspacetrajectorytracker";
-        params->_fStepLength = 0.01;
+        params->step_length_ = 0.01;
         string cmd;
         while(!sinput.eof()) {
             sinput >> cmd;
@@ -224,7 +224,7 @@ protected:
                 sinput >> maxsteps;
             }
             else if((cmd == "steplength")||(cmd == "stepsize")) {
-                sinput >> params->_fStepLength;
+                sinput >> params->step_length_;
             }
             else if( cmd == "execute" ) {
                 sinput >> bExecute;
@@ -273,7 +273,7 @@ protected:
             return false;
         }
 
-        params->minimumcompletetime = params->_fStepLength * minsteps;
+        params->minimumcompletetime = params->step_length_ * minsteps;
         RAVELOG_DEBUG(str(boost::format("Starting MoveHandStraight dir=(%f,%f,%f)...")%direction.x%direction.y%direction.z));
         robot->RegrabAll();
 
@@ -286,11 +286,11 @@ protected:
 
         if( !starteematrix ) {
             planningutils::JitterActiveDOF(robot,100);     // try to jitter out, don't worry if it fails
-            robot->GetActiveDOFValues(params->vinitialconfig);
+            robot->GetActiveDOFValues(params->initial_config_vector_);
             Tee = pmanip->GetTransform();
         }
         else {
-            params->vinitialconfig.resize(0);     // set by SetRobotActiveJoints
+            params->initial_config_vector_.resize(0);     // set by SetRobotActiveJoints
         }
 
         // compute a workspace trajectory (important to do this after jittering!)
@@ -302,7 +302,7 @@ protected:
             IkParameterization ikparam(Tee,IKP_Transform6D);
             ikparam.GetValues(data.begin());
             params->workspacetraj->Insert(0,data);
-            Tee.trans += direction*maxsteps*params->_fStepLength;
+            Tee.trans += direction*maxsteps*params->step_length_;
             ikparam.SetTransform6D(Tee);
             ikparam.GetValues(data.begin());
             params->workspacetraj->Insert(1,data);
@@ -357,7 +357,7 @@ protected:
         int nMaxJitterIterations = 1000;
         RRTParametersPtr params(new RRTParameters());
         params->_minimumgoalpaths = _minimumgoalpaths;
-        params->_nMaxIterations = 4000;     // max iterations before failure
+        params->max_iterations_ = 4000;     // max iterations before failure
         dReal jitter = 0.04;
         int usedynamicsconstraints=0;
         std::vector<dReal> vinitialconfig;
@@ -370,11 +370,11 @@ protected:
             std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
             if( cmd == "goal" ) {
-                params->vgoalconfig.reserve(params->vgoalconfig.size()+robot->GetActiveDOF());
+                params->goal_config_vector_.reserve(params->goal_config_vector_.size()+robot->GetActiveDOF());
                 for(int i = 0; i < robot->GetActiveDOF(); ++i) {
                     dReal f=0;
                     sinput >> f;
-                    params->vgoalconfig.push_back(f);
+                    params->goal_config_vector_.push_back(f);
                 }
             }
             else if( cmd == "jitter" ) {
@@ -383,11 +383,11 @@ protected:
             else if( cmd == "goals" ) {
                 size_t numgoals = 0;
                 sinput >> numgoals;
-                params->vgoalconfig.reserve(params->vgoalconfig.size()+numgoals*robot->GetActiveDOF());
+                params->goal_config_vector_.reserve(params->goal_config_vector_.size()+numgoals*robot->GetActiveDOF());
                 for(size_t i = 0; i < numgoals*robot->GetActiveDOF(); ++i) {
                     dReal f=0;
                     sinput >> f;
-                    params->vgoalconfig.push_back(f);
+                    params->goal_config_vector_.push_back(f);
                 }
             }
             else if( cmd == "initialconfigs" ) {
@@ -402,7 +402,7 @@ protected:
                 pOutputTrajStream = std::shared_ptr<ostream>(&sout,utils::null_deleter());
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_;
             }
             else if( cmd == "execute" ) {
                 sinput >> bExecute;
@@ -411,7 +411,7 @@ protected:
                 sinput >> strtrajfilename;
             }
             else if( cmd == "steplength" ) {
-                sinput >> params->_fStepLength;
+                sinput >> params->step_length_;
             }
             else if( cmd == "maxtries" ) {
                 sinput >> nMaxTries;
@@ -423,10 +423,10 @@ protected:
                 boost::trim(params->_sPostProcessingParameters);
             }
             else if( cmd == "postprocessingplanner" ) {
-                if( !getline(sinput, params->_sPostProcessingPlanner) ) {
+                if( !getline(sinput, params->post_processing_planner_) ) {
                     return false;
                 }
-                boost::trim(params->_sPostProcessingPlanner);
+                boost::trim(params->post_processing_planner_);
             }
             else if( cmd == "usedynamicsconstraints" ) {
                 sinput >> usedynamicsconstraints;
@@ -442,13 +442,13 @@ protected:
             }
         }
 
-        if( params->vgoalconfig.size() == 0 ) {
+        if( params->goal_config_vector_.size() == 0 ) {
             return false;
         }
         RobotBase::RobotStateSaver saver(robot);
         params->SetRobotActiveJoints(robot);
         if( vinitialconfig.size() > 0 ) {
-            params->vinitialconfig.swap(vinitialconfig);
+            params->initial_config_vector_.swap(vinitialconfig);
         }
 
         if( usedynamicsconstraints ) {
@@ -466,12 +466,12 @@ protected:
 
         // make sure the initial and goal configs are not in collision
         vector<dReal> vonegoal(robot->GetActiveDOF());
-        vector<dReal> voriggoalconfig; voriggoalconfig.reserve(params->vgoalconfig.size());
-        std::vector<uint8_t> vgoalchanged; vgoalchanged.reserve(params->vgoalconfig.size()/robot->GetActiveDOF());
+        vector<dReal> voriggoalconfig; voriggoalconfig.reserve(params->goal_config_vector_.size());
+        std::vector<uint8_t> vgoalchanged; vgoalchanged.reserve(params->goal_config_vector_.size()/robot->GetActiveDOF());
 
         size_t writeindex=0;
-        for(size_t i = 0; i < params->vgoalconfig.size(); i += robot->GetActiveDOF()) {
-            std::copy(params->vgoalconfig.begin()+i,params->vgoalconfig.begin()+i+robot->GetActiveDOF(),vonegoal.begin());
+        for(size_t i = 0; i < params->goal_config_vector_.size(); i += robot->GetActiveDOF()) {
+            std::copy(params->goal_config_vector_.begin()+i,params->goal_config_vector_.begin()+i+robot->GetActiveDOF(),vonegoal.begin());
             robot->SetActiveDOFValues(vonegoal, true);
             robot->GetActiveDOFValues(vonegoal);
             uint8_t goalchanged = 0;
@@ -488,14 +488,14 @@ protected:
                 robot->GetActiveDOFValues(vonegoal);
             }
             vgoalchanged.push_back(goalchanged);
-            std::copy(vonegoal.begin(),vonegoal.end(),params->vgoalconfig.begin()+writeindex);
+            std::copy(vonegoal.begin(),vonegoal.end(),params->goal_config_vector_.begin()+writeindex);
             writeindex += robot->GetActiveDOF();
         }
         if( writeindex == 0 ) {
             return false;
         }
-        params->vgoalconfig.resize(writeindex);
-        robot->SetActiveDOFValues(params->vinitialconfig);
+        params->goal_config_vector_.resize(writeindex);
+        robot->SetActiveDOFValues(params->initial_config_vector_);
 
         vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
         // jitter again for initial collision
@@ -505,8 +505,8 @@ protected:
             return false;
         case 1:
             RAVELOG_DEBUG("original robot position in collision, so jittered out of it\n");
-            vinsertconfiguration = params->vinitialconfig;
-            robot->GetActiveDOFValues(params->vinitialconfig);
+            vinsertconfiguration = params->initial_config_vector_;
+            robot->GetActiveDOFValues(params->initial_config_vector_);
             break;
         }
 
@@ -586,7 +586,7 @@ protected:
 
         RRTParametersPtr params(new RRTParameters());
         params->_minimumgoalpaths = _minimumgoalpaths;
-        params->_nMaxIterations = 4000;
+        params->max_iterations_ = 4000;
         int nMaxJitterIterations = 1000;
         // constraint stuff
         std::array<double,6> vconstraintfreedoms = { { 0,0,0,0,0,0}};
@@ -671,7 +671,7 @@ protected:
                 sinput >> affinedofs;
             }
             else if( cmd == "maxiter" ) {
-                sinput >> params->_nMaxIterations;
+                sinput >> params->max_iterations_;
             }
             else if( cmd == "maxtries" ) {
                 sinput >> nMaxTries;
@@ -686,7 +686,7 @@ protected:
                 sinput >> nSeedIkSolutions;
             }
             else if( cmd == "steplength" ) {
-                sinput >> params->_fStepLength;
+                sinput >> params->step_length_;
             }
             else if( cmd == "constraintfreedoms" ) {
                 FOREACH(it,vconstraintfreedoms) {
@@ -718,10 +718,10 @@ protected:
                 boost::trim(params->_sPostProcessingParameters);
             }
             else if( cmd == "postprocessingplanner" ) {
-                if( !getline(sinput, params->_sPostProcessingPlanner) ) {
+                if( !getline(sinput, params->post_processing_planner_) ) {
                     return false;
                 }
-                boost::trim(params->_sPostProcessingPlanner);
+                boost::trim(params->post_processing_planner_);
             }
             else if( cmd == "jitter" ) {
                 sinput >> jitter;
@@ -767,7 +767,7 @@ protected:
         robot->SetActiveDOFs(pmanip->GetArmIndices(), affinedofs);
         params->SetRobotActiveJoints(robot);
         if( vinitialconfig.size() > 0 ) {
-            params->vinitialconfig.swap(vinitialconfig);
+            params->initial_config_vector_.swap(vinitialconfig);
         }
         if( _sPostProcessingParameters.size() > 0 ) {
             params->_sPostProcessingParameters = _sPostProcessingParameters;
@@ -777,15 +777,15 @@ protected:
 
         if( constrainterrorthresh > 0 ) {
             RAVELOG_DEBUG("setting jacobian constraint function in planner parameters\n");
-            robot->SetActiveDOFValues(params->vinitialconfig); // have to set the initial configuraiton!
+            robot->SetActiveDOFValues(params->initial_config_vector_); // have to set the initial configuraiton!
             std::shared_ptr<CM::GripperJacobianConstrains<double> > pconstraints(new CM::GripperJacobianConstrains<double>(robot->GetActiveManipulator(),tConstraintTargetWorldFrame,tConstraintTaskFrame, vconstraintfreedoms,constrainterrorthresh));
             pconstraints->_distmetricfn = params->_distmetricfn;
             params->_neighstatefn = boost::bind(&CM::GripperJacobianConstrains<double>::RetractionConstraint,pconstraints,_1,_2);
             // use linear interpolation!
-            params->_sPostProcessingPlanner = "shortcut_linear";
+            params->post_processing_planner_ = "shortcut_linear";
             params->_sPostProcessingParameters ="<_nmaxiterations>100</_nmaxiterations><_postprocessing planner=\"lineartrajectoryretimer\"></_postprocessing>";
-            vector<dReal> vdelta(params->vinitialconfig.size(),0);
-            if( params->_neighstatefn(params->vinitialconfig,vdelta,0) == NSS_Failed ) {
+            vector<dReal> vdelta(params->initial_config_vector_.size(),0);
+            if( params->_neighstatefn(params->initial_config_vector_,vdelta,0) == NSS_Failed ) {
                 throw OPENRAVE_EXCEPTION_FORMAT0("initial configuration does not follow constraints",ORE_InconsistentConstraints);
             }
         }
@@ -796,7 +796,7 @@ protected:
         const bool searchfreeparameters = vfreevalues.empty();
         planningutils::ManipulatorIKGoalSampler goalsampler(pmanip, listgoals,goalsamples,nGoalMaxTries, 1, searchfreeparameters, IKFO_CheckEnvCollisions, vfreevalues);
         goalsampler.SetJitter(jitterikparam);
-        params->vgoalconfig.reserve(nSeedIkSolutions*robot->GetActiveDOF());
+        params->goal_config_vector_.reserve(nSeedIkSolutions*robot->GetActiveDOF());
         while(nSeedIkSolutions > 0) {
             if( goalsampler.Sample(vgoal) ) {
                 if(constrainterrorthresh > 0 ) {
@@ -810,7 +810,7 @@ protected:
                         break;
                     }
                 }
-                params->vgoalconfig.insert(params->vgoalconfig.end(), vgoal.begin(), vgoal.end());
+                params->goal_config_vector_.insert(params->goal_config_vector_.end(), vgoal.begin(), vgoal.end());
                 --nSeedIkSolutions;
             }
             else {
@@ -820,13 +820,13 @@ protected:
         goalsampler.SetSamplingProb(goalsampleprob);
         params->_samplegoalfn = boost::bind(&planningutils::ManipulatorIKGoalSampler::Sample,&goalsampler,_1);
 
-        if( params->vgoalconfig.size() == 0 ) {
+        if( params->goal_config_vector_.size() == 0 ) {
             RAVELOG_WARN("failed to find goal\n");
             return false;
         }
 
         // restore
-        robot->SetActiveDOFValues(params->vinitialconfig);
+        robot->SetActiveDOFValues(params->initial_config_vector_);
 
         vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
         // jitter again for initial collision
@@ -836,8 +836,8 @@ protected:
             return false;
         case 1:
             RAVELOG_DEBUG("original robot position in collision, so jittered out of it\n");
-            vinsertconfiguration = params->vinitialconfig;
-            robot->GetActiveDOFValues(params->vinitialconfig);
+            vinsertconfiguration = params->initial_config_vector_;
+            robot->GetActiveDOFValues(params->initial_config_vector_);
             break;
         }
 

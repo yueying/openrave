@@ -88,13 +88,13 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     FOREACHC(itlink, vattachedlinks) {
         setBodyLinksToIgnore.insert((*itlink)->GetIndex());
     }
-    if( !!_selfcollisionchecker && _selfcollisionchecker != GetEnv()->GetCollisionChecker() ) {
+    if( !!self_collision_checker_ && self_collision_checker_ != GetEnv()->GetCollisionChecker() ) {
         // collision checking will not be automatically updated with environment calls, so need to do this manually
         //try {
-        _selfcollisionchecker->InitKinBody(pbody);
+        self_collision_checker_->InitKinBody(pbody);
 //        }
 //        catch (const std::exception& ex) {
-//            RAVELOG_ERROR_FORMAT("env=%d, failed in _selfcollisionchecker->InitKinBody for body %s: %s", GetEnv()->GetId()%pbody->GetName()%ex.what());
+//            RAVELOG_ERROR_FORMAT("env=%d, failed in self_collision_checker_->InitKinBody for body %s: %s", GetEnv()->GetId()%pbody->GetName()%ex.what());
 //            throw;
 //        }
     }
@@ -116,7 +116,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     catch(...) {
         RAVELOG_ERROR_FORMAT("env=%d, failed in attach body", GetEnv()->GetId());
         BOOST_ASSERT(_vGrabbedBodies.back()==pgrabbed);
-        // do not call _selfcollisionchecker->RemoveKinBody since the same object might be re-attached later on and we should preserve the structures.
+        // do not call self_collision_checker_->RemoveKinBody since the same object might be re-attached later on and we should preserve the structures.
         _vGrabbedBodies.pop_back();
         throw;
     }
@@ -156,9 +156,9 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr pBodyLinkToGrabWith, const std::set
     Transform tbody = pbody->GetTransform();
     pgrabbed->_troot = t.inverse() * tbody;
 
-    if( !!_selfcollisionchecker && _selfcollisionchecker != GetEnv()->GetCollisionChecker() ) {
+    if( !!self_collision_checker_ && self_collision_checker_ != GetEnv()->GetCollisionChecker() ) {
         // collision checking will not be automatically updated with environment calls, so need to do this manually
-        _selfcollisionchecker->InitKinBody(pbody);
+        self_collision_checker_->InitKinBody(pbody);
     }
     pgrabbed->ProcessCollidingLinks(setBodyLinksToIgnore);
 
@@ -173,7 +173,7 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr pBodyLinkToGrabWith, const std::set
     }
     catch(...) {
         BOOST_ASSERT(_vGrabbedBodies.back()==pgrabbed);
-        // do not call _selfcollisionchecker->RemoveKinBody since the same object might be re-attached later on and we should preserve the structures.
+        // do not call self_collision_checker_->RemoveKinBody since the same object might be re-attached later on and we should preserve the structures.
         _vGrabbedBodies.pop_back();
         throw;
     }
@@ -257,7 +257,7 @@ void KinBody::ReleaseAllGrabbedWithLink(const KinBody::Link& bodyLinkToReleaseWi
 
 void KinBody::RegrabAll()
 {
-    CollisionCheckerBasePtr collisionchecker = !!_selfcollisionchecker ? _selfcollisionchecker : GetEnv()->GetCollisionChecker();
+    CollisionCheckerBasePtr collisionchecker = !!self_collision_checker_ ? self_collision_checker_ : GetEnv()->GetCollisionChecker();
     CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
     std::vector<LinkPtr > vattachedlinks;
     FOREACH(itgrabbed, _vGrabbedBodies) {
@@ -277,7 +277,7 @@ void KinBody::_Regrab(UserDataPtr _pgrabbed)
     KinBodyPtr pgrabbedbody = pgrabbed->_pgrabbedbody.lock();
     if( !!pgrabbedbody ) {
         // have to re-grab the body, which means temporarily resetting the collision checker and attachment
-        CollisionCheckerBasePtr collisionchecker = !!_selfcollisionchecker ? _selfcollisionchecker : GetEnv()->GetCollisionChecker();
+        CollisionCheckerBasePtr collisionchecker = !!self_collision_checker_ ? self_collision_checker_ : GetEnv()->GetCollisionChecker();
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         _RemoveAttachedBody(*pgrabbedbody);
         CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
@@ -323,7 +323,7 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
             poutputinfo->_robotlinkname = pgrabbed->_plinkrobot->GetName();
             poutputinfo->_trelative = pgrabbed->_troot;
             poutputinfo->_setRobotLinksToIgnore = pgrabbed->_setRobotLinksToIgnore;
-            FOREACHC(itlink, _veclinks) {
+            FOREACHC(itlink, links_vector_) {
                 if( find(pgrabbed->_listNonCollidingLinks.begin(), pgrabbed->_listNonCollidingLinks.end(), *itlink) == pgrabbed->_listNonCollidingLinks.end() ) {
                     poutputinfo->_setRobotLinksToIgnore.insert((*itlink)->GetIndex());
                 }
@@ -353,7 +353,7 @@ void KinBody::ResetGrabbed(const std::vector<KinBody::GrabbedInfoConstPtr>& vgra
 {
     ReleaseAllGrabbed();
     if( vgrabbedinfo.size() > 0 ) {
-        CollisionCheckerBasePtr collisionchecker = !!_selfcollisionchecker ? _selfcollisionchecker : GetEnv()->GetCollisionChecker();
+        CollisionCheckerBasePtr collisionchecker = !!self_collision_checker_ ? self_collision_checker_ : GetEnv()->GetCollisionChecker();
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         FOREACHC(itgrabbedinfo, vgrabbedinfo) {
             GrabbedInfoConstPtr pgrabbedinfo = *itgrabbedinfo;
@@ -368,9 +368,9 @@ void KinBody::ResetGrabbed(const std::vector<KinBody::GrabbedInfoConstPtr>& vgra
 
             GrabbedPtr pgrabbed(new Grabbed(pbody,pBodyLinkToGrabWith));
             pgrabbed->_troot = pgrabbedinfo->_trelative;
-            if( !!_selfcollisionchecker && _selfcollisionchecker != GetEnv()->GetCollisionChecker() ) {
+            if( !!self_collision_checker_ && self_collision_checker_ != GetEnv()->GetCollisionChecker() ) {
                 // collision checking will not be automatically updated with environment calls, so need to do this manually
-                _selfcollisionchecker->InitKinBody(pbody);
+                self_collision_checker_->InitKinBody(pbody);
             }
             pgrabbed->ProcessCollidingLinks(pgrabbedinfo->_setRobotLinksToIgnore);
             Transform tlink = pBodyLinkToGrabWith->GetTransform();
@@ -394,7 +394,7 @@ void KinBody::GetIgnoredLinksOfGrabbed(KinBodyConstPtr body, std::list<KinBody::
         GrabbedConstPtr pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
         KinBodyPtr grabbedbody = pgrabbed->_pgrabbedbody.lock();
         if( grabbedbody == body ) {
-            FOREACHC(itbodylink, _veclinks) {
+            FOREACHC(itbodylink, links_vector_) {
                 if( find(pgrabbed->_listNonCollidingLinks.begin(), pgrabbed->_listNonCollidingLinks.end(), *itbodylink) == pgrabbed->_listNonCollidingLinks.end() ) {
                     ignorelinks.push_back(*itbodylink);
                 }

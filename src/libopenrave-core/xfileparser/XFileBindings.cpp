@@ -236,8 +236,8 @@ protected:
                 pchildlink->info_._t = tflipyz*tpivot*tflipyz.inverse();
                 pchildlink->info_.is_static_ = false;
                 pchildlink->info_.is_enabled_ = true;
-                pchildlink->index_ = pbody->_veclinks.size();
-                pbody->_veclinks.push_back(pchildlink);
+                pchildlink->index_ = pbody->links_vector_.size();
+                pbody->links_vector_.push_back(pchildlink);
                 RAVELOG_VERBOSE_FORMAT("level=%d adding child xlink %s", level%pchildlink->info_.name_);
             }
 
@@ -334,15 +334,15 @@ protected:
                 plink->info_.name_ = _prefix+node->mName;
                 plink->info_.is_static_ = false;
                 plink->info_.is_enabled_ = true;
-                plink->index_ = pbody->_veclinks.size();
-                pbody->_veclinks.push_back(plink);
+                plink->index_ = pbody->links_vector_.size();
+                pbody->links_vector_.push_back(plink);
                 RAVELOG_VERBOSE_FORMAT("level=%d adding xlink %s", level%plink->info_.name_);
             }
 
             KinBody::GeometryInfo g;
             _ExtractGeometry(*it, g);
             g._t = plink->info_._t.inverse() * tflipyz * tnode;
-            plink->_vGeometries.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(plink,g)));
+            plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(plink,g)));
         }
 
         FOREACH(it,node->mChildren) {

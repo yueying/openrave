@@ -49,21 +49,21 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_ <= 0 ) {
+            _parameters->max_iterations_ = 100;
         }
-        if( _parameters->_fStepLength <= 0 ) {
-            _parameters->_fStepLength = 0.04;
+        if( _parameters->step_length_ <= 0 ) {
+            _parameters->step_length_ = 0.04;
         }
         _puniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
         if( !!_puniformsampler ) {
-            _puniformsampler->SetSeed(_parameters->_nRandomGeneratorSeed);
+            _puniformsampler->SetSeed(_parameters->random_generator_seed_);
         }
         _linearretimer->InitPlan(RobotBasePtr(), _parameters);
 
-        _vConfigVelocityLimitInv.resize(_parameters->_vConfigVelocityLimit.size());
+        _vConfigVelocityLimitInv.resize(_parameters->config_velocity_limit_vector_.size());
         for(int i = 0; i < (int)_vConfigVelocityLimitInv.size(); ++i) {
-            _vConfigVelocityLimitInv[i] = 1/_parameters->_vConfigVelocityLimit[i];
+            _vConfigVelocityLimitInv[i] = 1/_parameters->config_velocity_limit_vector_[i];
         }
         return !!_puniformsampler;
     }
@@ -149,7 +149,7 @@ public:
                 }
 
                 dReal totalshiftdist = _ComputePathDurationOnVelocity(listsimplepath);
-                dReal newdist1 = _OptimizePathSingleGroupShift(listsimplepath, totalshiftdist, parameters->_nMaxIterations*10);
+                dReal newdist1 = _OptimizePathSingleGroupShift(listsimplepath, totalshiftdist, parameters->max_iterations_*10);
                 if( newdist1 < 0 ) {
                     return PlannerStatus(PS_Interrupted);
                 }
@@ -197,13 +197,13 @@ public:
             {
 
                 if( _nUseSingleDOFSmoothing == 1 ) {
-                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->_nMaxIterations*8/10);
+                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->max_iterations_*8/10);
                     if( newdist1 < 0 ) {
                         return PlannerStatus(PS_Interrupted);
                     }
                     RAVELOG_DEBUG_FORMAT("env=%d, path optimizing first stage - dist %f->%f, computation time=%fs, num=%d", GetEnv()->GetId()%totaldist%newdist1%(0.001f*(float)(utils::GetMilliTime()-basetime))%listpath.size());
                     uint32_t basetime2 = utils::GetMilliTime();
-                    dReal newdist2 = _OptimizePathSingleDOF(listpath, newdist1, parameters->_nMaxIterations*2/10);
+                    dReal newdist2 = _OptimizePathSingleDOF(listpath, newdist1, parameters->max_iterations_*2/10);
                     if( newdist2 < 0 ) {
                         return PlannerStatus(PS_Interrupted);
                     }
@@ -211,9 +211,9 @@ public:
                 }
                 else if( _nUseSingleDOFSmoothing == 2 ) {
                     uint32_t basetime1 = utils::GetMilliTime();
-                    int nIterationGroup = parameters->_nMaxIterations/100;
+                    int nIterationGroup = parameters->max_iterations_/100;
                     int nCurIterations = 0;
-                    while(nCurIterations < parameters->_nMaxIterations) {
+                    while(nCurIterations < parameters->max_iterations_) {
                         dReal newdist1 = _OptimizePathSingleGroup(listpath, totaldist, nIterationGroup);
                         if( newdist1 < 0 ) {
                             return PlannerStatus(PS_Interrupted);
@@ -228,7 +228,7 @@ public:
                     }
                 }
                 else {
-                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->_nMaxIterations);
+                    dReal newdist1 = _OptimizePath(listpath, totaldist, parameters->max_iterations_);
                     RAVELOG_DEBUG(str(boost::format("path optimizing stage - dist %f->%f, computation time=%fs\n")%totaldist%newdist1%(0.001f*(float)(utils::GetMilliTime()-basetime))));
                 }
 
@@ -248,7 +248,7 @@ public:
             ptraj->Insert(0,vtrajdata);
         }
 
-        if( parameters->_sPostProcessingPlanner.size() == 0 ) {
+        if( parameters->post_processing_planner_.size() == 0 ) {
             // no other planner so at least retime
             PlannerStatus status = _linearretimer->PlanPath(ptraj);
             if( status.GetStatusCode() != PS_HasSolution ) {
@@ -286,7 +286,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters->_fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters->step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             dReal fstartdistdelta=0, fenddistdelta=0;
             dReal fcurdist = 0;
@@ -346,7 +346,7 @@ protected:
             }
 
             dReal fnewsegmentdist = parameters->_distmetricfn(vstartvalues, vendvalues);
-            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->_fStepLength ) {
+            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -391,7 +391,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters->_fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters->step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             uint32_t ioptdof = _puniformsampler->SampleSequenceOneUInt32()%uint32_t(numdof); // dof to optimize
 
@@ -493,7 +493,7 @@ protected:
             vpathvalues.at(numnodes+1).second = fdist;
             fnewsegmentdist += fdist;
 
-            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->_fStepLength ) {
+            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -568,7 +568,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters->_fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters->step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             uint32_t ioptgroup = _puniformsampler->SampleSequenceOneUInt32()%uint32_t(2); // group to optimize
 
@@ -691,7 +691,7 @@ protected:
             vpathvalues.at(numnodes+1).second = fdist;
             fnewsegmentdist += fdist;
 
-            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->_fStepLength ) {
+            if( fnewsegmentdist > fenddist-fstartdist-0.5*parameters->step_length_ ) {
                 // expected total distance is not that great
                 continue;
             }
@@ -844,13 +844,13 @@ protected:
         dReal f = 0;
         for(size_t i = 0; i < v.size(); ++i) {
             f += (v[i]-listNewNodes.back()[i])*(v[i]-listNewNodes.back()[i]);
-            if( v[i] < _parameters->_vConfigLowerLimit[i] ) {
-                RAVELOG_WARN_FORMAT("dof %d does not follow lower limit %f < %f", i%v[i]%_parameters->_vConfigLowerLimit[i]);
-                v[i] = _parameters->_vConfigLowerLimit[i];
+            if( v[i] < _parameters->config_lower_limit_vector_[i] ) {
+                RAVELOG_WARN_FORMAT("dof %d does not follow lower limit %f < %f", i%v[i]%_parameters->config_lower_limit_vector_[i]);
+                v[i] = _parameters->config_lower_limit_vector_[i];
             }
-            if( v[i] > _parameters->_vConfigUpperLimit[i] ) {
-                RAVELOG_WARN_FORMAT("dof %d does not follow upper limit %f > %f", i%v[i]%_parameters->_vConfigUpperLimit[i]);
-                v[i]  = _parameters->_vConfigUpperLimit[i];
+            if( v[i] > _parameters->config_upper_limit_vector_[i] ) {
+                RAVELOG_WARN_FORMAT("dof %d does not follow upper limit %f > %f", i%v[i]%_parameters->config_upper_limit_vector_[i]);
+                v[i]  = _parameters->config_upper_limit_vector_[i];
             }
         }
         if( f > 1e-10 ) {
@@ -888,7 +888,7 @@ protected:
                 RAVELOG_VERBOSE("smoothing quitting early\n");
                 break;
             }
-            dReal fstartdist = max(dReal(0),totaldist-parameters._fStepLength)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
+            dReal fstartdist = max(dReal(0),totaldist-parameters.step_length_)*_puniformsampler->SampleSequenceOneReal(IT_OpenEnd);
             dReal fenddist = fstartdist + (totaldist-fstartdist)*_puniformsampler->SampleSequenceOneReal(IT_OpenStart);
             uint32_t ioptgroup = _puniformsampler->SampleSequenceOneUInt32()%uint32_t(2); // group to optimize
             int iOtherOptGroup = (ioptgroup+1)%2;
@@ -1235,20 +1235,20 @@ protected:
         std::vector<dReal> anew(a.size()), bnew(b.size());
         FOREACH(itperturbation,perturbations) {
             for(size_t i = 0; i < a.size(); ++i) {
-                anew[i] = a[i] + *itperturbation * parameters->_vConfigResolution.at(i);
-                if( anew[i] < _parameters->_vConfigLowerLimit[i] ) {
-                    anew[i] = _parameters->_vConfigLowerLimit[i];
+                anew[i] = a[i] + *itperturbation * parameters->config_resolution_vector_.at(i);
+                if( anew[i] < _parameters->config_lower_limit_vector_[i] ) {
+                    anew[i] = _parameters->config_lower_limit_vector_[i];
                 }
-                if( anew[i] > _parameters->_vConfigUpperLimit[i] ) {
-                    anew[i]  = _parameters->_vConfigUpperLimit[i];
+                if( anew[i] > _parameters->config_upper_limit_vector_[i] ) {
+                    anew[i]  = _parameters->config_upper_limit_vector_[i];
                 }
 
-                bnew[i] = b[i] + *itperturbation * parameters->_vConfigResolution.at(i);
-                if( bnew[i] < _parameters->_vConfigLowerLimit[i] ) {
-                    bnew[i] = _parameters->_vConfigLowerLimit[i];
+                bnew[i] = b[i] + *itperturbation * parameters->config_resolution_vector_.at(i);
+                if( bnew[i] < _parameters->config_lower_limit_vector_[i] ) {
+                    bnew[i] = _parameters->config_lower_limit_vector_[i];
                 }
-                if( bnew[i] > _parameters->_vConfigUpperLimit[i] ) {
-                    bnew[i]  = _parameters->_vConfigUpperLimit[i];
+                if( bnew[i] > _parameters->config_upper_limit_vector_[i] ) {
+                    bnew[i]  = _parameters->config_upper_limit_vector_[i];
                 }
             }
             if( parameters->CheckPathAllConstraints(anew,bnew,std::vector<dReal>(), std::vector<dReal>(), 0, interval, options) != 0 ) {

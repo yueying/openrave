@@ -295,13 +295,13 @@ public:
         }
 
         if( (int)vchuckingdir.size() == _robot->GetActiveManipulator()->GetGripperDOF() ) {
-            params->vgoalconfig.resize(_robot->GetActiveDOF()); // chucking direction
+            params->goal_config_vector_.resize(_robot->GetActiveDOF()); // chucking direction
             for(size_t i = 0; i < _robot->GetActiveDOFIndices().size(); ++i) {
-                params->vgoalconfig[i] = 0;
+                params->goal_config_vector_[i] = 0;
                 vector<dReal>::const_iterator itchucking = vchuckingdir.begin();
                 FOREACHC(itgripper,_robot->GetActiveManipulator()->GetGripperIndices()) {
                     if(( *itchucking != 0) &&( *itgripper == _robot->GetActiveDOFIndices().at(i)) ) {
-                        params->vgoalconfig[i] = *itchucking;
+                        params->goal_config_vector_[i] = *itchucking;
                         break;
                     }
                     itchucking++;
@@ -313,7 +313,7 @@ public:
         // robot should not be re-enabled here! let the caller handle the robot link enables as they wish.
 
         params->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(params->vinitialconfig);
+        _robot->GetActiveDOFValues(params->initial_config_vector_);
 
         if( !_planner->InitPlan(_robot, params) ) {
             RAVELOG_WARN("InitPlan failed\n");
@@ -1055,7 +1055,7 @@ public:
                         probot->SetActiveDOFs(worker_params->vactiveindices);
                         probot->SetActiveDOFValues(grasp_params->preshape);
                         probot->SetActiveDOFs(worker_params->vactiveindices,worker_params->affinedofs,worker_params->affineaxis);
-                        params->vinitialconfig.resize(0);
+                        params->initial_config_vector_.resize(0);
                         ptraj->Init(probot->GetActiveConfigurationSpecification());
                         if( !planner->InitPlan(probot, params) ) {
                             RAVELOG_VERBOSE(str(boost::format("grasp %d: grasping noise planner failed")%grasp_params->id));

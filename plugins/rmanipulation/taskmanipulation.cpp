@@ -1117,7 +1117,7 @@ protected:
         Vector direction;
         RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
-        graspparams->vgoalconfig = pmanip->GetChuckingDirection();
+        graspparams->goal_config_vector_ = pmanip->GetChuckingDirection();
 
         vector<dReal> voffset;
         string cmd;
@@ -1146,7 +1146,7 @@ protected:
                 sinput >> *it;
             }
             else if( cmd == "movingdir" ) {
-                FOREACH(it,graspparams->vgoalconfig) {
+                FOREACH(it,graspparams->goal_config_vector_) {
                     sinput >> *it;
                 }
             }
@@ -1181,7 +1181,7 @@ protected:
         }
 
         graspparams->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(graspparams->vinitialconfig);
+        _robot->GetActiveDOFValues(graspparams->initial_config_vector_);
         graspparams->btransformrobot = false;
         graspparams->breturntrajectory = false;
         graspparams->bonlycontacttarget = false;
@@ -1190,7 +1190,7 @@ protected:
 
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
         ptraj->Init(_robot->GetActiveConfigurationSpecification());
-        ptraj->Insert(0,graspparams->vinitialconfig); // have to add the first point
+        ptraj->Insert(0,graspparams->initial_config_vector_); // have to add the first point
 
         if( !graspplanner->InitPlan(_robot, graspparams) ) {
             RAVELOG_ERROR("InitPlan failed\n");
@@ -1237,8 +1237,8 @@ protected:
         KinBodyPtr ptarget;
         RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
-        graspparams->vgoalconfig = pmanip->GetChuckingDirection();
-        FOREACH(it,graspparams->vgoalconfig) {
+        graspparams->goal_config_vector_ = pmanip->GetChuckingDirection();
+        FOREACH(it,graspparams->goal_config_vector_) {
             *it = -*it;
         }
         string cmd;
@@ -1266,7 +1266,7 @@ protected:
                 bOutputFinal = true;
             }
             else if( cmd == "movingdir" ) {
-                FOREACH(it,graspparams->vgoalconfig) {
+                FOREACH(it,graspparams->goal_config_vector_) {
                     sinput >> *it;
                 }
             }
@@ -1318,7 +1318,7 @@ protected:
         }
 
         graspparams->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(graspparams->vinitialconfig);
+        _robot->GetActiveDOFValues(graspparams->initial_config_vector_);
         graspparams->btransformrobot = false;
         graspparams->breturntrajectory = false;
         graspparams->bonlycontacttarget = false;
@@ -1389,10 +1389,10 @@ protected:
             }
         }
 
-        graspparams->vgoalconfig.resize(_robot->GetActiveDOF());
+        graspparams->goal_config_vector_.resize(_robot->GetActiveDOF());
         int i = 0;
         FOREACHC(itindex,_robot->GetActiveDOFIndices()) {
-            graspparams->vgoalconfig[i++] = -vchuckingsign_full.at(*itindex);
+            graspparams->goal_config_vector_[i++] = -vchuckingsign_full.at(*itindex);
         }
 
         string cmd;
@@ -1423,7 +1423,7 @@ protected:
             }
             else if( cmd == "movingdir" ) {
                 // moving direction, has to be of size activedof
-                FOREACH(it, graspparams->vgoalconfig)
+                FOREACH(it, graspparams->goal_config_vector_)
                 sinput >> *it;
             }
             else {
@@ -1464,7 +1464,7 @@ protected:
 
         _robot->SetActiveManipulator(RobotBase::ManipulatorPtr());     // reset the manipulator
         graspparams->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(graspparams->vinitialconfig);
+        _robot->GetActiveDOFValues(graspparams->initial_config_vector_);
         graspparams->btransformrobot = false;
         graspparams->breturntrajectory = false;
         graspparams->bonlycontacttarget = false;
@@ -1664,20 +1664,20 @@ protected:
         _robot->SetActiveDOFs(activejoints);
         params->SetRobotActiveJoints(_robot);
         if( fRRTStepLength > 0 ) {
-            params->_fStepLength = fRRTStepLength;
+            params->step_length_ = fRRTStepLength;
         }
         //params->_sPathOptimizationPlanner = ""; // no smoothing
 
-        _robot->GetActiveDOFValues(params->vinitialconfig);
+        _robot->GetActiveDOFValues(params->initial_config_vector_);
 
         // make sure the initial and goal configs are not in collision
         vector<dReal> vgoal;
-        params->vgoalconfig.reserve(nSeedIkSolutions*_robot->GetActiveDOF());
+        params->goal_config_vector_.reserve(nSeedIkSolutions*_robot->GetActiveDOF());
         goalsampler.SetSamplingProb(1);
         goalsampler.SetJitter(fPadding*2.5);
         while(nSeedIkSolutions > 0) {
             if( goalsampler.Sample(vgoal) ) {
-                params->vgoalconfig.insert(params->vgoalconfig.end(), vgoal.begin(), vgoal.end());
+                params->goal_config_vector_.insert(params->goal_config_vector_.end(), vgoal.begin(), vgoal.end());
                 --nSeedIkSolutions;
             }
             else {
@@ -1686,7 +1686,7 @@ protected:
             }
         }
 
-        if( params->vgoalconfig.size() == 0 ) {
+        if( params->goal_config_vector_.size() == 0 ) {
             RAVELOG_WARN("failed to find any goals, possibly need to jitter?\n");
             return ptraj;
         }
@@ -1695,7 +1695,7 @@ protected:
         params->_samplegoalfn = boost::bind(&planningutils::ManipulatorIKGoalSampler::Sample,&goalsampler,_1);
 
         // restore
-        _robot->SetActiveDOFValues(params->vinitialconfig);
+        _robot->SetActiveDOFValues(params->initial_config_vector_);
 
         vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
         // jitter again for initial collision
@@ -1703,7 +1703,7 @@ protected:
         case 0: {
             std::stringstream ss; ss << std::setprecision(std::numeric_limits<dReal>::digits10+1);
             ss << "jitter failed for initial=[";
-            FOREACHC(it, params->vinitialconfig) {
+            FOREACHC(it, params->initial_config_vector_) {
                 ss << *it << ", ";
             }
             ss << "]";
@@ -1712,13 +1712,13 @@ protected:
         }
         case 1:
             RAVELOG_DEBUG("original robot position in collision, so jittered out of it\n");
-            vinsertconfiguration = params->vinitialconfig;
-            _robot->GetActiveDOFValues(params->vinitialconfig);
+            vinsertconfiguration = params->initial_config_vector_;
+            _robot->GetActiveDOFValues(params->initial_config_vector_);
             break;
         }
 
         ptraj = RaveCreateTrajectory(GetEnv(),"");
-        params->_nMaxIterations = nMaxIterations;     // max iterations before failure
+        params->max_iterations_ = nMaxIterations;     // max iterations before failure
 
         bool bSuccess = false;
         RAVELOG_VERBOSE("starting planning\n");

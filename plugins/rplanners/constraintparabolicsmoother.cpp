@@ -125,12 +125,12 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_ <= 0 ) {
+            _parameters->max_iterations_ = 100;
         }
         // always a step length!
-        if( _parameters->_fStepLength <= g_fEpsilonLinear ) {
-            _parameters->_fStepLength = 0.001;
+        if( _parameters->step_length_ <= g_fEpsilonLinear ) {
+            _parameters->step_length_ = 0.001;
         }
 
         // // workspace constraints on links
@@ -210,13 +210,13 @@ public:
             _uniformsampler = RaveCreateSpaceSampler(GetEnv(),"mt19937");
             OPENRAVE_ASSERT_FORMAT0(!!_uniformsampler, "need mt19937 space samplers", ORE_Assert);
         }
-        _uniformsampler->SetSeed(_parameters->_nRandomGeneratorSeed);
+        _uniformsampler->SetSeed(_parameters->random_generator_seed_);
 
 
         // check and update minswitchtime
-        _parameters->minswitchtime = ComputeStepSizeCeiling(_parameters->minswitchtime, _parameters->_fStepLength);
+        _parameters->minswitchtime = ComputeStepSizeCeiling(_parameters->minswitchtime, _parameters->step_length_);
         if(_bCheckControllerTimeStep) {
-            _parameters->minswitchtime = max(_parameters->minswitchtime, 5*_parameters->_fStepLength);
+            _parameters->minswitchtime = max(_parameters->minswitchtime, 5*_parameters->step_length_);
         }
 
         return true;
@@ -260,12 +260,12 @@ public:
         ptraj->GetWaypoints(0,ptraj->GetNumWaypoints(),vtrajpoints,posspec);
 
         ParabolicRamp::RampFeasibilityChecker checker(this);
-        checker.tol = _parameters->_vConfigResolution;
+        checker.tol = _parameters->config_resolution_vector_;
         FOREACH(it, checker.tol) {
             *it *= _parameters->_pointtolerance;
         }
         checker.constraintsmask = CFO_CheckEnvCollisions|CFO_CheckSelfCollisions|CFO_CheckTimeBasedConstraints|CFO_CheckUserConstraints;
-        RAVELOG_VERBOSE_FORMAT("minswitchtime = %f, steplength=%f\n",_parameters->minswitchtime%_parameters->_fStepLength);
+        RAVELOG_VERBOSE_FORMAT("minswitchtime = %f, steplength=%f\n",_parameters->minswitchtime%_parameters->step_length_);
 
         try {
             //  Convert to ramps
@@ -296,7 +296,7 @@ public:
                         dx0.swap(dx1);
                     }
                 }
-                // Change timing of ramps so that they satisfy minswitchtime, _fStepLength, and dynamics and collision constraints
+                // Change timing of ramps so that they satisfy minswitchtime, step_length_, and dynamics and collision constraints
 
                 // Disable usePerturbation for this particular stage
                 int options = 0xffff;
@@ -407,7 +407,7 @@ public:
             dReal totaltime = mergewaypoints::ComputeRampsDuration(ramps);
             RAVELOG_DEBUG_FORMAT("initial ramps=%d, duration=%f, pointtolerance=%f", ramps.size()%totaltime%_parameters->_pointtolerance);
             int numshortcuts=0;
-            if( totaltime > _parameters->_fStepLength ) {
+            if( totaltime > _parameters->step_length_ ) {
 
                 // Start shortcutting
                 RAVELOG_DEBUG("Start shortcutting\n");
@@ -418,7 +418,7 @@ public:
                 for(int rep=0; rep<_parameters->nshortcutcycles; rep++) {
                     ramps = initramps;
                     RAVELOG_VERBOSE_FORMAT("Start shortcut cycle %d\n",rep);
-                    numshortcuts = Shortcut(ramps, _parameters->_nMaxIterations,checker, this);
+                    numshortcuts = Shortcut(ramps, _parameters->max_iterations_,checker, this);
                     totaltime = mergewaypoints::ComputeRampsDuration(ramps);
                     if(totaltime < besttime) {
                         bestramps = ramps;
@@ -629,7 +629,7 @@ public:
                 dReal tmpduration = mergewaypoints::ComputeRampsDuration(tmpramps0);
                 if( tmpduration > 0 ) {
                     if(_bCheckControllerTimeStep) {
-                        bool canscale = mergewaypoints::ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,_parameters->_fStepLength*2)/tmpduration,false,_parameters);
+                        bool canscale = mergewaypoints::ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,_parameters->step_length_*2)/tmpduration,false,_parameters);
                         BOOST_ASSERT(canscale);
                         ramps.splice(ramps.end(),tmpramps1);
                     }
@@ -718,9 +718,9 @@ public:
         std::list<ParabolicRamp::ParabolicRampND> intermediate;
         std::list<ParabolicRamp::ParabolicRampND>::iterator itramp1, itramp2;
 
-        dReal fStepLength = _parameters->_fStepLength;
+        dReal fStepLength = _parameters->step_length_;
         dReal shortcutinnovationthreshold = 0;
-        dReal fimprovetimethresh = _parameters->_fStepLength;
+        dReal fimprovetimethresh = _parameters->step_length_;
 
         // Iterative shortcutting
         for(int iters=0; iters<numIters; iters++) {
@@ -799,7 +799,7 @@ public:
                 continue;
             }
 
-            // no idea what a good time improvement delta  is... _parameters->_fStepLength?
+            // no idea what a good time improvement delta  is... _parameters->step_length_?
             dReal newramptime = 0;
             FOREACH(itramp, intermediate) {
                 newramptime += itramp->endTime;
@@ -1105,7 +1105,7 @@ protected:
 
     std::list< ManipConstraintInfo > _listCheckManips;
     TrajectoryBasePtr _dummytraj;
-    bool _bCheckControllerTimeStep; //!< if set to true (default), then constraints all switch points to be a multiple of _parameters->_fStepLength
+    bool _bCheckControllerTimeStep; //!< if set to true (default), then constraints all switch points to be a multiple of _parameters->step_length_
     bool _bmanipconstraints; /// if true, check workspace manip constraints
     PlannerProgress _progress;
 

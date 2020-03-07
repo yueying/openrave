@@ -236,7 +236,7 @@ protected:
             for(int ichild = 0; ichild < numchildlinks; ++ichild, curtime += timestep) {
                 std::shared_ptr<ConveyorLink> pchildlink(new ConveyorLink(str(boost::format("__moving__%s%d")%cmdata->_namebase%ichild), tparent, shared_kinbody()));
                 pchildlink->InitGeometries(cmdata->_listGeometries);
-                _veclinks.push_back(pchildlink);
+                links_vector_.push_back(pchildlink);
 
                 std::shared_ptr<KinBody::Mimic> mimic(new KinBody::Mimic());
                 *mimic = *cmdata->_mimic;

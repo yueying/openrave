@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2013 Cuong Pham <cuong.pham@normalesup.org>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -91,10 +91,10 @@ Interval SolveIneq(dReal a,dReal b)
 bool CheckValidity(dReal Ta,dReal Tb,const std::vector<dReal>& q0,const std::vector<dReal>& v0,const std::vector<dReal>& q2,const std::vector<dReal>& v2,std::vector<dReal>& qres,std::vector<dReal>& vres,ConstraintTrajectoryTimingParametersPtr params)
 {
 
-    vector<dReal> amax = params->_vConfigAccelerationLimit;
-    vector<dReal> vmax = params->_vConfigVelocityLimit;
-    vector<dReal> qmin = params->_vConfigLowerLimit;
-    vector<dReal> qmax = params->_vConfigUpperLimit;
+    vector<dReal> amax = params->config_acceleration_limit_vector_;
+    vector<dReal> vmax = params->config_velocity_limit_vector_;
+    vector<dReal> qmin = params->config_lower_limit_vector_;
+    vector<dReal> qmax = params->config_upper_limit_vector_;
 
     dReal q1,v1,a0,a1;
     qres.resize(q0.size(),0);
@@ -143,10 +143,10 @@ bool CheckMerge(dReal T0,dReal T1,dReal T2,const std::vector<dReal>& q0,const st
 {
     dReal T = T0+T1+T2;
     dReal Q,A0,B0lo,B0hi,A1lo,A1hi,B1,A2lo,B2lo,A2hi,B2hi;
-    vector<dReal> amax = params->_vConfigAccelerationLimit;
-    vector<dReal> vmax = params->_vConfigVelocityLimit;
-    vector<dReal> qmin = params->_vConfigLowerLimit;
-    vector<dReal> qmax = params->_vConfigUpperLimit;
+    vector<dReal> amax = params->config_acceleration_limit_vector_;
+    vector<dReal> vmax = params->config_velocity_limit_vector_;
+    vector<dReal> qmin = params->config_lower_limit_vector_;
+    vector<dReal> qmax = params->config_upper_limit_vector_;
     Interval sol = Interval(T0/T,(T0+T1)/T);
 
     for(size_t j=0; j<q0.size(); j++) {
@@ -493,7 +493,7 @@ bool IterativeMergeRampsFixedTime(const std::list<ParabolicRamp::ParabolicRampND
         std::list<dReal> desireddurations;
         desireddurations.resize(0);
         FOREACHC(itramp, ramps) {
-            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->_fStepLength));
+            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->step_length_));
         }
         return IterativeFixRamps(ramps,desireddurations,params);
     }
@@ -721,8 +721,8 @@ bool FurtherMergeRamps(const std::list<ParabolicRamp::ParabolicRampND>&origramps
             if(!resmerge) {
                 break;
             }
-            dReal t0 = ComputeStepSizeCeiling(resramp0.endTime,params->_fStepLength);
-            dReal t1 = ComputeStepSizeCeiling(resramp1.endTime,params->_fStepLength);
+            dReal t0 = ComputeStepSizeCeiling(resramp0.endTime,params->step_length_);
+            dReal t1 = ComputeStepSizeCeiling(resramp1.endTime,params->step_length_);
             if(t1+t0-resramp0.endTime-resramp1.endTime+ComputeRampsDuration(ramps)>upperbound*origrampsduration) {
                 break;
             }
@@ -777,7 +777,7 @@ bool IterativeMergeRamps(const std::list<ParabolicRamp::ParabolicRampND>&origram
 
     dReal hi = maxcoef;
     dReal lo = 1;
-    while ((hi-lo)*durationbeforemerge > params->_fStepLength) {
+    while ((hi-lo)*durationbeforemerge > params->step_length_) {
         testcoef = (hi+lo)/2;
         //printf("Coef = %f\n",testcoef);
         bool canscale2 = ScaleRampsTime(origramps,ramps,testcoef,true,params);
@@ -845,8 +845,8 @@ bool ComputeLinearRampsWithConstraints(std::list<ParabolicRamp::ParabolicRampND>
     dReal delta = params->minswitchtime;
     int numdof = params->GetDOF();
     for(int i=0; i<numdof; i++) {
-        vmaxs = min(vmaxs,params->_vConfigVelocityLimit[i]/RaveFabs(dx[i]));
-        amaxs = min(amaxs,params->_vConfigAccelerationLimit[i]/RaveFabs(dx[i]));
+        vmaxs = min(vmaxs,params->config_velocity_limit_vector_[i]/RaveFabs(dx[i]));
+        amaxs = min(amaxs,params->config_acceleration_limit_vector_[i]/RaveFabs(dx[i]));
     }
 
     dReal tp = sqrt(1/amaxs);
@@ -961,9 +961,9 @@ bool ComputeLinearRampsWithConstraints2(std::list<ParabolicRamp::ParabolicRampND
             coef = small;
         }
         for(int j=0; j<numdof; j++) {
-            amax[j]=params->_vConfigAccelerationLimit[j]*coef;
+            amax[j]=params->config_acceleration_limit_vector_[j]*coef;
         }
-        bool res = newramp.SolveMinTimeLinear(amax,params->_vConfigVelocityLimit);
+        bool res = newramp.SolveMinTimeLinear(amax,params->config_velocity_limit_vector_);
         if(!res) {
             if(coef <= small) {
                 RAVELOG_DEBUG("Quasi-static traj failed (solvemintime), stops ComputeLinearRamps right away\n");
@@ -1007,7 +1007,7 @@ bool ComputeQuadraticRampsWithConstraints(std::list<ParabolicRamp::ParabolicRamp
     dReal mintime;
     bool solved = false;
     int numdof = params->GetDOF();
-    std::vector<dReal> amax, vmax = params->_vConfigVelocityLimit;
+    std::vector<dReal> amax, vmax = params->config_velocity_limit_vector_;
     amax.resize(numdof);
 
     // Iteratively timescales up until the time-related constraints are met
@@ -1028,11 +1028,11 @@ bool ComputeQuadraticRampsWithConstraints(std::list<ParabolicRamp::ParabolicRamp
         //RAVELOG_VERBOSE("Coef: %d\n", coef);
         for(int j=0; j<numdof; j++) {
             if(params->maxmanipspeed>0) {
-                vmax[j]=max(params->_vConfigVelocityLimit[j]*coef,max(RaveFabs(dx0[j]),RaveFabs(dx1[j])));
+                vmax[j]=max(params->config_velocity_limit_vector_[j]*coef,max(RaveFabs(dx0[j]),RaveFabs(dx1[j])));
             }
-            amax[j]=params->_vConfigAccelerationLimit[j]*coef;
+            amax[j]=params->config_acceleration_limit_vector_[j]*coef;
         }
-        mintime = ParabolicRamp::SolveMinTimeBounded(x0,dx0,x1,dx1, amax, vmax, params->_vConfigLowerLimit, params->_vConfigUpperLimit, tmpramps1d, params->_multidofinterp);
+        mintime = ParabolicRamp::SolveMinTimeBounded(x0,dx0,x1,dx1, amax, vmax, params->config_lower_limit_vector_, params->config_upper_limit_vector_, tmpramps1d, params->_multidofinterp);
         if(mintime > fOriginalTrajectorySegmentTime) {
             //RAVELOG_VERBOSE("Too long\n");
             if(coef>=1) {
@@ -1146,7 +1146,7 @@ bool FixRampsEnds(std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<
             return false;
         }
         dReal tmpduration = ComputeRampsDuration(tmpramps0);
-        bool canscale = ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->_fStepLength*2)/tmpduration,false,params);
+        bool canscale = ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->step_length_*2)/tmpduration,false,params);
         if(!canscale) {
             RAVELOG_WARN("Could not round up to controller timestep\n");
             return false;
@@ -1180,7 +1180,7 @@ bool FixRampsEnds(std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<
             return false;
         }
         dReal tmpduration = mergewaypoints::ComputeRampsDuration(tmpramps0);
-        bool canscale = mergewaypoints::ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->_fStepLength*2)/tmpduration,false,params);
+        bool canscale = mergewaypoints::ScaleRampsTime(tmpramps0,tmpramps1,ComputeStepSizeCeiling(tmpduration,params->step_length_*2)/tmpduration,false,params);
         if(!canscale) {
             RAVELOG_WARN("Could not round up to controller timestep\n");
             return false;
@@ -1208,7 +1208,7 @@ bool FixRampsEnds(std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<
         std::list<dReal> desireddurations;
         desireddurations.resize(0);
         FOREACHC(itramp, resramps) {
-            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->_fStepLength));
+            desireddurations.push_back(ComputeStepSizeCeiling(itramp->endTime,params->step_length_));
         }
         //PrintRamps(resramps,params,false);
         bool res2 = IterativeFixRamps(resramps,desireddurations,params);
@@ -1334,13 +1334,13 @@ void PrintRamps(const std::list<ParabolicRamp::ParabolicRampND>&ramps,Constraint
         if(itramp->modified) {
             m = "M";
         }
-        dReal ratio = itramp->endTime/params->_fStepLength;
+        dReal ratio = itramp->endTime/params->step_length_;
         RAVELOG_DEBUG_FORMAT("Ramp %d: |%s|%f|%f; ",itx%m%itramp->endTime%ratio);
         if(checkcontrollertimestep) {
-            if(!IsMultipleOfStepSize(itramp->endTime,params->_fStepLength)) {
+            if(!IsMultipleOfStepSize(itramp->endTime,params->step_length_)) {
                 RAVELOG_WARN("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
                 dReal T = itramp->endTime;
-                dReal step = params->_fStepLength;
+                dReal step = params->step_length_;
                 dReal ratio = T/step;
                 dReal ceilratio = RaveCeil(ratio);
                 RAVELOG_WARN_FORMAT("Ratio= %d, CeilRatio= %d\n",ratio%ceilratio);

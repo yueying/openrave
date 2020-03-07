@@ -959,7 +959,7 @@ public:
                 if( xmlname == "body" ) {
                     // directly apply transform to all geomteries
                     Transform tnew = _plink->GetTransform();
-                    FOREACH(itgeom, _plink->_vGeometries) {
+                    FOREACH(itgeom, _plink->geometries_vector_) {
                         (*itgeom)->info_._t = tnew * (*itgeom)->info_._t;
                     }
                     _plink->_collision.ApplyTransform(tnew);
@@ -1051,7 +1051,7 @@ public:
                             listGeometries.front()._filenamecollision = info->_filenamecollision;
                             listGeometries.front().is_visible_ = info->is_visible_;
                             FOREACH(itinfo, listGeometries) {
-                                _plink->_vGeometries.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*itinfo)));
+                                _plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*itinfo)));
                             }
                         }
                         else {
@@ -1061,7 +1061,7 @@ public:
                             }
                             info->_t.trans *= _vScaleGeometry;
                             _plink->_collision.Append(info->mesh_collision_, info->_t);
-                            _plink->_vGeometries.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*info)));
+                            _plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*info)));
                         }
                     }
                     else {
@@ -1083,7 +1083,7 @@ public:
                         info->_t.trans *= _vScaleGeometry;
                         info->geom_data_vec_ *= geomspacescale;
                         _plink->_collision.Append(geom->GetCollisionMesh(), info->_t);
-                        _plink->_vGeometries.push_back(geom);
+                        _plink->geometries_vector_.push_back(geom);
                     }
                 }
 
@@ -1223,7 +1223,7 @@ public:
                 totalmass = MASS::GetSphericalMass(_vMassExtents.x, Vector(), _fTotalMass);
             }
 
-            totalmass.GetMassFrame(_plink->info_._tMassFrame, _plink->info_._vinertiamoments);
+            totalmass.GetMassFrame(_plink->info_.mass_frame_transform_, _plink->info_._vinertiamoments);
             _plink->info_.mass_ =totalmass.fTotalMass;
             tOrigTrans = _plink->GetTransform();
 
@@ -2175,8 +2175,8 @@ public:
 
                     if( _plink->index_ < 0 ) {
                         // not in array yet
-                        _plink->index_ = (int)_pchain->_veclinks.size();
-                        _pchain->_veclinks.push_back(_plink);
+                        _plink->index_ = (int)_pchain->links_vector_.size();
+                        _pchain->links_vector_.push_back(_plink);
                         _vTransforms.push_back(Transform());
                     }
 
@@ -2304,9 +2304,9 @@ public:
 
             // add prefix
             if( _prefix.size() > 0 ) {
-                //RAVELOG_INFO("write prefix: links: %d-%d, 0x%x\n",rootoffset,(int)_pchain->_veclinks.size(),this);
-                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_pchain->_veclinks.size());
-                for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->_veclinks.begin()+rootoffset; itlink != _pchain->_veclinks.end(); ++itlink) {
+                //RAVELOG_INFO("write prefix: links: %d-%d, 0x%x\n",rootoffset,(int)_pchain->links_vector_.size(),this);
+                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_pchain->links_vector_.size());
+                for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->links_vector_.begin()+rootoffset; itlink != _pchain->links_vector_.end(); ++itlink) {
                     (*itlink)->info_.name_ = _prefix + (*itlink)->info_.name_;
                 }
                 BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_pchain->_vecjoints.size());
@@ -2321,24 +2321,25 @@ public:
 
             if( _bOverwriteDiffuse ) {
                 // overwrite the color
-                FOREACH(itlink, _pchain->_veclinks) {
-                    FOREACH(itgeom, (*itlink)->_vGeometries) {
+                FOREACH(itlink, _pchain->links_vector_) {
+                    FOREACH(itgeom, (*itlink)->geometries_vector_) {
                         (*itgeom)->info_.diffuse_color_vec_ = _diffusecol;
                     }
                 }
             }
             if( _bOverwriteAmbient ) {
                 // overwrite the color
-                FOREACH(itlink, _pchain->_veclinks) {
-                    FOREACH(itgeom, (*itlink)->_vGeometries) {
+                FOREACH(itlink, _pchain->links_vector_) {
+                    FOREACH(itgeom, (*itlink)->geometries_vector_) {
                         (*itgeom)->info_._vAmbientColor = _ambientcol;
                     }
                 }
             }
             if( _bOverwriteTransparency ) {
                 // overwrite the color
-                FOREACH(itlink, _pchain->_veclinks) {
-                    FOREACH(itgeom, (*itlink)->_vGeometries) {
+                FOREACH(itlink, _pchain->links_vector_) {
+                    FOREACH(itgeom, (*itlink)->geometries_vector_)
+                    {
                         (*itgeom)->info_.transparency_ = _transparency;
                     }
                 }
@@ -2346,8 +2347,8 @@ public:
 
             // transform all the bodies with trans
             Transform cur;
-            BOOST_ASSERT(roottransoffset>=0 && roottransoffset<=(int)_pchain->_veclinks.size());
-            for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->_veclinks.begin()+roottransoffset; itlink != _pchain->_veclinks.end(); ++itlink) {
+            BOOST_ASSERT(roottransoffset>=0 && roottransoffset<=(int)_pchain->links_vector_.size());
+            for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->links_vector_.begin()+roottransoffset; itlink != _pchain->links_vector_.end(); ++itlink) {
                 (*itlink)->SetTransform(_trans * (*itlink)->GetTransform());
             }
             Vector com = _pchain->GetCenterOfMass();
@@ -3009,9 +3010,9 @@ public:
 
             // add prefix
             if( _prefix.size() > 0 ) {
-                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_probot->_veclinks.size());
-                vector<KinBody::LinkPtr>::iterator itlink = _probot->_veclinks.begin()+rootoffset;
-                while(itlink != _probot->_veclinks.end()) {
+                BOOST_ASSERT(rootoffset >= 0 && rootoffset<=(int)_probot->links_vector_.size());
+                vector<KinBody::LinkPtr>::iterator itlink = _probot->links_vector_.begin()+rootoffset;
+                while(itlink != _probot->links_vector_.end()) {
                     (*itlink)->info_.name_ = _prefix + (*itlink)->info_.name_;
                     ++itlink;
                 }
@@ -3064,9 +3065,9 @@ public:
             }
 
             // transform all "new" bodies with trans
-            BOOST_ASSERT(roottransoffset>=0&&roottransoffset<=(int)_probot->_veclinks.size());
-            vector<KinBody::LinkPtr>::iterator itlink = _probot->_veclinks.begin()+roottransoffset;
-            while(itlink != _probot->_veclinks.end()) {
+            BOOST_ASSERT(roottransoffset>=0&&roottransoffset<=(int)_probot->links_vector_.size());
+            vector<KinBody::LinkPtr>::iterator itlink = _probot->links_vector_.begin()+roottransoffset;
+            while(itlink != _probot->links_vector_.end()) {
                 (*itlink)->SetTransform(_trans * (*itlink)->GetTransform());
                 ++itlink;
             }

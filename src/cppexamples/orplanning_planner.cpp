@@ -16,7 +16,8 @@
 using namespace OpenRAVE;
 using namespace std;
 
-namespace cppexamples {
+namespace cppexamples 
+{
 
 class PlanningPlannerExample : public OpenRAVEExample
 {
@@ -28,18 +29,21 @@ public:
         return PA_None;
     }
 
-    virtual void demothread(int argc, char ** argv) {
-        string scenefilename = "data/hanoi_complex2.env.xml";
+    virtual void demothread(int argc, char ** argv) 
+	{
+        std::string scenefilename = "data/hanoi_complex2.env.xml";
         RaveSetDebugLevel(Level_Debug);
         penv->Load(scenefilename);
 
-        vector<RobotBasePtr> vrobots;
+        std::vector<RobotBasePtr> vrobots;
         penv->GetRobots(vrobots);
         RobotBasePtr probot = vrobots.at(0);
         // find the longest manipulator chain to move
         RobotBase::ManipulatorPtr pmanip = probot->GetManipulators().at(0);
-        for(size_t i = 1; i < probot->GetManipulators().size(); ++i) {
-            if( pmanip->GetArmIndices().size() < probot->GetManipulators()[i]->GetArmIndices().size() ) {
+        for(size_t i = 1; i < probot->GetManipulators().size(); ++i)
+		{
+            if( pmanip->GetArmIndices().size() < probot->GetManipulators()[i]->GetArmIndices().size() ) 
+			{
                 pmanip = probot->GetManipulators()[i];
             }
         }
@@ -51,7 +55,8 @@ public:
         // register an optional function to be called for every planner iteration
         UserDataPtr handle = planner->RegisterPlanCallback(boost::bind(&PlanningPlannerExample::PlanCallback,this,_1));
 
-        while(IsOk()) {
+        while(IsOk()) 
+		{
             GraphHandlePtr pgraph;
             {
                 EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
@@ -59,9 +64,9 @@ public:
                 probot->SetActiveDOFs(pmanip->GetArmIndices());
 
                 PlannerBase::PlannerParametersPtr params(new PlannerBase::PlannerParameters());
-                params->_nMaxIterations = 4000; // max iterations before failure
+                params->max_iterations_ = 4000; // max iterations before failure
                 params->SetRobotActiveJoints(probot); // set planning configuration space to current active dofs
-                params->vgoalconfig.resize(probot->GetActiveDOF());
+                params->goal_config_vector_.resize(probot->GetActiveDOF());
 
                 vector<dReal> vlower,vupper;
                 probot->GetActiveDOFLimits(vlower,vupper);
@@ -71,9 +76,9 @@ public:
                     RobotBase::RobotStateSaver saver(probot); // save the state
                     while(1) {
                         for(size_t i = 0; i < vlower.size(); ++i) {
-                            params->vgoalconfig[i] = vlower[i] + (vupper[i]-vlower[i])*RaveRandomFloat();
+                            params->goal_config_vector_[i] = vlower[i] + (vupper[i]-vlower[i])*RaveRandomFloat();
                         }
-                        probot->SetActiveDOFValues(params->vgoalconfig);
+                        probot->SetActiveDOFValues(params->goal_config_vector_);
                         if( !penv->CheckCollision(probot) && !probot->CheckSelfCollision() ) {
                             break;
                         }
@@ -82,7 +87,7 @@ public:
                 }
 
                 RAVELOG_INFO("starting to plan\n");
-                probot->GetActiveDOFValues(params->vinitialconfig);
+                probot->GetActiveDOFValues(params->initial_config_vector_);
                 if( !planner->InitPlan(probot,params) ) {
                     continue;
                 }

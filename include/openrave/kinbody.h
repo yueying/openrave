@@ -256,10 +256,10 @@ namespace OpenRAVE
 			/// the current transformation of the link with respect to the body coordinate system
 			Transform _t;
 			/// the frame for inertia and center of mass of the link in the link's coordinate system
-			Transform _tMassFrame;
+			Transform mass_frame_transform_;
 			/// mass of link
 			dReal mass_;
-			/// inertia along the axes of _tMassFrame
+			/// inertia along the axes of mass_frame_transform_
 			Vector _vinertiamoments;
 			std::map<std::string, std::vector<dReal> > _mapFloatParameters; //!< custom key-value pairs that could not be fit in the current model
 			std::map<std::string, std::vector<int> > _mapIntParameters; //!< custom key-value pairs that could not be fit in the current model
@@ -530,16 +530,16 @@ namespace OpenRAVE
 
 			/// \brief return center of mass offset in the link's local coordinate frame
 			inline Vector GetLocalCOM() const {
-				return info_._tMassFrame.trans;
+				return info_.mass_frame_transform_.trans;
 			}
 
 			/// \brief return center of mass of the link in the global coordinate system
 			inline Vector GetGlobalCOM() const {
-				return info_._t*info_._tMassFrame.trans;
+				return info_._t*info_.mass_frame_transform_.trans;
 			}
 
 			inline Vector GetCOMOffset() const {
-				return info_._tMassFrame.trans;
+				return info_.mass_frame_transform_.trans;
 			}
 
 			/// \brief return inertia in link's local coordinate frame. The translation component is the the COM in the link's frame.
@@ -559,12 +559,12 @@ namespace OpenRAVE
 
 			/// \brief return the mass frame in the link's local coordinate system that holds the center of mass and principal axes for inertia.
 			inline const Transform& GetLocalMassFrame() const {
-				return info_._tMassFrame;
+				return info_.mass_frame_transform_;
 			}
 
 			/// \brief return the mass frame in the global coordinate system that holds the center of mass and principal axes for inertia.
 			inline Transform GetGlobalMassFrame() const {
-				return info_._t*info_._tMassFrame;
+				return info_._t*info_.mass_frame_transform_;
 			}
 
 			/// \brief return the principal moments of inertia inside the mass frame
@@ -610,7 +610,7 @@ namespace OpenRAVE
 
 			/// \brief returns a list of all the geometry objects.
 			inline const std::vector<GeometryPtr>& GetGeometries() const {
-				return _vGeometries;
+				return geometries_vector_;
 			}
 			virtual GeometryPtr GetGeometry(int index);
 
@@ -731,7 +731,7 @@ namespace OpenRAVE
 			/// \param parameterschanged if true, will
 			virtual void _Update(bool parameterschanged = true, uint32_t extraParametersChanged = 0);
 
-			std::vector<GeometryPtr> _vGeometries;         //!< \see GetGeometries
+			std::vector<GeometryPtr> geometries_vector_;         //!< \see GetGeometries
 
 			LinkInfo info_; //!< parameter information of the link
 
@@ -741,7 +741,7 @@ namespace OpenRAVE
 			//@{
 			int index_;                  //!< \see GetIndex
 			KinBodyWeakPtr parent_;         //!< \see GetParent
-			std::vector<int> _vParentLinks;         //!< \see GetParentLinks, IsParentLink
+			std::vector<int> parent_links_vector_;         //!< \see GetParentLinks, IsParentLink
 			std::vector<int> _vRigidlyAttachedLinks;         //!< \see IsRigidlyAttached, GetRigidlyAttachedLinks
 			TriMesh _collision; //!< triangles for collision checking, triangles are always the triangulation
 								//!< of the body when it is at the identity transformation
@@ -1941,7 +1941,7 @@ namespace OpenRAVE
 
 		/// \brief Returns all the rigid links of the body.
 		virtual const std::vector<LinkPtr>& GetLinks() const {
-			return _veclinks;
+			return links_vector_;
 		}
 
 		/// \brief returns true if the DOF describes a rotation around an axis.
@@ -2240,7 +2240,8 @@ namespace OpenRAVE
 		/// \brief Returns the self-collision checker set specifically for this robot. If none has been set, return empty.
 		virtual CollisionCheckerBasePtr GetSelfCollisionChecker() const;
 
-		/// Collision checking utilities that use internal structures of the kinbody like grabbed info or the self-collision checker.
+		/// Collision checking utilities that use internal structures of the kinbody like grabbed info 
+		/// or the self-collision checker.
 		/// @name Collision Checking Utilities
 		//@{
 
@@ -2249,17 +2250,21 @@ namespace OpenRAVE
 			Links that are joined together are ignored.
 			Collisions between grabbed bodies are also considered as self-collisions for this body.
 			\param report [optional] collision report
-			\param collisionchecker An option collision checker to use for checking self-collisions. If not specified, then will use the environment collision checker.
+			\param collisionchecker An option collision checker to use for checking self-collisions.
+			If not specified, then will use the environment collision checker.
 		 */
-		virtual bool CheckSelfCollision(CollisionReportPtr report = CollisionReportPtr(), CollisionCheckerBasePtr collisionchecker = CollisionCheckerBasePtr()) const;
+		virtual bool CheckSelfCollision(CollisionReportPtr report = CollisionReportPtr(), 
+			CollisionCheckerBasePtr collisionchecker = CollisionCheckerBasePtr()) const;
 
-		/** \brief checks collision of a robot link with the surrounding environment using a new transform. Attached/Grabbed bodies to this link are also checked for collision.
+		/** \brief checks collision of a robot link with the surrounding environment using a new transform. 
+		    Attached/Grabbed bodies to this link are also checked for collision.
 
 		   \param[in] ilinkindex the index of the link to check
 		   \param[in] tlinktrans The transform of the link to check
 		   \param[out] report [optional] collision report
 		 */
-		virtual bool CheckLinkCollision(int ilinkindex, const Transform& tlinktrans, CollisionReportPtr report = CollisionReportPtr());
+		virtual bool CheckLinkCollision(int ilinkindex, const Transform& tlinktrans, 
+			CollisionReportPtr report = CollisionReportPtr());
 
 		/** \brief checks collision of a robot link with the surrounding environment using the current link's transform. Attached/Grabbed bodies to this link are also checked for collision.
 
@@ -2281,7 +2286,8 @@ namespace OpenRAVE
 			\param[in] tlinktrans The transform of the link to check
 			\param[out] report [optional] collision report
 		 */
-		virtual bool CheckLinkSelfCollision(int ilinkindex, const Transform& tlinktrans, CollisionReportPtr report = CollisionReportPtr());
+		virtual bool CheckLinkSelfCollision(int ilinkindex, const Transform& tlinktrans,
+			CollisionReportPtr report = CollisionReportPtr());
 
 		//@}
 
@@ -2587,7 +2593,7 @@ namespace OpenRAVE
 		virtual void _InitAndAddJoint(JointPtr pjoint);
 
 	public:
-		int _environmentid; //!< \see GetEnvironmentId
+		int environment_id_; //!< \see GetEnvironmentId
 
 	protected:
 		std::string name_; //!< name of body
@@ -2596,10 +2602,10 @@ namespace OpenRAVE
 		std::vector<JointPtr> _vTopologicallySortedJointsAll; //!< Similar to _vDependencyOrderedJoints except includes _vecjoints and _vPassiveJoints
 		std::vector<int> _vTopologicallySortedJointIndicesAll; //!< the joint indices of the joints in _vTopologicallySortedJointsAll. Passive joint indices have _vecjoints.size() added to them.
 		std::vector<JointPtr> _vDOFOrderedJoints; //!< all joints of the body ordered on how they are arranged within the degrees of freedom
-		std::vector<LinkPtr> _veclinks; //!< \see GetLinks
+		std::vector<LinkPtr> links_vector_; //!< \see GetLinks
 		std::vector<int> _vDOFIndices; //!< cached start joint indices, indexed by dof indices
 		std::vector<std::pair<int16_t, int16_t> > _vAllPairsShortestPaths; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into _vecjoints or _vPassiveJoints. If the second value is greater or equal to  _vecjoints.size() then it indexes into _vPassiveJoints.
-		std::vector<int8_t> _vJointsAffectingLinks; //!< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
+		std::vector<int8_t> joints_affecting_links_vector_; //!< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
 		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > _vClosedLoops; //!< \see GetClosedLoops
 		std::vector< std::vector< std::pair<int16_t, int16_t> > > _vClosedLoopIndices; //!< \see GetClosedLoops
 		std::vector<JointPtr> _vPassiveJoints; //!< \see GetPassiveJoints()
@@ -2612,13 +2618,13 @@ namespace OpenRAVE
 
 		mutable std::vector<std::list<UserDataWeakPtr> > _vlistRegisteredCallbacks; //!< callbacks to call when particular properties of the body change. _vlistRegisteredCallbacks[index] is the list of change callbacks where 1<<index is part of KinBodyProperty, this makes it easy to find out if any particular bits have callbacks. The registration/de-registration of the lists can happen at any point and does not modify the kinbody state exposed to the user, hence it is mutable.
 
-		mutable std::array<std::vector<int>, 4> _vNonAdjacentLinks; //!< contains cached versions of the non-adjacent links depending on values in AdjacentOptions. Declared as mutable since data is cached.
+		mutable std::array<std::vector<int>, 4> non_adjacent_links_vector_; //!< contains cached versions of the non-adjacent links depending on values in AdjacentOptions. Declared as mutable since data is cached.
 		mutable std::array<std::set<int>, 4> _cacheSetNonAdjacentLinks; //!< used for caching return value of GetNonAdjacentLinks.
-		mutable int _nNonAdjacentLinkCache; //!< specifies what information is currently valid in the AdjacentOptions.  Declared as mutable since data is cached. If 0x80000000 (ie < 0), then everything needs to be recomputed including _setNonAdjacentLinks[0].
+		mutable int non_adjacent_link_cache_; //!< specifies what information is currently valid in the AdjacentOptions.  Declared as mutable since data is cached. If 0x80000000 (ie < 0), then everything needs to be recomputed including _setNonAdjacentLinks[0].
 		std::vector<Transform> _vInitialLinkTransformations; //!< the initial transformations of each link specifying at least one pose where the robot is collision free
 
 		ConfigurationSpecification _spec;
-		CollisionCheckerBasePtr _selfcollisionchecker; //!< optional checker to use for self-collisions
+		CollisionCheckerBasePtr self_collision_checker_; //!< optional checker to use for self-collisions
 
 
 		mutable int _nUpdateStampId; //!< \see GetUpdateStamp

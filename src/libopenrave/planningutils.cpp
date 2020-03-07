@@ -221,11 +221,11 @@ int JitterCurrentConfiguration(PlannerBase::PlannerParametersConstPtr parameters
         else {
             for(size_t i = 0; i < newdof.size(); ++i) {
                 newdof[i] = curdof[i]+*itperturbation;
-                if( newdof[i] > parameters->_vConfigUpperLimit.at(i) ) {
-                    newdof[i] = parameters->_vConfigUpperLimit.at(i);
+                if( newdof[i] > parameters->config_upper_limit_vector_.at(i) ) {
+                    newdof[i] = parameters->config_upper_limit_vector_.at(i);
                 }
-                else if( newdof[i] < parameters->_vConfigLowerLimit.at(i) ) {
-                    newdof[i] = parameters->_vConfigLowerLimit.at(i);
+                else if( newdof[i] < parameters->config_lower_limit_vector_.at(i) ) {
+                    newdof[i] = parameters->config_lower_limit_vector_.at(i);
                 }
             }
         }
@@ -260,13 +260,13 @@ int JitterCurrentConfiguration(PlannerBase::PlannerParametersConstPtr parameters
     }
 
     FOREACHC(itsampler, parameters->_listInternalSamplers) {
-        (*itsampler)->SetSeed(parameters->_nRandomGeneratorSeed);
+        (*itsampler)->SetSeed(parameters->random_generator_seed_);
     }
     // reset the samplers with the seed, possibly there's some way to cache?
-    std::vector<dReal> vLimitOneThird(parameters->_vConfigLowerLimit.size()), vLimitTwoThirds(parameters->_vConfigLowerLimit.size());
+    std::vector<dReal> vLimitOneThird(parameters->config_lower_limit_vector_.size()), vLimitTwoThirds(parameters->config_lower_limit_vector_.size());
     for(size_t i = 0; i < vLimitOneThird.size(); ++i) {
-        vLimitOneThird[i] = (2*parameters->_vConfigLowerLimit[i] + parameters->_vConfigUpperLimit[i])/3.0;
-        vLimitTwoThirds[i] = (parameters->_vConfigLowerLimit[i] + 2*parameters->_vConfigUpperLimit[i])/3.0;
+        vLimitOneThird[i] = (2*parameters->config_lower_limit_vector_[i] + parameters->config_upper_limit_vector_[i])/3.0;
+        vLimitTwoThirds[i] = (parameters->config_lower_limit_vector_[i] + 2*parameters->config_upper_limit_vector_[i])/3.0;
     }
     deltadof2.resize(curdof.size(),0);
     dReal imaxiterations = 1.0/dReal(maxiterations);
@@ -312,11 +312,11 @@ int JitterCurrentConfiguration(PlannerBase::PlannerParametersConstPtr parameters
             else {
                 for(size_t j = 0; j < deltadof.size(); ++j) {
                     newdof[j] = curdof[j] + deltadof2[j];
-                    if( newdof[j] > parameters->_vConfigUpperLimit.at(j) ) {
-                        newdof[j] = parameters->_vConfigUpperLimit.at(j);
+                    if( newdof[j] > parameters->config_upper_limit_vector_.at(j) ) {
+                        newdof[j] = parameters->config_upper_limit_vector_.at(j);
                     }
-                    else if( newdof[j] < parameters->_vConfigLowerLimit.at(j) ) {
-                        newdof[j] = parameters->_vConfigLowerLimit.at(j);
+                    else if( newdof[j] < parameters->config_lower_limit_vector_.at(j) ) {
+                        newdof[j] = parameters->config_lower_limit_vector_.at(j);
                     }
                 }
             }
@@ -356,11 +356,11 @@ int JitterCurrentConfiguration(PlannerBase::PlannerParametersConstPtr parameters
             else {
                 for(size_t j = 0; j < deltadof.size(); ++j) {
                     newdof[j] = curdof[j] + deltadof[j];
-                    if( newdof[j] > parameters->_vConfigUpperLimit.at(j) ) {
-                        newdof[j] = parameters->_vConfigUpperLimit.at(j);
+                    if( newdof[j] > parameters->config_upper_limit_vector_.at(j) ) {
+                        newdof[j] = parameters->config_upper_limit_vector_.at(j);
                     }
-                    else if( newdof[j] < parameters->_vConfigLowerLimit.at(j) ) {
-                        newdof[j] = parameters->_vConfigLowerLimit.at(j);
+                    else if( newdof[j] < parameters->config_lower_limit_vector_.at(j) ) {
+                        newdof[j] = parameters->config_lower_limit_vector_.at(j);
                     }
                 }
             }
@@ -397,11 +397,15 @@ public:
         VerifyParameters();
     }
 
-    void VerifyParameters() {
+    void VerifyParameters() 
+	{
         OPENRAVE_ASSERT_FORMAT0(!!_parameters,"need planner parameters to verify trajectory",ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP_FORMAT0((int)_parameters->_vConfigLowerLimit.size(), ==, _parameters->GetDOF(), "unexpected size",ORE_InvalidState);
-        OPENRAVE_ASSERT_OP_FORMAT0((int)_parameters->_vConfigUpperLimit.size(), ==, _parameters->GetDOF(), "unexpected size",ORE_InvalidState);
-        OPENRAVE_ASSERT_OP_FORMAT0((int)_parameters->_vConfigResolution.size(), ==, _parameters->GetDOF(), "unexpected size",ORE_InvalidState);
+        OPENRAVE_ASSERT_OP_FORMAT0((int)_parameters->config_lower_limit_vector_.size(), ==, _parameters->GetDOF(), 
+			"unexpected size",ORE_InvalidState);
+        OPENRAVE_ASSERT_OP_FORMAT0((int)_parameters->config_upper_limit_vector_.size(), ==, _parameters->GetDOF(),
+			"unexpected size",ORE_InvalidState);
+        OPENRAVE_ASSERT_OP_FORMAT0((int)_parameters->config_resolution_vector_.size(), ==, _parameters->GetDOF(),
+			"unexpected size",ORE_InvalidState);
     }
 
     void VerifyTrajectory(TrajectoryBaseConstPtr trajectory, dReal samplingstep)
@@ -411,27 +415,35 @@ public:
         ConfigurationSpecification velspec =  _parameters->_configurationspecification.ConvertToVelocitySpecification();
 
         dReal fresolutionmean = 0;
-        FOREACHC(it,_parameters->_vConfigResolution) {
+        FOREACHC(it,_parameters->config_resolution_vector_) 
+		{
             fresolutionmean += *it;
         }
-        fresolutionmean /= _parameters->_vConfigResolution.size();
+        fresolutionmean /= _parameters->config_resolution_vector_.size();
 
         dReal fthresh = 5e-5f;
         vector<dReal> deltaq(_parameters->GetDOF(),0);
         std::vector<dReal> vdata, vdatavel, vdiff;
-        for(size_t ipoint = 0; ipoint < trajectory->GetNumWaypoints(); ++ipoint) {
+        for(size_t ipoint = 0; ipoint < trajectory->GetNumWaypoints(); ++ipoint) 
+		{
             trajectory->GetWaypoint(ipoint,vdata,_parameters->_configurationspecification);
             trajectory->GetWaypoint(ipoint,vdatavel,velspec);
             BOOST_ASSERT((int)vdata.size()==_parameters->GetDOF());
             BOOST_ASSERT((int)vdatavel.size()==_parameters->GetDOF());
-            for(size_t i = 0; i < vdata.size(); ++i) {
-                if( !(vdata[i] >= _parameters->_vConfigLowerLimit[i]-fthresh) || !(vdata[i] <= _parameters->_vConfigUpperLimit[i]+fthresh) ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("limits exceeded configuration %d dof %d: %f in [%f,%f]"), ipoint%i%vdata[i]%_parameters->_vConfigLowerLimit[i]%_parameters->_vConfigUpperLimit[i], ORE_InconsistentConstraints);
+            for(size_t i = 0; i < vdata.size(); ++i) 
+			{
+                if( !(vdata[i] >= _parameters->config_lower_limit_vector_[i]-fthresh) 
+					|| !(vdata[i] <= _parameters->config_upper_limit_vector_[i]+fthresh) ) 
+				{
+                    throw OPENRAVE_EXCEPTION_FORMAT(_("limits exceeded configuration %d dof %d: %f in [%f,%f]"),
+						ipoint%i%vdata[i]%_parameters->config_lower_limit_vector_[i]%_parameters->config_upper_limit_vector_[i], 
+						ORE_InconsistentConstraints);
                 }
             }
-            for(size_t i = 0; i < _parameters->_vConfigVelocityLimit.size(); ++i) {
-                if( !(RaveFabs(vdatavel.at(i)) <= _parameters->_vConfigVelocityLimit[i]+fthresh) ) { // !(x<=y) necessary for catching NaNs
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("velocity exceeded configuration %d dof %d: %f>%f"), ipoint%i%RaveFabs(vdatavel.at(i))%_parameters->_vConfigVelocityLimit[i], ORE_InconsistentConstraints);
+            for(size_t i = 0; i < _parameters->config_velocity_limit_vector_.size(); ++i) 
+			{
+                if( !(RaveFabs(vdatavel.at(i)) <= _parameters->config_velocity_limit_vector_[i]+fthresh) ) { // !(x<=y) necessary for catching NaNs
+                    throw OPENRAVE_EXCEPTION_FORMAT(_("velocity exceeded configuration %d dof %d: %f>%f"), ipoint%i%RaveFabs(vdatavel.at(i))%_parameters->config_velocity_limit_vector_[i], ORE_InconsistentConstraints);
                 }
             }
             if( _parameters->SetStateValues(vdata, 0) != 0 ) {
@@ -443,7 +455,7 @@ public:
             vdiff = newq;
             _parameters->_diffstatefn(vdiff,vdata);
             for(size_t i = 0; i < vdiff.size(); ++i) {
-                if( !(RaveFabs(vdiff.at(i)) <= 0.001 * _parameters->_vConfigResolution[i]) ) {
+                if( !(RaveFabs(vdiff.at(i)) <= 0.001 * _parameters->config_resolution_vector_[i]) ) {
                     throw OPENRAVE_EXCEPTION_FORMAT(_("setstate/getstate inconsistent configuration %d dof %d: %f != %f, wrote trajectory to %s"),ipoint%i%vdata.at(i)%newq.at(i)%DumpTrajectory(trajectory),ORE_InconsistentConstraints);
                 }
             }
@@ -506,8 +518,8 @@ public:
                     dReal deltatime = *itsampletime - *itprevtime;
                     vdiff = vdata;
                     _parameters->_diffstatefn(vdiff,vprevdata);
-                    for(size_t i = 0; i < _parameters->_vConfigVelocityLimit.size(); ++i) {
-                        dReal velthresh = _parameters->_vConfigVelocityLimit.at(i)*deltatime+fthresh;
+                    for(size_t i = 0; i < _parameters->config_velocity_limit_vector_.size(); ++i) {
+                        dReal velthresh = _parameters->config_velocity_limit_vector_.at(i)*deltatime+fthresh;
                         OPENRAVE_ASSERT_OP_FORMAT(RaveFabs(vdiff.at(i)), <=, velthresh, "time %fs-%fs, dof %d traveled %f, but maxvelocity only allows %f, wrote trajectory to %s",*itprevtime%*itsampletime%i%RaveFabs(vdiff.at(i))%velthresh%DumpTrajectory(trajectory),ORE_InconsistentConstraints);
                     }
                     if( _parameters->CheckPathAllConstraints(vprevdata,vdata,vprevdatavel, vdatavel, deltatime, interval, 0xffff|CFO_FillCheckedConfiguration, filterreturn) != 0 ) {
@@ -601,10 +613,10 @@ PlannerStatus _PlanActiveDOFTrajectory(TrajectoryBasePtr traj, RobotBasePtr prob
     PlannerBasePtr planner = RaveCreatePlanner(env,plannername.size() > 0 ? plannername : string("parabolicsmoother"));
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->SetRobotActiveJoints(probot);
-    FOREACH(it,params->_vConfigVelocityLimit) {
+    FOREACH(it,params->config_velocity_limit_vector_) {
         *it *= fmaxvelmult;
     }
-    FOREACH(it,params->_vConfigAccelerationLimit) {
+    FOREACH(it,params->config_acceleration_limit_vector_) {
         *it *= fmaxaccelmult;
     }
     if( !bsmooth ) {
@@ -612,7 +624,7 @@ PlannerStatus _PlanActiveDOFTrajectory(TrajectoryBasePtr traj, RobotBasePtr prob
         params->_checkpathvelocityconstraintsfn.clear();
     }
 
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
     params->_hastimestamps = hastimestamps;
     params->_sExtraParameters += plannerparameters;
     if( !planner->InitPlan(probot,params) ) {
@@ -641,7 +653,7 @@ ActiveDOFTrajectorySmoother::ActiveDOFTrajectorySmoother(RobotBasePtr robot, con
     _planner = RaveCreatePlanner(robot->GetEnv(),plannername);
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->SetRobotActiveJoints(_robot);
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
     params->_hastimestamps = false;
     params->_sExtraParameters += plannerparameters;
     if( !_planner->InitPlan(_robot,params) ) {
@@ -682,7 +694,7 @@ void ActiveDOFTrajectorySmoother::_UpdateParameters()
     _robot->SetActiveDOFs(_vRobotActiveIndices, _nRobotAffineDOF, _vRobotRotationAxis);
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->SetRobotActiveJoints(_robot);
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
     params->_hastimestamps = false;
     params->_sExtraParameters = _parameters->_sExtraParameters;
     if( !_planner->InitPlan(_robot,params) ) {
@@ -702,7 +714,7 @@ ActiveDOFTrajectoryRetimer::ActiveDOFTrajectoryRetimer(RobotBasePtr robot, const
     _planner = RaveCreatePlanner(robot->GetEnv(),plannername);
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->SetRobotActiveJoints(_robot);
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
     params->_hastimestamps = false;
     params->_setstatevaluesfn.clear();
     params->_checkpathvelocityconstraintsfn.clear();
@@ -744,7 +756,7 @@ void ActiveDOFTrajectoryRetimer::_UpdateParameters()
     _robot->SetActiveDOFs(_vRobotActiveIndices, _nRobotAffineDOF, _vRobotRotationAxis);
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->SetRobotActiveJoints(_robot);
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
     params->_hastimestamps = false;
     params->_setstatevaluesfn.clear();
     params->_checkpathvelocityconstraintsfn.clear();
@@ -772,10 +784,10 @@ PlannerStatus _PlanTrajectory(TrajectoryBasePtr traj, bool hastimestamps, dReal 
     PlannerBasePtr planner = RaveCreatePlanner(traj->GetEnv(),plannername.size() > 0 ? plannername : string("parabolicsmoother"));
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
     params->SetConfigurationSpecification(traj->GetEnv(),traj->GetConfigurationSpecification().GetTimeDerivativeSpecification(0));
-    FOREACH(it,params->_vConfigVelocityLimit) {
+    FOREACH(it,params->config_velocity_limit_vector_) {
         *it *= fmaxvelmult;
     }
-    FOREACH(it,params->_vConfigAccelerationLimit) {
+    FOREACH(it,params->config_acceleration_limit_vector_) {
         *it *= fmaxaccelmult;
     }
     if( !bsmooth ) {
@@ -783,7 +795,7 @@ PlannerStatus _PlanTrajectory(TrajectoryBasePtr traj, bool hastimestamps, dReal 
         params->_checkpathvelocityconstraintsfn.clear();
     }
 
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
     params->_hastimestamps = hastimestamps;
     params->_sExtraParameters += plannerparameters;
     if( !planner->InitPlan(RobotBasePtr(),params) ) {
@@ -904,17 +916,17 @@ static PlannerStatus _PlanAffineTrajectory(TrajectoryBasePtr traj, const std::ve
     //ConvertTrajectorySpecification(traj,newspec);
     PlannerBasePtr planner = RaveCreatePlanner(traj->GetEnv(),plannername.size() > 0 ? plannername : string("parabolicsmoother"));
     TrajectoryTimingParametersPtr params(new TrajectoryTimingParameters());
-    params->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
-    params->_vConfigVelocityLimit = maxvelocities;
-    params->_vConfigAccelerationLimit = maxaccelerations;
+    params->post_processing_planner_ = ""; // have to turn off the second post processing stage
+    params->config_velocity_limit_vector_ = maxvelocities;
+    params->config_acceleration_limit_vector_ = maxaccelerations;
     params->_configurationspecification = newspec;
-    params->_vConfigLowerLimit.resize(newspec.GetDOF());
-    params->_vConfigUpperLimit.resize(newspec.GetDOF());
-    params->_vConfigResolution.resize(newspec.GetDOF());
-    for(size_t i = 0; i < params->_vConfigLowerLimit.size(); ++i) {
-        params->_vConfigLowerLimit[i] = -1e6;
-        params->_vConfigUpperLimit[i] = 1e6;
-        params->_vConfigResolution[i] = 0.01;
+    params->config_lower_limit_vector_.resize(newspec.GetDOF());
+    params->config_upper_limit_vector_.resize(newspec.GetDOF());
+    params->config_resolution_vector_.resize(newspec.GetDOF());
+    for(size_t i = 0; i < params->config_lower_limit_vector_.size(); ++i) {
+        params->config_lower_limit_vector_[i] = -1e6;
+        params->config_upper_limit_vector_[i] = 1e6;
+        params->config_resolution_vector_[i] = 0.01;
     }
 
     std::list< boost::function<void(std::vector<dReal>::const_iterator) > > listsetfunctions;
@@ -1055,7 +1067,7 @@ PlannerStatus AffineTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, const st
     TrajectoryTimingParametersPtr parameters;
     if( !_parameters ) {
         parameters.reset(new TrajectoryTimingParameters());
-        parameters->_sPostProcessingPlanner = ""; // have to turn off the second post processing stage
+        parameters->post_processing_planner_ = ""; // have to turn off the second post processing stage
         parameters->_setstatevaluesfn.clear();
         parameters->_getstatefn.clear();
         parameters->_checkpathvelocityconstraintsfn.clear();
@@ -1068,26 +1080,26 @@ PlannerStatus AffineTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, const st
 
 
     bool bInitPlan=false;
-    if( bInitPlan || CompareRealVectors(parameters->_vConfigVelocityLimit, maxvelocities, g_fEpsilonLinear) != 0 ) {
-        parameters->_vConfigVelocityLimit = maxvelocities;
+    if( bInitPlan || CompareRealVectors(parameters->config_velocity_limit_vector_, maxvelocities, g_fEpsilonLinear) != 0 ) {
+        parameters->config_velocity_limit_vector_ = maxvelocities;
         bInitPlan = true;
     }
-    if( bInitPlan || CompareRealVectors(parameters->_vConfigAccelerationLimit, maxaccelerations, g_fEpsilonLinear) != 0 ) {
-        parameters->_vConfigAccelerationLimit = maxaccelerations;
+    if( bInitPlan || CompareRealVectors(parameters->config_acceleration_limit_vector_, maxaccelerations, g_fEpsilonLinear) != 0 ) {
+        parameters->config_acceleration_limit_vector_ = maxaccelerations;
         bInitPlan = true;
     }
     if( bInitPlan || parameters->_configurationspecification != trajspec ) {
         parameters->_configurationspecification = trajspec;
         bInitPlan = true;
     }
-    if( bInitPlan || (int)parameters->_vConfigLowerLimit.size() != trajspec.GetDOF() ) {
-        parameters->_vConfigLowerLimit.resize(trajspec.GetDOF());
-        parameters->_vConfigUpperLimit.resize(trajspec.GetDOF());
-        parameters->_vConfigResolution.resize(trajspec.GetDOF());
-        for(size_t i = 0; i < parameters->_vConfigLowerLimit.size(); ++i) {
-            parameters->_vConfigLowerLimit[i] = -1e6;
-            parameters->_vConfigUpperLimit[i] = 1e6;
-            parameters->_vConfigResolution[i] = 0.01;
+    if( bInitPlan || (int)parameters->config_lower_limit_vector_.size() != trajspec.GetDOF() ) {
+        parameters->config_lower_limit_vector_.resize(trajspec.GetDOF());
+        parameters->config_upper_limit_vector_.resize(trajspec.GetDOF());
+        parameters->config_resolution_vector_.resize(trajspec.GetDOF());
+        for(size_t i = 0; i < parameters->config_lower_limit_vector_.size(); ++i) {
+            parameters->config_lower_limit_vector_[i] = -1e6;
+            parameters->config_upper_limit_vector_[i] = 1e6;
+            parameters->config_resolution_vector_[i] = 0.01;
         }
         bInitPlan = true;
     }
@@ -1457,10 +1469,10 @@ size_t InsertWaypointWithSmoothing(int index, const std::vector<dReal>& dofvalue
     ConfigurationSpecification specpos = traj->GetConfigurationSpecification().GetTimeDerivativeSpecification(0);
     OPENRAVE_ASSERT_OP(specpos.GetDOF(),==,(int)dofvalues.size());
     params->SetConfigurationSpecification(traj->GetEnv(),specpos);
-    FOREACH(it,params->_vConfigVelocityLimit) {
+    FOREACH(it,params->config_velocity_limit_vector_) {
         *it *= fmaxvelmult;
     }
-    FOREACH(it,params->_vConfigAccelerationLimit) {
+    FOREACH(it,params->config_acceleration_limit_vector_) {
         *it *= fmaxaccelmult;
     }
 
@@ -2156,12 +2168,12 @@ int DynamicsCollisionConstraint::_SetAndCheckState(PlannerBase::PlannerParameter
         std::array<dReal,3> perturbations = {{_perturbation,-_perturbation}};
         FOREACH(itperturbation,perturbations) {
             for(size_t i = 0; i < vdofvalues.size(); ++i) {
-                _vperturbedvalues[i] = vdofvalues[i] + *itperturbation * params->_vConfigResolution.at(i);
-                if( _vperturbedvalues[i] < params->_vConfigLowerLimit.at(i) ) {
-                    _vperturbedvalues[i] = params->_vConfigLowerLimit.at(i);
+                _vperturbedvalues[i] = vdofvalues[i] + *itperturbation * params->config_resolution_vector_.at(i);
+                if( _vperturbedvalues[i] < params->config_lower_limit_vector_.at(i) ) {
+                    _vperturbedvalues[i] = params->config_lower_limit_vector_.at(i);
                 }
-                if( _vperturbedvalues[i] > params->_vConfigUpperLimit.at(i) ) {
-                    _vperturbedvalues[i] = params->_vConfigUpperLimit.at(i);
+                if( _vperturbedvalues[i] > params->config_upper_limit_vector_.at(i) ) {
+                    _vperturbedvalues[i] = params->config_upper_limit_vector_.at(i);
                 }
             }
             if( params->SetStateValues(_vperturbedvalues, 0) != 0 ) {
@@ -2438,7 +2450,7 @@ int DynamicsCollisionConstraint::Check(const std::vector<dReal>& q0, const std::
     }
 
     int i, numSteps = 0, nLargestStepIndex = -1;
-    const std::vector<dReal>& vConfigResolution = params->_vConfigResolution;
+    const std::vector<dReal>& vConfigResolution = params->config_resolution_vector_;
     std::vector<dReal>::const_iterator itres = vConfigResolution.begin();
     BOOST_ASSERT((int)vConfigResolution.size()==params->GetDOF());
     int totalsteps = 0;

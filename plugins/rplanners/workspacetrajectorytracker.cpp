@@ -67,7 +67,7 @@ Planner Parameters\n\
         // check if the parameters configuration space actually reflects the active manipulator, move to the upper and lower limits
         {
             RobotBase::RobotStateSaver saver(_robot);
-            std::array<std::vector<dReal>*,2> testvalues = { { &parameters->_vConfigLowerLimit,&parameters->_vConfigUpperLimit}};
+            std::array<std::vector<dReal>*,2> testvalues = { { &parameters->config_lower_limit_vector_,&parameters->config_upper_limit_vector_}};
             vector<dReal> dummyvalues;
             for(size_t i = 0; i < testvalues.size(); ++i) {
                 if( parameters->SetStateValues(*testvalues[i]) != 0 ) {
@@ -98,19 +98,19 @@ Planner Parameters\n\
 
         RobotBase::RobotStateSaver savestate(_robot);
         // should check collisio only for independent links that do not move during the planning process. This might require a CO_IndependentFromActiveDOFs option.
-        //if(CollisionFunctions::CheckCollision(parameters,_robot,parameters->vinitialconfig, _report)) {
+        //if(CollisionFunctions::CheckCollision(parameters,_robot,parameters->initial_config_vector_, _report)) {
 
         // validate the initial state if one exists
-        if( parameters->vinitialconfig.size() > 0 ) {
-            if( (int)parameters->vinitialconfig.size() != parameters->GetDOF() ) {
-                RAVELOG_ERROR(str(boost::format("initial config wrong dim: %d\n")%parameters->vinitialconfig.size()));
+        if( parameters->initial_config_vector_.size() > 0 ) {
+            if( (int)parameters->initial_config_vector_.size() != parameters->GetDOF() ) {
+                RAVELOG_ERROR(str(boost::format("initial config wrong dim: %d\n")%parameters->initial_config_vector_.size()));
                 return false;
             }
-            if( parameters->SetStateValues(parameters->vinitialconfig) ) {
+            if( parameters->SetStateValues(parameters->initial_config_vector_) ) {
                 RAVELOG_WARN("initial state cannot be set\n");
                 return false;
             }
-            //            if( !parameters->_checkpathconstraintsfn(parameters->vinitialconfig, parameters->vinitialconfig,IT_OpenStart,ConfigurationListPtr()) ) {
+            //            if( !parameters->_checkpathconstraintsfn(parameters->initial_config_vector_, parameters->initial_config_vector_,IT_OpenStart,ConfigurationListPtr()) ) {
 
             //            }
         }
@@ -171,7 +171,7 @@ Planner Parameters\n\
         bool bPrevInCollision = true;
         list<Transform> listtransforms;
         dReal ftime = 0;
-        for(; ftime < workspacetraj->GetDuration()-_parameters->_fStepLength*0.5; ftime += _parameters->_fStepLength) {
+        for(; ftime < workspacetraj->GetDuration()-_parameters->step_length_*0.5; ftime += _parameters->step_length_) {
             workspacetraj->Sample(vtrajpoint,ftime);
             workspacetraj->GetConfigurationSpecification().ExtractIkParameterization(ikparam,vtrajpoint.begin());
             Transform t = ikparam.GetTransform6D();
@@ -225,14 +225,14 @@ Planner Parameters\n\
         _mjacobian.resize(boost::extents[0][0]);
         _vprevsolution.resize(0);
         _tbaseinv = _manip->GetBase()->GetTransform().inverse();
-        if( (int)_parameters->vinitialconfig.size() == _parameters->GetDOF() ) {
-            if( _parameters->SetStateValues(_parameters->vinitialconfig) != 0 ) {
+        if( (int)_parameters->initial_config_vector_.size() == _parameters->GetDOF() ) {
+            if( _parameters->SetStateValues(_parameters->initial_config_vector_) != 0 ) {
                 std::string description = "failed to set initial state\n";
                 RAVELOG_ERROR(description);
                 return PlannerStatus(description, PS_Failed);
             }
-            _SetPreviousSolution(_parameters->vinitialconfig,false);
-            poutputtraj->Insert(poutputtraj->GetNumWaypoints(),_parameters->vinitialconfig,_parameters->_configurationspecification);
+            _SetPreviousSolution(_parameters->initial_config_vector_,false);
+            poutputtraj->Insert(poutputtraj->GetNumWaypoints(),_parameters->initial_config_vector_,_parameters->_configurationspecification);
         }
 
         UserDataPtr filterhandle = _manip->GetIkSolver()->RegisterCustomFilter(0,boost::bind(&WorkspaceTrajectoryTracker::_ValidateSolution,this,_1,_2,_3));
@@ -244,7 +244,7 @@ Planner Parameters\n\
         list<Transform>::iterator ittrans = listtransforms.begin();
         bPrevInCollision = true;
         ftime = 0;
-        for(; ittrans != listtransforms.end(); ftime += _parameters->_fStepLength, ++ittrans) {
+        for(; ittrans != listtransforms.end(); ftime += _parameters->step_length_, ++ittrans) {
             _filteroptions = (ftime >= fstarttime) ? IKFO_CheckEnvCollisions : 0;
             IkParameterization ikparam(*ittrans,IKP_Transform6D);
             if( !_manip->FindIKSolution(ikparam,vsolution,_filteroptions) ) {

@@ -35,7 +35,7 @@ void RobotBase::ConnectedBodyInfo::InitInfoFromBody(RobotBase& robot)
     std::vector<dReal> vzeros(robot.GetDOF());
     robot.SetDOFValues(vzeros, Transform());
 
-    FOREACH(itlink, robot._veclinks) {
+    FOREACH(itlink, robot.links_vector_) {
         _vLinkInfos.push_back(std::make_shared<KinBody::LinkInfo>((*itlink)->UpdateAndGetInfo()));
     }
 
@@ -430,7 +430,7 @@ void RobotBase::_ComputeConnectedBodiesInformation()
 
         // check if connectedBodyInfo._linkname exists
         bool bExists = false;
-        FOREACH(ittestlink, _veclinks) {
+        FOREACH(ittestlink, links_vector_) {
             if( connectedBodyInfo._linkname == (*ittestlink)->GetName() ) {
                 bExists = true;
                 break;
@@ -611,7 +611,7 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
         return;
     }
 
-    std::vector<uint8_t> vConnectedLinks; vConnectedLinks.resize(_veclinks.size(),0);
+    std::vector<uint8_t> vConnectedLinks; vConnectedLinks.resize(links_vector_.size(),0);
     std::vector<uint8_t> vConnectedJoints; vConnectedJoints.resize(_vecjoints.size(),0);
     std::vector<uint8_t> vConnectedPassiveJoints; vConnectedPassiveJoints.resize(_vPassiveJoints.size(),0);
 
@@ -670,10 +670,10 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
     for(int ireadlink = 0; ireadlink < (int)vConnectedLinks.size(); ++ireadlink) {
         if( !vConnectedLinks[ireadlink] ) {
             // preserve as original
-            _veclinks[iwritelink++] = _veclinks[ireadlink];
+            links_vector_[iwritelink++] = links_vector_[ireadlink];
         }
     }
-    _veclinks.resize(iwritelink);
+    links_vector_.resize(iwritelink);
 
     int iwritejoint = 0;
     for(int ireadjoint = 0; ireadjoint < (int)vConnectedJoints.size(); ++ireadjoint) {

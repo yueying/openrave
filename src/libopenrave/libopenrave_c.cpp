@@ -72,9 +72,9 @@ void ORCSetDebugLevel(int level)
     RaveSetDebugLevel((OpenRAVE::DebugLevel)level);
 }
 
-void ORCInitialize(int bLoadAllPlugins, int level)
+void ORCInitialize(int is_load_all_plugins, int level)
 {
-    if (bLoadAllPlugins == 1)
+    if (is_load_all_plugins == 1)
         RaveInitialize(true,level);
     else
         RaveInitialize(false,level);

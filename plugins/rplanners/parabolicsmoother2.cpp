@@ -384,8 +384,8 @@ public:
 
     bool _InitPlan()
     {
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 100;
+        if( _parameters->max_iterations_ <= 0 ) {
+            _parameters->max_iterations_ = 100;
         }
 
         _bUsePerturbation = true;
@@ -406,7 +406,7 @@ public:
         if( !_uniformsampler ) {
             _uniformsampler = RaveCreateSpaceSampler(GetEnv(), "mt19937");
         }
-        _uniformsampler->SetSeed(_parameters->_nRandomGeneratorSeed);
+        _uniformsampler->SetSeed(_parameters->random_generator_seed_);
 
         _fileIndexMod = 10000; // for trajectory saving
 #ifdef SMOOTHER2_PROGRESS_DEBUG
@@ -531,8 +531,8 @@ public:
         // Initialize a parabolicpath
         RampOptimizer::ParabolicPath& parabolicpath = _cacheparabolicpath;
         parabolicpath.Reset();
-        OPENRAVE_ASSERT_OP(parameters->_vConfigVelocityLimit.size(), ==, parameters->_vConfigAccelerationLimit.size());
-        OPENRAVE_ASSERT_OP((int) parameters->_vConfigVelocityLimit.size(), ==, parameters->GetDOF());
+        OPENRAVE_ASSERT_OP(parameters->config_velocity_limit_vector_.size(), ==, parameters->config_acceleration_limit_vector_.size());
+        OPENRAVE_ASSERT_OP((int) parameters->config_velocity_limit_vector_.size(), ==, parameters->GetDOF());
 
         // Retrieve waypoints
         bool bPathIsPerfectlyModeled = false; // will be true if the initial interpolation is linear or quadratic
@@ -700,7 +700,7 @@ public:
         int nummerges = 0;
         try {
             _bUsePerturbation = true;
-            _feasibilitychecker.tol = parameters->_vConfigResolution;
+            _feasibilitychecker.tol = parameters->config_resolution_vector_;
             FOREACH(it, _feasibilitychecker.tol) {
                 *it *= parameters->_pointtolerance;
             }
@@ -718,9 +718,9 @@ public:
                 _tShortcutStart = utils::GetMicroTime();
 #endif
 #ifdef SMOOTHER2_ENABLE_MERGING
-                nummerges = _MergeConsecutiveSegments(parabolicpath, parameters->_fStepLength*0.99);
+                nummerges = _MergeConsecutiveSegments(parabolicpath, parameters->step_length_*0.99);
 #endif
-                numShortcuts = _Shortcut(parabolicpath, parameters->_nMaxIterations, this, parameters->_fStepLength*0.99);
+                numShortcuts = _Shortcut(parabolicpath, parameters->max_iterations_, this, parameters->step_length_*0.99);
 #ifdef SMOOTHER2_TIMING_DEBUG
                 _tShortcutEnd = utils::GetMicroTime();
 #endif
@@ -775,7 +775,7 @@ public:
             RampOptimizer::RampND& remRampND = _cacheRemRampND;
             remRampND.Initialize(_parameters->GetDOF());
             std::vector<RampOptimizer::RampND>& tempRampNDVect = _cacheRampNDVect;
-            dReal fTrimEdgesTime = parameters->_fStepLength*2; // we ignore collisions duration [0, fTrimEdgesTime] and [fTrimEdgesTime, duration]
+            dReal fTrimEdgesTime = parameters->step_length_*2; // we ignore collisions duration [0, fTrimEdgesTime] and [fTrimEdgesTime, duration]
             dReal fExpextedDuration = 0; // for consistency checking
             dReal durationDiscrepancyThresh = 0.01; // for consistency checking
 
@@ -790,7 +790,7 @@ public:
                     // checking has already been done to verify the trajectory) and there is no
                     // other modification to this trajectory, we can *safely* skip CheckRampND and
                     // go for collision checking and other constraint checking.
-                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampND(rampndTrimmed, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit);
+                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampND(rampndTrimmed, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_);
                     OPENRAVE_ASSERT_OP(parabolicret, ==, RampOptimizer::PCR_Normal);
                 }
 
@@ -861,7 +861,7 @@ public:
                                 _nCallsInterpolator += 1;
                                 _tStartInterpolator = utils::GetMicroTime();
 #endif
-                                bool result = _interpolator.ComputeNDTrajectoryFixedDuration(x0Vect, x1Vect, v0Vect, v1Vect, newDuration, parameters->_vConfigLowerLimit, parameters->_vConfigUpperLimit, parameters->_vConfigVelocityLimit, parameters->_vConfigAccelerationLimit, rampndVectOut);
+                                bool result = _interpolator.ComputeNDTrajectoryFixedDuration(x0Vect, x1Vect, v0Vect, v1Vect, newDuration, parameters->config_lower_limit_vector_, parameters->config_upper_limit_vector_, parameters->config_velocity_limit_vector_, parameters->config_acceleration_limit_vector_, rampndVectOut);
 #ifdef SMOOTHER2_TIMING_DEBUG
                                 _tEndInterpolator = utils::GetMicroTime();
                                 _totalTimeInterpolator += 0.000001f*(float)(_tEndInterpolator - _tStartInterpolator);
@@ -1163,19 +1163,19 @@ public:
                         newVel[idof] = 2*iDeltaTime*(newPos[idof] - curPos[idof]) - curVel[idof];
 
                         // Check velocity limit
-                        if( RaveFabs(newVel[idof]) > _parameters->_vConfigVelocityLimit[idof] + RampOptimizer::g_fRampEpsilon  ) {
+                        if( RaveFabs(newVel[idof]) > _parameters->config_velocity_limit_vector_[idof] + RampOptimizer::g_fRampEpsilon  ) {
                             bviolated = true;
-                            if( 0.9*_parameters->_vConfigVelocityLimit[idof] < 0.1*RaveFabs(newVel[idof]) ) {
+                            if( 0.9*_parameters->config_velocity_limit_vector_[idof] < 0.1*RaveFabs(newVel[idof]) ) {
                                 // Warn if the velocity is really too high
-                                RAVELOG_WARN_FORMAT("env=%d, the new velocity for idof=%d is too high. |%.15e| > %.15e", _environmentid%idof%newVel[idof]%_parameters->_vConfigVelocityLimit[idof]);
+                                RAVELOG_WARN_FORMAT("env=%d, the new velocity for idof=%d is too high. |%.15e| > %.15e", _environmentid%idof%newVel[idof]%_parameters->config_velocity_limit_vector_[idof]);
                             }
 #ifdef SMOOTHER2_PROGRESS_DEBUG
-                            RAVELOG_DEBUG_FORMAT("env=%d, velocity exceeds limits after CheckPathAllConstraints, idof=%d, newVel=%.15e, vellimit=%.15e, diff=%.15e", _environmentid%idof%newVel[idof]%_parameters->_vConfigVelocityLimit[idof]%(RaveFabs(newVel[idof]) - _parameters->_vConfigVelocityLimit[idof]));
+                            RAVELOG_DEBUG_FORMAT("env=%d, velocity exceeds limits after CheckPathAllConstraints, idof=%d, newVel=%.15e, vellimit=%.15e, diff=%.15e", _environmentid%idof%newVel[idof]%_parameters->config_velocity_limit_vector_[idof]%(RaveFabs(newVel[idof]) - _parameters->config_velocity_limit_vector_[idof]));
 #endif
                             if( !_bUseNewHeuristic ) {
-                                return RampOptimizer::CheckReturn(CFO_CheckTimeBasedConstraints, 0.9*_parameters->_vConfigVelocityLimit[idof]/RaveFabs(newVel[idof]));
+                                return RampOptimizer::CheckReturn(CFO_CheckTimeBasedConstraints, 0.9*_parameters->config_velocity_limit_vector_[idof]/RaveFabs(newVel[idof]));
                             }
-                            vdofscaling[idof] = 0.9*_parameters->_vConfigVelocityLimit[idof]/RaveFabs(newVel[idof]);
+                            vdofscaling[idof] = 0.9*_parameters->config_velocity_limit_vector_[idof]/RaveFabs(newVel[idof]);
                         }
                     }
                     if( bviolated ) {
@@ -1188,19 +1188,19 @@ public:
                     // Now check the acceleration
                     bool bAccelChanged = false;
                     for (size_t idof = 0; idof < ndof; ++idof) {
-                        if( _cacheRampNDSeg.GetAAt(idof) < -_parameters->_vConfigAccelerationLimit[idof] ) {
-                            RAVELOG_VERBOSE_FORMAT("env=%d, idof=%d, accel changed: %.15e --> %.15e; diff=%.15e", _environmentid%idof%_cacheRampNDSeg.GetAAt(idof)%(-_parameters->_vConfigAccelerationLimit[idof])%(_cacheRampNDSeg.GetAAt(idof) + _parameters->_vConfigAccelerationLimit[idof]));
-                            _cacheRampNDSeg.GetAAt(idof) = -_parameters->_vConfigAccelerationLimit[idof];
+                        if( _cacheRampNDSeg.GetAAt(idof) < -_parameters->config_acceleration_limit_vector_[idof] ) {
+                            RAVELOG_VERBOSE_FORMAT("env=%d, idof=%d, accel changed: %.15e --> %.15e; diff=%.15e", _environmentid%idof%_cacheRampNDSeg.GetAAt(idof)%(-_parameters->config_acceleration_limit_vector_[idof])%(_cacheRampNDSeg.GetAAt(idof) + _parameters->config_acceleration_limit_vector_[idof]));
+                            _cacheRampNDSeg.GetAAt(idof) = -_parameters->config_acceleration_limit_vector_[idof];
                             bAccelChanged = true;
                         }
-                        else if( _cacheRampNDSeg.GetAAt(idof) > _parameters->_vConfigAccelerationLimit[idof] ) {
-                            RAVELOG_VERBOSE_FORMAT("env=%d, idof=%d, accel changed: %.15e --> %.15e; diff=%.15e", _environmentid%idof%_cacheRampNDSeg.GetAAt(idof)%(_parameters->_vConfigAccelerationLimit[idof])%(_cacheRampNDSeg.GetAAt(idof) - _parameters->_vConfigAccelerationLimit[idof]));
-                            _cacheRampNDSeg.GetAAt(idof) = _parameters->_vConfigAccelerationLimit[idof];
+                        else if( _cacheRampNDSeg.GetAAt(idof) > _parameters->config_acceleration_limit_vector_[idof] ) {
+                            RAVELOG_VERBOSE_FORMAT("env=%d, idof=%d, accel changed: %.15e --> %.15e; diff=%.15e", _environmentid%idof%_cacheRampNDSeg.GetAAt(idof)%(_parameters->config_acceleration_limit_vector_[idof])%(_cacheRampNDSeg.GetAAt(idof) - _parameters->config_acceleration_limit_vector_[idof]));
+                            _cacheRampNDSeg.GetAAt(idof) = _parameters->config_acceleration_limit_vector_[idof];
                             bAccelChanged = true;
                         }
                     }
                     if( bAccelChanged ) {
-                        RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampND(_cacheRampNDSeg, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit);
+                        RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampND(_cacheRampNDSeg, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_);
                         if( parabolicret != RampOptimizer::PCR_Normal ) {
                             std::stringstream ss;
                             ss << std::setprecision(std::numeric_limits<dReal>::digits10 + 1);
@@ -1247,17 +1247,17 @@ public:
             // Now check the acceleration
             bool bAccelChanged = false;
             for (size_t idof = 0; idof < ndof; ++idof) {
-                if( _cacheRampNDSeg.GetAAt(idof) < -_parameters->_vConfigAccelerationLimit[idof] ) {
-                    _cacheRampNDSeg.GetAAt(idof) = -_parameters->_vConfigAccelerationLimit[idof];
+                if( _cacheRampNDSeg.GetAAt(idof) < -_parameters->config_acceleration_limit_vector_[idof] ) {
+                    _cacheRampNDSeg.GetAAt(idof) = -_parameters->config_acceleration_limit_vector_[idof];
                     bAccelChanged = true;
                 }
-                else if( _cacheRampNDSeg.GetAAt(idof) > _parameters->_vConfigAccelerationLimit[idof] ) {
-                    _cacheRampNDSeg.GetAAt(idof) = _parameters->_vConfigAccelerationLimit[idof];
+                else if( _cacheRampNDSeg.GetAAt(idof) > _parameters->config_acceleration_limit_vector_[idof] ) {
+                    _cacheRampNDSeg.GetAAt(idof) = _parameters->config_acceleration_limit_vector_[idof];
                     bAccelChanged = true;
                 }
             }
             if( bAccelChanged ) { // Make sure the modification is valid
-                RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampND(_cacheRampNDSeg, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit);
+                RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampND(_cacheRampNDSeg, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_);
                 if( parabolicret != RampOptimizer::PCR_Normal ) {
                     std::stringstream ss;
                     std::string separator = "";
@@ -1520,8 +1520,8 @@ protected:
         // Cache
         std::vector<dReal> &x0Vect = _cacheX0Vect1, &x1Vect = _cacheX1Vect1, &v0Vect = _cacheV0Vect, &v1Vect = _cacheV1Vect;
         std::vector<dReal> &vellimits = _cacheVellimits, &accellimits = _cacheAccelLimits;
-        vellimits = _parameters->_vConfigVelocityLimit;
-        accellimits = _parameters->_vConfigAccelerationLimit;
+        vellimits = _parameters->config_velocity_limit_vector_;
+        accellimits = _parameters->config_acceleration_limit_vector_;
 
         dReal fCurVelMult = 1.0;
         // Now setting fVelMultCutOff to 0 since when manip speed/accel limits are very low, we might get very small velmult
@@ -1779,26 +1779,26 @@ protected:
                 rampndVect[i1].EvalVel(u1, v1Vect);
                 ++_progress._iteration;
 
-                vellimits = _parameters->_vConfigVelocityLimit;
-                accellimits = _parameters->_vConfigAccelerationLimit;
+                vellimits = _parameters->config_velocity_limit_vector_;
+                accellimits = _parameters->config_acceleration_limit_vector_;
 
                 if( _bmanipconstraints && _manipconstraintchecker && _bUseNewHeuristic ) {
                     // pass
                     // do nothing only when the new heuristic is used while having manipconstraints. otherwise, proceed normally
                 }
                 else {
-                    for (size_t j = 0; j < _parameters->_vConfigVelocityLimit.size(); ++j) {
+                    for (size_t j = 0; j < _parameters->config_velocity_limit_vector_.size(); ++j) {
                         // Adjust vellimits and accellimits
                         dReal fminvel = max(RaveFabs(v0Vect[j]), RaveFabs(v1Vect[j])); // the scaled vellimits must be at least this value
                         {
-                            dReal f = max(fminvel, fStartTimeVelMult * _parameters->_vConfigVelocityLimit[j]);
+                            dReal f = max(fminvel, fStartTimeVelMult * _parameters->config_velocity_limit_vector_[j]);
                             if( vellimits[j] > f ) {
                                 vellimits[j] = f;
                             }
                         }
 
                         {
-                            dReal f = fStartTimeAccelMult * _parameters->_vConfigAccelerationLimit[j];
+                            dReal f = fStartTimeAccelMult * _parameters->config_acceleration_limit_vector_[j];
                             if( accellimits[j] > f ) {
                                 accellimits[j] = f;
                             }
@@ -1820,7 +1820,7 @@ protected:
                     _nCallsInterpolator += 1;
                     _tStartInterpolator = utils::GetMicroTime();
 #endif
-                    bool res = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, vellimits, accellimits, shortcutRampNDVect, true);
+                    bool res = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, vellimits, accellimits, shortcutRampNDVect, true);
 #ifdef SMOOTHER2_TIMING_DEBUG
                     _tEndInterpolator = utils::GetMicroTime();
                     _totalTimeInterpolator += 0.000001f*(float)(_tEndInterpolator - _tStartInterpolator);
@@ -1942,7 +1942,7 @@ protected:
                             _nCallsInterpolator += 1;
                             _tStartInterpolator = utils::GetMicroTime();
 #endif
-                            bool res2 = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, vellimits, accellimits, shortcutRampNDVect, true);
+                            bool res2 = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, vellimits, accellimits, shortcutRampNDVect, true);
 #ifdef SMOOTHER2_TIMING_DEBUG
                             _tEndInterpolator = utils::GetMicroTime();
                             _totalTimeInterpolator += 0.000001f*(float)(_tEndInterpolator - _tStartInterpolator);
@@ -2014,7 +2014,7 @@ protected:
                                     shortcutRampNDVectOut.back().GetX1Vect(x1Vect);
                                     shortcutRampNDVectOut.front().GetV0Vect(v0Vect);
                                     shortcutRampNDVectOut.back().GetV1Vect(v1Vect);
-                                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(shortcutRampNDVectOut, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit, x0Vect, x1Vect, v0Vect, v1Vect);
+                                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(shortcutRampNDVectOut, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_, x0Vect, x1Vect, v0Vect, v1Vect);
                                     OPENRAVE_ASSERT_OP(parabolicret, ==, RampOptimizer::PCR_Normal);
                                 }
                             }
@@ -2069,7 +2069,7 @@ protected:
                                 }
                                 _manipconstraintchecker->GetMaxVelocitiesAccelerations(v1Vect, vellimits, accellimits);
 
-                                for (size_t j = 0; j < _parameters->_vConfigVelocityLimit.size(); ++j) {
+                                for (size_t j = 0; j < _parameters->config_velocity_limit_vector_.size(); ++j) {
                                     dReal fMinVel = max(RaveFabs(v0Vect[j]), RaveFabs(v1Vect[j]));
                                     if( vellimits[j] < fMinVel ) {
                                         vellimits[j] = fMinVel;
@@ -2352,7 +2352,7 @@ protected:
                     rampndVect.back().GetX1Vect(x1Vect);
                     rampndVect.front().GetV0Vect(v0Vect);
                     rampndVect.back().GetV1Vect(v1Vect);
-                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(rampndVect, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit, x0Vect, x1Vect, v0Vect, v1Vect);
+                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(rampndVect, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_, x0Vect, x1Vect, v0Vect, v1Vect);
                     OPENRAVE_ASSERT_OP(parabolicret, ==, RampOptimizer::PCR_Normal);
                 }
                 iIterProgress += 0x10000000;
@@ -2612,26 +2612,26 @@ protected:
                 rampndVect[i1].EvalVel(u1, v1Vect);
                 ++_progress._iteration;
 
-                vellimits = _parameters->_vConfigVelocityLimit;
-                accellimits = _parameters->_vConfigAccelerationLimit;
+                vellimits = _parameters->config_velocity_limit_vector_;
+                accellimits = _parameters->config_acceleration_limit_vector_;
 
                 if( _bmanipconstraints && _manipconstraintchecker && _bUseNewHeuristic ) {
                     // pass
                     // do nothing only when the new heuristic is used while having manipconstraints. otherwise, proceed normally
                 }
                 else {
-                    for (size_t j = 0; j < _parameters->_vConfigVelocityLimit.size(); ++j) {
+                    for (size_t j = 0; j < _parameters->config_velocity_limit_vector_.size(); ++j) {
                         // Adjust vellimits and accellimits
                         dReal fminvel = max(RaveFabs(v0Vect[j]), RaveFabs(v1Vect[j])); // the scaled vellimits must be at least this value
                         {
-                            dReal f = max(fminvel, fStartTimeVelMult * _parameters->_vConfigVelocityLimit[j]);
+                            dReal f = max(fminvel, fStartTimeVelMult * _parameters->config_velocity_limit_vector_[j]);
                             if( vellimits[j] > f ) {
                                 vellimits[j] = f;
                             }
                         }
 
                         {
-                            dReal f = fStartTimeAccelMult * _parameters->_vConfigAccelerationLimit[j];
+                            dReal f = fStartTimeAccelMult * _parameters->config_acceleration_limit_vector_[j];
                             if( accellimits[j] > f ) {
                                 accellimits[j] = f;
                             }
@@ -2653,7 +2653,7 @@ protected:
                     _nCallsInterpolator += 1;
                     _tStartInterpolator = utils::GetMicroTime();
 #endif
-                    bool res = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, vellimits, accellimits, shortcutRampNDVect, true);
+                    bool res = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, vellimits, accellimits, shortcutRampNDVect, true);
 #ifdef SMOOTHER2_TIMING_DEBUG
                     _tEndInterpolator = utils::GetMicroTime();
                     _totalTimeInterpolator += 0.000001f*(float)(_tEndInterpolator - _tStartInterpolator);
@@ -2775,7 +2775,7 @@ protected:
                             _nCallsInterpolator += 1;
                             _tStartInterpolator = utils::GetMicroTime();
 #endif
-                            bool res2 = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, vellimits, accellimits, shortcutRampNDVect, true);
+                            bool res2 = _interpolator.ComputeArbitraryVelNDTrajectory(x0Vect, x1Vect, v0Vect, v1Vect, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, vellimits, accellimits, shortcutRampNDVect, true);
 #ifdef SMOOTHER2_TIMING_DEBUG
                             _tEndInterpolator = utils::GetMicroTime();
                             _totalTimeInterpolator += 0.000001f*(float)(_tEndInterpolator - _tStartInterpolator);
@@ -2847,7 +2847,7 @@ protected:
                                     shortcutRampNDVectOut.back().GetX1Vect(x1Vect);
                                     shortcutRampNDVectOut.front().GetV0Vect(v0Vect);
                                     shortcutRampNDVectOut.back().GetV1Vect(v1Vect);
-                                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(shortcutRampNDVectOut, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit, x0Vect, x1Vect, v0Vect, v1Vect);
+                                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(shortcutRampNDVectOut, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_, x0Vect, x1Vect, v0Vect, v1Vect);
                                     OPENRAVE_ASSERT_OP(parabolicret, ==, RampOptimizer::PCR_Normal);
                                 }
                             }
@@ -2902,7 +2902,7 @@ protected:
                                 }
                                 _manipconstraintchecker->GetMaxVelocitiesAccelerations(v1Vect, vellimits, accellimits);
 
-                                for (size_t j = 0; j < _parameters->_vConfigVelocityLimit.size(); ++j) {
+                                for (size_t j = 0; j < _parameters->config_velocity_limit_vector_.size(); ++j) {
                                     dReal fMinVel = max(RaveFabs(v0Vect[j]), RaveFabs(v1Vect[j]));
                                     if( vellimits[j] < fMinVel ) {
                                         vellimits[j] = fMinVel;
@@ -3214,7 +3214,7 @@ protected:
                     rampndVect.back().GetX1Vect(x1Vect);
                     rampndVect.front().GetV0Vect(v0Vect);
                     rampndVect.back().GetV1Vect(v1Vect);
-                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(rampndVect, _parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit, _parameters->_vConfigVelocityLimit, _parameters->_vConfigAccelerationLimit, x0Vect, x1Vect, v0Vect, v1Vect);
+                    RampOptimizer::ParabolicCheckReturn parabolicret = RampOptimizer::CheckRampNDs(rampndVect, _parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_, _parameters->config_velocity_limit_vector_, _parameters->config_acceleration_limit_vector_, x0Vect, x1Vect, v0Vect, v1Vect);
                     OPENRAVE_ASSERT_OP(parabolicret, ==, RampOptimizer::PCR_Normal);
                 }
                 iIterProgress += 0x10000000;

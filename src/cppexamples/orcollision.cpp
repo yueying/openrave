@@ -1,4 +1,4 @@
-/** \example orcollision.cpp
+﻿/** \example orcollision.cpp
     \author Rosen Diankov
 
     Load a robot into the openrave environment, set it at [joint values] and check for self
@@ -51,40 +51,51 @@ void printinterfaces(EnvironmentBasePtr penv)
 
 int main(int argc, char ** argv)
 {
-    if( argc < 2 ) {
+    if( argc < 2 ) 
+	{
         printhelp();
         return -1; // no robots to load
     }
 
     RaveInitialize(true); // start openrave core
     EnvironmentBasePtr penv = RaveCreateEnvironment(); // create the main environment
-    vector<dReal> vsetvalues;
+    std::vector<dReal> vsetvalues;
 
     // parse the command line options
     int i = 1;
-    while(i < argc) {
-        if((strcmp(argv[i], "-h") == 0)||(strcmp(argv[i], "-?") == 0)||(strcmp(argv[i], "/?") == 0)||(strcmp(argv[i], "--help") == 0)||(strcmp(argv[i], "-help") == 0)) {
+    while(i < argc) 
+	{
+        if((strcmp(argv[i], "-h") == 0)
+			||(strcmp(argv[i], "-?") == 0)
+			||(strcmp(argv[i], "/?") == 0)
+			||(strcmp(argv[i], "--help") == 0)
+			||(strcmp(argv[i], "-help") == 0)) 
+		{
             printhelp();
             return 0;
         }
-        else if( strcmp(argv[i], "--checker") == 0 ) {
+        else if( strcmp(argv[i], "--checker") == 0 )
+		{
             // create requested collision checker
             CollisionCheckerBasePtr pchecker = RaveCreateCollisionChecker(penv,argv[i+1]);
-            if( !pchecker ) {
+            if( !pchecker ) 
+			{
                 RAVELOG_ERROR("failed to create checker %s\n", argv[i+1]);
                 return -3;
             }
             penv->SetCollisionChecker(pchecker);
             i += 2;
         }
-        else if( strcmp(argv[i], "--list") == 0 ) {
+        else if( strcmp(argv[i], "--list") == 0 ) 
+		{
             printinterfaces(penv);
             return 0;
         }
-        else if( strcmp(argv[i], "--joints") == 0 ) {
-            vsetvalues.resize(atoi(argv[i+1]));
+        else if( strcmp(argv[i], "--joints") == 0 ) 
+		{
+            vsetvalues.resize(std::atoi(argv[i + 1]));
             for(int j = 0; j < (int)vsetvalues.size(); ++j)
-                vsetvalues[j] = atoi(argv[i+j+2]);
+                vsetvalues[j] = std::atoi(argv[i+j+2]);
 
             i += 2+vsetvalues.size();
         }
@@ -92,14 +103,16 @@ int main(int argc, char ** argv)
             break;
     }
 
-    if( i >= argc ) {
+    if( i >= argc )
+	{
         RAVELOG_ERROR("not enough parameters\n");
         printhelp();
         return 1;
     }
 
     // load the scene
-    if( !penv->Load(argv[i]) ) {
+    if( !penv->Load(argv[i]) )
+	{
         return 2;
     }
 
@@ -108,48 +121,53 @@ int main(int argc, char ** argv)
         // lock the environment to prevent data from changing
         EnvironmentMutex::scoped_lock lock(penv->GetMutex());
 
-        vector<KinBodyPtr> vbodies;
+        std::vector<KinBodyPtr> vbodies;
         penv->GetBodies(vbodies);
         // get the first body
-        if( vbodies.size() == 0 ) {
+        if( vbodies.size() == 0 ) 
+		{
             RAVELOG_ERROR("no bodies loaded\n");
             return -3;
         }
 
         KinBodyPtr pbody = vbodies.at(0);
-        vector<dReal> values;
+        std::vector<dReal> values;
         pbody->GetDOFValues(values);
 
         // set new values
-        for(int i = 0; i < (int)vsetvalues.size() && i < (int)values.size(); ++i) {
+        for(int i = 0; i < (int)vsetvalues.size() && i < (int)values.size(); ++i)
+		{
             values[i] = vsetvalues[i];
         }
         pbody->SetDOFValues(values,true);
 
         CollisionReportPtr report(new CollisionReport());
         penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
-        if( pbody->CheckSelfCollision(report) ) {
+        if( pbody->CheckSelfCollision(report) ) 
+		{
             contactpoints = (int)report->contacts.size();
-            stringstream ss;
+            std::stringstream ss;
             ss << "body in self-collision "
                << (!!report->plink1 ? report->plink1->GetName() : "") << ":"
                << (!!report->plink2 ? report->plink2->GetName() : "") << " at "
-               << contactpoints << "contacts" << endl;
-            for(int i = 0; i < contactpoints; ++i) {
+               << contactpoints << "contacts" << std::endl;
+            for(int i = 0; i < contactpoints; ++i) 
+			{
                 CollisionReport::CONTACT& c = report->contacts[i];
                 ss << "contact" << i << ": pos=("
                    << c.pos.x << ", " << c.pos.y << ", " << c.pos.z << "), norm=("
-                   << c.norm.x << ", " << c.norm.y << ", " << c.norm.z << ")" << endl;
+                   << c.norm.x << ", " << c.norm.y << ", " << c.norm.z << ")" << std::endl;
             }
 
             RAVELOG_INFOA(ss.str());
         }
-        else {
+        else 
+		{
             RAVELOG_INFO("body not in collision\n");
         }
 
         // get the transformations of all the links
-        vector<Transform> vlinktransforms;
+        std::vector<Transform> vlinktransforms;
         pbody->GetLinkTransformations(vlinktransforms);
     }
 

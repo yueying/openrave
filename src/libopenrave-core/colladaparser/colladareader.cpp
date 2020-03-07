@@ -778,7 +778,7 @@ public:
         _setInitialManipulators.clear();
         _setInitialSensors.clear();
         if( !!probot ) {
-            FOREACH(itlink,probot->_veclinks) {
+            FOREACH(itlink,probot->links_vector_) {
                 _setInitialLinks.insert(*itlink);
             }
             FOREACH(itjoint,probot->_vecjoints) {
@@ -883,7 +883,7 @@ public:
         _setInitialLinks.clear();
         _setInitialJoints.clear();
         if( !!pbody ) {
-            FOREACH(itlink,pbody->_veclinks) {
+            FOREACH(itlink,pbody->links_vector_) {
                 _setInitialLinks.insert(*itlink);
             }
             FOREACH(itjoint,pbody->_vecjoints) {
@@ -962,7 +962,7 @@ public:
 
     void _AddPrefixForKinBody(KinBodyPtr pbody, const std::string& prefix)
     {
-        FOREACH(itlink,pbody->_veclinks) {
+        FOREACH(itlink,pbody->links_vector_) {
             if( _setInitialLinks.find(*itlink) == _setInitialLinks.end()) {
                 (*itlink)->info_.name_ = prefix + (*itlink)->info_.name_;
             }
@@ -1420,8 +1420,8 @@ public:
 
         RAVELOG_INFO(str(boost::format("Loading non-kinematics node '%s'")%name));
         pkinbody->SetName(name);
-        plink->index_ = (int) pkinbody->_veclinks.size();
-        pkinbody->_veclinks.push_back(plink);
+        plink->index_ = (int) pkinbody->links_vector_.size();
+        pkinbody->links_vector_.push_back(plink);
         return pkinbody;
     }
 
@@ -1791,8 +1791,8 @@ public:
             plink->info_.mass_ = 1e-10;
             plink->info_._vinertiamoments = Vector(1e-7,1e-7,1e-7);
             plink->info_.is_static_ = false;
-            plink->index_ = (int) pkinbody->_veclinks.size();
-            pkinbody->_veclinks.push_back(plink);
+            plink->index_ = (int) pkinbody->links_vector_.size();
+            pkinbody->links_vector_.push_back(plink);
         }
         else {
             RAVELOG_DEBUG(str(boost::format("found previously defined link '%s")%linkname));
@@ -1863,7 +1863,7 @@ public:
                 plink->info_._vinertiamoments[1] = rigiddata->getInertia()->getValue()[1];
                 plink->info_._vinertiamoments[2] = rigiddata->getInertia()->getValue()[2];
             }
-            plink->info_._tMassFrame = plink->info_._t.inverse() * tmassframe;
+            plink->info_.mass_frame_transform_ = plink->info_._t.inverse() * tmassframe;
             if( !!rigiddata->getDynamic() ) {
                 plink->info_.is_static_ = !rigiddata->getDynamic()->getValue();
             }
@@ -2045,12 +2045,12 @@ public:
                     // create dummy child link
                     stringstream ss;
                     ss << plink->info_.name_;
-                    ss <<"_dummy" << pkinbody->_veclinks.size();
+                    ss <<"_dummy" << pkinbody->links_vector_.size();
                     pchildlink.reset(new KinBody::Link(pkinbody));
                     pchildlink->info_.name_ = ss.str();
                     pchildlink->info_.is_static_ = false;
-                    pchildlink->index_ = (int)pkinbody->_veclinks.size();
-                    pkinbody->_veclinks.push_back(pchildlink);
+                    pchildlink->index_ = (int)pkinbody->links_vector_.size();
+                    pkinbody->links_vector_.push_back(pchildlink);
                 }
 
                 std::vector<Vector> vAxes(vdomaxes.getCount());
@@ -2387,7 +2387,7 @@ public:
 
             KinBody::Link::GeometryPtr pgeom(new KinBody::Link::Geometry(plink,*itgeominfo));
             pgeom->info_.InitCollisionMesh();
-            plink->_vGeometries.push_back(pgeom);
+            plink->geometries_vector_.push_back(pgeom);
             //  Append the collision mesh
             TriMesh trimesh = pgeom->GetCollisionMesh();
             trimesh.ApplyTransform(pgeom->info_._t);
@@ -4727,7 +4727,7 @@ private:
                             BOOST_ASSERT(plink->GetParent()==pbody);
                             bool bVisible = true;
                             if( resolveCommon_bool_or_param(pelt, referenceElt, bVisible) ) {
-                                FOREACH(itgeometry, plink->_vGeometries) {
+                                FOREACH(itgeometry, plink->geometries_vector_) {
                                     if( bAndWithPrevious ) {
                                         (*itgeometry)->info_.is_visible_ &= bVisible;
                                     }

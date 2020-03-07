@@ -52,26 +52,26 @@ Uses the Rapidly-Exploring Random Trees Algorithm.\n\
         }
         _robot = pbase;
 
-        _uniformsampler->SetSeed(params->_nRandomGeneratorSeed);
+        _uniformsampler->SetSeed(params->random_generator_seed_);
         FOREACH(it, params->_listInternalSamplers) {
-            (*it)->SetSeed(params->_nRandomGeneratorSeed);
+            (*it)->SetSeed(params->random_generator_seed_);
         }
 
         PlannerParameters::StateSaver savestate(params);
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
-        if( (int)params->vinitialconfig.size() % params->GetDOF() ) {
-            RAVELOG_ERROR(str(boost::format("initial config wrong dim: %d %% %d != 0\n")%params->vinitialconfig.size()%params->GetDOF()));
+        if( (int)params->initial_config_vector_.size() % params->GetDOF() ) {
+            RAVELOG_ERROR(str(boost::format("initial config wrong dim: %d %% %d != 0\n")%params->initial_config_vector_.size()%params->GetDOF()));
             return false;
         }
 
         _vecInitialNodes.resize(0);
         _sampleConfig.resize(params->GetDOF());
         // TODO perhaps distmetricfn should take into number of revolutions of circular joints
-        _treeForward.Init(shared_planner(), params->GetDOF(), params->_distmetricfn, params->_fStepLength, params->_distmetricfn(params->_vConfigLowerLimit, params->_vConfigUpperLimit));
+        _treeForward.Init(shared_planner(), params->GetDOF(), params->_distmetricfn, params->step_length_, params->_distmetricfn(params->config_lower_limit_vector_, params->config_upper_limit_vector_));
         std::vector<dReal> vinitialconfig(params->GetDOF());
-        for(size_t index = 0; index < params->vinitialconfig.size(); index += params->GetDOF()) {
-            std::copy(params->vinitialconfig.begin()+index,params->vinitialconfig.begin()+index+params->GetDOF(),vinitialconfig.begin());
+        for(size_t index = 0; index < params->initial_config_vector_.size(); index += params->GetDOF()) {
+            std::copy(params->initial_config_vector_.begin()+index,params->initial_config_vector_.begin()+index+params->GetDOF(),vinitialconfig.begin());
             _filterreturn->Clear();
             if( params->CheckPathAllConstraints(vinitialconfig,vinitialconfig, std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart, CFO_FillCollisionReport, _filterreturn) != 0 ) {
                 RAVELOG_DEBUG_FORMAT("initial configuration for rrt does not satisfy constraints: %s", _filterreturn->_report.__str__());
@@ -309,10 +309,10 @@ Some python code to display data::\n\
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         // TODO perhaps distmetricfn should take into number of revolutions of circular joints
-        _treeBackward.Init(shared_planner(), _parameters->GetDOF(), _parameters->_distmetricfn, _parameters->_fStepLength, _parameters->_distmetricfn(_parameters->_vConfigLowerLimit, _parameters->_vConfigUpperLimit));
+        _treeBackward.Init(shared_planner(), _parameters->GetDOF(), _parameters->_distmetricfn, _parameters->step_length_, _parameters->_distmetricfn(_parameters->config_lower_limit_vector_, _parameters->config_upper_limit_vector_));
 
         //read in all goals
-        if( (_parameters->vgoalconfig.size() % _parameters->GetDOF()) != 0 ) {
+        if( (_parameters->goal_config_vector_.size() % _parameters->GetDOF()) != 0 ) {
             RAVELOG_ERROR("BirrtPlanner::InitPlan - Error: goals are improperly specified:\n");
             _parameters.reset();
             return false;
@@ -321,8 +321,8 @@ Some python code to display data::\n\
         vector<dReal> vgoal(_parameters->GetDOF());
         _vecGoalNodes.resize(0);
         _nValidGoals = 0;
-        for(size_t igoal = 0; igoal < _parameters->vgoalconfig.size(); igoal += _parameters->GetDOF()) {
-            std::copy(_parameters->vgoalconfig.begin()+igoal,_parameters->vgoalconfig.begin()+igoal+_parameters->GetDOF(),vgoal.begin());
+        for(size_t igoal = 0; igoal < _parameters->goal_config_vector_.size(); igoal += _parameters->GetDOF()) {
+            std::copy(_parameters->goal_config_vector_.begin()+igoal,_parameters->goal_config_vector_.begin()+igoal+_parameters->GetDOF(),vgoal.begin());
             int ret = _parameters->CheckPathAllConstraints(vgoal,vgoal,std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart);
             if( ret == 0 ) {
                 _vecGoalNodes.push_back(_treeBackward.InsertNode(NULL, vgoal, _vecGoalNodes.size()));
@@ -343,15 +343,15 @@ Some python code to display data::\n\
             return false;
         }
 
-        if( _parameters->_nMaxIterations <= 0 ) {
-            _parameters->_nMaxIterations = 10000;
+        if( _parameters->max_iterations_ <= 0 ) {
+            _parameters->max_iterations_ = 10000;
         }
 
         _vgoalpaths.resize(0);
         if( _vgoalpaths.capacity() < _parameters->_minimumgoalpaths ) {
             _vgoalpaths.reserve(_parameters->_minimumgoalpaths);
         }
-        RAVELOG_DEBUG_FORMAT("env=%d, BiRRT Planner Initialized, initial=%d, goal=%d, step=%f", GetEnv()->GetId()%_vecInitialNodes.size()%_treeBackward.GetNumNodes()%_parameters->_fStepLength);
+        RAVELOG_DEBUG_FORMAT("env=%d, BiRRT Planner Initialized, initial=%d, goal=%d, step=%f", GetEnv()->GetId()%_vecInitialNodes.size()%_treeBackward.GetNumNodes()%_parameters->step_length_);
         return true;
     }
 
@@ -378,7 +378,7 @@ Some python code to display data::\n\
         bool bSampleGoal = true;
         PlannerProgress progress;
         PlannerAction callbackaction=PA_None;
-        while(_vgoalpaths.size() < _parameters->_minimumgoalpaths && iter < 3*_parameters->_nMaxIterations) {
+        while(_vgoalpaths.size() < _parameters->_minimumgoalpaths && iter < 3*_parameters->max_iterations_) {
             RAVELOG_VERBOSE_FORMAT("env=%d, iter=%d, forward=%d, backward=%d", GetEnv()->GetId()%(iter/3)%_treeForward.GetNumNodes()%_treeBackward.GetNumNodes());
             ++iter;
 
@@ -393,10 +393,10 @@ Some python code to display data::\n\
                 }
             }
 
-            if( _parameters->_nMaxPlanningTime > 0 ) {
+            if( _parameters->max_planning_time_ > 0 ) {
                 uint32_t elapsedtime = utils::GetMilliTime()-basetime;
-                if( elapsedtime >= _parameters->_nMaxPlanningTime ) {
-                    RAVELOG_DEBUG_FORMAT("env=%d, time exceeded (%dms) so breaking. iter=%d < %d", GetEnv()->GetId()%elapsedtime%(iter/3)%_parameters->_nMaxIterations);
+                if( elapsedtime >= _parameters->max_planning_time_ ) {
+                    RAVELOG_DEBUG_FORMAT("env=%d, time exceeded (%dms) so breaking. iter=%d < %d", GetEnv()->GetId()%elapsedtime%(iter/3)%_parameters->max_iterations_);
                     break;
                 }
             }
@@ -459,7 +459,7 @@ Some python code to display data::\n\
             // although check isn't necessary, having it improves running times
             if( et == ET_Failed ) {
                 // necessary to increment iterator in case spaces are not connected
-                if( iter > 3*_parameters->_nMaxIterations ) {
+                if( iter > 3*_parameters->max_iterations_ ) {
                     RAVELOG_WARN("iterations exceeded\n");
                     break;
                 }
@@ -497,8 +497,8 @@ Some python code to display data::\n\
 
             swap(TreeA, TreeB);
             iter += 3;
-            if( iter > 3*_parameters->_nMaxIterations ) {
-                RAVELOG_WARN_FORMAT("env=%d, iterations exceeded %d", GetEnv()->GetId()%_parameters->_nMaxIterations);
+            if( iter > 3*_parameters->max_iterations_ ) {
+                RAVELOG_WARN_FORMAT("env=%d, iterations exceeded %d", GetEnv()->GetId()%_parameters->max_iterations_);
                 break;
             }
 
@@ -506,7 +506,7 @@ Some python code to display data::\n\
         }
 
         if( _vgoalpaths.size() == 0 ) {
-            std::string description = str(boost::format(_("env=%d, plan failed in %fs, iter=%d, nMaxIterations=%d"))%GetEnv()->GetId()%(0.001f*(float)(utils::GetMilliTime()-basetime))%(iter/3)%_parameters->_nMaxIterations);
+            std::string description = str(boost::format(_("env=%d, plan failed in %fs, iter=%d, nMaxIterations=%d"))%GetEnv()->GetId()%(0.001f*(float)(utils::GetMilliTime()-basetime))%(iter/3)%_parameters->max_iterations_);
             RAVELOG_WARN(description);
             return PlannerStatus(description, PS_Failed);
         }
@@ -571,8 +571,8 @@ Some python code to display data::\n\
 //        itq += dof;
 //        vector<dReal> vivel(dof,1.0);
 //        for(size_t i = 0; i < vivel.size(); ++i) {
-//            if( _parameters->_vConfigVelocityLimit.at(i) != 0 ) {
-//                vivel[i] = 1/_parameters->_vConfigVelocityLimit.at(i);
+//            if( _parameters->config_velocity_limit_vector_.at(i) != 0 ) {
+//                vivel[i] = 1/_parameters->config_velocity_limit_vector_.at(i);
 //            }
 //        }
 //
@@ -619,8 +619,8 @@ Some python code to display data::\n\
         goalpath.length = 0;
         vector<dReal> vivel(dof,1.0);
         for(size_t i = 0; i < vivel.size(); ++i) {
-            if( _parameters->_vConfigVelocityLimit.at(i) != 0 ) {
-                vivel[i] = 1/_parameters->_vConfigVelocityLimit.at(i);
+            if( _parameters->config_velocity_limit_vector_.at(i) != 0 ) {
+                vivel[i] = 1/_parameters->config_velocity_limit_vector_.at(i);
             }
         }
 
@@ -688,10 +688,10 @@ public:
         int goal_index = 0;
         vector<dReal> vgoal(_parameters->GetDOF());
         _vecGoals.resize(0);
-        while(_parameters->vgoalconfig.size() > 0) {
+        while(_parameters->goal_config_vector_.size() > 0) {
             for(int i = 0; i < _parameters->GetDOF(); i++) {
-                if(goal_index < (int)_parameters->vgoalconfig.size())
-                    vgoal[i] = _parameters->vgoalconfig[goal_index];
+                if(goal_index < (int)_parameters->goal_config_vector_.size())
+                    vgoal[i] = _parameters->goal_config_vector_[goal_index];
                 else {
                     RAVELOG_ERROR("BirrtPlanner::InitPlan - Error: goals are improperly specified:\n");
                     _parameters.reset();
@@ -707,7 +707,7 @@ public:
                 RAVELOG_WARN("goal in collision\n");
             }
 
-            if(goal_index == (int)_parameters->vgoalconfig.size()) {
+            if(goal_index == (int)_parameters->goal_config_vector_.size()) {
                 break;
             }
         }
@@ -751,7 +751,7 @@ public:
 
         int numfoundgoals = 0;
 
-        while(iter < _parameters->_nMaxIterations) {
+        while(iter < _parameters->max_iterations_) {
             iter++;
             if( !!bestGoalNode && iter >= _parameters->_nMinIterations ) {
                 break;
@@ -783,7 +783,7 @@ public:
 
             if( et == ET_Connected ) {
                 FOREACH(itgoal, _vecGoals) {
-                    if( _parameters->_distmetricfn(*itgoal, _treeForward.GetVectorConfig(lastnode)) < 2*_parameters->_fStepLength ) {
+                    if( _parameters->_distmetricfn(*itgoal, _treeForward.GetVectorConfig(lastnode)) < 2*_parameters->step_length_ ) {
                         SimpleNode* pforward = (SimpleNode*)lastnode;
                         while(1) {
                             if(!pforward->rrtparent) {
@@ -847,14 +847,14 @@ public:
             }
 
             // check if reached any goals
-            if( iter > _parameters->_nMaxIterations ) {
-                RAVELOG_WARN("iterations exceeded %d\n", _parameters->_nMaxIterations);
+            if( iter > _parameters->max_iterations_ ) {
+                RAVELOG_WARN("iterations exceeded %d\n", _parameters->max_iterations_);
                 break;
             }
 
-            if( !!bestGoalNode && _parameters->_nMaxPlanningTime > 0 ) {
+            if( !!bestGoalNode && _parameters->max_planning_time_ > 0 ) {
                 uint32_t elapsedtime = utils::GetMilliTime()-basetime;
-                if( elapsedtime >= _parameters->_nMaxPlanningTime ) {
+                if( elapsedtime >= _parameters->max_planning_time_ ) {
                     RAVELOG_VERBOSE_FORMAT("time exceeded (%dms) so breaking with bestdist=%f", elapsedtime%fBestGoalNodeDist);
                     break;
                 }
@@ -899,7 +899,7 @@ public:
         ptraj->Insert(ptraj->GetNumWaypoints(), vinsertvalues, _parameters->_configurationspecification);
 
         PlannerStatus status = _ProcessPostPlanners(_robot,ptraj);
-        RAVELOG_DEBUG_FORMAT("env=%d, plan success, path=%d points computation time=%fs, maxPlanningTime=%f", GetEnv()->GetId()%ptraj->GetNumWaypoints()%((0.001f*(float)(utils::GetMilliTime()-basetime)))%(0.001*_parameters->_nMaxPlanningTime));
+        RAVELOG_DEBUG_FORMAT("env=%d, plan success, path=%d points computation time=%fs, maxPlanningTime=%f", GetEnv()->GetId()%ptraj->GetNumWaypoints()%((0.001f*(float)(utils::GetMilliTime()-basetime)))%(0.001*_parameters->max_planning_time_));
         return status;
     }
 
@@ -961,7 +961,7 @@ public:
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         int iter = 0;
-        while(iter < _parameters->_nMaxIterations && _treeForward.GetNumNodes() < _parameters->_nExpectedDataSize ) {
+        while(iter < _parameters->max_iterations_ && _treeForward.GetNumNodes() < _parameters->_nExpectedDataSize ) {
             ++iter;
 
             if( RaveRandomFloat() < _parameters->_fExploreProb ) {
@@ -969,7 +969,7 @@ public:
                 int inode = RaveRandomInt()%_treeForward.GetNumNodes();
                 NodeBase* pnode = _treeForward.GetNodeFromIndex(inode);
 
-                if( !_parameters->_sampleneighfn(vSampleConfig, _treeForward.GetVectorConfig(pnode), _parameters->_fStepLength) ) {
+                if( !_parameters->_sampleneighfn(vSampleConfig, _treeForward.GetVectorConfig(pnode), _parameters->step_length_) ) {
                     continue;
                 }
                 if( GetParameters()->CheckPathAllConstraints(_treeForward.GetVectorConfig(pnode), vSampleConfig, std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart) == 0 ) {

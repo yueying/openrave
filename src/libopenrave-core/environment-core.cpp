@@ -256,7 +256,7 @@
 			boost::mutex::scoped_lock locknetworkid(_mutexEnvironmentIds);
 
 			FOREACH(itbody, bodies_vector_) {
-				(*itbody)->_environmentid = 0;
+				(*itbody)->environment_id_ = 0;
 				(*itbody)->Destroy();
 			}
 			if (_listRegisteredBodyCallbacks.size() > 0) {
@@ -264,7 +264,7 @@
 			}
 			bodies_vector_.clear();
 			FOREACH(itrobot, robots_vector_) {
-				(*itrobot)->_environmentid = 0;
+				(*itrobot)->environment_id_ = 0;
 				(*itrobot)->Destroy();
 			}
 			if (_listRegisteredBodyCallbacks.size() > 0) {

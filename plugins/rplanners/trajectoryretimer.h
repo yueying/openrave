@@ -74,21 +74,27 @@ public:
     virtual bool _InitPlan()
     {
         _timeoffset = -1;
-        if( (int)_parameters->_vConfigVelocityLimit.size() != _parameters->GetDOF() ) {
+        if( (int)_parameters->config_velocity_limit_vector_.size() != _parameters->GetDOF() )
+		{
             return false;
         }
-        _vimaxvel.resize(_parameters->_vConfigVelocityLimit.size());
-        for(size_t i = 0; i < _vimaxvel.size(); ++i) {
-            _vimaxvel[i] = 1/_parameters->_vConfigVelocityLimit[i];
+        _vimaxvel.resize(_parameters->config_velocity_limit_vector_.size());
+        for(size_t i = 0; i < _vimaxvel.size(); ++i)
+		{
+            _vimaxvel[i] = 1 / _parameters->config_velocity_limit_vector_[i];
         }
-        _vimaxaccel.resize(_parameters->_vConfigAccelerationLimit.size());
-        for(size_t i = 0; i < _vimaxaccel.size(); ++i) {
-            _vimaxaccel[i] = 1/_parameters->_vConfigAccelerationLimit[i];
+        _vimaxaccel.resize(_parameters->config_acceleration_limit_vector_.size());
+        for(size_t i = 0; i < _vimaxaccel.size(); ++i) 
+		{
+            _vimaxaccel[i] = 1 / _parameters->config_acceleration_limit_vector_[i];
         }
-        _bmanipconstraints = _parameters->manipname.size() > 0 && (_parameters->maxmanipspeed>0 || _parameters->maxmanipaccel>0);
+        _bmanipconstraints = _parameters->manipname.size() > 0 
+			&& (_parameters->maxmanipspeed>0 || _parameters->maxmanipaccel>0);
         // initialize workspace constraints on manipulators
-        if(_bmanipconstraints ) {
-            if( !_manipconstraintchecker ) {
+        if(_bmanipconstraints ) 
+		{
+            if( !_manipconstraintchecker )
+			{
                 _manipconstraintchecker.reset(new ManipConstraintChecker(GetEnv()));
             }
             _manipconstraintchecker->Init(_parameters->manipname, _parameters->_configurationspecification, _parameters->maxmanipspeed, _parameters->maxmanipaccel);
@@ -140,10 +146,13 @@ public:
         newspec.AddDeltaTimeGroup();
         ptraj->GetWaypoints(0,numpoints,_vdiffdata, _parameters->_configurationspecification);
         // check values close to the limits and clamp them, this hopefully helps the retimers that just do simpler <= and >= checks
-        for(size_t i = 0; i < _vdiffdata.size(); i += _parameters->GetDOF()) {
-            for(int j = 0; j < _parameters->GetDOF(); ++j) {
-                dReal lower = _parameters->_vConfigLowerLimit.at(j), upper = _parameters->_vConfigUpperLimit.at(j);
-                if( _vdiffdata.at(i+j) < lower ) {
+        for(size_t i = 0; i < _vdiffdata.size(); i += _parameters->GetDOF()) 
+		{
+            for(int j = 0; j < _parameters->GetDOF(); ++j) 
+			{
+                dReal lower = _parameters->config_lower_limit_vector_.at(j), upper = _parameters->config_upper_limit_vector_.at(j);
+                if( _vdiffdata.at(i+j) < lower )
+				{
                     if( _vdiffdata.at(i+j) < lower-g_fEpsilonJointLimit ) {
                         throw OPENRAVE_EXCEPTION_FORMAT(_("lower limit for traj point %d dof %d is not followed (%.15e < %.15e)"),(i/_parameters->GetDOF())%j%_vdiffdata.at(i+j)%lower,ORE_InconsistentConstraints);
                     }
@@ -208,10 +217,18 @@ public:
                     std::vector<ConfigurationSpecification::Group>::const_iterator itaccelgroupc = _cachednewspec.FindTimeDerivativeGroup(*itvelgroup);
                     _listgroupinfo.push_back(CreateGroupInfo(degree, _cachednewspec, gpos, *itvelgroup));
                     _listgroupinfo.back()->orgposoffset = orgposoffset;
-                    _listgroupinfo.back()->_vConfigVelocityLimit = std::vector<dReal>(_parameters->_vConfigVelocityLimit.begin()+itgroup->offset, _parameters->_vConfigVelocityLimit.begin()+itgroup->offset+itgroup->dof);
-                    _listgroupinfo.back()->_vConfigAccelerationLimit = std::vector<dReal>(_parameters->_vConfigAccelerationLimit.begin()+itgroup->offset, _parameters->_vConfigAccelerationLimit.begin()+itgroup->offset+itgroup->dof);
-                    _listgroupinfo.back()->_vConfigLowerLimit = std::vector<dReal>(_parameters->_vConfigLowerLimit.begin()+itgroup->offset, _parameters->_vConfigLowerLimit.begin()+itgroup->offset+itgroup->dof);
-                    _listgroupinfo.back()->_vConfigUpperLimit = std::vector<dReal>(_parameters->_vConfigUpperLimit.begin()+itgroup->offset, _parameters->_vConfigUpperLimit.begin()+itgroup->offset+itgroup->dof);
+                    _listgroupinfo.back()->_vConfigVelocityLimit 
+						= std::vector<dReal>(_parameters->config_velocity_limit_vector_.begin()+itgroup->offset,
+                            _parameters->config_velocity_limit_vector_.begin() + itgroup->offset + itgroup->dof);
+                    _listgroupinfo.back()->_vConfigAccelerationLimit 
+						= std::vector<dReal>(_parameters->config_acceleration_limit_vector_.begin()+itgroup->offset,
+                            _parameters->config_acceleration_limit_vector_.begin() + itgroup->offset + itgroup->dof);
+                    _listgroupinfo.back()->_vConfigLowerLimit 
+						= std::vector<dReal>(_parameters->config_lower_limit_vector_.begin()+itgroup->offset, 
+							_parameters->config_lower_limit_vector_.begin() + itgroup->offset + itgroup->dof);
+                    _listgroupinfo.back()->_vConfigUpperLimit 
+						= std::vector<dReal>(_parameters->config_upper_limit_vector_.begin()+itgroup->offset,
+                            _parameters->config_upper_limit_vector_.begin() + itgroup->offset + itgroup->dof);
 
                     itgroup = _cachedoldspec.FindCompatibleGroup(*itvelgroup);
                     if( itgroup != _cachedoldspec._vgroups.end() ) {
@@ -354,12 +371,16 @@ public:
                                 return PlannerStatus(description, PS_Failed);
                             }
 
-                            if( _parameters->_fStepLength > 0 ) {
-                                if( fgrouptime < _parameters->_fStepLength ) {
-                                    fgrouptime = _parameters->_fStepLength;
+                            if( _parameters->step_length_ > 0 )
+							{
+                                if (fgrouptime < _parameters->step_length_) 
+								{
+                                    fgrouptime = _parameters->step_length_;
                                 }
-                                else {
-                                    fgrouptime = std::ceil(fgrouptime/_parameters->_fStepLength-g_fEpsilonJointLimit)*_parameters->_fStepLength;
+                                else 
+								{
+                                    fgrouptime = std::ceil(fgrouptime / _parameters->step_length_ - g_fEpsilonJointLimit)
+										* _parameters->step_length_;
                                 }
                             }
                             if( mintime < fgrouptime ) {

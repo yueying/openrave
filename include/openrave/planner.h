@@ -126,7 +126,7 @@ typedef std::shared_ptr<ConstraintFilterReturn> ConstraintFilterReturnPtr;
 
     The class is serializable to XML, so can be loaded from file or passed around the network.
     If extra parameters need to be specified, derive from this class and
-    - add the extra tags to PlannerParameters::_vXMLParameters
+    - add the extra tags to PlannerParameters::xml_parameters_vector_
     - override PlannerParameters::startElement and PlannerParameters::endElement for processing
     - possibly override the PlannerParameters::characters
 
@@ -188,14 +188,14 @@ private:
         - _getstatefn
         - _neighstatefn
         - _checkpathconstraintsfn
-        - _vConfigLowerLimit
-        - _vConfigUpperLimit
-        - _vConfigVelocityLimit
-        - _vConfigAccelerationLimit
-        - _vConfigResolution
-        - vinitialconfig
-        - _vInitialConfigVelocities - the initial velocities (at vinitialconfig) of the robot when starting to plan
-        - _vGoalConfigVelocities - the goal velocities (at vinitialconfig) of the robot when finishing the plan
+        - config_lower_limit_vector_
+        - config_upper_limit_vector_
+        - config_velocity_limit_vector_
+        - config_acceleration_limit_vector_
+        - config_resolution_vector_
+        - initial_config_vector_
+        - initial_config_velocities_vector_ - the initial velocities (at initial_config_vector_) of the robot when starting to plan
+        - goal_config_velocities_vector_ - the goal velocities (at initial_config_vector_) of the robot when finishing the plan
         - _configurationspecification
         \throw OpenRAVEException If the configuration specification is invalid or points to targets that are not present in the environment.
      */
@@ -358,22 +358,23 @@ private:
     /// to specify multiple initial or goal configurations, put them into the vector in series
     /// size always has to be a multiple of GetDOF()
     /// note: not all planners support multiple goals
-    std::vector<dReal> vinitialconfig, vgoalconfig;
+    std::vector<dReal> initial_config_vector_, goal_config_vector_;
 
-    /// \brief the initial velocities (at vinitialconfig) of the robot when starting to plan. If empty, then set to zero.
-    std::vector<dReal> _vInitialConfigVelocities, _vGoalConfigVelocities;
+    /// \brief the initial velocities (at initial_config_vector_) of the robot when starting to plan. 
+	///        If empty, then set to zero.
+    std::vector<dReal> initial_config_velocities_vector_, goal_config_velocities_vector_;
 
     /// \brief the absolute limits of the configuration space.
-    std::vector<dReal> _vConfigLowerLimit, _vConfigUpperLimit;
+    std::vector<dReal> config_lower_limit_vector_, config_upper_limit_vector_;
 
     /// \brief the absolute velocity limits of each DOF of the configuration space.
-    std::vector<dReal> _vConfigVelocityLimit;
+    std::vector<dReal> config_velocity_limit_vector_;
 
     /// \brief the absolute acceleration limits of each DOF of the configuration space.
-    std::vector<dReal> _vConfigAccelerationLimit;
+    std::vector<dReal> config_acceleration_limit_vector_;
 
     /// \brief the discretization resolution of each dimension of the configuration space
-    std::vector<dReal> _vConfigResolution;
+    std::vector<dReal> config_resolution_vector_;
 
     /** \brief a discretization between the path that connects two configurations
 
@@ -381,31 +382,32 @@ private:
         It represents the maximum distance between neighbors when adding new configuraitons.
         If 0 or less, planner chooses best step length.
      */
-    dReal _fStepLength;
+    dReal step_length_;
 
     /// \brief maximum number of iterations before the planner gives up. If 0 or less, planner chooses best iterations.
-    int _nMaxIterations;
+    int max_iterations_;
 
     /// \brief max planning time in ms. If 0, then there is no time limit
-    uint32_t _nMaxPlanningTime;
+    uint32_t max_planning_time_;
 
     /// \brief Specifies the planner that will perform the post-processing path smoothing before returning.
     ///
     /// If empty, will not path smooth the returned trajectories (used to measure algorithm time)
-    std::string _sPostProcessingPlanner;
+    std::string post_processing_planner_;
 
     /// \brief The serialized planner parameters to pass to the path optimizer.
     ///
     /// For example: std::stringstream(_sPostProcessingParameters) >> _parameters;
     std::string _sPostProcessingParameters;
 
-    /// \brief Extra parameters data that does not fit within this planner parameters structure, but is still important not to lose all the information.
+    /// \brief Extra parameters data that does not fit within this planner parameters structure,
+	/// but is still important not to lose all the information.
     std::string _sExtraParameters;
 
     /// \brief Random generator seed for all the random numbers a planner needs.
     ///
     /// The same seed should produce the smae results!
-    uint32_t _nRandomGeneratorSeed;
+    uint32_t random_generator_seed_;
 
     /// \brief Return the degrees of freedom of the planning configuration space
     virtual int GetDOF() const {
@@ -468,7 +470,7 @@ protected:
     std::stringstream _ss;         //!< holds the data read by characters
     std::shared_ptr<std::stringstream> _sslocal;
     /// all the top-level XML parameter tags (lower case) that are handled by this parameter structure, should be registered in the constructor
-    std::vector<std::string> _vXMLParameters;
+    std::vector<std::string> xml_parameters_vector_;
     //@}
 
 private:
