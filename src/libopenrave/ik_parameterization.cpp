@@ -49,21 +49,21 @@ namespace OpenRAVE
 	ConfigurationSpecification IkParameterization::GetConfigurationSpecification(IkParameterizationType iktype, const std::string& interpolation, const std::string& robotname, const std::string& manipname)
 	{
 		ConfigurationSpecification spec;
-		spec._vgroups.resize(1);
-		spec._vgroups[0].offset = 0;
-		spec._vgroups[0].dof = IkParameterization::GetNumberOfValues(iktype);
-		spec._vgroups[0].name = str(boost::format("ikparam_values %d") % iktype);
+		spec.groups_vector_.resize(1);
+		spec.groups_vector_[0].offset = 0;
+		spec.groups_vector_[0].dof = IkParameterization::GetNumberOfValues(iktype);
+		spec.groups_vector_[0].name = str(boost::format("ikparam_values %d") % iktype);
 		if (robotname.size() > 0) {
-			spec._vgroups[0].name += robotname;
-			spec._vgroups[0].name += " ";
+			spec.groups_vector_[0].name += robotname;
+			spec.groups_vector_[0].name += " ";
 			if (manipname.size() > 0) {
-				spec._vgroups[0].name += manipname;
+				spec.groups_vector_[0].name += manipname;
 			}
 		}
-		spec._vgroups[0].interpolation = interpolation;
+		spec.groups_vector_[0].interpolation = interpolation;
 
 		// remove any trailing whitespace from missing robot or manipulator names
-		boost::algorithm::trim(spec._vgroups[0].name);
+		boost::algorithm::trim(spec.groups_vector_[0].name);
 		return spec;
 	}
 

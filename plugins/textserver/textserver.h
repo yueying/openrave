@@ -51,7 +51,7 @@ class SimpleTextServer : public ModuleBase
 public:
         struct PACKET
         {
-            string cmd, arg;
+            std::string cmd, arg;
         };
 
         Socket() {
@@ -1965,7 +1965,7 @@ protected:
             g.dof = 1;
             g.interpolation = "linear";
             g.name = "deltatime";
-            spec._vgroups.push_back(g);
+            spec.groups_vector_.push_back(g);
             offset += g.dof;
         }
         if( havetrans ) {
@@ -1975,7 +1975,7 @@ protected:
             g.dof = 1;
             g.interpolation = "linear";
             g.name = str(boost::format("affine_transform %s %d")%probot->GetName()%DOF_Transform);
-            spec._vgroups.push_back(g);
+            spec.groups_vector_.push_back(g);
             offset += g.dof;
         }
         offset = 0;

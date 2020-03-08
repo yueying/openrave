@@ -523,8 +523,8 @@ public:
         ConfigurationSpecification timeSpec;
         timeSpec.AddDeltaTimeGroup();
 
-        std::vector<ConfigurationSpecification::Group>::const_iterator itcompatposgroup = ptraj->GetConfigurationSpecification().FindCompatibleGroup(posSpec._vgroups.at(0), false);
-        OPENRAVE_ASSERT_FORMAT(itcompatposgroup != ptraj->GetConfigurationSpecification()._vgroups.end(), "Failed to find group %s in the passed-in trajectory", posSpec._vgroups.at(0).name, ORE_InvalidArguments);
+        std::vector<ConfigurationSpecification::Group>::const_iterator itcompatposgroup = ptraj->GetConfigurationSpecification().FindCompatibleGroup(posSpec.groups_vector_.at(0), false);
+        OPENRAVE_ASSERT_FORMAT(itcompatposgroup != ptraj->GetConfigurationSpecification().groups_vector_.end(), "Failed to find group %s in the passed-in trajectory", posSpec.groups_vector_.at(0).name, ORE_InvalidArguments);
 
         ConstraintTrajectoryTimingParametersConstPtr parameters = std::dynamic_pointer_cast<ConstraintTrajectoryTimingParameters const>(GetParameters());
 
@@ -739,14 +739,14 @@ public:
             newSpec.AddDerivativeGroups(1, true);
             int waypointOffset = newSpec.AddGroup("iswaypoint", 1, "next");
             int timeOffset = -1;
-            FOREACH(itgroup, newSpec._vgroups) {
+            FOREACH(itgroup, newSpec.groups_vector_) {
                 if( itgroup->name == "deltatime" ) {
                     timeOffset = itgroup->offset;
                 }
-                else if( velSpec.FindCompatibleGroup(*itgroup) != velSpec._vgroups.end() ) {
+                else if( velSpec.FindCompatibleGroup(*itgroup) != velSpec.groups_vector_.end() ) {
                     itgroup->interpolation = "linear";
                 }
-                else if( posSpec.FindCompatibleGroup(*itgroup) != posSpec._vgroups.end() ) {
+                else if( posSpec.FindCompatibleGroup(*itgroup) != posSpec.groups_vector_.end() ) {
                     itgroup->interpolation = "quadratic";
                 }
             }

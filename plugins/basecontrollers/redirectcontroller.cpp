@@ -18,140 +18,174 @@
 class RedirectController : public ControllerBase
 {
 public:
-    RedirectController(EnvironmentBasePtr penv, std::istream& sinput) : ControllerBase(penv), _bAutoSync(true) {
-        description_ = ":Interface Author: Rosen Diankov\n\nRedirects all input and output to another controller (this avoides cloning the other controller while still allowing it to be used from cloned environments)";
-    }
-    virtual ~RedirectController() {
+    RedirectController(EnvironmentBasePtr penv, std::istream& sinput)
+		: ControllerBase(penv), is_auto_sync_(true) 
+	{
+        description_ = ":Interface Author: Rosen Diankov\n\nRedirects all input and output to another controller\
+        (this avoides cloning the other controller while still allowing it to be used from cloned environments)";
     }
 
-    virtual bool Init(RobotBasePtr robot, const std::vector<int>&dofindices, int nControlTransformation)
+    virtual ~RedirectController()
+	{
+    }
+
+    virtual bool Init(RobotBasePtr robot, const std::vector<int>&dofindices, int control_transformation)
     {
-        _dofindices.clear();
-        _pcontroller.reset();
-        _probot = GetEnv()->GetRobot(robot->GetName());
-        if( _probot != robot ) {
-            _pcontroller = robot->GetController();
-            if( !!_pcontroller ) {
-                _dofindices = _pcontroller->GetControlDOFIndices();
+        dof_indices_vector_.clear();
+        controller_.reset();
+        robot_ = GetEnv()->GetRobot(robot->GetName());
+        if( robot_ != robot ) 
+		{
+            controller_ = robot->GetController();
+            if( !!controller_ ) 
+			{
+                dof_indices_vector_ = controller_->GetControlDOFIndices();
             }
         }
-        if( _bAutoSync ) {
+        if( is_auto_sync_ ) 
+		{
             _sync();
         }
         return true;
     }
 
     // don't touch the referenced controller, since could be just destroying clones
-    virtual void Reset(int options) {
+    virtual void Reset(int options)
+	{
     }
 
     virtual bool SetDesired(const std::vector<dReal>&values, TransformConstPtr trans)
     {
-        if( !_pcontroller->SetDesired(values, trans) ) {
+        if( !controller_->SetDesired(values, trans) )
+		{
             return false;
         }
-        if(_bAutoSync) {
-            _sync();
-        }
-        return true;
-    }
-    virtual bool SetPath(TrajectoryBaseConstPtr ptraj)
-    {
-        if( !_pcontroller->SetPath(ptraj) ) {
-            return false;
-        }
-        if(_bAutoSync) {
+        if(is_auto_sync_)
+		{
             _sync();
         }
         return true;
     }
 
-    virtual void SimulationStep(dReal fTimeElapsed) {
-        if( !!_pcontroller ) {
-            _pcontroller->SimulationStep(fTimeElapsed);
-            if(_bAutoSync) {
+    virtual bool SetPath(TrajectoryBaseConstPtr ptraj)
+    {
+        if( !controller_->SetPath(ptraj) ) 
+		{
+            return false;
+        }
+        if(is_auto_sync_) 
+		{
+            _sync();
+        }
+        return true;
+    }
+
+    virtual void SimulationStep(dReal time_elapsed)
+	{
+        if( !!controller_ ) 
+		{
+            controller_->SimulationStep(time_elapsed);
+            if(is_auto_sync_) 
+			{
                 _sync();
             }
         }
     }
 
-    virtual const std::vector<int>& GetControlDOFIndices() const {
-        return _dofindices;
+    virtual const std::vector<int>& GetControlDOFIndices() const
+	{
+        return dof_indices_vector_;
     }
-    virtual int IsControlTransformation() const {
-        return !_pcontroller ? 0 : _pcontroller->IsControlTransformation();
+    virtual int IsControlTransformation() const 
+	{
+        return !controller_ ? 0 : controller_->IsControlTransformation();
     }
-    virtual bool IsDone() {
-        return _bAutoSync ? _bSyncDone&&_pcontroller->IsDone() : _pcontroller->IsDone();
+    virtual bool IsDone()
+	{
+        return is_auto_sync_ ? is_sync_done_&&controller_->IsDone() : controller_->IsDone();
     }
 
-    virtual dReal GetTime() const {
-        return _pcontroller->GetTime();
+    virtual dReal GetTime() const 
+	{
+        return controller_->GetTime();
     }
-    virtual void GetVelocity(std::vector<dReal>&vel) const {
-        return _pcontroller->GetVelocity(vel);
+
+    virtual void GetVelocity(std::vector<dReal>&vel) const 
+	{
+        return controller_->GetVelocity(vel);
     }
-    virtual void GetTorque(std::vector<dReal>&torque) const {
-        return _pcontroller->GetTorque(torque);
+
+    virtual void GetTorque(std::vector<dReal>&torque) const 
+	{
+        return controller_->GetTorque(torque);
     }
-    virtual RobotBasePtr GetRobot() const {
-        return _probot;
+
+    virtual RobotBasePtr GetRobot() const 
+	{
+        return robot_;
     }
 
     virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     {
         ControllerBase::Clone(preference,cloningoptions);
         std::shared_ptr<RedirectController const> r = std::dynamic_pointer_cast<RedirectController const>(preference);
-        _probot = GetEnv()->GetRobot(r->_probot->GetName());
-        _pcontroller = r->_pcontroller;     // hmm......... this requires some thought
+        robot_ = GetEnv()->GetRobot(r->robot_->GetName());
+        controller_ = r->controller_;     // hmm......... this requires some thought
     }
 
     virtual bool SendCommand(std::ostream& os, std::istream& is)
     {
-        string cmd;
-        streampos pos = is.tellg();
+        std::string cmd;
+		std::streampos pos = is.tellg();
         is >> cmd;
-        if( !is ) {
+        if( !is )
+		{
             throw OpenRAVEException("invalid argument",ORE_InvalidArguments);
         }
         std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
-        if( cmd == "sync" ) {
+        if( cmd == "sync" ) 
+		{
             _sync();
             return true;
         }
-        else if( cmd == "autosync" ) {
-            is >> _bAutoSync;
-            if( !is ) {
+        else if( cmd == "autosync" ) 
+		{
+            is >> is_auto_sync_;
+            if( !is ) 
+			{
                 return false;
             }
-            if( _bAutoSync ) {
+            if( is_auto_sync_ )
+			{
                 _sync();
             }
             return true;
         }
 
         is.seekg(pos);
-        if( !_pcontroller ) {
+        if( !controller_ ) 
+		{
             return false;
         }
-        return _pcontroller->SendCommand(os,is);
+        return controller_->SendCommand(os,is);
     }
 
 private:
     virtual void _sync()
     {
-        if( !!_pcontroller ) {
-            vector<Transform> vtrans;
-            _pcontroller->GetRobot()->GetLinkTransformations(vtrans);
-            _probot->SetLinkTransformations(vtrans);
-            _bSyncDone = _pcontroller->IsDone();
+        if( !!controller_ ) 
+		{
+			std::vector<Transform> vtrans;
+            controller_->GetRobot()->GetLinkTransformations(vtrans);
+            robot_->SetLinkTransformations(vtrans);
+            is_sync_done_ = controller_->IsDone();
         }
     }
 
-    std::vector<int> _dofindices;
-    bool _bAutoSync, _bSyncDone;
-    RobotBasePtr _probot;               //!< controlled body
-    ControllerBasePtr _pcontroller;
+    std::vector<int> dof_indices_vector_;
+    bool is_auto_sync_, is_sync_done_;
+    RobotBasePtr robot_;               //!< controlled body
+    ControllerBasePtr controller_;
 };
 
 ControllerBasePtr CreateRedirectController(EnvironmentBasePtr penv, std::istream& sinput)

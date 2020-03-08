@@ -2405,7 +2405,7 @@ class ControllerXMLReader : public InterfaceXMLReader
 public:
     ControllerXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, const AttributesList &atts,RobotBasePtr probot=RobotBasePtr()) : InterfaceXMLReader(penv,pinterface,PT_Controller,RaveGetInterfaceName(PT_Controller),atts) {
         _probot = probot;
-        nControlTransformation = 0;
+        control_transformation = 0;
         FOREACHC(itatt, atts) {
             if( itatt->first == "robot" ) {
                 _robotname = itatt->second;
@@ -2416,7 +2416,7 @@ public:
             }
             else if( itatt->first == "transform" ) {
                 stringstream ss(itatt->second);
-                ss >> nControlTransformation;
+                ss >> control_transformation;
             }
         }
     }
@@ -2455,7 +2455,7 @@ public:
                     }
                 }
                 _CheckInterface();
-                _probot->SetController(RaveInterfaceCast<ControllerBase>(_pinterface),dofindices,nControlTransformation);
+                _probot->SetController(RaveInterfaceCast<ControllerBase>(_pinterface),dofindices,control_transformation);
             }
             else {
                 RAVELOG_WARN("controller is unused\n");
@@ -2467,7 +2467,7 @@ public:
 
     string _robotname;
     std::shared_ptr< vector<string> > _vjoints;
-    int nControlTransformation;
+    int control_transformation;
     RobotBasePtr _probot;
 };
 

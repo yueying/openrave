@@ -113,7 +113,7 @@ public:
         BOOST_ASSERT(!!_parameters && !!ptraj && ptraj->GetEnv()==GetEnv());
         BOOST_ASSERT(_parameters->GetDOF() == _parameters->_configurationspecification.GetDOF());
         std::vector<ConfigurationSpecification::Group>::const_iterator itoldgrouptime = ptraj->GetConfigurationSpecification().FindCompatibleGroup("deltatime",false);
-        if( _parameters->_hastimestamps && itoldgrouptime == ptraj->GetConfigurationSpecification()._vgroups.end() ) {
+        if( _parameters->_hastimestamps && itoldgrouptime == ptraj->GetConfigurationSpecification().groups_vector_.end() ) {
             std::string description = "trajectory does not have timestamps, even though parameters say timestamps are needed\n";
             RAVELOG_WARN(description);
             return OPENRAVE_PLANNER_STATUS(description, PS_Failed);
@@ -127,8 +127,8 @@ public:
         ConfigurationSpecification velspec = _parameters->_configurationspecification.ConvertToVelocitySpecification();
         if( _parameters->_hasvelocities ) {
             // check that all velocity groups are there
-            FOREACH(itgroup,velspec._vgroups) {
-                if(ptraj->GetConfigurationSpecification().FindCompatibleGroup(*itgroup,true) == ptraj->GetConfigurationSpecification()._vgroups.end() ) {
+            FOREACH(itgroup,velspec.groups_vector_) {
+                if(ptraj->GetConfigurationSpecification().FindCompatibleGroup(*itgroup,true) == ptraj->GetConfigurationSpecification().groups_vector_.end() ) {
                     std::string description = str(boost::format("trajectory does not have velocity group '%s', even though parameters say is needed")%itgroup->name);
                     RAVELOG_WARN(description);
                     return PlannerStatus(description, PS_Failed);
@@ -195,8 +195,8 @@ public:
                 string velinterpolation = ConfigurationSpecification::GetInterpolationDerivative(posinterpolation);
                 string accelinterpolation = ConfigurationSpecification::GetInterpolationDerivative(velinterpolation);
                 const boost::array<std::string,3> supportedgroups = {{"joint_values", "affine_transform", "ikparam_values"}};
-                for(size_t i = 0; i < _cachednewspec._vgroups.size(); ++i) {
-                    ConfigurationSpecification::Group& gpos = _cachednewspec._vgroups[i];
+                for(size_t i = 0; i < _cachednewspec.groups_vector_.size(); ++i) {
+                    ConfigurationSpecification::Group& gpos = _cachednewspec.groups_vector_[i];
                     size_t igrouptype;
                     for(igrouptype = 0; igrouptype < supportedgroups.size(); ++igrouptype) {
                         if( gpos.name.size() >= supportedgroups[igrouptype].size() && gpos.name.substr(0,supportedgroups[igrouptype].size()) == supportedgroups[igrouptype] ) {
@@ -209,11 +209,11 @@ public:
 
                     // group is supported
                     std::vector<ConfigurationSpecification::Group>::const_iterator itgroup = _cachedoldspec.FindCompatibleGroup(gpos);
-                    BOOST_ASSERT(itgroup != _cachedoldspec._vgroups.end());
+                    BOOST_ASSERT(itgroup != _cachedoldspec.groups_vector_.end());
                     int orgposoffset = itgroup->offset;
                     BOOST_ASSERT(orgposoffset+gpos.dof <= _parameters->GetDOF());
-                    std::vector<ConfigurationSpecification::Group>::iterator itvelgroup = _cachednewspec._vgroups.begin()+(_cachednewspec.FindTimeDerivativeGroup(gpos)-_cachednewspec._vgroups.begin());
-                    BOOST_ASSERT(itvelgroup != _cachednewspec._vgroups.end());
+                    std::vector<ConfigurationSpecification::Group>::iterator itvelgroup = _cachednewspec.groups_vector_.begin()+(_cachednewspec.FindTimeDerivativeGroup(gpos)-_cachednewspec.groups_vector_.begin());
+                    BOOST_ASSERT(itvelgroup != _cachednewspec.groups_vector_.end());
                     std::vector<ConfigurationSpecification::Group>::const_iterator itaccelgroupc = _cachednewspec.FindTimeDerivativeGroup(*itvelgroup);
                     _listgroupinfo.push_back(CreateGroupInfo(degree, _cachednewspec, gpos, *itvelgroup));
                     _listgroupinfo.back()->orgposoffset = orgposoffset;
@@ -231,7 +231,7 @@ public:
                             _parameters->config_upper_limit_vector_.begin() + itgroup->offset + itgroup->dof);
 
                     itgroup = _cachedoldspec.FindCompatibleGroup(*itvelgroup);
-                    if( itgroup != _cachedoldspec._vgroups.end() ) {
+                    if( itgroup != _cachedoldspec.groups_vector_.end() ) {
                         // velocity is optional
                         _listgroupinfo.back()->orgveloffset = itgroup->offset;
                     }
@@ -292,13 +292,13 @@ public:
 
                     gpos.interpolation = posinterpolation;
                     itvelgroup->interpolation = velinterpolation;
-                    if( itaccelgroupc != _cachednewspec._vgroups.end() ) {
-                        _cachednewspec._vgroups.at(itaccelgroupc-_cachednewspec._vgroups.begin()).interpolation = accelinterpolation;
+                    if( itaccelgroupc != _cachednewspec.groups_vector_.end() ) {
+                        _cachednewspec.groups_vector_.at(itaccelgroupc-_cachednewspec.groups_vector_.begin()).interpolation = accelinterpolation;
                     }
                 }
                 // compute the timestamps and velocities
                 _timeoffset = -1;
-                FOREACH(itgroup,_cachednewspec._vgroups) {
+                FOREACH(itgroup,_cachednewspec.groups_vector_) {
                     if( itgroup->name == "deltatime" ) {
                         _timeoffset = itgroup->offset;
                     }
@@ -437,7 +437,7 @@ public:
         }
         else {
             // one point, but still need to set interpolation
-            FOREACH(itgroup,_cachednewspec._vgroups) {
+            FOREACH(itgroup,_cachednewspec.groups_vector_) {
                 itgroup->interpolation = _parameters->_interpolation;
             }
         }

@@ -841,31 +841,31 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
 {
     using namespace planningutils;
     spec.Validate();
-    std::vector<std::pair<DiffStateFn, int>> diffstatefns(spec._vgroups.size());
-    std::vector<std::pair<DistMetricFn, int>> distmetricfns(spec._vgroups.size());
-    std::vector<std::pair<SampleFn, int>> samplefns(spec._vgroups.size());
-    std::vector<std::pair<SampleNeighFn, int>> sampleneighfns(spec._vgroups.size());
-    std::vector<std::pair<SetStateValuesFn, int>> setstatevaluesfns(spec._vgroups.size());
-    std::vector<std::pair<GetStateFn, int>> getstatefns(spec._vgroups.size());
-    std::vector<std::pair<NeighStateFn, int>> neighstatefns(spec._vgroups.size());
+    std::vector<std::pair<DiffStateFn, int>> diffstatefns(spec.groups_vector_.size());
+    std::vector<std::pair<DistMetricFn, int>> distmetricfns(spec.groups_vector_.size());
+    std::vector<std::pair<SampleFn, int>> samplefns(spec.groups_vector_.size());
+    std::vector<std::pair<SampleNeighFn, int>> sampleneighfns(spec.groups_vector_.size());
+    std::vector<std::pair<SetStateValuesFn, int>> setstatevaluesfns(spec.groups_vector_.size());
+    std::vector<std::pair<GetStateFn, int>> getstatefns(spec.groups_vector_.size());
+    std::vector<std::pair<NeighStateFn, int>> neighstatefns(spec.groups_vector_.size());
     std::vector<dReal> vConfigLowerLimit(spec.GetDOF()), vConfigUpperLimit(spec.GetDOF()), vConfigVelocityLimit(spec.GetDOF()), vConfigAccelerationLimit(spec.GetDOF()), vConfigResolution(spec.GetDOF()), v0, v1;
     std::list<KinBodyPtr> listCheckCollisions;
     string bodyname;
     stringstream ss, ssout;
     // order the groups depending on offset
     int nMaxDOFForGroup = 0;
-    std::vector<std::pair<int, int>> vgroupoffsets(spec._vgroups.size());
-    for (size_t igroup = 0; igroup < spec._vgroups.size(); ++igroup) {
-        vgroupoffsets[igroup].first = spec._vgroups[igroup].offset;
+    std::vector<std::pair<int, int>> vgroupoffsets(spec.groups_vector_.size());
+    for (size_t igroup = 0; igroup < spec.groups_vector_.size(); ++igroup) {
+        vgroupoffsets[igroup].first = spec.groups_vector_[igroup].offset;
         vgroupoffsets[igroup].second = igroup;
-        nMaxDOFForGroup = max(nMaxDOFForGroup, spec._vgroups[igroup].dof);
+        nMaxDOFForGroup = max(nMaxDOFForGroup, spec.groups_vector_[igroup].dof);
     }
 
     _listInternalSamplers.clear();
 
     std::sort(vgroupoffsets.begin(), vgroupoffsets.end());
-    for (size_t igroup = 0; igroup < spec._vgroups.size(); ++igroup) {
-        const ConfigurationSpecification::Group& g = spec._vgroups[igroup];
+    for (size_t igroup = 0; igroup < spec.groups_vector_.size(); ++igroup) {
+        const ConfigurationSpecification::Group& g = spec.groups_vector_[igroup];
         int isavegroup = vgroupoffsets[igroup].second;
         if (g.name.size() >= 12 && g.name.substr(0, 12) == "joint_values") {
             ss.clear();

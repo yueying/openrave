@@ -26,7 +26,7 @@ public:
     virtual ~MultiController() {
     }
 
-    virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int nControlTransformation)
+    virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int control_transformation)
     {
         boost::mutex::scoped_lock lock(_mutex);
         _probot=robot;
@@ -45,7 +45,7 @@ public:
             _dofreverseindices.at(*it) = index++;
         }
         _vcontrollersbydofs.resize(0); _vcontrollersbydofs.resize(_dofindices.size());
-        _nControlTransformation = nControlTransformation;
+        _nControlTransformation = control_transformation;
         _ptransformcontroller.reset();
         return true;
     }
@@ -60,10 +60,10 @@ public:
         return _probot;
     }
 
-    virtual bool AttachController(ControllerBasePtr controller, const std::vector<int>& dofindices, int nControlTransformation)
+    virtual bool AttachController(ControllerBasePtr controller, const std::vector<int>& dofindices, int control_transformation)
     {
         boost::mutex::scoped_lock lock(_mutex);
-        if( nControlTransformation && !!_ptransformcontroller ) {
+        if( control_transformation && !!_ptransformcontroller ) {
             throw OpenRAVEException(_("controller already attached for transformation"),ORE_InvalidArguments);
         }
         FOREACHC(it,dofindices) {
@@ -71,10 +71,10 @@ public:
                 throw OpenRAVEException(str(boost::format(_("controller already attached to dof %d"))%*it));
             }
         }
-        if( !controller->Init(_probot,dofindices,nControlTransformation) ) {
+        if( !controller->Init(_probot,dofindices,control_transformation) ) {
             return false;
         }
-        if( nControlTransformation ) {
+        if( control_transformation ) {
             _ptransformcontroller = controller;
         }
         FOREACHC(it,dofindices) {

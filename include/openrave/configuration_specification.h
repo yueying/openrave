@@ -156,14 +156,14 @@ namespace OpenRAVE
 		///
 		/// \param g the group to query, only the Group::name and Group::dof values are used
 		/// \param exactmatch if true, will only return groups whose name exactly matches with g.name
-		/// \return an iterator part of _vgroups that represents the most compatible group. If no group is found, will return _vgroups.end()
+		/// \return an iterator part of groups_vector_ that represents the most compatible group. If no group is found, will return groups_vector_.end()
 		virtual std::vector<Group>::const_iterator FindCompatibleGroup(const Group& g, bool exactmatch = false) const;
 
 		/// \brief finds the most compatible group to the given group
 		///
 		/// \param name the name of the group to query
 		/// \param exactmatch if true, will only return groups whose name exactly matches with g.name
-		/// \return an iterator part of _vgroups that represents the most compatible group. If no group is found, will return _vgroups.end()
+		/// \return an iterator part of groups_vector_ that represents the most compatible group. If no group is found, will return groups_vector_.end()
 		virtual std::vector<Group>::const_iterator FindCompatibleGroup(const std::string& name, bool exactmatch = false) const;
 
 		/** \brief Return the most compatible group that represents the time-derivative data of the group.
@@ -171,7 +171,7 @@ namespace OpenRAVE
 			For example given a 'joint_values' group, this will return the closest 'joint_velocities' group.
 			\param g the group to query, only the Group::name and Group::dof values are used
 			\param exactmatch if true, will only return groups whose name exactly matches with g.name
-			\return an iterator part of _vgroups that represents the most compatible group. If no group is found, will return _vgroups.end()
+			\return an iterator part of groups_vector_ that represents the most compatible group. If no group is found, will return groups_vector_.end()
 		 */
 		virtual std::vector<Group>::const_iterator FindTimeDerivativeGroup(const Group& g, bool exactmatch = false) const;
 
@@ -180,7 +180,7 @@ namespace OpenRAVE
 			For example given a 'joint_values' group, this will return the closest 'joint_velocities' group.
 			\param name the name of the group to query
 			\param exactmatch if true, will only return groups whose name exactly matches with g.name
-			\return an iterator part of _vgroups that represents the most compatible group. If no group is found, will return _vgroups.end()
+			\return an iterator part of groups_vector_ that represents the most compatible group. If no group is found, will return groups_vector_.end()
 		 */
 		virtual std::vector<Group>::const_iterator FindTimeDerivativeGroup(const std::string& name, bool exactmatch = false) const;
 
@@ -189,7 +189,7 @@ namespace OpenRAVE
 			For example given a 'joint_velocities' group, this will return the closest 'joint_values' group.
 			\param g the group to query, only the Group::name and Group::dof values are used
 			\param exactmatch if true, will only return groups whose name exactly matches with g.name
-			\return an iterator part of _vgroups that represents the most compatible group. If no group is found, will return _vgroups.end()
+			\return an iterator part of groups_vector_ that represents the most compatible group. If no group is found, will return groups_vector_.end()
 		 */
 		virtual std::vector<Group>::const_iterator FindTimeIntegralGroup(const Group& g, bool exactmatch = false) const;
 
@@ -198,7 +198,7 @@ namespace OpenRAVE
 			For example given a 'joint_velocities' group, this will return the closest 'joint_values' group.
 			\param name the name of the group to query
 			\param exactmatch if true, will only return groups whose name exactly matches with g.name
-			\return an iterator part of _vgroups that represents the most compatible group. If no group is found, will return _vgroups.end()
+			\return an iterator part of groups_vector_ that represents the most compatible group. If no group is found, will return groups_vector_.end()
 		 */
 		virtual std::vector<Group>::const_iterator FindTimeIntegralGroup(const std::string& name, bool exactmatch = false) const;
 
@@ -430,7 +430,7 @@ namespace OpenRAVE
 		/// \param deriv the number of derivatives to take, should be > 0
 		static std::string GetInterpolationDerivative(const std::string& interpolation, int deriv = 1);
 
-		std::vector<Group> _vgroups;
+		std::vector<Group> groups_vector_;
 	};
 
 	OPENRAVE_API std::ostream& operator<<(std::ostream& O, const ConfigurationSpecification &spec);

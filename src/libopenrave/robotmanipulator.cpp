@@ -1579,7 +1579,7 @@ ConfigurationSpecification RobotBase::Manipulator::GetArmConfigurationSpecificat
         return __armspec;
     }
     ConfigurationSpecification spec = __armspec;
-    FOREACH(itgroup,spec._vgroups) {
+    FOREACH(itgroup,spec.groups_vector_) {
         itgroup->interpolation=interpolation;
     }
     return spec;

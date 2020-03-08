@@ -443,7 +443,7 @@ bool RobotBase::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, co
     return true;
 }
 
-bool RobotBase::SetController(ControllerBasePtr controller, const std::vector<int>& jointindices, int nControlTransformation)
+bool RobotBase::SetController(ControllerBasePtr controller, const std::vector<int>& jointindices, int control_transformation)
 {
     RAVELOG_DEBUG_FORMAT("env=%d, default robot doesn't not support setting controllers (try GenericRobot)", GetEnv()->GetId());
     return false;
@@ -453,7 +453,7 @@ void RobotBase::SetName(const std::string& newname)
 {
     if( name_ != newname ) {
         // have to replace the 2nd word of all the groups with the robot name
-        FOREACH(itgroup, _activespec._vgroups) {
+        FOREACH(itgroup, _activespec.groups_vector_) {
             stringstream ss(itgroup->name);
             string grouptype, oldname;
             ss >> grouptype >> oldname;
@@ -692,7 +692,7 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
     if( bactivedofchanged ) {
         // do not initialize interpolation, since it implies a motion sampling strategy
         int offset = 0;
-        _activespec._vgroups.resize(0);
+        _activespec.groups_vector_.resize(0);
         if( GetActiveDOFIndices().size() > 0 ) {
             ConfigurationSpecification::Group group;
             stringstream ss;
@@ -704,14 +704,14 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
             group.dof = (int)GetActiveDOFIndices().size();
             group.offset = offset;
             offset += group.dof;
-            _activespec._vgroups.push_back(group);
+            _activespec.groups_vector_.push_back(group);
         }
         if( GetAffineDOF() > 0 ) {
             ConfigurationSpecification::Group group;
             group.name = str(boost::format("affine_transform %s %d")%GetName()%GetAffineDOF());
             group.offset = offset;
             group.dof = RaveGetAffineDOF(GetAffineDOF());
-            _activespec._vgroups.push_back(group);
+            _activespec.groups_vector_.push_back(group);
         }
 
         _PostprocessChangedParameters(Prop_RobotActiveDOFs);
@@ -1235,7 +1235,7 @@ ConfigurationSpecification RobotBase::GetActiveConfigurationSpecification(const 
         return _activespec;
     }
     ConfigurationSpecification spec = _activespec;
-    FOREACH(itgroup,spec._vgroups) {
+    FOREACH(itgroup,spec.groups_vector_) {
         itgroup->interpolation=interpolation;
     }
     return spec;
@@ -1812,8 +1812,8 @@ void RobotBase::_ComputeInternalInformation()
         _vAllDOFIndices[i] = i;
     }
 
-    _activespec._vgroups.reserve(2);
-    _activespec._vgroups.resize(0);
+    _activespec.groups_vector_.reserve(2);
+    _activespec.groups_vector_.resize(0);
     if( _vAllDOFIndices.size() > 0 ) {
         ConfigurationSpecification::Group group;
         stringstream ss;
@@ -1834,7 +1834,7 @@ void RobotBase::_ComputeInternalInformation()
         group.name = ss.str();
         group.offset = 0;
         // do not initialize interpolation, since it implies a motion sampling strategy
-        _activespec._vgroups.push_back(group);
+        _activespec.groups_vector_.push_back(group);
     }
 
     int manipindex=0;

@@ -298,7 +298,7 @@ protected:
             params->workspacetraj = RaveCreateTrajectory(GetEnv(),"");
             ConfigurationSpecification spec = IkParameterization::GetConfigurationSpecification(IKP_Transform6D,"quadratic");
             params->workspacetraj->Init(spec);
-            vector<dReal> data(spec._vgroups[0].dof);
+            vector<dReal> data(spec.groups_vector_[0].dof);
             IkParameterization ikparam(Tee,IKP_Transform6D);
             ikparam.GetValues(data.begin());
             params->workspacetraj->Insert(0,data);
@@ -306,8 +306,8 @@ protected:
             ikparam.SetTransform6D(Tee);
             ikparam.GetValues(data.begin());
             params->workspacetraj->Insert(1,data);
-            vector<dReal> maxvelocities(spec._vgroups[0].dof,1);
-            vector<dReal> maxaccelerations(spec._vgroups[0].dof,5);
+            vector<dReal> maxvelocities(spec.groups_vector_[0].dof,1);
+            vector<dReal> maxaccelerations(spec.groups_vector_[0].dof,5);
             planningutils::RetimeAffineTrajectory(params->workspacetraj,maxvelocities,maxaccelerations);
         }
 

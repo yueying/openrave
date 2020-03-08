@@ -40,17 +40,17 @@ namespace OpenRAVE
 		const std::string& interpolation)
 	{
 		ConfigurationSpecification spec;
-		spec._vgroups.resize(1);
-		spec._vgroups[0].offset = 0;
-		spec._vgroups[0].dof = RaveGetAffineDOF(affinedofs);
-		spec._vgroups[0].interpolation = interpolation;
+		spec.groups_vector_.resize(1);
+		spec.groups_vector_[0].offset = 0;
+		spec.groups_vector_[0].dof = RaveGetAffineDOF(affinedofs);
+		spec.groups_vector_[0].interpolation = interpolation;
 		if (!!pbody)
 		{
-			spec._vgroups[0].name = format("affine_transform %s %d", pbody->GetName() , affinedofs);
+			spec.groups_vector_[0].name = format("affine_transform %s %d", pbody->GetName() , affinedofs);
 		}
 		else
 		{
-			spec._vgroups[0].name = format("affine_transform __dummy__ %d", affinedofs);
+			spec.groups_vector_[0].name = format("affine_transform __dummy__ %d", affinedofs);
 		}
 		return spec;
 	}
@@ -62,19 +62,19 @@ namespace OpenRAVE
 	ConfigurationSpecification::ConfigurationSpecification(const ConfigurationSpecification::Group& g)
 	{
 		BOOST_ASSERT(g.dof >= 0);
-		_vgroups.push_back(g);
-		_vgroups.front().offset = 0;
+		groups_vector_.push_back(g);
+		groups_vector_.front().offset = 0;
 	}
 
 	ConfigurationSpecification::ConfigurationSpecification(const ConfigurationSpecification& c)
 	{
-		_vgroups = c._vgroups;
+		groups_vector_ = c.groups_vector_;
 	}
 
 	int ConfigurationSpecification::GetDOF() const
 	{
 		int maxdof = 0;
-		for(auto it: _vgroups) 
+		for(auto it: groups_vector_) 
 		{
 			maxdof = std::max(maxdof, it.offset + it.dof);
 		}
@@ -84,7 +84,7 @@ namespace OpenRAVE
 	bool ConfigurationSpecification::IsValid() const
 	{
 		std::vector<uint8_t> occupied(GetDOF(), 0);
-		for(auto it: _vgroups) 
+		for(auto it: groups_vector_) 
 		{
 			if (it.offset < 0 || it.dof <= 0 || it.offset + it.dof >(int)occupied.size()) 
 			{
@@ -107,9 +107,9 @@ namespace OpenRAVE
 			}
 		}
 		// check for repeating names
-		for (auto it = _vgroups.begin(); it != _vgroups.end(); (it)++)
+		for (auto it = groups_vector_.begin(); it != groups_vector_.end(); (it)++)
 		{
-			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != _vgroups.end(); ++it2) 
+			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != groups_vector_.end(); ++it2) 
 			{
 				if (it->name == it2->name) 
 				{
@@ -123,7 +123,7 @@ namespace OpenRAVE
 	void ConfigurationSpecification::Validate() const
 	{
 		std::vector<uint8_t> occupied(GetDOF(), 0);
-		for(auto it: _vgroups) 
+		for(auto it: groups_vector_) 
 		{
 			OPENRAVE_ASSERT_OP(it.offset, >= , 0);
 			OPENRAVE_ASSERT_OP(it.dof, > , 0);
@@ -139,9 +139,9 @@ namespace OpenRAVE
 			OPENRAVE_ASSERT_OP_FORMAT0(it, != , 0, "found unocupied index", ORE_Assert);
 		}
 		// check for repeating names
-		for (auto it = _vgroups.begin(); it != _vgroups.end(); (it)++)
+		for (auto it = groups_vector_.begin(); it != groups_vector_.end(); (it)++)
 		{
-			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != _vgroups.end(); ++it2) 
+			for (std::vector<Group>::const_iterator it2 = it + 1; it2 != groups_vector_.end(); ++it2) 
 			{
 				OPENRAVE_ASSERT_OP_FORMAT0(it->name, != , it2->name, "repeating names", ORE_Assert);
 			}
@@ -150,21 +150,21 @@ namespace OpenRAVE
 
 	bool ConfigurationSpecification::operator==(const ConfigurationSpecification& r) const
 	{
-		if (_vgroups.size() != r._vgroups.size()) {
+		if (groups_vector_.size() != r.groups_vector_.size()) {
 			return false;
 		}
 		// the groups could be out of order
-		for (size_t i = 0; i < _vgroups.size(); ++i) {
+		for (size_t i = 0; i < groups_vector_.size(); ++i) {
 			size_t j;
-			for (j = 0; j < r._vgroups.size(); ++j) {
-				if (_vgroups[i].offset == r._vgroups[j].offset) {
-					if (_vgroups[i] != r._vgroups[j]) {
+			for (j = 0; j < r.groups_vector_.size(); ++j) {
+				if (groups_vector_[i].offset == r.groups_vector_[j].offset) {
+					if (groups_vector_[i] != r.groups_vector_[j]) {
 						return false;
 					}
 					break;
 				}
 			}
-			if (j >= r._vgroups.size()) {
+			if (j >= r.groups_vector_.size()) {
 				return false;
 			}
 		}
@@ -180,7 +180,7 @@ namespace OpenRAVE
 	{
 		size_t bestmatch = 0xffffffff;
 		Group bestgroup;
-		for(auto itgroup: _vgroups)
+		for(auto itgroup: groups_vector_)
 		{
 			if (itgroup.name.size() >= name.size()) 
 			{
@@ -216,7 +216,7 @@ namespace OpenRAVE
 	{
 		size_t bestmatch = 0xffffffff;
 		Group itbestgroup;
-		for(auto itgroup: _vgroups) 
+		for(auto itgroup: groups_vector_) 
 		{
 			if (itgroup.name.size() >= name.size()) {
 				if (itgroup.name.size() == name.size()) {
@@ -244,9 +244,9 @@ namespace OpenRAVE
 	std::vector<ConfigurationSpecification::Group>::const_iterator ConfigurationSpecification::FindCompatibleGroup(const ConfigurationSpecification::Group& g, bool exactmatch) const
 	{
 		std::vector<ConfigurationSpecification::Group>::const_iterator itcompatgroup = FindCompatibleGroup(g.name, exactmatch);
-		if (itcompatgroup != _vgroups.end() && exactmatch) {
+		if (itcompatgroup != groups_vector_.end() && exactmatch) {
 			if (itcompatgroup->dof != g.dof) {
-				return _vgroups.end();
+				return groups_vector_.end();
 			}
 		}
 		return itcompatgroup;
@@ -254,14 +254,14 @@ namespace OpenRAVE
 
 	std::vector<ConfigurationSpecification::Group>::const_iterator ConfigurationSpecification::FindCompatibleGroup(const std::string& name, bool exactmatch) const
 	{
-		std::vector<ConfigurationSpecification::Group>::const_iterator itsemanticmatch = _vgroups.end();
+		std::vector<ConfigurationSpecification::Group>::const_iterator itsemanticmatch = groups_vector_.end();
 		uint32_t bestmatchscore = 0;
 		std::stringstream ss(name);
 		std::vector<std::string> tokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 		if (tokens.size() == 0) {
-			return _vgroups.end();
+			return groups_vector_.end();
 		}
-		for (auto itgroup = (_vgroups).begin(); itgroup != (_vgroups).end(); (itgroup)++)
+		for (auto itgroup = (groups_vector_).begin(); itgroup != (groups_vector_).end(); (itgroup)++)
 		{
 			if (itgroup->name == name) {
 				return itgroup;
@@ -307,9 +307,9 @@ namespace OpenRAVE
 	std::vector<ConfigurationSpecification::Group>::const_iterator ConfigurationSpecification::FindTimeDerivativeGroup(const ConfigurationSpecification::Group& g, bool exactmatch) const
 	{
 		std::vector<ConfigurationSpecification::Group>::const_iterator itcompatgroup = FindTimeDerivativeGroup(g.name, exactmatch);
-		if (itcompatgroup != _vgroups.end()) {
+		if (itcompatgroup != groups_vector_.end()) {
 			if (itcompatgroup->dof != g.dof) {
-				return _vgroups.end();
+				return groups_vector_.end();
 			}
 		}
 		return itcompatgroup;
@@ -344,7 +344,7 @@ namespace OpenRAVE
 			derivativename = std::string("ikparam_accelerations") + name.substr(18);
 		}
 		else {
-			return _vgroups.end();
+			return groups_vector_.end();
 		}
 		return FindCompatibleGroup(derivativename, exactmatch);
 	}
@@ -353,9 +353,9 @@ namespace OpenRAVE
 		const ConfigurationSpecification::Group& g, bool exactmatch) const
 	{
 		std::vector<ConfigurationSpecification::Group>::const_iterator itcompatgroup = FindTimeIntegralGroup(g.name, exactmatch);
-		if (itcompatgroup != _vgroups.end()) {
+		if (itcompatgroup != groups_vector_.end()) {
 			if (itcompatgroup->dof != g.dof) {
-				return _vgroups.end();
+				return groups_vector_.end();
 			}
 		}
 		return itcompatgroup;
@@ -390,7 +390,7 @@ namespace OpenRAVE
 			derivativename = std::string("ikparam_velocities") + name.substr(21);
 		}
 		else {
-			return _vgroups.end();
+			return groups_vector_.end();
 		}
 		return FindCompatibleGroup(derivativename, exactmatch);
 	}
@@ -403,14 +403,14 @@ namespace OpenRAVE
 			{"affine_transform","affine_velocities","ikparam_accelerations", "affine_jerks"} };
 		static const std::array<std::string, 4> s_GroupsIkparam = {
 			{"ikparam_values","ikparam_velocities","affine_accelerations", "ikparam_jerks"} };
-		if (_vgroups.size() == 0) {
+		if (groups_vector_.size() == 0) {
 			return;
 		}
 		std::list<std::vector<ConfigurationSpecification::Group>::iterator> listtoremove;
 		std::list<ConfigurationSpecification::Group> listadd;
 		int offset = GetDOF();
 		bool hasdeltatime = false;
-		for(auto& itgroup: _vgroups) {
+		for(auto& itgroup: groups_vector_) {
 			std::string replacename;
 			int offset = -1;
 			if (itgroup.name.size() >= 12 && itgroup.name.substr(0, 12) == "joint_values") {
@@ -432,13 +432,13 @@ namespace OpenRAVE
 				g.dof = itgroup.dof;
 				g.interpolation = GetInterpolationDerivative(itgroup.interpolation, deriv);
 				std::vector<ConfigurationSpecification::Group>::const_iterator itcompat = FindCompatibleGroup(g);
-				if (itcompat != _vgroups.end()) {
+				if (itcompat != groups_vector_.end()) {
 					if (itcompat->dof == g.dof) {
-						ConfigurationSpecification::Group& gmodify = _vgroups.at(itcompat - _vgroups.begin());
+						ConfigurationSpecification::Group& gmodify = groups_vector_.at(itcompat - groups_vector_.begin());
 						gmodify.name = g.name;
 					}
 					else {
-						listtoremove.push_back(_vgroups.begin() + (itcompat - _vgroups.begin()));
+						listtoremove.push_back(groups_vector_.begin() + (itcompat - groups_vector_.begin()));
 						listadd.push_back(g);
 					}
 				}
@@ -454,7 +454,7 @@ namespace OpenRAVE
 		}
 		if (listtoremove.size() > 0) {
 			for(auto& it: listtoremove) {
-				_vgroups.erase(it);
+				groups_vector_.erase(it);
 			}
 			ResetGroupOffsets();
 			offset = GetDOF();
@@ -462,7 +462,7 @@ namespace OpenRAVE
 		for(auto& itadd: listadd) {
 			itadd.offset = offset;
 			offset += itadd.dof;
-			_vgroups.push_back(itadd);
+			groups_vector_.push_back(itadd);
 		}
 		if (!hasdeltatime && adddeltatime) {
 			AddDeltaTimeGroup();
@@ -472,8 +472,8 @@ namespace OpenRAVE
 	ConfigurationSpecification ConfigurationSpecification::ConvertToVelocitySpecification() const
 	{
 		ConfigurationSpecification vspec;
-		vspec._vgroups = _vgroups;
-		for(auto& itgroup: vspec._vgroups) {
+		vspec.groups_vector_ = groups_vector_;
+		for(auto& itgroup: vspec.groups_vector_) {
 			if (itgroup.name.size() >= 12 && itgroup.name.substr(0, 12) == "joint_values") {
 				itgroup.name = std::string("joint_velocities") + itgroup.name.substr(12);
 			}
@@ -494,9 +494,9 @@ namespace OpenRAVE
 		OPENRAVE_ASSERT_OP(timederivative, < , 7);
 		ConfigurationSpecification derivspec;
 		std::string searchname;
-		derivspec._vgroups = _vgroups;
+		derivspec.groups_vector_ = groups_vector_;
 		if (timederivative > 0) {
-			for(auto& itgroup: derivspec._vgroups) {
+			for(auto& itgroup: derivspec.groups_vector_) {
 				if (itgroup.name.size() >= 12 && itgroup.name.substr(0, 12) == "joint_values") {
 					switch (timederivative) {
 					case 0: searchname = "joint_values"; break;
@@ -574,14 +574,14 @@ namespace OpenRAVE
 			throw OPENRAVE_EXCEPTION_FORMAT0(("invalid timederivative"), ORE_InvalidArguments);
 		}
 
-		for(auto itgroup: _vgroups) 
+		for(auto itgroup: groups_vector_) 
 		{
 			for (size_t i = 0; i < pgroup->size(); ++i)
 			{
 				const std::string& name = pgroup->at(i);
 				if (itgroup.name.size() >= name.size() && itgroup.name.substr(0, name.size()) == name)
 				{
-					vspec._vgroups.push_back(itgroup);
+					vspec.groups_vector_.push_back(itgroup);
 					break;
 				}
 			}
@@ -593,7 +593,7 @@ namespace OpenRAVE
 	void ConfigurationSpecification::ResetGroupOffsets()
 	{
 		int offset = 0;
-		for(auto& it: _vgroups)
+		for(auto& it: groups_vector_)
 		{
 			it.offset = offset;
 			offset += it.dof;
@@ -603,17 +603,17 @@ namespace OpenRAVE
 	int ConfigurationSpecification::AddDeltaTimeGroup()
 	{
 		int dof = 0;
-		for (size_t i = 0; i < _vgroups.size(); ++i) {
-			dof = std::max(dof, _vgroups[i].offset + _vgroups[i].dof);
-			if (_vgroups[i].name == "deltatime") {
-				return _vgroups[i].offset;
+		for (size_t i = 0; i < groups_vector_.size(); ++i) {
+			dof = std::max(dof, groups_vector_[i].offset + groups_vector_[i].dof);
+			if (groups_vector_[i].name == "deltatime") {
+				return groups_vector_[i].offset;
 			}
 		}
 		ConfigurationSpecification::Group g;
 		g.name = "deltatime";
 		g.offset = dof;
 		g.dof = 1;
-		_vgroups.push_back(g);
+		groups_vector_.push_back(g);
 		return g.offset;
 	}
 
@@ -623,20 +623,20 @@ namespace OpenRAVE
 		std::stringstream ss(name);
 		std::vector<std::string> tokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 		int specdof = 0;
-		for (size_t i = 0; i < _vgroups.size(); ++i) {
-			specdof = std::max(specdof, _vgroups[i].offset + _vgroups[i].dof);
-			if (_vgroups[i].name == name) {
-				BOOST_ASSERT(_vgroups[i].dof == dof);
-				return _vgroups[i].offset;
+		for (size_t i = 0; i < groups_vector_.size(); ++i) {
+			specdof = std::max(specdof, groups_vector_[i].offset + groups_vector_[i].dof);
+			if (groups_vector_[i].name == name) {
+				BOOST_ASSERT(groups_vector_[i].dof == dof);
+				return groups_vector_[i].offset;
 			}
-			else if (_vgroups[i].name.size() >= tokens[0].size() && _vgroups[i].name.substr(0, tokens[0].size()) == tokens[0]) {
+			else if (groups_vector_[i].name.size() >= tokens[0].size() && groups_vector_[i].name.substr(0, tokens[0].size()) == tokens[0]) {
 				// first token matches, check if the next token does also
 				ss.clear();
-				ss.str(_vgroups[i].name);
+				ss.str(groups_vector_[i].name);
 				std::vector<std::string> newtokens((std::istream_iterator<std::string>(ss)), std::istream_iterator<std::string>());
 				if (newtokens.size() >= 2 && tokens.size() >= 2) {
 					if (newtokens[1] == tokens[1]) {
-						throw OPENRAVE_EXCEPTION_FORMAT(("new group '%s' conflicts with existing group '%s'"), name%_vgroups[i].name, ORE_InvalidArguments);
+						throw OPENRAVE_EXCEPTION_FORMAT(("new group '%s' conflicts with existing group '%s'"), name%groups_vector_[i].name, ORE_InvalidArguments);
 					}
 				}
 			}
@@ -646,7 +646,7 @@ namespace OpenRAVE
 		g.offset = specdof;
 		g.dof = dof;
 		g.interpolation = interpolation;
-		_vgroups.push_back(g);
+		groups_vector_.push_back(g);
 		return g.offset;
 	}
 
@@ -658,15 +658,15 @@ namespace OpenRAVE
 	int ConfigurationSpecification::RemoveGroups(const std::string& groupname, bool exactmatch)
 	{
 		int numremoved = 0;
-		std::vector<Group>::iterator itgroup = _vgroups.begin();
-		while (itgroup != _vgroups.end()) {
+		std::vector<Group>::iterator itgroup = groups_vector_.begin();
+		while (itgroup != groups_vector_.end()) {
 			if (exactmatch && itgroup->name == groupname) {
 				++numremoved;
-				itgroup = _vgroups.erase(itgroup);
+				itgroup = groups_vector_.erase(itgroup);
 			}
 			else if (!exactmatch && boost::starts_with(itgroup->name, groupname)) {
 				++numremoved;
-				itgroup = _vgroups.erase(itgroup);
+				itgroup = groups_vector_.erase(itgroup);
 			}
 			else {
 				++itgroup;
@@ -681,7 +681,7 @@ namespace OpenRAVE
 	void ConfigurationSpecification::ExtractUsedBodies(EnvironmentBasePtr env, std::vector<KinBodyPtr>& usedbodies) const
 	{
 		usedbodies.resize(0);
-		for(auto itgroup: _vgroups)
+		for(auto itgroup: groups_vector_)
 		{
 			if ((itgroup.name.size() >= 6 
 				&& itgroup.name.substr(0, 6) == "joint_") 
@@ -731,7 +731,7 @@ namespace OpenRAVE
 		std::stringstream ss;
 		useddofindices.resize(0);
 		usedconfigindices.resize(0);
-		for(auto itgroup: _vgroups)
+		for(auto itgroup: groups_vector_)
 		{
 			ss.clear();
 			ss.str(itgroup.name);
@@ -756,7 +756,7 @@ namespace OpenRAVE
 
 	void ConfigurationSpecification::Swap(ConfigurationSpecification& spec)
 	{
-		_vgroups.swap(spec._vgroups);
+		groups_vector_.swap(spec.groups_vector_);
 	}
 
 	ConfigurationSpecification& ConfigurationSpecification::operator+= (const ConfigurationSpecification& r)
@@ -765,14 +765,14 @@ namespace OpenRAVE
 		std::list< std::vector<Group>::const_iterator > listaddgroups;
 		std::stringstream ss;
 		std::vector<int> vindices;
-		for (auto itrgroup = (r._vgroups).begin(); itrgroup != (r._vgroups).end(); (itrgroup)++)
+		for (auto itrgroup = (r.groups_vector_).begin(); itrgroup != (r.groups_vector_).end(); (itrgroup)++)
 		{
 			std::vector<Group>::const_iterator itcompatgroupconst = FindCompatibleGroup(*itrgroup, false);
-			if (itcompatgroupconst == _vgroups.end()) {
+			if (itcompatgroupconst == groups_vector_.end()) {
 				listaddgroups.push_back(itrgroup);
 			}
 			else {
-				std::vector<Group>::iterator itcompatgroup = _vgroups.begin() + (itcompatgroupconst - _vgroups.begin());
+				std::vector<Group>::iterator itcompatgroup = groups_vector_.begin() + (itcompatgroupconst - groups_vector_.begin());
 				if (itcompatgroup->interpolation.size() == 0) {
 					itcompatgroup->interpolation = itrgroup->interpolation;
 				}
@@ -896,12 +896,12 @@ namespace OpenRAVE
 				}
 			}
 		}
-		if (_vgroups.capacity() < _vgroups.size() + listaddgroups.size()) {
-			_vgroups.reserve(_vgroups.size() + listaddgroups.size());
+		if (groups_vector_.capacity() < groups_vector_.size() + listaddgroups.size()) {
+			groups_vector_.reserve(groups_vector_.size() + listaddgroups.size());
 		}
 		for(auto& it:listaddgroups)
 		{
-			_vgroups.push_back(*it);
+			groups_vector_.push_back(*it);
 		}
 		ResetGroupOffsets();
 		return *this;
@@ -925,7 +925,7 @@ namespace OpenRAVE
 		default:
 			throw OPENRAVE_EXCEPTION_FORMAT(("bad time derivative %d"), timederivative, ORE_InvalidArguments);
 		}
-		for(auto itgroup: _vgroups) {
+		for(auto itgroup: groups_vector_) {
 			if (itgroup.name.size() >= searchname.size() && itgroup.name.substr(0, searchname.size()) == searchname) {
 				std::stringstream ss(itgroup.name.substr(searchname.size()));
 				std::string bodyname;
@@ -959,7 +959,7 @@ namespace OpenRAVE
 		default:
 			throw OPENRAVE_EXCEPTION_FORMAT(("bad time derivative %d"), timederivative, ORE_InvalidArguments);
 		}
-		FOREACHC(itgroup, _vgroups) {
+		FOREACHC(itgroup, groups_vector_) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
 				std::stringstream ss(itgroup->name.substr(searchname.size()));
 				int iktype = IKP_None;
@@ -1043,7 +1043,7 @@ namespace OpenRAVE
 			throw OPENRAVE_EXCEPTION_FORMAT0(("bad time derivative"), ORE_InvalidArguments);
 		};
 		bool bfound = false;
-		FOREACHC(itgroup, _vgroups) {
+		FOREACHC(itgroup, groups_vector_) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
 				std::stringstream ss(itgroup->name.substr(searchname.size()));
 				std::string bodyname;
@@ -1086,7 +1086,7 @@ namespace OpenRAVE
 			throw OPENRAVE_EXCEPTION_FORMAT0(("bad time derivative"), ORE_InvalidArguments);
 		};
 		bool bfound = false;
-		FOREACHC(itgroup, _vgroups) {
+		FOREACHC(itgroup, groups_vector_) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
 				std::stringstream ss(itgroup->name.substr(searchname.size()));
 				std::string bodyname;
@@ -1111,7 +1111,7 @@ namespace OpenRAVE
 
 	bool ConfigurationSpecification::ExtractDeltaTime(dReal& deltatime, std::vector<dReal>::const_iterator itdata) const
 	{
-		FOREACHC(itgroup, _vgroups) {
+		FOREACHC(itgroup, groups_vector_) {
 			if (itgroup->name == "deltatime") {
 				deltatime = *(itdata + itgroup->offset);
 				return true;
@@ -1135,7 +1135,7 @@ namespace OpenRAVE
 			throw OPENRAVE_EXCEPTION_FORMAT0(("bad time derivative"), ORE_InvalidArguments);
 		};
 		bool bfound = false;
-		FOREACHC(itgroup, _vgroups) {
+		FOREACHC(itgroup, groups_vector_) {
 			if (itgroup->name.size() >= searchname.size() && itgroup->name.substr(0, searchname.size()) == searchname) {
 				std::stringstream ss(itgroup->name.substr(searchname.size()));
 				std::string bodyname;
@@ -1161,7 +1161,7 @@ namespace OpenRAVE
 	bool ConfigurationSpecification::InsertDeltaTime(std::vector<dReal>::iterator itdata, dReal deltatime) const
 	{
 		bool bfound = false;
-		FOREACHC(itgroup, _vgroups) {
+		FOREACHC(itgroup, groups_vector_) {
 			if (itgroup->name == "deltatime") {
 				*(itdata + itgroup->offset) = deltatime;
 				bfound = true;
@@ -1224,20 +1224,20 @@ namespace OpenRAVE
 	{
 		std::shared_ptr<SetConfigurationStateFn> fn;
 		Validate();
-		std::vector< std::pair<PlannerBase::PlannerParameters::SetStateValuesFn, int> > setstatefns(_vgroups.size());
+		std::vector< std::pair<PlannerBase::PlannerParameters::SetStateValuesFn, int> > setstatefns(groups_vector_.size());
 		std::string bodyname;
 		std::stringstream ss, ssout;
 		// order the groups depending on offset
 		int nMaxDOFForGroup = 0;
-		std::vector< std::pair<int, int> > vgroupoffsets(_vgroups.size());
-		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
-			vgroupoffsets[igroup].first = _vgroups[igroup].offset;
+		std::vector< std::pair<int, int> > vgroupoffsets(groups_vector_.size());
+		for (size_t igroup = 0; igroup < groups_vector_.size(); ++igroup) {
+			vgroupoffsets[igroup].first = groups_vector_[igroup].offset;
 			vgroupoffsets[igroup].second = igroup;
-			nMaxDOFForGroup = std::max(nMaxDOFForGroup, _vgroups[igroup].dof);
+			nMaxDOFForGroup = std::max(nMaxDOFForGroup, groups_vector_[igroup].dof);
 		}
 		std::sort(vgroupoffsets.begin(), vgroupoffsets.end());
-		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
-			const ConfigurationSpecification::Group& g = _vgroups[igroup];
+		for (size_t igroup = 0; igroup < groups_vector_.size(); ++igroup) {
+			const ConfigurationSpecification::Group& g = groups_vector_[igroup];
 			int isavegroup = vgroupoffsets[igroup].second;
 			if (g.name.size() >= 12 && g.name.substr(0, 12) == "joint_values") {
 				ss.clear(); ss.str(g.name.substr(12));
@@ -1307,20 +1307,20 @@ namespace OpenRAVE
 	{
 		std::shared_ptr<GetConfigurationStateFn> fn;
 		Validate();
-		std::vector< std::pair<GetConfigurationStateFn, int> > getstatefns(_vgroups.size());
+		std::vector< std::pair<GetConfigurationStateFn, int> > getstatefns(groups_vector_.size());
 		std::string bodyname;
 		std::stringstream ss, ssout;
 		// order the groups depending on offset
 		int nMaxDOFForGroup = 0;
-		std::vector< std::pair<int, int> > vgroupoffsets(_vgroups.size());
-		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
-			vgroupoffsets[igroup].first = _vgroups[igroup].offset;
+		std::vector< std::pair<int, int> > vgroupoffsets(groups_vector_.size());
+		for (size_t igroup = 0; igroup < groups_vector_.size(); ++igroup) {
+			vgroupoffsets[igroup].first = groups_vector_[igroup].offset;
 			vgroupoffsets[igroup].second = igroup;
-			nMaxDOFForGroup = std::max(nMaxDOFForGroup, _vgroups[igroup].dof);
+			nMaxDOFForGroup = std::max(nMaxDOFForGroup, groups_vector_[igroup].dof);
 		}
 		std::sort(vgroupoffsets.begin(), vgroupoffsets.end());
-		for (size_t igroup = 0; igroup < _vgroups.size(); ++igroup) {
-			const ConfigurationSpecification::Group& g = _vgroups[igroup];
+		for (size_t igroup = 0; igroup < groups_vector_.size(); ++igroup) {
+			const ConfigurationSpecification::Group& g = groups_vector_[igroup];
 			int isavegroup = vgroupoffsets[igroup].second;
 			if (g.name.size() >= 12 && g.name.substr(0, 12) == "joint_values") {
 				ss.clear(); ss.str(g.name.substr(12));
@@ -1775,14 +1775,14 @@ namespace OpenRAVE
 
 	void ConfigurationSpecification::ConvertData(std::vector<dReal>::iterator ittargetdata, const ConfigurationSpecification &targetspec, std::vector<dReal>::const_iterator itsourcedata, const ConfigurationSpecification &sourcespec, size_t numpoints, EnvironmentBaseConstPtr penv, bool filluninitialized)
 	{
-		for (size_t igroup = 0; igroup < targetspec._vgroups.size(); ++igroup) {
-			std::vector<ConfigurationSpecification::Group>::const_iterator itcompatgroup = sourcespec.FindCompatibleGroup(targetspec._vgroups[igroup]);
-			if (itcompatgroup != sourcespec._vgroups.end()) {
-				ConfigurationSpecification::ConvertGroupData(ittargetdata + targetspec._vgroups[igroup].offset, targetspec.GetDOF(), targetspec._vgroups[igroup], itsourcedata + itcompatgroup->offset, sourcespec.GetDOF(), *itcompatgroup, numpoints, penv, filluninitialized);
+		for (size_t igroup = 0; igroup < targetspec.groups_vector_.size(); ++igroup) {
+			std::vector<ConfigurationSpecification::Group>::const_iterator itcompatgroup = sourcespec.FindCompatibleGroup(targetspec.groups_vector_[igroup]);
+			if (itcompatgroup != sourcespec.groups_vector_.end()) {
+				ConfigurationSpecification::ConvertGroupData(ittargetdata + targetspec.groups_vector_[igroup].offset, targetspec.GetDOF(), targetspec.groups_vector_[igroup], itsourcedata + itcompatgroup->offset, sourcespec.GetDOF(), *itcompatgroup, numpoints, penv, filluninitialized);
 			}
 			else if (filluninitialized) {
-				std::vector<dReal> vdefaultvalues(targetspec._vgroups[igroup].dof, 0);
-				const std::string& name = targetspec._vgroups[igroup].name;
+				std::vector<dReal> vdefaultvalues(targetspec.groups_vector_[igroup].dof, 0);
+				const std::string& name = targetspec.groups_vector_[igroup].name;
 				if (name.size() >= 12 && name.substr(0, 12) == "joint_values") {
 					std::string bodyname;
 					std::stringstream ss(name.substr(12));
@@ -1825,7 +1825,7 @@ namespace OpenRAVE
 					// messages are too frequent
 					//RAVELOG_VERBOSE(str(boost::format("cannot initialize unknown group '%s'")%name));
 				}
-				int offset = targetspec._vgroups[igroup].offset;
+				int offset = targetspec.groups_vector_[igroup].offset;
 				for (size_t i = 0; i < numpoints; ++i, offset += targetspec.GetDOF()) {
 					for (size_t j = 0; j < vdefaultvalues.size(); ++j) {
 						*(ittargetdata + offset + j) = vdefaultvalues[j];
@@ -1865,8 +1865,8 @@ namespace OpenRAVE
 		}
 		_ss.str(""); // have to clear the string
 		if (name == "group") {
-			_spec._vgroups.resize(_spec._vgroups.size() + 1);
-			ConfigurationSpecification::Group& g = _spec._vgroups.back();
+			_spec.groups_vector_.resize(_spec.groups_vector_.size() + 1);
+			ConfigurationSpecification::Group& g = _spec.groups_vector_.back();
 			for(auto& itatt: atts) {
 				if (itatt.first == "name") {
 					g.name = itatt.second;
@@ -1917,12 +1917,12 @@ namespace OpenRAVE
 
 	bool CompareGroupsOfIndices(const ConfigurationSpecification& spec, int igroup0, int igroup1)
 	{
-		return spec._vgroups[igroup0].offset < spec._vgroups[igroup1].offset;
+		return spec.groups_vector_[igroup0].offset < spec.groups_vector_[igroup1].offset;
 	}
 
 	std::ostream& operator<<(std::ostream& O, const ConfigurationSpecification &spec)
 	{
-		std::vector<int> vgroupindices(spec._vgroups.size());
+		std::vector<int> vgroupindices(spec.groups_vector_.size());
 		for (int i = 0; i < (int)vgroupindices.size(); ++i) {
 			vgroupindices[i] = i;
 		}
@@ -1931,7 +1931,7 @@ namespace OpenRAVE
 
 		O << "<configuration>" << std::endl;
 		for(auto&itgroupindex: vgroupindices) {
-			const ConfigurationSpecification::Group& group = spec._vgroups[itgroupindex];
+			const ConfigurationSpecification::Group& group = spec.groups_vector_[itgroupindex];
 			O << "<group name=\"" << group.name << "\" offset=\"" << group.offset << "\" dof=\"" 
 				<< group.dof << "\" interpolation=\"" << group.interpolation << "\"/>" << std::endl;
 		}

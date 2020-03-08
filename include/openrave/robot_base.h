@@ -1127,7 +1127,7 @@ public:
     /// \brief set a controller for a robot
     /// \param pController - if NULL, sets the controller of this robot to NULL. otherwise attemps to set the controller to this robot.
     /// \param args - the argument list to pass when initializing the controller
-    virtual bool SetController(ControllerBasePtr controller, const std::vector<int>& dofindices, int nControlTransformation);
+    virtual bool SetController(ControllerBasePtr controller, const std::vector<int>& dofindices, int control_transformation);
 
     inline RobotBasePtr shared_robot()
     {

@@ -28,11 +28,11 @@ public:
     virtual ~GenericRobot() {
     }
 
-    virtual bool SetController(ControllerBasePtr controller, const std::vector<int>& jointindices, int nControlTransformation)
+    virtual bool SetController(ControllerBasePtr controller, const std::vector<int>& jointindices, int control_transformation)
     {
         _pController = controller;
         if( !!_pController ) {
-            if( !_pController->Init(shared_robot(),jointindices,nControlTransformation) ) {
+            if( !_pController->Init(shared_robot(),jointindices,control_transformation) ) {
                 RAVELOG_WARN(str(boost::format("GenericRobot %s: Failed to init controller %s\n")%GetName()%controller->GetXMLId()));
                 _pController.reset();
                 return false;

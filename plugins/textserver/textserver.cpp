@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,13 @@
 #include "textserver.h"
 #include <openrave/plugin.h>
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, 
+	const std::string& interfacename, 
+	std::istream& sinput,
+	EnvironmentBasePtr penv)
 {
-    switch(type) {
+    switch(type)
+	{
     case OpenRAVE::PT_Module:
         if( interfacename == "textserver")
             return InterfaceBasePtr(new SimpleTextServer(penv));

@@ -23,11 +23,11 @@ public:
         description_ = ":Interface Authors: Juan Gonzalez and Rosen Diankov\n\nODE Velocity controller.";
     }
 
-    virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int nControlTransformation)
+    virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int control_transformation)
     {
         _probot = robot;
         _dofindices = dofindices;
-        if( nControlTransformation ) {
+        if( control_transformation ) {
             RAVELOG_WARN("odevelocity controller cannot control transformation\n");
         }
         Reset(0);

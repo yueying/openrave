@@ -12,45 +12,48 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#include "plugindefs.h"
 #include <openrave/plugin.h>
+#include "plugindefs.h"
 
-ControllerBasePtr CreateIdealController(EnvironmentBasePtr penv, std::istream& sinput);
-ControllerBasePtr CreateIdealVelocityController(EnvironmentBasePtr penv, std::istream& sinput);
-ControllerBasePtr CreateRedirectController(EnvironmentBasePtr penv, std::istream& sinput);
+ControllerBasePtr CreateIdealController(EnvironmentBasePtr penv,
+	std::istream& sinput);
+ControllerBasePtr CreateIdealVelocityController(EnvironmentBasePtr penv,
+	std::istream& sinput);
+ControllerBasePtr CreateRedirectController(EnvironmentBasePtr penv,
+	std::istream& sinput);
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, 
-	std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
+	const std::string& interfacename,
+	std::istream& sinput,
+	EnvironmentBasePtr penv)
 {
-    switch(type) 
+	switch (type)
 	{
-    case PT_Controller:
-        if( interfacename == "idealcontroller") 
+	case PT_Controller:
+		if (interfacename == "idealcontroller")
 		{
-            return CreateIdealController(penv,sinput);
-        }
-        else if( interfacename == "idealvelocitycontroller")
+			return CreateIdealController(penv, sinput);
+		}
+		else if (interfacename == "idealvelocitycontroller")
 		{
-            return CreateIdealVelocityController(penv,sinput);
-        }
-        else if( interfacename == "redirectcontroller" )
+			return CreateIdealVelocityController(penv, sinput);
+		}
+		else if (interfacename == "redirectcontroller")
 		{
-            return CreateRedirectController(penv,sinput);
-        }
-        break;
-    default:
-        break;
-    }
-    return InterfaceBasePtr();
+			return CreateRedirectController(penv, sinput);
+		}
+		break;
+	default:
+		break;
+	}
+	return InterfaceBasePtr();
 }
 
 void GetPluginAttributesValidated(PluginInfo& info)
 {
-    info.interfacenames[PT_Controller].push_back("IdealController");
-    info.interfacenames[PT_Controller].push_back("IdealVelocityController");
-    info.interfacenames[PT_Controller].push_back("RedirectController");
+	info.interfacenames[PT_Controller].push_back("IdealController");
+	info.interfacenames[PT_Controller].push_back("IdealVelocityController");
+	info.interfacenames[PT_Controller].push_back("RedirectController");
 }
 
-OPENRAVE_PLUGIN_API void DestroyPlugin()
-{
-}
+OPENRAVE_PLUGIN_API void DestroyPlugin() {}

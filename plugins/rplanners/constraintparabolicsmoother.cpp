@@ -270,8 +270,8 @@ public:
         try {
             //  Convert to ramps
             std::list<ParabolicRamp::ParabolicRampND> ramps,ramps2;
-            std::vector<ConfigurationSpecification::Group>::const_iterator itcompatposgroup = ptraj->GetConfigurationSpecification().FindCompatibleGroup(posspec._vgroups.at(0), false);
-            OPENRAVE_ASSERT_FORMAT(itcompatposgroup != ptraj->GetConfigurationSpecification()._vgroups.end(), "failed to find group %s in passed in trajectory", posspec._vgroups.at(0).name, ORE_InvalidArguments);
+            std::vector<ConfigurationSpecification::Group>::const_iterator itcompatposgroup = ptraj->GetConfigurationSpecification().FindCompatibleGroup(posspec.groups_vector_.at(0), false);
+            OPENRAVE_ASSERT_FORMAT(itcompatposgroup != ptraj->GetConfigurationSpecification().groups_vector_.end(), "failed to find group %s in passed in trajectory", posspec.groups_vector_.at(0).name, ORE_InvalidArguments);
 
             // Case 1 : Initial traj is quadratic
             // assumes that the traj has velocity data and is consistent, so convert the original trajectory in a sequence of ramps, and preserve velocity
@@ -532,14 +532,14 @@ public:
         int waypointoffset = newspec.AddGroup("iswaypoint", 1, "next");
 
         int timeoffset=-1;
-        FOREACH(itgroup,newspec._vgroups) {
+        FOREACH(itgroup,newspec.groups_vector_) {
             if( itgroup->name == "deltatime" ) {
                 timeoffset = itgroup->offset;
             }
-            else if( velspec.FindCompatibleGroup(*itgroup) != velspec._vgroups.end() ) {
+            else if( velspec.FindCompatibleGroup(*itgroup) != velspec.groups_vector_.end() ) {
                 itgroup->interpolation = "linear";
             }
-            else if( posspec.FindCompatibleGroup(*itgroup) != posspec._vgroups.end() ) {
+            else if( posspec.FindCompatibleGroup(*itgroup) != posspec.groups_vector_.end() ) {
                 itgroup->interpolation = "quadratic";
             }
         }

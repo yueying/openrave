@@ -47,9 +47,9 @@ namespace OpenRAVE
 		/// \brief initializes the controller and specifies the controlled dof
 		/// \param robot the robot that uses the controller
 		/// \param dofindices the indices that controller will have exclusive access to
-		/// \param nControlTransformation \see IsControlTransformation
+		/// \param control_transformation \see IsControlTransformation
 		/// \return true on successful initialization
-		virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int nControlTransformation) = 0;
+		virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int control_transformation) = 0;
 
 		/// \brief returns the dof indices controlled
 		virtual const std::vector<int>& GetControlDOFIndices() const = 0;

@@ -87,7 +87,7 @@ public:
                 }
                 ptraj->Init(spec);
             }
-            FOREACH(itgroup,spec._vgroups) {
+            FOREACH(itgroup,spec.groups_vector_) {
                 if( itgroup->name.size() >= 16 && itgroup->name.substr(0,16) == "affine_transform" ) {
                     stringstream ss(itgroup->name.substr(16));
                     string robotname;

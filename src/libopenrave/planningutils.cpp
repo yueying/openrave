@@ -496,9 +496,9 @@ public:
                 vector<ConfigurationSpecification::Group>::const_iterator itvelocitiesgroup = trajspec.FindCompatibleGroup("joint_velocities", false);
                 vector<ConfigurationSpecification::Group>::const_iterator itaccelerationsgroup = trajspec.FindCompatibleGroup("joint_accelerations", false);
                 bool bHasAllLinearInterpolation = false;
-                if( (itvaluesgroup == trajspec._vgroups.end() || itvaluesgroup->interpolation == "linear") &&
-                    (itvelocitiesgroup == trajspec._vgroups.end() || itvelocitiesgroup->interpolation == "linear") &&
-                    (itaccelerationsgroup == trajspec._vgroups.end() || itaccelerationsgroup->interpolation == "linear") ) {
+                if( (itvaluesgroup == trajspec.groups_vector_.end() || itvaluesgroup->interpolation == "linear") &&
+                    (itvelocitiesgroup == trajspec.groups_vector_.end() || itvelocitiesgroup->interpolation == "linear") &&
+                    (itaccelerationsgroup == trajspec.groups_vector_.end() || itaccelerationsgroup->interpolation == "linear") ) {
                     bHasAllLinearInterpolation = true;
                 }
                 IntervalType interval = bHasAllLinearInterpolation ? (IntervalType)(IT_Closed | IT_AllLinear) : IT_Closed;
@@ -935,7 +935,7 @@ static PlannerStatus _PlanAffineTrajectory(TrajectoryBasePtr traj, const std::ve
     std::vector<int> vrotaxes;
     // analyze the configuration for identified dimensions
     KinBodyPtr robot;
-    FOREACHC(itgroup,newspec._vgroups) {
+    FOREACHC(itgroup,newspec.groups_vector_) {
         if( itgroup->name.size() >= 16 && itgroup->name.substr(0,16) == "affine_transform" ) {
             string tempname;
             int affinedofs=0;
@@ -1106,7 +1106,7 @@ PlannerStatus AffineTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, const st
 
     std::vector<int> vrotaxes;
     // analyze the configuration for identified dimensions
-    FOREACHC(itgroup,trajspec._vgroups) {
+    FOREACHC(itgroup,trajspec.groups_vector_) {
         if( itgroup->name.size() >= 16 && itgroup->name.substr(0,16) == "affine_transform" ) {
             string tempname;
             int affinedofs=0;
@@ -1182,7 +1182,7 @@ static std::string GetPlannerFromInterpolation(TrajectoryBasePtr traj, const std
     }
     std::string interpolation;
     // check out the trajectory interpolation values and take it from there
-    FOREACHC(itgroup,traj->GetConfigurationSpecification()._vgroups) {
+    FOREACHC(itgroup,traj->GetConfigurationSpecification().groups_vector_) {
         if( itgroup->name.size() >= 12 && itgroup->name.substr(0,12) == "joint_values" ) {
             interpolation = itgroup->interpolation;
             break;
@@ -1271,10 +1271,10 @@ size_t InsertActiveDOFWaypointWithRetiming(int waypointindex, const std::vector<
     ConfigurationSpecification newspec = robot->GetActiveConfigurationSpecification();
 
     string interpolation = "";
-    FOREACH(it,newspec._vgroups) {
+    FOREACH(it,newspec.groups_vector_) {
         std::vector<ConfigurationSpecification::Group>::const_iterator itgroup = traj->GetConfigurationSpecification().FindCompatibleGroup(*it, false);
-        if( itgroup == traj->GetConfigurationSpecification()._vgroups.end() ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("could not find group %s in trajectory"),newspec._vgroups.at(0).name,ORE_InvalidArguments);
+        if( itgroup == traj->GetConfigurationSpecification().groups_vector_.end() ) {
+            throw OPENRAVE_EXCEPTION_FORMAT(_("could not find group %s in trajectory"),newspec.groups_vector_.at(0).name,ORE_InvalidArguments);
         }
         if( itgroup->interpolation.size() > 0 ) {
             it->interpolation = itgroup->interpolation;
@@ -1518,7 +1518,7 @@ size_t InsertWaypointWithSmoothing(int index, const std::vector<dReal>& dofvalue
     dReal fRemainingDuration=traj->GetDuration();
     int iTimeIndex = -1;
     std::vector<ConfigurationSpecification::Group>::const_iterator itdeltatimegroup = traj->GetConfigurationSpecification().FindCompatibleGroup("deltatime");
-    if( itdeltatimegroup != traj->GetConfigurationSpecification()._vgroups.end() ) {
+    if( itdeltatimegroup != traj->GetConfigurationSpecification().groups_vector_.end() ) {
         iTimeIndex = itdeltatimegroup->offset;
     }
 
@@ -1633,7 +1633,7 @@ void ComputeTrajectoryDerivatives(TrajectoryBasePtr traj, int maxderiv)
     ConfigurationSpecification velspec = newspec.GetTimeDerivativeSpecification(maxderiv-1);
     ConfigurationSpecification accelspec = newspec.GetTimeDerivativeSpecification(maxderiv);
     std::vector<ConfigurationSpecification::Group>::const_iterator itdeltatimegroup = newspec.FindCompatibleGroup("deltatime");
-    if(itdeltatimegroup == newspec._vgroups.end() ) {
+    if(itdeltatimegroup == newspec.groups_vector_.end() ) {
         throw OPENRAVE_EXCEPTION_FORMAT0(_("trajectory does not seem to have time stamps, so derivatives cannot be computed"), ORE_InvalidArguments);
     }
     OPENRAVE_ASSERT_OP(velspec.GetDOF(), ==, accelspec.GetDOF());
@@ -1646,9 +1646,9 @@ void ComputeTrajectoryDerivatives(TrajectoryBasePtr traj, int maxderiv)
         else {
             nextdeltatime = 0;
         }
-        for(size_t igroup = 0; igroup < velspec._vgroups.size(); ++igroup) {
-            std::vector<ConfigurationSpecification::Group>::const_iterator itvel = newspec.FindCompatibleGroup(velspec._vgroups.at(igroup),true);
-            std::vector<ConfigurationSpecification::Group>::const_iterator itaccel = newspec.FindCompatibleGroup(accelspec._vgroups.at(igroup),true);
+        for(size_t igroup = 0; igroup < velspec.groups_vector_.size(); ++igroup) {
+            std::vector<ConfigurationSpecification::Group>::const_iterator itvel = newspec.FindCompatibleGroup(velspec.groups_vector_.at(igroup),true);
+            std::vector<ConfigurationSpecification::Group>::const_iterator itaccel = newspec.FindCompatibleGroup(accelspec.groups_vector_.at(igroup),true);
             OPENRAVE_ASSERT_OP(itvel->dof,==,itaccel->dof);
             if( ipoint < numpoints-1 ) {
                 for(int i = 1; i < itvel->dof; ++i) {
@@ -1678,7 +1678,7 @@ TrajectoryBasePtr GetReverseTrajectory(TrajectoryBaseConstPtr sourcetraj)
     vector<uint8_t> velocitydofs(dof,0);
     int timeoffset = -1;
     vector<uint8_t> velocitynextinterp(dof,0);
-    FOREACHC(itgroup, sourcetraj->GetConfigurationSpecification()._vgroups) {
+    FOREACHC(itgroup, sourcetraj->GetConfigurationSpecification().groups_vector_) {
         if( itgroup->name.find("_velocities") != string::npos ) {
             bool bnext = itgroup->interpolation == "next";
             for(int i = 0; i < itgroup->dof; ++i) {
@@ -1922,7 +1922,7 @@ TrajectoryBasePtr MergeTrajectories(const std::list<TrajectoryBaseConstPtr>& lis
         ConfigurationSpecification::Group gtime = trajspec.GetGroupFromName("deltatime");
         spec += trajspec;
         totaldof += trajspec.GetDOF()-1;
-        if( trajspec.FindCompatibleGroup("iswaypoint",true) != trajspec._vgroups.end() ) {
+        if( trajspec.FindCompatibleGroup("iswaypoint",true) != trajspec.groups_vector_.end() ) {
             totaldof -= 1;
         }
         dReal curtime = 0;
@@ -1938,7 +1938,7 @@ TrajectoryBasePtr MergeTrajectories(const std::list<TrajectoryBaseConstPtr>& lis
 
     vector<ConfigurationSpecification::Group>::const_iterator itwaypointgroup = spec.FindCompatibleGroup("iswaypoint",true);
     vector<dReal> vwaypoints;
-    if( itwaypointgroup != spec._vgroups.end() ) {
+    if( itwaypointgroup != spec.groups_vector_.end() ) {
         totaldof += 1;
         vwaypoints.resize(vtimes.size(),0);
     }
@@ -1960,7 +1960,7 @@ TrajectoryBasePtr MergeTrajectories(const std::list<TrajectoryBaseConstPtr>& lis
     FOREACHC(ittraj,listtrajectories) {
         vector<ConfigurationSpecification::Group>::const_iterator itwaypointgrouptraj = (*ittraj)->GetConfigurationSpecification().FindCompatibleGroup("iswaypoint",true);
         int waypointoffset = -1;
-        if( itwaypointgrouptraj != (*ittraj)->GetConfigurationSpecification()._vgroups.end() ) {
+        if( itwaypointgrouptraj != (*ittraj)->GetConfigurationSpecification().groups_vector_.end() ) {
             waypointoffset = itwaypointgrouptraj->offset;
         }
         if( vnewdata.size() == 0 ) {
@@ -1992,7 +1992,7 @@ TrajectoryBasePtr MergeTrajectories(const std::list<TrajectoryBaseConstPtr>& lis
     for(size_t i = 1; i < vtimes.size(); ++i) {
         vnewdata.at(i*spec.GetDOF()+deltatimeoffset) = vtimes[i]-vtimes[i-1];
     }
-    if( itwaypointgroup != spec._vgroups.end() ) {
+    if( itwaypointgroup != spec.groups_vector_.end() ) {
         vnewdata.at(itwaypointgroup->offset) = vwaypoints[0];
         for(size_t i = 1; i < vtimes.size(); ++i) {
             vnewdata.at(i*spec.GetDOF()+itwaypointgroup->offset) = vwaypoints[i];

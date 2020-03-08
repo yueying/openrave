@@ -84,11 +84,11 @@ protected:
     virtual ~CustomController() {
     }
 
-    virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int nControlTransformation)
+    virtual bool Init(RobotBasePtr robot, const std::vector<int>& dofindices, int control_transformation)
     {
         _probot = robot;
         _dofindices = dofindices;
-        _nControlTransformation = nControlTransformation;
+        _nControlTransformation = control_transformation;
 
         // read the gains from the XML
         std::shared_ptr<XMLData> piddata = std::dynamic_pointer_cast<XMLData>(GetReadableInterface("piddata"));

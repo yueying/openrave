@@ -350,7 +350,7 @@ void KinBody::SetName(const std::string& newname)
     OPENRAVE_ASSERT_OP(newname.size(), >, 0);
     if( name_ != newname ) {
         // have to replace the 2nd word of all the groups with the robot name
-        FOREACH(itgroup, _spec._vgroups) {
+        FOREACH(itgroup, _spec.groups_vector_) {
             stringstream ss(itgroup->name);
             string grouptype, oldname;
             ss >> grouptype >> oldname;
@@ -4142,7 +4142,7 @@ void KinBody::_ComputeInternalInformation()
     {
         // do not initialize interpolation, since it implies a motion sampling strategy
         int offset = 0;
-        _spec._vgroups.resize(0);
+        _spec.groups_vector_.resize(0);
         if( GetDOF() > 0 ) {
             ConfigurationSpecification::Group group;
             stringstream ss;
@@ -4154,14 +4154,14 @@ void KinBody::_ComputeInternalInformation()
             group.dof = GetDOF();
             group.offset = offset;
             offset += group.dof;
-            _spec._vgroups.push_back(group);
+            _spec.groups_vector_.push_back(group);
         }
 
         ConfigurationSpecification::Group group;
         group.name = str(boost::format("affine_transform %s %d")%GetName()%DOF_Transform);
         group.offset = offset;
         group.dof = RaveGetAffineDOF(DOF_Transform);
-        _spec._vgroups.push_back(group);
+        _spec.groups_vector_.push_back(group);
     }
 
     // set the "self" extra geometry group
@@ -4814,7 +4814,7 @@ ConfigurationSpecification KinBody::GetConfigurationSpecification(const std::str
         return _spec;
     }
     ConfigurationSpecification spec=_spec;
-    FOREACH(itgroup,spec._vgroups) {
+    FOREACH(itgroup,spec.groups_vector_) {
         itgroup->interpolation=interpolation;
     }
     return spec;
@@ -4825,16 +4825,16 @@ ConfigurationSpecification KinBody::GetConfigurationSpecificationIndices(const s
     CHECK_INTERNAL_COMPUTATION;
     ConfigurationSpecification spec;
     if( indices.size() > 0 ) {
-        spec._vgroups.resize(1);
+        spec.groups_vector_.resize(1);
         stringstream ss;
         ss << "joint_values " << GetName();
         FOREACHC(it,indices) {
             ss << " " << *it;
         }
-        spec._vgroups[0].name = ss.str();
-        spec._vgroups[0].dof = indices.size();
-        spec._vgroups[0].offset = 0;
-        spec._vgroups[0].interpolation=interpolation;
+        spec.groups_vector_[0].name = ss.str();
+        spec.groups_vector_[0].dof = indices.size();
+        spec.groups_vector_[0].offset = 0;
+        spec.groups_vector_[0].interpolation=interpolation;
     }
     return spec;
 }

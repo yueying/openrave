@@ -40,7 +40,7 @@ namespace OpenRAVE
 		/// \param dofindices robot dof indices to control
 		/// \throw OpenRAVEException if the controller dofs interfere with current set dofs, will throw an exception
 		virtual bool AttachController(ControllerBasePtr controller,
-			const std::vector<int>& dofindices, int nControlTransformation) = 0;
+			const std::vector<int>& dofindices, int control_transformation) = 0;
 
 		/// \brief removes a controller from being managed. <b>[multi-thread safe]</b>
 		virtual void RemoveController(ControllerBasePtr controller) = 0;
