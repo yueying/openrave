@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -174,9 +174,8 @@ inline T CLAMP_ON_RANGE(T value, T min, T max)
 #include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
 #include <Inventor/sensors/SoTimerSensor.h>
 
-#if QT_VERSION >= 0x040000 // check for qt4
+
 #include <QtGui>
-#endif
 
 /// returns the Transform from a Coin3D SoTransform object
 inline RaveTransform<float> GetRaveTransform(const SoTransform* ptrans)
@@ -198,9 +197,9 @@ inline void SetSoTransform(SoTransform* ptrans, const RaveTransform<float>& t)
 }
 
 class QtCoinViewer;
-typedef boost::shared_ptr<QtCoinViewer> QtCoinViewerPtr;
-typedef boost::weak_ptr<QtCoinViewer> QtCoinViewerWeakPtr;
-typedef boost::shared_ptr<QtCoinViewer const> QtCoinViewerConstPtr;
+typedef std::shared_ptr<QtCoinViewer> QtCoinViewerPtr;
+typedef std::weak_ptr<QtCoinViewer> QtCoinViewerWeakPtr;
+typedef std::shared_ptr<QtCoinViewer const> QtCoinViewerConstPtr;
 
 #define CALLBACK_EVENT QEvent::Type(QEvent::User+101)
 

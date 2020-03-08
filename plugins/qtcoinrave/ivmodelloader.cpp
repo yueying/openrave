@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2011 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ class IvModelLoader : public ModuleBase
 public:
     IvModelLoader(EnvironmentBasePtr penv) : ModuleBase(penv)
     {
-        __description = ":Interface Author: Rosen Diankov\n\nProvides a simple model loader functionality returning a triangle mesh using the Coin3D library. Depending on the version, Coin3D might be licensed under GPL.";
+        description_ = ":Interface Author: Rosen Diankov\n\nProvides a simple model loader functionality returning a triangle mesh using the Coin3D library. Depending on the version, Coin3D might be licensed under GPL.";
         RegisterCommand("LoadModel",boost::bind(&IvModelLoader::_LoadModelCommand,this,_1,_2),"Returns the triangle mesh given a model filename");
     }
 

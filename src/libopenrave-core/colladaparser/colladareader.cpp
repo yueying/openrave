@@ -18,10 +18,10 @@
 #include <boost/algorithm/string.hpp>
 #include <openrave/xmlreaders.h>
 #include <libxml/xmlversion.h>
+#include <openrave/openrave_macros.h>
 
 namespace OpenRAVE
 {
-#define M_PI       3.14159265358979323846   // pi
 using namespace ColladaDOM150;
 
 class ColladaReader : public daeErrorHandler
@@ -47,7 +47,8 @@ public:
     class daeOpenRAVEURIResolver : public daeURIResolver
     {
 public:
-        daeOpenRAVEURIResolver(DAE& dae, const std::string& scheme, ColladaReader* preader) : daeURIResolver(dae), _scheme(scheme), _preader(preader) {
+        daeOpenRAVEURIResolver(DAE& dae, const std::string& scheme, ColladaReader* preader)
+			: daeURIResolver(dae), _scheme(scheme), _preader(preader) {
         }
 
         ~daeOpenRAVEURIResolver() {
@@ -144,7 +145,12 @@ public:
     class InstanceModelBinding
     {
 public:
-        InstanceModelBinding(domInstance_nodeRef inode, domNodeRef node, domInstance_kinematics_modelRef ikmodel, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>(), const std::string& idsuffix=std::string()) : _inode(inode), _node(node), _ikmodel(ikmodel), _idsuffix(idsuffix) {
+        InstanceModelBinding(domInstance_nodeRef inode, domNodeRef node, 
+			domInstance_kinematics_modelRef ikmodel,
+			const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>(),
+			const std::string& idsuffix=std::string())
+			: _inode(inode), _node(node), _ikmodel(ikmodel), _idsuffix(idsuffix)
+		{
             _listInstanceScopeKModel = listInstanceScope;
         }
         domInstance_nodeRef _inode; //!< optional instance node that the visual node could have come from
@@ -160,7 +166,20 @@ public:
     class JointAxisBinding
     {
 public:
-        JointAxisBinding(const boost::function<domNodeRef(daeElementRef)>& instantiatenodefn, daeElementRef pvisualtrans, domAxis_constraintRef pkinematicaxis, dReal jointvalue, domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info, const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>()) : pvisualtrans(pvisualtrans), pkinematicaxis(pkinematicaxis), jointvalue(jointvalue), kinematics_axis_info(kinematics_axis_info), motion_axis_info(motion_axis_info),_iaxis(0) {
+        JointAxisBinding(const boost::function<domNodeRef(daeElementRef)>& instantiatenodefn, 
+			daeElementRef pvisualtrans, 
+			domAxis_constraintRef pkinematicaxis, 
+			dReal jointvalue, 
+			domKinematics_axis_infoRef kinematics_axis_info, 
+			domMotion_axis_infoRef motion_axis_info, 
+			const std::list<daeElementRef>& listInstanceScope = std::list<daeElementRef>()) 
+			: pvisualtrans(pvisualtrans), 
+			pkinematicaxis(pkinematicaxis),
+			jointvalue(jointvalue), 
+			kinematics_axis_info(kinematics_axis_info), 
+			motion_axis_info(motion_axis_info),
+			_iaxis(0)
+		{
             _listInstanceScopeAxis = listInstanceScope;
             BOOST_ASSERT( !!pkinematicaxis );
             if( !!pvisualtrans ) {

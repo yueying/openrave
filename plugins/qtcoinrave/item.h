@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ enum ViewGeometry {
 };
 
 /// Encapsulate the Inventor rendering of an Item
-class Item : public boost::enable_shared_from_this<Item>, public OpenRAVE::UserData
+class Item : public std::enable_shared_from_this<Item>, public OpenRAVE::UserData
 {
 public:
     Item(QtCoinViewerPtr viewer);
@@ -55,7 +55,7 @@ public:
     }
 
     /// update Inventor nodes from model
-    virtual bool UpdateFromModel(const vector<dReal>& vjointvalues, const vector<Transform>& vtrans) {
+    virtual bool UpdateFromModel(const std::vector<dReal>& vjointvalues, const std::vector<Transform>& vtrans) {
         return true;
     }
 
@@ -103,7 +103,7 @@ public:
 protected:
 
     // Instance Data
-    boost::weak_ptr<QtCoinViewer> _viewer;
+    std::weak_ptr<QtCoinViewer> _viewer;
     string _name;
 
     SoSeparator*   _ivRoot;               //!< root of Inventor data hierarchy
@@ -111,9 +111,9 @@ protected:
     SoSwitch*      _ivGeom;               //!< item geometry hierarchy
     SoTransparencyType* _ivTransparency;
 };
-typedef boost::shared_ptr<Item> ItemPtr;
-typedef boost::weak_ptr<Item> ItemWeakPtr;
-typedef boost::shared_ptr<Item const> ItemConstPtr;
+typedef std::shared_ptr<Item> ItemPtr;
+typedef std::weak_ptr<Item> ItemWeakPtr;
+typedef std::shared_ptr<Item const> ItemConstPtr;
 
 class KinBodyItem : public Item
 {
@@ -125,10 +125,10 @@ protected:
         KinBody::LinkWeakPtr plink;
     };
 
-    inline boost::shared_ptr<KinBodyItem> shared_kinbody() {
-        return boost::static_pointer_cast<KinBodyItem>(shared_from_this());
+    inline std::shared_ptr<KinBodyItem> shared_kinbody() {
+        return std::static_pointer_cast<KinBodyItem>(shared_from_this());
     }
-    inline boost::weak_ptr<KinBodyItem> weak_kinbody() {
+    inline std::weak_ptr<KinBodyItem> weak_kinbody() {
         return shared_kinbody();
     }
 
@@ -137,10 +137,10 @@ public:
     virtual ~KinBodyItem() {
     }
 
-    const string& GetName() const {
+    const std::string& GetName() const {
         return _pchain->GetName();
     }
-    void SetName(const string& pNewName) {
+    void SetName(const std::string& pNewName) {
         _pchain->SetName(pNewName);
     }
 
@@ -151,7 +151,7 @@ public:
 
     virtual bool UpdateFromIv();
     virtual bool UpdateFromModel();
-    virtual bool UpdateFromModel(const vector<dReal>& vjointvalues, const vector<Transform>& vtrans);
+    virtual bool UpdateFromModel(const std::vector<dReal>& vjointvalues, const std::vector<Transform>& vtrans);
 
     virtual void SetGrab(bool bGrab, bool bUpdate=true);
 
@@ -181,8 +181,8 @@ public:
         return networkid;
     }
 
-    virtual void GetDOFValues(vector<dReal>& vjoint) const;
-    virtual void GetLinkTransformations(vector<Transform>& vtrans, std::vector<dReal>& vdofbranches) const;
+    virtual void GetDOFValues(std::vector<dReal>& vjoint) const;
+    virtual void GetLinkTransformations(std::vector<Transform>& vtrans, std::vector<dReal>& vdofbranches) const;
     virtual void Load();
 protected:
     virtual void GeometryChangedCallback();
@@ -197,15 +197,15 @@ protected:
     ViewGeometry _viewmode;
     int _userdata;
 
-    vector<dReal> _vjointvalues;
-    vector<Transform> _vtrans;
+	std::vector<dReal> _vjointvalues;
+	std::vector<Transform> _vtrans;
     std::vector<dReal> _vdofbranches;
     mutable boost::mutex _mutexjoints;
     UserDataPtr _geometrycallback, _drawcallback;
 };
 
-typedef boost::shared_ptr<KinBodyItem> KinBodyItemPtr;
-typedef boost::shared_ptr<KinBodyItem const> KinBodyItemConstPtr;
+typedef std::shared_ptr<KinBodyItem> KinBodyItemPtr;
+typedef std::shared_ptr<KinBodyItem const> KinBodyItemConstPtr;
 
 class RobotItem : public KinBodyItem
 {
@@ -238,8 +238,8 @@ private:
     std::vector< EE > _vEndEffectors, _vAttachedSensors;
     RobotBasePtr _probot;
 };
-typedef boost::shared_ptr<RobotItem> RobotItemPtr;
-typedef boost::shared_ptr<RobotItem const> RobotItemConstPtr;
+typedef std::shared_ptr<RobotItem> RobotItemPtr;
+typedef std::shared_ptr<RobotItem const> RobotItemConstPtr;
 
 #ifdef RAVE_REGISTER_BOOST
 #include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()

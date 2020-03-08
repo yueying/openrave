@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@ protected:
     bool _checkCollision;
     SbColor _normalColor;
     ItemWeakPtr _selectedItem;
-    boost::weak_ptr<QtCoinViewer> _viewer;
+    std::weak_ptr<QtCoinViewer> _viewer;
     EnvironmentBasePtr _penv;
     vector<SoSeparator*> _vlinkaxes;     // axes of the object's origin
     vector<float> vtransparency;
