@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,8 @@ CollisionCheckerBasePtr CreateBulletCollisionChecker(EnvironmentBasePtr penv, st
 
 static std::list< OpenRAVE::UserDataPtr >* s_listRegisteredReaders = NULL; ///< have to make it a pointer in order to prevent static object
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
+	const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
 {
     if( !s_listRegisteredReaders ) {
         s_listRegisteredReaders = new list< OpenRAVE::UserDataPtr >();
@@ -47,7 +48,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string&
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO& info)
+void GetPluginAttributesValidated(PluginInfo& info)
 {
     info.interfacenames[OpenRAVE::PT_CollisionChecker].push_back("bullet");
     info.interfacenames[OpenRAVE::PT_PhysicsEngine].push_back("bullet");

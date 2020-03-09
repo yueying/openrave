@@ -1,4 +1,4 @@
-#ifndef OPENRAVE_PLUGINDEFS_H
+﻿#ifndef OPENRAVE_PLUGINDEFS_H
 #define OPENRAVE_PLUGINDEFS_H
 
 #include <openrave/openrave.h> // should be included first in order to get boost throwing openrave exceptions
@@ -88,8 +88,8 @@ using OpenRAVE::InterfaceType;
 using OpenRAVE::InterfaceBase;
 using OpenRAVE::InterfaceBasePtr;
 using OpenRAVE::InterfaceBaseConstPtr;
-using OpenRAVE::PLUGININFO;
-using OpenRAVE::openrave_exception;
+using OpenRAVE::PluginInfo;
+using OpenRAVE::OpenRAVEException;
 using OpenRAVE::EnvironmentMutex;
 using OpenRAVE::RaveFabs;
 using OpenRAVE::ControllerBase;
@@ -99,10 +99,9 @@ using OpenRAVE::ControllerBase;
 using OpenRAVE::AttributesList;
 
 
-#include <fcl/collision.h>
-#include <fcl/distance.h>
-#include <fcl/BVH/BVH_model.h>
-#include <fcl/broadphase/broadphase.h>
-#include <fcl/shape/geometric_shapes.h>
+#include <fcl/fcl.h>
+
+class FCLCollisionManagerInstance;
+class FCLSpace;
 
 #endif

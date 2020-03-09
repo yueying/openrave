@@ -2,21 +2,21 @@
 # bulletrave openrave plugin
 ###########################################
 if( OPT_BULLET )
-  pkg_check_modules(bullet bullet)
-
-  if(bullet_FOUND)
-    if( "${bullet_VERSION}" VERSION_GREATER "2.82" )
-      message(STATUS "unsupported bullet version ${bullet_VERSION}")
-    else()
-      include_directories(${bullet_INCLUDE_DIRS})
-      link_directories(${OPENRAVE_LINK_DIRS} ${bullet_LIBRARY_DIRS})
+  find_package(bullet REQUIRED)
+  message(STATUS "------------------------------ bullet version ${bullet_VERSION}")
+  #if(bullet_FOUND)
+    #if( "${bullet_VERSION}" VERSION_GREATER "2.82" )
+    #  message(STATUS "unsupported bullet version ${bullet_VERSION}")
+    #else()
+      include_directories(${BULLET_INCLUDE_DIR})
+      link_directories(${OPENRAVE_LINK_DIRS} ${BULLET_LIBRARY_DIRS})
 
       add_library(bulletrave SHARED bulletrave.cpp bulletcollision.h bulletphysics.h  bulletspace.h  plugindefs.h)
 
       #message(STATUS "Bullet found ${bullet_INCLUDE_DIRS}, libs: ${bullet_LIBRARIES}, cflags=${bullet_CFLAGS_OTHER}, lflags=${bullet_LDFLAGS_OTHER}, building bulletrave plugin")
 
-      target_link_libraries(bulletrave libopenrave ${bullet_LIBRARIES})
-      target_link_libraries(bulletrave PRIVATE boost_assertion_failed)
+      target_link_libraries(bulletrave libopenrave ${BULLET_LIBRARIES})
+     
 
       # for some reason the flags come out as a list, so convert to a string
       set(openrave_bullet_CFLAGS_OTHER)
@@ -31,10 +31,10 @@ if( OPT_BULLET )
       set_target_properties(bulletrave PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS} ${openrave_bullet_CFLAGS_OTHER}" LINK_FLAGS "${PLUGIN_LINK_FLAGS} ${openrave_bullet_LDFLAGS_OTHER}")
 
       install(TARGETS bulletrave DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}plugin-bulletrave)
-    endif()
-  else()
-    message(STATUS "Could not find Bullet Physics/Collision engine. Please install ver 2.80 from http://www.bulletphysics.com")
-  endif()
+  #  endif()
+  #else()
+  #  message(STATUS "Could not find Bullet Physics/Collision engine. Please install ver 2.80 from http://www.bulletphysics.com")
+  #endif()
   
   set(CPACK_COMPONENT_${COMPONENT_PREFIX_UPPER}PLUGIN-BULLETRAVE_DISPLAY_NAME "Plugin for Bullet Collision/Physics" PARENT_SCOPE)
   set(PLUGIN_COMPONENT ${COMPONENT_PREFIX}plugin-bulletrave PARENT_SCOPE)

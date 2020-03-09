@@ -3876,7 +3876,7 @@ void QtCoinViewer::_SetNearPlane(dReal nearplane)
 	RaveGetEnvironments(listenvironments);
 	if( listenvironments.size() > 0 ) {
 		_penv = listenvironments.front();
-		_openraveviewer = boost::dynamic_pointer_cast<QtCoinViewer>(_penv->GetViewer());
+		_openraveviewer = std::dynamic_pointer_cast<QtCoinViewer>(_penv->GetViewer());
 		if( !!_openraveviewer ) {
 			QTimer *timer = new QTimer(this);
 			connect(timer, SIGNAL(timeout()), this, SLOT(Animate()));

@@ -390,8 +390,8 @@
 		QMenu* _pMenuSendCommand;
 
 		SoNode*       _selectedNode;
-		boost::shared_ptr<IvDragger>    _pdragger;
-		std::list< boost::shared_ptr<IvDragger> > _plistdraggers;     /// draggers drawn
+		std::shared_ptr<IvDragger>    _pdragger;
+		std::list< std::shared_ptr<IvDragger> > _plistdraggers;     /// draggers drawn
 		SoEventCallback* _eventKeyboardCB;
 
 		boost::array<SoText2*, 2> _messageNodes;
@@ -537,7 +537,7 @@
 
 	   private:
 		EnvironmentBasePtr _penv;
-		boost::shared_ptr<QtCoinViewer> _openraveviewer;
+		std::shared_ptr<QtCoinViewer> _openraveviewer;
 		std::vector<uint8_t> _memory;
 		//QBasicTimer _timer;
 	   };

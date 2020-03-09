@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 #ifndef OPENRAVE_FCL_MANAGERCACHE
 #define OPENRAVE_FCL_MANAGERCACHE
 
@@ -42,8 +42,8 @@ namespace fclrave {
 //    return count;
 //}
 
-typedef boost::shared_ptr<fcl::BroadPhaseCollisionManager> BroadPhaseCollisionManagerPtr;
-typedef boost::weak_ptr<fcl::BroadPhaseCollisionManager> BroadPhaseCollisionManagerWeakPtr;
+typedef std::shared_ptr<fcl::BroadPhaseCollisionManager<dReal>> BroadPhaseCollisionManagerPtr;
+typedef std::weak_ptr<fcl::BroadPhaseCollisionManager<dReal>> BroadPhaseCollisionManagerWeakPtr;
 
 struct EnvironmentState
 {
@@ -151,8 +151,13 @@ public:
             std::fill(_linkEnableStates.begin(), _linkEnableStates.end(), 0);
             vcolobjs.clear(); // reset any existing collision objects
             vcolobjs.resize((*itbody)->GetLinks().size(),CollisionObjectPtr());
-            FOREACH(itlink, (*itbody)->GetLinks()) {
-                if( (*itlink)->IsEnabled() && (*itbody != pbody || !_bTrackActiveDOF || _vTrackingActiveLinks.at((*itlink)->GetIndex())) ) {
+            FOREACHC(itlink, (*itbody)->GetLinks()) 
+			{
+                if( (*itlink)->IsEnabled() && 
+					(*itbody != pbody 
+						|| !_bTrackActiveDOF 
+						|| _vTrackingActiveLinks.at((*itlink)->GetIndex())) ) 
+				{
                     CollisionObjectPtr pcol = _fclspace.GetLinkBV(*pinfo, (*itlink)->GetIndex());
                     vcolobjs[(*itlink)->GetIndex()] = pcol;
                     if( !!pcol ) {
@@ -337,7 +342,7 @@ public:
                                 std::fill(_linkEnableStates.begin(), _linkEnableStates.end(), 0);
                                 for(size_t ilink = 0; ilink < probot->GetLinks().size(); ++ilink) {
                                     int isLinkActive = 0;
-                                    FOREACH(itindex, probot->GetActiveDOFIndices()) {
+                                    FOREACHC(itindex, probot->GetActiveDOFIndices()) {
                                         if( probot->DoesAffect(probot->GetJointFromDOFIndex(*itindex)->GetJointIndex(), ilink) ) {
                                             isLinkActive = 1;
                                             break;
@@ -352,7 +357,8 @@ public:
                                     if( _vTrackingActiveLinks[ilink] != isLinkActive ) {
                                         _vTrackingActiveLinks[ilink] = isLinkActive;
                                         CollisionObjectPtr pcolobj = _fclspace.GetLinkBV(*pnewinfo, probot->GetLinks()[ilink]->GetIndex());
-                                        if( bIsActiveLinkEnabled && !!pcolobj ) {
+                                        if( bIsActiveLinkEnabled && !!pcolobj ) 
+										{
     #ifdef FCLRAVE_USE_REPLACEOBJECT
     #ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
                                             SaveCollisionObjectDebugInfos(pcolobj.get());
@@ -536,7 +542,7 @@ public:
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
                                     //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s unregister cached obj %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecker()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get());
-                                    fcl::CollisionObject* ptestobj = itcache->second.vcolobjs.at(ilink).get();
+                                    fcl::CollisionObject<dReal>* ptestobj = itcache->second.vcolobjs.at(ilink).get();
                                     pmanager->unregisterObject(itcache->second.vcolobjs.at(ilink).get());
                                 }
 #ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
@@ -602,7 +608,7 @@ public:
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
                                     //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s unregister cached obj %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecke()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get());
-                                    fcl::CollisionObject* ptestobj = itcache->second.vcolobjs.at(ilink).get();
+                                    fcl::CollisionObject<dReal>* ptestobj = itcache->second.vcolobjs.at(ilink).get();
                                     pmanager->unregisterObject(itcache->second.vcolobjs.at(ilink).get());
                                 }
 #ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
@@ -737,7 +743,7 @@ private:
         bool bsetUpdateStamp = false;
         linkEnableStates.resize(pbody->GetLinks().size()); ///< links that are currently inside the manager
         std::fill(linkEnableStates.begin(), linkEnableStates.end(), 0);
-        FOREACH(itlink, (pbody)->GetLinks()) {
+        FOREACHC(itlink, (pbody)->GetLinks()) {
             if( (*itlink)->IsEnabled() && (!bTrackActiveDOF || _vTrackingActiveLinks.at((*itlink)->GetIndex())) ) {
                 //pinfo->vlinks.at((*itlink)->GetIndex()).listRegisteredManagers.push_back(shared_from_this());
                 CollisionObjectPtr pcol = _fclspace.GetLinkBV(*pinfo, (*itlink)->GetIndex());
@@ -746,7 +752,8 @@ private:
                         _tmpbuffer.push_back(pcol.get());
                     }
                     else {
-                        RAVELOG_WARN_FORMAT("env=%d body %s link %s is added multiple times", pbody->GetEnv()->GetId()%pbody->GetName()%(*itlink)->GetName());
+                        RAVELOG_WARN_FORMAT("env=%d body %s link %s is added multiple times", 
+							pbody->GetEnv()->GetId()%pbody->GetName()%(*itlink)->GetName());
                     }
                     vcolobjs[(*itlink)->GetIndex()] = pcol;
                     linkEnableStates.at((*itlink)->GetIndex()) = 1;
@@ -762,7 +769,7 @@ private:
         _vTrackingActiveLinks.resize(probot->GetLinks().size());
         for(size_t i = 0; i < probot->GetLinks().size(); ++i) {
             int isLinkActive = 0;
-            FOREACH(itindex, probot->GetActiveDOFIndices()) {
+            FOREACHC(itindex, probot->GetActiveDOFIndices()) {
                 if( probot->DoesAffect(probot->GetJointFromDOFIndex(*itindex)->GetJointIndex(), i) ) {
                     isLinkActive = 1;
                     break;
@@ -829,8 +836,8 @@ private:
 #endif
 };
 
-typedef boost::shared_ptr<FCLCollisionManagerInstance> FCLCollisionManagerInstancePtr;
-typedef boost::weak_ptr<FCLCollisionManagerInstance> FCLCollisionManagerInstanceWeakPtr;
+typedef std::shared_ptr<FCLCollisionManagerInstance> FCLCollisionManagerInstancePtr;
+typedef std::weak_ptr<FCLCollisionManagerInstance> FCLCollisionManagerInstanceWeakPtr;
 
 } // end namespace fclrave
 

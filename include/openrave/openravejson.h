@@ -602,7 +602,7 @@ namespace OpenRAVE
 		/** do not remove: otherwise std::shared_ptr could be treated as bool
 		 */
 		template<class T>
-		inline void SaveJsonValue(rapidjson::Value& v, const boost::shared_ptr<T>& ptr, rapidjson::Document::AllocatorType& alloc) {
+		inline void SaveJsonValue(rapidjson::Value& v, const std::shared_ptr<T>& ptr, rapidjson::Document::AllocatorType& alloc) {
 			SaveJsonValue(v, *ptr, alloc);
 		}
 

@@ -73,7 +73,7 @@ public:
 
     bool InitFromDocument(const rapidjson::Document& doc)
     {
-        boost::shared_ptr<rapidjson::Document> pDoc;
+        std::shared_ptr<rapidjson::Document> pDoc;
         pDoc.reset(new rapidjson::Document);
         pDoc->CopyFrom(doc, pDoc->GetAllocator());
         _docs[""] = pDoc;
@@ -424,14 +424,14 @@ protected:
         _ParseURI(uri, scheme, path, fragment);
 
         std::string filename = _ResolveURI(scheme, path);
-        boost::shared_ptr<rapidjson::Document> doc = _OpenDocument(filename);
+        std::shared_ptr<rapidjson::Document> doc = _OpenDocument(filename);
         if (!doc) {
             throw OPENRAVE_EXCEPTION_FORMAT("failed resolve json document \"%s\"", uri, ORE_InvalidArguments);
         }
         return _ResolveObjectInDocument(doc, fragment);
     }
 
-    void _IndexObjectsInDocument(boost::shared_ptr<rapidjson::Document> doc)
+    void _IndexObjectsInDocument(std::shared_ptr<rapidjson::Document> doc)
     {
         if (doc->IsObject() && doc->HasMember("objects") && (*doc)["objects"].IsArray()) {
             for (rapidjson::Value::ValueIterator itr = (*doc)["objects"].Begin(); itr != (*doc)["objects"].End(); ++itr) {
@@ -444,7 +444,7 @@ protected:
         }
     }
 
-    rapidjson::Value::ValueIterator _ResolveObjectInDocument(boost::shared_ptr<rapidjson::Document> doc, const std::string& id)
+    rapidjson::Value::ValueIterator _ResolveObjectInDocument(std::shared_ptr<rapidjson::Document> doc, const std::string& id)
     {
         if (!!doc) {
             // look for first in doc
@@ -495,14 +495,14 @@ protected:
     }
 
     /// \brief open and cache a json document
-    boost::shared_ptr<rapidjson::Document> _OpenDocument(const std::string& filename)
+    std::shared_ptr<rapidjson::Document> _OpenDocument(const std::string& filename)
     {
         if (_docs.find(filename) != _docs.end()) {
             return _docs[filename];
         }
         std::ifstream ifs(filename.c_str());
         rapidjson::IStreamWrapper isw(ifs);
-        boost::shared_ptr<rapidjson::Document> doc;
+        std::shared_ptr<rapidjson::Document> doc;
         doc.reset(new rapidjson::Document);
         rapidjson::ParseResult ok = doc->ParseStream<rapidjson::kParseFullPrecisionFlag>(isw);
         if (!ok) {
@@ -514,9 +514,9 @@ protected:
     }
 
     /// \brief parse and cache a json document
-    boost::shared_ptr<rapidjson::Document> _ParseDocument(const std::string& data)
+    std::shared_ptr<rapidjson::Document> _ParseDocument(const std::string& data)
     {
-        boost::shared_ptr<rapidjson::Document> doc;
+        std::shared_ptr<rapidjson::Document> doc;
         doc.reset(new rapidjson::Document);
         rapidjson::ParseResult ok = doc->Parse<rapidjson::kParseFullPrecisionFlag>(data.c_str());
         if (!ok) {
@@ -533,9 +533,9 @@ protected:
     std::string _filename;
     std::string _uri;
     std::vector<std::string> _vOpenRAVESchemeAliases;
-    boost::shared_ptr<rapidjson::Document> _doc;
-    std::map<std::string, boost::shared_ptr<rapidjson::Document> > _docs; //!< key is filename
-    std::map<boost::shared_ptr<rapidjson::Document>, std::map<std::string, rapidjson::Value::ValueIterator> > _objects; //!< key is pointer to doc
+    std::shared_ptr<rapidjson::Document> _doc;
+    std::map<std::string, std::shared_ptr<rapidjson::Document> > _docs; //!< key is filename
+    std::map<std::shared_ptr<rapidjson::Document>, std::map<std::string, rapidjson::Value::ValueIterator> > _objects; //!< key is pointer to doc
 };
 
 
