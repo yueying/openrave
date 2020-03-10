@@ -37,7 +37,8 @@ public:
         vrobots[1] = probot2;
 
         // create the configuration space using the manipulator indices
-        ConfigurationSpecification spec = probot1->GetActiveManipulator()->GetArmConfigurationSpecification() + probot2->GetActiveManipulator()->GetArmConfigurationSpecification();
+        ConfigurationSpecification spec = probot1->GetActiveManipulator()->GetArmConfigurationSpecification() 
+			+ probot2->GetActiveManipulator()->GetArmConfigurationSpecification();
         PlannerBase::PlannerParametersPtr params(new PlannerBase::PlannerParameters());
         params->SetConfigurationSpecification(penv,spec); // set the joint configuration
         params->max_iterations_ = 4000; // max iterations before failure
@@ -46,7 +47,8 @@ public:
         // create the planner parameters
         PlannerBasePtr planner = RaveCreatePlanner(penv,"birrt");
 
-        while(IsOk()) {
+        while(IsOk()) 
+		{
             std::list<GraphHandlePtr> listgraphs;
             {
                 EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
@@ -56,7 +58,7 @@ public:
 
                 // find a set of free joint values for the robot
                 {
-                    while(1) 
+					 while(1)
 					{
                         for(int i = 0; i < params->GetDOF(); ++i)
 						{
@@ -64,18 +66,25 @@ public:
 								+ (params->config_upper_limit_vector_[i]-params->config_lower_limit_vector_[i])*RaveRandomFloat();
                         }
                         params->_setstatevaluesfn(params->goal_config_vector_,0);
-						/*if( params->_checkpathconstraintsfn(params->goal_config_vector_,params->goal_config_vector_,
-							IT_OpenStart,PlannerBase::ConfigurationListPtr()) )
+						if( params->_checkpathvelocityconstraintsfn(params->goal_config_vector_,
+							params->goal_config_vector_,
+							std::vector<dReal>(), 
+							std::vector<dReal>(),
+							0,
+							IT_OpenStart,
+							0,
+							ConstraintFilterReturnPtr()) )
 						{
 							break;
-						}*/
+						}
                     }
                     // restore robot state
                     params->_setstatevaluesfn(params->initial_config_vector_,0);
                 }
 
                 RAVELOG_INFO("starting to plan\n");
-                if( !planner->InitPlan(RobotBasePtr(),params) ) {
+                if( !planner->InitPlan(RobotBasePtr(),params) ) 
+				{
                     continue;
                 }
 
@@ -88,12 +97,14 @@ public:
 
                 // draw the end effector of the trajectory
                 listgraphs.clear();
-                for(std::vector<RobotBasePtr>::iterator itrobot = vrobots.begin(); itrobot != vrobots.end(); ++itrobot) {
+                for(std::vector<RobotBasePtr>::iterator itrobot = vrobots.begin(); itrobot != vrobots.end(); ++itrobot) 
+				{
                     RobotBase::RobotStateSaver saver(*itrobot); // save the state of the robot since will be setting joint values
                     RobotBase::ManipulatorPtr manip = (*itrobot)->GetActiveManipulator();
-                    vector<RaveVector<float> > vpoints;
-                    vector<dReal> vtrajdata;
-                    for(dReal ftime = 0; ftime <= ptraj->GetDuration(); ftime += 0.01) {
+                    std::vector<RaveVector<float> > vpoints;
+					std::vector<dReal> vtrajdata;
+                    for(dReal ftime = 0; ftime <= ptraj->GetDuration(); ftime += 0.01) 
+					{
                         ptraj->Sample(vtrajdata,ftime,manip->GetArmConfigurationSpecification());
                         (*itrobot)->SetDOFValues(vtrajdata,true,manip->GetArmIndices());
                         vpoints.push_back(manip->GetEndEffectorTransform().trans);
@@ -107,8 +118,11 @@ public:
             }
 
             // unlock the environment and wait for the robot to finish
-            while(IsOk()) {
-                if( probot1->GetController()->IsDone() || probot2->GetController()->IsDone() ) {
+            while(IsOk())
+			{
+                if( probot1->GetController()->IsDone() 
+					|| probot2->GetController()->IsDone() ) 
+				{
                     break;
                 }
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));

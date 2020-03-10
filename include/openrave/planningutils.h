@@ -438,7 +438,7 @@ public:
     virtual int Check(const std::vector<dReal>& q0, const std::vector<dReal>& q1, const std::vector<dReal>& dq0, const std::vector<dReal>& dq1, dReal timeelapsed, IntervalType interval, int options = 0xffff, ConstraintFilterReturnPtr filterreturn = ConstraintFilterReturnPtr());
 
     CollisionReportPtr GetReport() const {
-        return _report;
+        return report_;
     }
 
 protected:
@@ -457,7 +457,7 @@ protected:
 
     PlannerBase::PlannerParametersWeakConstPtr _parameters;
     std::vector<dReal> _vtempconfig, _vtempvelconfig, dQ, _vtempveldelta, _vtempaccelconfig, _vperturbedvalues, _vcoeff2, _vcoeff1, _vprevtempconfig, _vprevtempvelconfig, _vtempconfig2, _vdiffconfig, _vdiffvelconfig, _vstepconfig; //!< in configuration space
-    CollisionReportPtr _report;
+    CollisionReportPtr report_;
     std::list<KinBodyPtr> _listCheckBodies;
     int _filtermask;
     int _torquelimitmode; //!< 1 if should use instantaneous max torque, 0 if should use nominal torque
@@ -617,7 +617,7 @@ protected:
     std::list<SampleInfo> _listsamples;
     SpaceSamplerBasePtr _pindexsampler;
     dReal _fsampleprob, _fjittermaxdist;
-    CollisionReportPtr _report;
+    CollisionReportPtr report_;
     std::vector< IkReturnPtr > _vikreturns;
     std::list<int> _listreturnedsamples;
     std::vector<dReal> _vfreestart;

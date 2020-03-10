@@ -127,22 +127,22 @@ namespace OpenRAVE
 
 			inline dReal GetSphereRadius() const
 			{
-				return geom_data_vec_.x;
+				return gemo_outer_extents_data_.x;
 			}
 
 			inline dReal GetCylinderRadius() const
 			{
-				return geom_data_vec_.x;
+				return gemo_outer_extents_data_.x;
 			}
 
 			inline dReal GetCylinderHeight() const
 			{
-				return geom_data_vec_.y;
+				return gemo_outer_extents_data_.y;
 			}
 
 			inline const Vector& GetBoxExtents() const
 			{
-				return geom_data_vec_;
+				return gemo_outer_extents_data_;
 			}
 
 			/// \brief compute the inner empty volume in the geometry coordinate system
@@ -160,21 +160,21 @@ namespace OpenRAVE
 			//!< \param multiply all translational values by unit_scale
 			virtual void DeserializeJSON(const rapidjson::Value &value, const dReal unit_scale = 1);
 
-			Transform _t; //!< Local transformation of the geom primitive with respect to the link's coordinate system.
+			Transform transform_; //!< Local transformation of the geom primitive with respect to the link's coordinate system.
 
 			/// for boxes, first 3 values are half extents. For containers, the first 3 values are the full outer extents.
 			/// For GT_Cage, this is the base box extents with the origin being at the -Z center.
-			Vector geom_data_vec_;
+			Vector gemo_outer_extents_data_;
 
 			//!< For GT_Container, the first 3 values are the full inner extents.
 			//!< For GT_Cage, if any are non-zero, then force the full inner extents (bottom center) to be this much, starting at the base center top
-			Vector _vGeomData2;
-			Vector _vGeomData3; //!< For containers, the first 3 values is the bottom cross XY full extents and Z height from bottom face.
+			Vector geom_inner_extents_data_;
+			Vector geom_bottom_cross_data_; //!< For containers, the first 3 values is the bottom cross XY full extents and Z height from bottom face.
 
 			//!< For containers, the first 3 values are the full extents of the bottom pad (a box attached to the container
 			///  beneath the container bottom). This geometry only valid if the first 3 values are all positive. The origin
 			///  of the container will still be at the outer bottom of the container.
-			Vector _vGeomData4;
+			Vector geom_bottom_data_;
 
 			// For GT_Cage
 			enum SideWallType
@@ -200,7 +200,7 @@ namespace OpenRAVE
 
 			/// \brief trimesh representation of the collision data of this object in this local coordinate system
 			///
-			/// Should be transformed by \ref _t before rendering.
+			/// Should be transformed by \ref transform_ before rendering.
 			/// For spheres and cylinders, an appropriate discretization value is chosen.
 			/// If empty, will be automatically computed from the geometry's type and render data
 			TriMesh mesh_collision_;
@@ -211,9 +211,9 @@ namespace OpenRAVE
 
 			/// \brief filename for render model (optional)
 			///
-			/// Should be transformed by _t before rendering.
+			/// Should be transformed by transform_ before rendering.
 			/// If the value is "__norenderif__:x", then the viewer should not render the object if it supports *.x files where"x" is the file extension.
-			std::string _filenamerender;
+			std::string render_file_name_;
 
 			/// \brief filename for collision data (optional)
 			///
@@ -221,7 +221,7 @@ namespace OpenRAVE
 			/// The user should call mesh_collision_ = *env->ReadTrimeshURI(_filenamecollision) by themselves.
 			std::string _filenamecollision;
 
-			Vector render_scale_vec_; //!< render scale of the object (x,y,z) from _filenamerender
+			Vector render_scale_vec_; //!< render scale of the object (x,y,z) from render_file_name_
 			Vector collision_scale_vec_; //!< render scale of the object (x,y,z) from _filenamecollision
 			float transparency_; //!< value from 0-1 for the transparency of the rendered object, 0 is opaque
 			bool is_visible_; //!< if true, geometry is visible as part of the 3d model (default is true)
@@ -254,7 +254,7 @@ namespace OpenRAVE
 			/// \brief unique link name
 			std::string name_;
 			/// the current transformation of the link with respect to the body coordinate system
-			Transform _t;
+			Transform transform_;
 			/// the frame for inertia and center of mass of the link in the link's coordinate system
 			Transform mass_frame_transform_;
 			/// mass of link
@@ -303,80 +303,97 @@ namespace OpenRAVE
 				}
 
 				/// \brief get local geometry transform
-				inline const Transform& GetTransform() const {
-					return info_._t;
+				inline const Transform& GetTransform() const 
+				{
+					return info_.transform_;
 				}
-				inline GeometryType GetType() const {
+				inline GeometryType GetType() const 
+				{
 					return info_.type_;
 				}
-				inline const Vector& GetRenderScale() const {
+				inline const Vector& GetRenderScale() const 
+				{
 					return info_.render_scale_vec_;
 				}
 
-				inline const std::string& GetRenderFilename() const {
-					return info_._filenamerender;
+				inline const std::string& GetRenderFilename() const
+				{
+					return info_.render_file_name_;
 				}
-				inline float GetTransparency() const {
+				inline float GetTransparency() const 
+				{
 					return info_.transparency_;
 				}
-				/// \deprecated (12/1/12)
-				inline bool IsDraw() const RAVE_DEPRECATED {
+				inline bool IsVisible() const
+				{
 					return info_.is_visible_;
 				}
-				inline bool IsVisible() const {
-					return info_.is_visible_;
-				}
-				inline bool IsModifiable() const {
+				inline bool IsModifiable() const 
+				{
 					return info_.is_modifiable_;
 				}
 
-				inline dReal GetSphereRadius() const {
-					return info_.geom_data_vec_.x;
+				inline dReal GetSphereRadius() const 
+				{
+					return info_.gemo_outer_extents_data_.x;
 				}
-				inline dReal GetCylinderRadius() const {
-					return info_.geom_data_vec_.x;
+				inline dReal GetCylinderRadius() const
+				{
+					return info_.gemo_outer_extents_data_.x;
 				}
-				inline dReal GetCylinderHeight() const {
-					return info_.geom_data_vec_.y;
+				inline dReal GetCylinderHeight() const
+				{
+					return info_.gemo_outer_extents_data_.y;
 				}
-				inline const Vector& GetBoxExtents() const {
-					return info_.geom_data_vec_;
+				inline const Vector& GetBoxExtents() const 
+				{
+					return info_.gemo_outer_extents_data_;
 				}
-				inline const Vector& GetContainerOuterExtents() const {
-					return info_.geom_data_vec_;
+				inline const Vector& GetContainerOuterExtents() const 
+				{
+					return info_.gemo_outer_extents_data_;
 				}
-				inline const Vector& GetContainerInnerExtents() const {
-					return info_._vGeomData2;
+				inline const Vector& GetContainerInnerExtents() const
+				{
+					return info_.geom_inner_extents_data_;
 				}
-				inline const Vector& GetContainerBottomCross() const {
-					return info_._vGeomData3;
+				inline const Vector& GetContainerBottomCross() const 
+				{
+					return info_.geom_bottom_cross_data_;
 				}
-				inline const Vector& GetContainerBottom() const {
-					return info_._vGeomData4;
+				inline const Vector& GetContainerBottom() const
+				{
+					return info_.geom_bottom_data_;
 				}
-				inline const RaveVector<float>& GetDiffuseColor() const {
+				inline const RaveVector<float>& GetDiffuseColor() const 
+				{
 					return info_.diffuse_color_vec_;
 				}
-				inline const RaveVector<float>& GetAmbientColor() const {
+				inline const RaveVector<float>& GetAmbientColor() const
+				{
 					return info_._vAmbientColor;
 				}
-				inline const std::string& GetName() const {
+				inline const std::string& GetName() const 
+				{
 					return info_.name_;
 				}
 
 				/// \brief returns the local collision mesh
-				inline const TriMesh& GetCollisionMesh() const {
+				inline const TriMesh& GetCollisionMesh() const 
+				{
 					return info_.mesh_collision_;
 				}
 
-				inline const KinBody::GeometryInfo& GetInfo() const {
+				inline const KinBody::GeometryInfo& GetInfo() const 
+				{
 					return info_;
 				}
 
 				/// cage
 				//@{
-				inline const Vector& GetCageBaseExtents() const {
-					return info_.geom_data_vec_;
+				inline const Vector& GetCageBaseExtents() const 
+				{
+					return info_.gemo_outer_extents_data_;
 				}
 
 				/// \brief compute the inner empty volume in the parent link coordinate system
@@ -509,7 +526,7 @@ namespace OpenRAVE
 
 			/// \brief Return the current transformation of the link in the world coordinate system.
 			inline Transform GetTransform() const {
-				return info_._t;
+				return info_.transform_;
 			}
 
 			/// \brief Return all the direct parent links in the kinematics hierarchy of this link.
@@ -535,7 +552,7 @@ namespace OpenRAVE
 
 			/// \brief return center of mass of the link in the global coordinate system
 			inline Vector GetGlobalCOM() const {
-				return info_._t*info_.mass_frame_transform_.trans;
+				return info_.transform_*info_.mass_frame_transform_.trans;
 			}
 
 			inline Vector GetCOMOffset() const {
@@ -564,7 +581,7 @@ namespace OpenRAVE
 
 			/// \brief return the mass frame in the global coordinate system that holds the center of mass and principal axes for inertia.
 			inline Transform GetGlobalMassFrame() const {
-				return info_._t*info_.mass_frame_transform_;
+				return info_.transform_*info_.mass_frame_transform_;
 			}
 
 			/// \brief return the principal moments of inertia inside the mass frame
@@ -2307,7 +2324,8 @@ namespace OpenRAVE
 		virtual bool HasAttached() const;
 
 		/// \brief Return true if this body is derived from RobotBase.
-		virtual bool IsRobot() const {
+		virtual bool IsRobot() const 
+		{
 			return false;
 		}
 

@@ -254,7 +254,7 @@ BaseXMLReader::ProcessElement GeometryInfoReader::startElement(const std::string
         // check the attributes first
         FOREACHC(itatt,atts) {
             if( itatt->first == "file" ) {
-                _pgeom->_filenamerender = itatt->second;
+                _pgeom->render_file_name_ = itatt->second;
             }
             else if( itatt->first == "scale" ) {
                 _pgeom->render_scale_vec_ = Vector(1,1,1);
@@ -314,29 +314,29 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
     else if( xmlname == "translation" ) {
         Vector v;
         _ss >>v.x >> v.y >> v.z;
-        _pgeom->_t.trans += v;
+        _pgeom->transform_.trans += v;
     }
     else if( xmlname == "rotationmat" ) {
         TransformMatrix tnew;
         _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-        _pgeom->_t.rot = (Transform(tnew)*_pgeom->_t).rot;
+        _pgeom->transform_.rot = (Transform(tnew)*_pgeom->transform_).rot;
     }
     else if( xmlname == "rotationaxis" ) {
         Vector vaxis; dReal fangle=0;
         _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
         Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-        _pgeom->_t.rot = (tnew*_pgeom->_t).rot;
+        _pgeom->transform_.rot = (tnew*_pgeom->transform_).rot;
     }
     else if( xmlname == "quat" ) {
         Transform tnew;
         _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
         tnew.rot.normalize4();
-        _pgeom->_t.rot = (tnew*_pgeom->_t).rot;
+        _pgeom->transform_.rot = (tnew*_pgeom->transform_).rot;
     }
     else if( xmlname == "render" ) {
-        if( _pgeom->_filenamerender.size() == 0 ) {
+        if( _pgeom->render_file_name_.size() == 0 ) {
             _pgeom->render_scale_vec_ = Vector(1,1,1);
-            _ss >> _pgeom->_filenamerender;
+            _ss >> _pgeom->render_file_name_;
             _ss >> _pgeom->render_scale_vec_.x; _pgeom->render_scale_vec_.y = _pgeom->render_scale_vec_.z = _pgeom->render_scale_vec_.x;
             _ss >> _pgeom->render_scale_vec_.y >> _pgeom->render_scale_vec_.z;
         }
@@ -356,40 +356,47 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
     else if( xmlname == "name" ) {
         _ss >> _pgeom->name_;
     }
-    else {
+    else
+	{
         // could be type specific features
-        switch(_pgeom->type_) {
+        switch(_pgeom->type_)
+		{
         case GT_None:
             // Do nothing
             break;
 
         case GT_Sphere:
-            if( xmlname == "radius" ) {
-                _ss >> _pgeom->geom_data_vec_.x;
+            if( xmlname == "radius" ) 
+			{
+                _ss >> _pgeom->gemo_outer_extents_data_.x;
             }
             break;
         case GT_Box:
             if( xmlname == "extents" || xmlname == "halfextents" ) {
-                _ss >> _pgeom->geom_data_vec_.x >> _pgeom->geom_data_vec_.y >> _pgeom->geom_data_vec_.z;
+                _ss >> _pgeom->gemo_outer_extents_data_.x >> _pgeom->gemo_outer_extents_data_.y >> _pgeom->gemo_outer_extents_data_.z;
             }
             else if( xmlname == "fullextents" ) {
-                _ss >> _pgeom->geom_data_vec_.x >> _pgeom->geom_data_vec_.y >> _pgeom->geom_data_vec_.z;
-                _pgeom->geom_data_vec_ *= 0.5;
+                _ss >> _pgeom->gemo_outer_extents_data_.x >> _pgeom->gemo_outer_extents_data_.y >> _pgeom->gemo_outer_extents_data_.z;
+                _pgeom->gemo_outer_extents_data_ *= 0.5;
             }
 
             break;
         case GT_Container:
-            if( xmlname == "outer_extents" ) {
-                _ss >> _pgeom->geom_data_vec_.x >> _pgeom->geom_data_vec_.y >> _pgeom->geom_data_vec_.z;
+            if( xmlname == "outer_extents" )
+			{
+                _ss >> _pgeom->gemo_outer_extents_data_.x >> _pgeom->gemo_outer_extents_data_.y >> _pgeom->gemo_outer_extents_data_.z;
             }
-            if( xmlname == "inner_extents" ) {
-                _ss >> _pgeom->_vGeomData2.x >> _pgeom->_vGeomData2.y >> _pgeom->_vGeomData2.z;
+            if( xmlname == "inner_extents" )
+			{
+                _ss >> _pgeom->geom_inner_extents_data_.x >> _pgeom->geom_inner_extents_data_.y >> _pgeom->geom_inner_extents_data_.z;
             }
-            if( xmlname == "bottom_cross" ) {
-                _ss >> _pgeom->_vGeomData3.x >> _pgeom->_vGeomData3.y >> _pgeom->_vGeomData3.z;
+            if( xmlname == "bottom_cross" )
+			{
+                _ss >> _pgeom->geom_bottom_cross_data_.x >> _pgeom->geom_bottom_cross_data_.y >> _pgeom->geom_bottom_cross_data_.z;
             }
-            if( xmlname == "bottom" ) {
-                _ss >> _pgeom->_vGeomData4.x >> _pgeom->_vGeomData4.y >> _pgeom->_vGeomData4.z;
+            if( xmlname == "bottom" )
+			{
+                _ss >> _pgeom->geom_bottom_data_.x >> _pgeom->geom_bottom_data_.y >> _pgeom->geom_bottom_data_.z;
             }
 
             break;
@@ -412,10 +419,10 @@ bool GeometryInfoReader::endElement(const std::string& xmlname)
             break;
         case GT_Cylinder:
             if( xmlname == "radius") {
-                _ss >> _pgeom->geom_data_vec_.x;
+                _ss >> _pgeom->gemo_outer_extents_data_.x;
             }
             else if( xmlname == "height" ) {
-                _ss >> _pgeom->geom_data_vec_.y;
+                _ss >> _pgeom->gemo_outer_extents_data_.y;
             }
             break;
         case GT_TriMesh:

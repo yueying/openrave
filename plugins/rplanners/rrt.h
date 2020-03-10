@@ -74,7 +74,7 @@ Uses the Rapidly-Exploring Random Trees Algorithm.\n\
             std::copy(params->initial_config_vector_.begin()+index,params->initial_config_vector_.begin()+index+params->GetDOF(),vinitialconfig.begin());
             _filterreturn->Clear();
             if( params->CheckPathAllConstraints(vinitialconfig,vinitialconfig, std::vector<dReal>(), std::vector<dReal>(), 0, IT_OpenStart, CFO_FillCollisionReport, _filterreturn) != 0 ) {
-                RAVELOG_DEBUG_FORMAT("initial configuration for rrt does not satisfy constraints: %s", _filterreturn->_report.__str__());
+                RAVELOG_DEBUG_FORMAT("initial configuration for rrt does not satisfy constraints: %s", _filterreturn->report_.__str__());
                 continue;
             }
             _vecInitialNodes.push_back(_treeForward.InsertNode(NULL, vinitialconfig, _vecInitialNodes.size()));

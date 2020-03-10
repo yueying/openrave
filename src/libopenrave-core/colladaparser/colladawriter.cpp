@@ -1874,19 +1874,19 @@ private:
 
                 const KinBody::GeometryInfo& info = geom->GetInfo();
 
-                if( info._vGeomData2.x > g_fEpsilon ) {
+                if( info.geom_inner_extents_data_.x > g_fEpsilon ) {
                     ss.str(""); ss.clear();
-                    ss << info._vGeomData2.x;
+                    ss << info.geom_inner_extents_data_.x;
                     pcage->add("inner_size_x")->setCharData(ss.str());
                 }
-                if( info._vGeomData2.y > g_fEpsilon ) {
+                if( info.geom_inner_extents_data_.y > g_fEpsilon ) {
                     ss.str(""); ss.clear();
-                    ss << info._vGeomData2.y;
+                    ss << info.geom_inner_extents_data_.y;
                     pcage->add("inner_size_y")->setCharData(ss.str());
                 }
-                if( info._vGeomData2.z > g_fEpsilon ) {
+                if( info.geom_inner_extents_data_.z > g_fEpsilon ) {
                     ss.str(""); ss.clear();
-                    ss << info._vGeomData2.z;
+                    ss << info.geom_inner_extents_data_.z;
                     pcage->add("inner_size_z")->setCharData(ss.str());
                 }
 

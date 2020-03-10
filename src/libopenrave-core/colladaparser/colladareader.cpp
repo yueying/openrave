@@ -1431,8 +1431,8 @@ public:
         plink->info_.name_ = name;
         plink->info_.mass_ = 1.0;
         plink->info_.is_static_ = false;
-        plink->info_._t = getNodeParentTransform(pdomnode) * _ExtractFullTransform(pdomnode);
-        bool bhasgeometry = ExtractGeometries(pdomnode, plink->info_._t, plink, bindings, vprocessednodes);
+        plink->info_.transform_ = getNodeParentTransform(pdomnode) * _ExtractFullTransform(pdomnode);
+        bool bhasgeometry = ExtractGeometries(pdomnode, plink->info_.transform_, plink, bindings, vprocessednodes);
         if( !bhasgeometry ) {
             return KinBodyPtr();
         }
@@ -1817,10 +1817,10 @@ public:
             RAVELOG_DEBUG(str(boost::format("found previously defined link '%s")%linkname));
         }
 
-        plink->info_._t = tParentLink;
+        plink->info_.transform_ = tParentLink;
         // use the kinematics coordinate system for each link
         if( !!pdomlink ) {
-            plink->info_._t = plink->info_._t * _ExtractFullTransform(pdomlink);
+            plink->info_.transform_ = plink->info_.transform_ * _ExtractFullTransform(pdomlink);
         }
 
         domInstance_rigid_bodyRef irigidbody;
@@ -1882,7 +1882,7 @@ public:
                 plink->info_._vinertiamoments[1] = rigiddata->getInertia()->getValue()[1];
                 plink->info_._vinertiamoments[2] = rigiddata->getInertia()->getValue()[2];
             }
-            plink->info_.mass_frame_transform_ = plink->info_._t.inverse() * tmassframe;
+            plink->info_.mass_frame_transform_ = plink->info_.transform_.inverse() * tmassframe;
             if( !!rigiddata->getDynamic() ) {
                 plink->info_.is_static_ = !rigiddata->getDynamic()->getValue();
             }
@@ -1904,7 +1904,7 @@ public:
             RAVELOG_DEBUG(str(boost::format("Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
 
             {
-                stringstream ss; ss << plink->GetName() << ": " << plink->info_._t << endl;
+                stringstream ss; ss << plink->GetName() << ": " << plink->info_.transform_ << endl;
                 RAVELOG_DEBUG(ss.str());
             }
 
@@ -2057,7 +2057,7 @@ public:
 
                 RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)")%pjoint->info_.name_%pjoint->jointindex%pjoint->dofindex));
 
-                KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->info_._t * tatt, vdomjoints, bindings);
+                KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->info_.transform_ * tatt, vdomjoints, bindings);
 
                 if (!pchildlink) {
                     RAVELOG_WARN(str(boost::format("Link '%s' has no child link, creating dummy link\n")%plink->GetName()));
@@ -2291,15 +2291,23 @@ public:
     /// Extract Geometry and apply the transformations of the node
     /// \param pdomnode  Node to extract the geometry
     /// \param plink     Link of the kinematics model
-    bool ExtractGeometries(const domNodeRef pdomnode, const Transform& tkinbodytrans, KinBody::LinkPtr plink, const KinematicsSceneBindings& bindings, const std::vector<std::string>& vprocessednodes)
+    bool ExtractGeometries(const domNodeRef pdomnode, 
+		const Transform& tkinbodytrans,
+		KinBody::LinkPtr plink, 
+		const KinematicsSceneBindings& bindings, 
+		const std::vector<std::string>& vprocessednodes)
     {
-        if( !pdomnode ) {
+        if( !pdomnode )
+		{
             return false;
         }
-        if( !!pdomnode->getID() &&( find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end()) ) {
+        if( !!pdomnode->getID() 
+			&&( find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end()) ) 
+		{
             return false;
         }
-        if( _bSkipGeometry ) {
+        if( _bSkipGeometry ) 
+		{
             return false;
         }
 
@@ -2307,12 +2315,15 @@ public:
 
         bool bhasgeometry = false;
         // For all child nodes of pdomnode
-        for (size_t i = 0; i < pdomnode->getNode_array().getCount(); i++) {
+        for (size_t i = 0; i < pdomnode->getNode_array().getCount(); i++) 
+		{
             // check if contains a joint
             bool contains=false;
-            FOREACHC(it,bindings.listAxisBindings) {
+            FOREACHC(it,bindings.listAxisBindings) 
+			{
                 // don't check ID's check if the reference is the same!
-                if ( pdomnode->getNode_array()[i] == it->visualnode) {
+                if ( pdomnode->getNode_array()[i] == it->visualnode)
+				{
                     contains=true;
                     break;
                 }
@@ -2362,7 +2373,7 @@ public:
         // WARNING if pdomnode comes from an external reference, then the top of its parent will point to the first visual node ever parsed, which might not be the current visual node! Therefore, have to stop as soon as the external reference visual hierarchy is done and then multiply by the kinbody transform.
         TransformMatrix tnodeparent = tkinbodytrans * GetRelativeNodeParentTransform(pdomnode, bindings);
         TransformMatrix tnodetrans = _ExtractFullTransform(pdomnode);
-        TransformMatrix tmnodegeom = (TransformMatrix) plink->info_._t.inverse() * tnodeparent * tnodetrans;
+        TransformMatrix tmnodegeom = (TransformMatrix) plink->info_.transform_.inverse() * tnodeparent * tnodetrans;
         Transform tnodegeom;
         Vector vscale;
         decompose(tmnodegeom, tnodegeom, vscale);
@@ -2371,31 +2382,31 @@ public:
 
         FOREACH(itgeominfo, listGeometryInfos) {
             //  Switch between different type of geometry PRIMITIVES
-            Transform toriginal = itgeominfo->_t;
-            itgeominfo->_t = tnodegeom * itgeominfo->_t;
+            Transform toriginal = itgeominfo->transform_;
+            itgeominfo->transform_ = tnodegeom * itgeominfo->transform_;
             switch (itgeominfo->type_) {
             case GT_Box:
-                itgeominfo->geom_data_vec_ *= vscale;
+                itgeominfo->gemo_outer_extents_data_ *= vscale;
                 break;
             case GT_Cage:
-                itgeominfo->geom_data_vec_ *= vscale;
-                itgeominfo->_vGeomData2 *= vscale;
+                itgeominfo->gemo_outer_extents_data_ *= vscale;
+                itgeominfo->geom_inner_extents_data_ *= vscale;
                 for (size_t i = 0; i < itgeominfo->side_walls_vector_.size(); ++i) {
                     itgeominfo->side_walls_vector_[i].transf.trans *= vscale;
                     itgeominfo->side_walls_vector_[i].vExtents *= vscale;
                 }
             case GT_Container:
-                itgeominfo->geom_data_vec_ *= vscale;
-                itgeominfo->_vGeomData2 *= vscale;
-                itgeominfo->_vGeomData3 *= vscale;
-                itgeominfo->_vGeomData4 *= vscale;
+                itgeominfo->gemo_outer_extents_data_ *= vscale;
+                itgeominfo->geom_inner_extents_data_ *= vscale;
+                itgeominfo->geom_bottom_cross_data_ *= vscale;
+                itgeominfo->geom_bottom_data_ *= vscale;
                 break;
             case GT_Sphere:
-                itgeominfo->geom_data_vec_ *= max(vscale.z, max(vscale.x, vscale.y));
+                itgeominfo->gemo_outer_extents_data_ *= max(vscale.z, max(vscale.x, vscale.y));
                 break;
             case GT_Cylinder:
-                itgeominfo->geom_data_vec_.x *= max(vscale.x, vscale.y);
-                itgeominfo->geom_data_vec_.y *= vscale.z;
+                itgeominfo->gemo_outer_extents_data_.x *= max(vscale.x, vscale.y);
+                itgeominfo->gemo_outer_extents_data_.y *= vscale.z;
                 break;
             case GT_TriMesh:
                 itgeominfo->mesh_collision_.ApplyTransform(TransformMatrix(tmnodegeom * toriginal).inverse() * TransformMatrix(toriginal));
@@ -2409,7 +2420,7 @@ public:
             plink->geometries_vector_.push_back(pgeom);
             //  Append the collision mesh
             TriMesh trimesh = pgeom->GetCollisionMesh();
-            trimesh.ApplyTransform(pgeom->info_._t);
+            trimesh.ApplyTransform(pgeom->info_.transform_);
             plink->_collision.Append(trimesh);
         }
 
@@ -2858,20 +2869,24 @@ public:
 		const std::map<std::string,domMaterialRef>& mapmaterials, 
 		std::list<KinBody::GeometryInfo>& listGeometryInfos)
     {
-        if( !domgeom ) {
+        if( !domgeom )
+		{
             return false;
         }
 
         std::string geomname;
-        if( !!domgeom->getName() ) {
+        if( !!domgeom->getName() )
+		{
             geomname = domgeom->getName();
         }
         Transform tlocalgeom;
         bool bgeomvisible = true;
         // check for OpenRAVE profile simple geometric primitives
-        for(size_t ie = 0; ie < domgeom->getExtra_array().getCount(); ++ie) {
+        for(size_t ie = 0; ie < domgeom->getExtra_array().getCount(); ++ie) 
+		{
             domExtraRef pextra = domgeom->getExtra_array()[ie];
-            if( !pextra->getType() ) {
+            if( !pextra->getType() ) 
+			{
                 continue;
             }
             string extra_type = pextra->getType();
@@ -2893,8 +2908,8 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo.type_ = GT_Box;
-                                    geominfo.geom_data_vec_ = vextents;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.gemo_outer_extents_data_ = vextents;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -2907,8 +2922,8 @@ public:
                                 ss >> fradius;
                                 if( ss.eof() || !!ss ) {
                                     geominfo.type_ = GT_Sphere;
-                                    geominfo.geom_data_vec_.x = fradius;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.gemo_outer_extents_data_.x = fradius;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -2926,8 +2941,8 @@ public:
                                     Transform trot(quatRotateDirection(Vector(0,0,1),Vector(0,1,0)),Vector());
                                     tlocalgeom = tlocalgeom * trot;
                                     geominfo.type_ = GT_Cylinder;
-                                    geominfo.geom_data_vec_ = vGeomData;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.gemo_outer_extents_data_ = vGeomData;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -2943,15 +2958,15 @@ public:
                                 ss2 >> vGeomData.y;
                                 if( (ss.eof() || !!ss) && (ss2.eof() || !!ss2) ) {
                                     geominfo.type_ = GT_Cylinder;
-                                    geominfo.geom_data_vec_ = vGeomData;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.gemo_outer_extents_data_ = vGeomData;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
                         }
                         else if( name == "cage" ) {
                             geominfo.type_ = GT_Cage;
-                            geominfo._t = tlocalgeom;
+                            geominfo.transform_ = tlocalgeom;
 
                             daeElementRef phalf_extents = children[i]->getChild("half_extents");
                             if( !!phalf_extents ) {
@@ -2959,19 +2974,19 @@ public:
                                 Vector vextents;
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo.geom_data_vec_ = vextents;
+                                    geominfo.gemo_outer_extents_data_ = vextents;
                                     bfoundgeom = true;
                                 }
                             }
 
-                            geominfo._vGeomData2 = Vector();
+                            geominfo.geom_inner_extents_data_ = Vector();
                             daeElementRef pInnerSizeX = children[i]->getChild("inner_size_x");
                             if( !!pInnerSizeX ) {
                                 stringstream ss(pInnerSizeX->getCharData());
                                 dReal fInnerSizeX=0;
                                 ss >> fInnerSizeX;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._vGeomData2.x = fInnerSizeX;
+                                    geominfo.geom_inner_extents_data_.x = fInnerSizeX;
                                     bfoundgeom = true;
                                 }
                             }
@@ -2981,7 +2996,7 @@ public:
                                 dReal fInnerSizeY=0;
                                 ss >> fInnerSizeY;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._vGeomData2.y = fInnerSizeY;
+                                    geominfo.geom_inner_extents_data_.y = fInnerSizeY;
                                     bfoundgeom = true;
                                 }
                             }
@@ -2991,7 +3006,7 @@ public:
                                 dReal fInnerSizeZ=0;
                                 ss >> fInnerSizeZ;
                                 if( ss.eof() || !!ss ) {
-                                    geominfo._vGeomData2.z = fInnerSizeZ;
+                                    geominfo.geom_inner_extents_data_.z = fInnerSizeZ;
                                     bfoundgeom = true;
                                 }
                             }
@@ -3039,8 +3054,8 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo.type_ = GT_Container;
-                                    geominfo.geom_data_vec_ = vextents;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.gemo_outer_extents_data_ = vextents;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -3051,8 +3066,8 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo.type_ = GT_Container;
-                                    geominfo._vGeomData2 = vextents;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.geom_inner_extents_data_ = vextents;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -3063,8 +3078,8 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo.type_ = GT_Container;
-                                    geominfo._vGeomData3 = vextents;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.geom_bottom_cross_data_ = vextents;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -3075,8 +3090,8 @@ public:
                                 ss >> vextents.x >> vextents.y >> vextents.z;
                                 if( ss.eof() || !!ss ) {
                                     geominfo.type_ = GT_Container;
-                                    geominfo._vGeomData4 = vextents;
-                                    geominfo._t = tlocalgeom;
+                                    geominfo.geom_bottom_data_ = vextents;
+                                    geominfo.transform_ = tlocalgeom;
                                     bfoundgeom = true;
                                 }
                             }
@@ -3109,28 +3124,28 @@ public:
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTriangles_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
-                listGeometryInfos.back()._t = tlocalgeom;
+                listGeometryInfos.back().transform_ = tlocalgeom;
                 listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getTrifans_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTrifans_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
-                listGeometryInfos.back()._t = tlocalgeom;
+                listGeometryInfos.back().transform_ = tlocalgeom;
                 listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getTristrips_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getTristrips_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
-                listGeometryInfos.back()._t = tlocalgeom;
+                listGeometryInfos.back().transform_ = tlocalgeom;
                 listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             for (size_t tg = 0; tg<meshRef->getPolylist_array().getCount(); tg++) {
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 _ExtractGeometry(meshRef->getPolylist_array()[tg], meshRef->getVertices(), mapmaterials, listGeometryInfos.back(),tlocalgeominv);
                 listGeometryInfos.back().name_ = geomname;
-                listGeometryInfos.back()._t = tlocalgeom;
+                listGeometryInfos.back().transform_ = tlocalgeom;
                 listGeometryInfos.back().is_visible_ = bgeomvisible;
             }
             if( meshRef->getPolygons_array().getCount()> 0 ) {
@@ -3154,7 +3169,7 @@ public:
                 // need to get the convex hull of listNewGeometryInfos, quickest way is to use Geometry to compute the geometry vertices
                 FOREACH(itgeominfo,listNewGeometryInfos) {
                     itgeominfo->InitCollisionMesh();
-                    Transform tnew = tlocalgeominv * itgeominfo->_t;
+                    Transform tnew = tlocalgeominv * itgeominfo->transform_;
                     FOREACH(itvertex, itgeominfo->mesh_collision_.vertices) {
                         vconvexhull.push_back(tnew * *itvertex);
                     }
@@ -3191,7 +3206,7 @@ public:
                 listGeometryInfos.push_back(KinBody::GeometryInfo());
                 listGeometryInfos.back().name_ = geomname;
                 listGeometryInfos.back().type_ = GT_TriMesh;
-                listGeometryInfos.back()._t = tlocalgeom;
+                listGeometryInfos.back().transform_ = tlocalgeom;
                 listGeometryInfos.back().is_visible_ = bgeomvisible;
                 _computeConvexHull(vconvexhull,listGeometryInfos.back().mesh_collision_);
             }

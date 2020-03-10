@@ -432,7 +432,7 @@ bool CreateTriMeshFromFile(EnvironmentBasePtr penv, const std::string& filename,
                     trimesh.vertices.clear();
                     trimesh.indices.clear();
                     FOREACH(itgeom, listGeometries) {
-                        trimesh.Append(itgeom->mesh_collision_, itgeom->_t);
+                        trimesh.Append(itgeom->mesh_collision_, itgeom->transform_);
                     }
                     return true;
                 }
@@ -960,7 +960,7 @@ public:
                     // directly apply transform to all geomteries
                     Transform tnew = _plink->GetTransform();
                     FOREACH(itgeom, _plink->geometries_vector_) {
-                        (*itgeom)->info_._t = tnew * (*itgeom)->info_._t;
+                        (*itgeom)->info_.transform_ = tnew * (*itgeom)->info_.transform_;
                     }
                     _plink->_collision.ApplyTransform(tnew);
                     _plink->SetTransform(tOrigTrans);
@@ -978,7 +978,7 @@ public:
                         return false;
                     }
 
-                    TransformMatrix tm(info->_t); tm.trans = Vector();
+                    TransformMatrix tm(info->transform_); tm.trans = Vector();
                     TransformMatrix tminv = tm.inverse();
                     tm.m[0] *= _vScaleGeometry.x; tm.m[1] *= _vScaleGeometry.x; tm.m[2] *= _vScaleGeometry.x;
                     tm.m[4] *= _vScaleGeometry.y; tm.m[5] *= _vScaleGeometry.y; tm.m[6] *= _vScaleGeometry.y;
@@ -988,10 +988,10 @@ public:
                     Vector geomspacescale(RaveSqrt(tmres.m[0]*tmres.m[0]+tmres.m[4]*tmres.m[4]+tmres.m[8]*tmres.m[8]),RaveSqrt(tmres.m[1]*tmres.m[1]+tmres.m[5]*tmres.m[5]+tmres.m[9]*tmres.m[9]),RaveSqrt(tmres.m[2]*tmres.m[2]+tmres.m[6]*tmres.m[6]+tmres.m[10]*tmres.m[10]));
 
                     if( !!_fnGetModelsDir ) {
-                        bool bsame = info->_filenamerender == info->_filenamecollision;
-                        info->_filenamerender = _fnGetModelsDir(info->_filenamerender);
+                        bool bsame = info->render_file_name_ == info->_filenamecollision;
+                        info->render_file_name_ = _fnGetModelsDir(info->render_file_name_);
                         if( bsame ) {
-                            info->_filenamecollision = info->_filenamerender;
+                            info->_filenamecollision = info->render_file_name_;
                         }
                         else {
                             info->_filenamecollision = _fnGetModelsDir(info->_filenamecollision);
@@ -1008,10 +1008,10 @@ public:
                                 bSuccess = true;
                             }
                         }
-                        if( info->_filenamerender.size() > 0 ) {
+                        if( info->render_file_name_.size() > 0 ) {
                             if( !bSuccess ) {
-                                if( !CreateGeometries(_pparent->GetEnv(), info->_filenamerender, info->render_scale_vec_, listGeometries) ) {
-                                    RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->_filenamerender));
+                                if( !CreateGeometries(_pparent->GetEnv(), info->render_file_name_, info->render_scale_vec_, listGeometries) ) {
+                                    RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->render_file_name_));
                                 }
                                 else {
                                     bSuccess = true;
@@ -1021,15 +1021,15 @@ public:
                         if( listGeometries.size() > 0 ) {
                             // append all the geometries to the link. make sure the render filename is specified in only one geometry.
                             string extension;
-                            if( info->_filenamerender.find_last_of('.') != string::npos ) {
-                                extension = info->_filenamerender.substr(info->_filenamerender.find_last_of('.')+1);
+                            if( info->render_file_name_.find_last_of('.') != string::npos ) {
+                                extension = info->render_file_name_.substr(info->render_file_name_.find_last_of('.')+1);
                             }
                             FOREACH(itnewgeom,listGeometries) {
                                 itnewgeom->is_visible_ = info->is_visible_;
                                 itnewgeom->is_modifiable_ = info->is_modifiable_;
-                                itnewgeom->_t = info->_t;
+                                itnewgeom->transform_ = info->transform_;
                                 itnewgeom->transparency_ = info->transparency_;
-                                itnewgeom->_filenamerender = string("__norenderif__:")+extension;
+                                itnewgeom->render_file_name_ = string("__norenderif__:")+extension;
                                 FOREACH(it,itnewgeom->mesh_collision_.vertices) {
                                     *it = tmres * *it;
                                 }
@@ -1042,11 +1042,11 @@ public:
                                 if( geomreader->IsOverwriteTransparency() ) {
                                     itnewgeom->transparency_ = info->transparency_;
                                 }
-                                itnewgeom->_t.trans *= _vScaleGeometry;
-                                _plink->_collision.Append(itnewgeom->mesh_collision_, itnewgeom->_t);
+                                itnewgeom->transform_.trans *= _vScaleGeometry;
+                                _plink->_collision.Append(itnewgeom->mesh_collision_, itnewgeom->transform_);
                             }
                             listGeometries.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
-                            listGeometries.front()._filenamerender = info->_filenamerender;
+                            listGeometries.front().render_file_name_ = info->render_file_name_;
                             listGeometries.front().collision_scale_vec_ = info->collision_scale_vec_*geomspacescale;
                             listGeometries.front()._filenamecollision = info->_filenamecollision;
                             listGeometries.front().is_visible_ = info->is_visible_;
@@ -1059,19 +1059,19 @@ public:
                             FOREACH(it,info->mesh_collision_.vertices) {
                                 *it = tmres * *it;
                             }
-                            info->_t.trans *= _vScaleGeometry;
-                            _plink->_collision.Append(info->mesh_collision_, info->_t);
+                            info->transform_.trans *= _vScaleGeometry;
+                            _plink->_collision.Append(info->mesh_collision_, info->transform_);
                             _plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*info)));
                         }
                     }
                     else {
                         info->render_scale_vec_ = info->render_scale_vec_*geomspacescale;
-                        info->_filenamerender = info->_filenamerender;
+                        info->render_file_name_ = info->render_file_name_;
                         if( info->type_ == GT_Cylinder ) {         // axis has to point on y
                             // rotate on x axis by pi/2
                             Transform trot;
                             trot.rot = quatFromAxisAngle(Vector(1, 0, 0), PI/2);
-                            info->_t.rot = (info->_t*trot).rot;
+                            info->transform_.rot = (info->transform_*trot).rot;
                         }
 
                         // call before attaching the geom
@@ -1080,9 +1080,9 @@ public:
                         FOREACH(it,info->mesh_collision_.vertices) {
                             *it = tmres * *it;
                         }
-                        info->_t.trans *= _vScaleGeometry;
-                        info->geom_data_vec_ *= geomspacescale;
-                        _plink->_collision.Append(geom->GetCollisionMesh(), info->_t);
+                        info->transform_.trans *= _vScaleGeometry;
+                        info->gemo_outer_extents_data_ *= geomspacescale;
+                        _plink->_collision.Append(geom->GetCollisionMesh(), info->transform_);
                         _plink->geometries_vector_.push_back(geom);
                     }
                 }
@@ -1249,24 +1249,24 @@ public:
         if( xmlname == "translation" ) {
             Vector v;
             _ss >> v.x >> v.y >> v.z;
-            _plink->info_._t.trans += v*_vScaleGeometry;
+            _plink->info_.transform_.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
             _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-            _plink->info_._t.rot = (Transform(tnew)*_plink->info_._t).rot;
+            _plink->info_.transform_.rot = (Transform(tnew)*_plink->info_.transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
             _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-            _plink->info_._t.rot = (tnew*_plink->info_._t).rot;
+            _plink->info_.transform_.rot = (tnew*_plink->info_.transform_).rot;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
             _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
-            _plink->info_._t.rot = (tnew*_plink->info_._t).rot;
+            _plink->info_.transform_.rot = (tnew*_plink->info_.transform_).rot;
         }
         else if( xmlname == "offsetfrom" ) {
             // figure out which body

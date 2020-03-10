@@ -1,4 +1,4 @@
-/** \example ormulticontrol.cpp
+﻿/** \example ormulticontrol.cpp
     \author Rosen Diankov
 
     \image html cppexample_ormulticontrol.jpg "Base moves with velocity control, arm moves with position control."
@@ -19,7 +19,8 @@
 using namespace OpenRAVE;
 using namespace std;
 
-namespace cppexamples {
+namespace cppexamples
+{
 
 class MultiControlExample : public OpenRAVEExample
 {

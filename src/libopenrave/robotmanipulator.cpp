@@ -1140,7 +1140,8 @@ bool RobotBase::Manipulator::CheckEndEffectorSelfCollision(const Transform& tEE,
     return bincollision;
 }
 
-bool RobotBase::Manipulator::CheckEndEffectorCollision(const IkParameterization& ikparam, CollisionReportPtr report, int numredundantsamples) const
+bool RobotBase::Manipulator::CheckEndEffectorCollision(const IkParameterization& ikparam,
+	CollisionReportPtr report, int numredundantsamples) const
 {
     if( ikparam.GetType() == IKP_Transform6D ) {
         return CheckEndEffectorCollision(ikparam.GetTransform6D(),report);

@@ -116,42 +116,48 @@ inline bool ReadBinaryVector(std::istream& f, std::vector<dReal>& v)
 
 class GenericTrajectory : public TrajectoryBase
 {
-    std::map<string,int> _maporder;
+    std::map<std::string,int> order_map_;
 public:
-    GenericTrajectory(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryBase(penv), _timeoffset(-1)
+    GenericTrajectory(EnvironmentBasePtr penv, std::istream& sinput)
+		: TrajectoryBase(penv),
+		time_offset_(-1)
     {
-        _maporder["deltatime"] = 0;
-        _maporder["joint_snaps"] = 1;
-        _maporder["affine_snaps"] = 2;
-        _maporder["joint_jerks"] = 3;
-        _maporder["affine_jerks"] = 4;
-        _maporder["joint_accelerations"] = 5;
-        _maporder["affine_accelerations"] = 6;
-        _maporder["joint_velocities"] = 7;
-        _maporder["affine_velocities"] = 8;
-        _maporder["joint_values"] = 9;
-        _maporder["affine_transform"] = 10;
-        _maporder["joint_torques"] = 11;
+        order_map_["deltatime"] = 0;
+        order_map_["joint_snaps"] = 1;
+        order_map_["affine_snaps"] = 2;
+        order_map_["joint_jerks"] = 3;
+        order_map_["affine_jerks"] = 4;
+        order_map_["joint_accelerations"] = 5;
+        order_map_["affine_accelerations"] = 6;
+        order_map_["joint_velocities"] = 7;
+        order_map_["affine_velocities"] = 8;
+        order_map_["joint_values"] = 9;
+        order_map_["affine_transform"] = 10;
+        order_map_["joint_torques"] = 11;
         is_init_ = false;
-        _bSamplingVerified = false;
+        is_sampling_verified_ = false;
     }
 
     bool SortGroups(const ConfigurationSpecification::Group& g1, const ConfigurationSpecification::Group& g2)
     {
         size_t index1 = g1.name.find_first_of(' ');
-        if( index1 == string::npos ) {
+        if( index1 == std::string::npos ) 
+		{
             index1 = g1.name.size();
         }
         size_t index2 = g2.name.find_first_of(' ');
-        if( index2 == string::npos ) {
+        if( index2 == std::string::npos ) 
+		{
             index2 = g2.name.size();
         }
-        std::map<string,int>::iterator it1 = _maporder.find(g1.name.substr(0,index1));
-        std::map<string,int>::iterator it2 = _maporder.find(g2.name.substr(0,index2));
-        if( it1 == _maporder.end() ) {
-            return it2 == _maporder.end();
+        std::map<string,int>::iterator it1 = order_map_.find(g1.name.substr(0,index1));
+        std::map<string,int>::iterator it2 = order_map_.find(g2.name.substr(0,index2));
+        if( it1 == order_map_.end() ) 
+		{
+            return it2 == order_map_.end();
         }
-        if( it2 == _maporder.end()) {
+        if( it2 == order_map_.end())
+		{
             return true;
         }
         return it1->second < it2->second;
@@ -159,83 +165,90 @@ public:
 
     void Init(const ConfigurationSpecification& spec)
     {
-        if( is_init_  && _spec == spec ) {
+        if( is_init_  && config_specification_ == spec )
+		{
             // already init
         }
-        else {
+        else 
+		{
             //BOOST_ASSERT(spec.GetDOF()>0 && spec.IsValid()); // when deserializing, can sometimes get invalid spec, but that's ok
             is_init_ = false;
-            _vgroupinterpolators.resize(0);
-            _vgroupvalidators.resize(0);
-            _vderivoffsets.resize(0);
-            _vddoffsets.resize(0);
-            _vdddoffsets.resize(0);
-            _vintegraloffsets.resize(0);
-            _spec = spec; // what if this pointer is the same?
+            group_interpolators_vector_.resize(0);
+            group_validators_vector_.resize(0);
+            derivative_offsets_vector_.resize(0);
+            deriv_deriv_offsets_vector_.resize(0);
+            deriv_deriv_deriv_offsets_vector_.resize(0);
+            intergral_offsets_vector_.resize(0);
+            config_specification_ = spec; // what if this pointer is the same?
             // order the groups based on computation order
-            stable_sort(_spec.groups_vector_.begin(),_spec.groups_vector_.end(),boost::bind(&GenericTrajectory::SortGroups,this,_1,_2));
-            _timeoffset = -1;
-            FOREACH(itgroup,_spec.groups_vector_) {
-                if( itgroup->name == "deltatime" ) {
-                    _timeoffset = itgroup->offset;
+            std::stable_sort(config_specification_.groups_vector_.begin(),
+				config_specification_.groups_vector_.end(),
+				boost::bind(&GenericTrajectory::SortGroups,this,_1,_2));
+            time_offset_ = -1;
+            for(auto& itgroup:config_specification_.groups_vector_)
+			{
+                if( itgroup.name == "deltatime" ) 
+				{
+                    time_offset_ = itgroup.offset;
                 }
             }
             _InitializeGroupFunctions();
         }
-        _vtrajdata.resize(0);
+        trajectory_data_vector_.resize(0);
         _vaccumtime.resize(0);
-        _vdeltainvtime.resize(0);
+        delta_inv_time_vector_.resize(0);
         _bChanged = true;
-        _bSamplingVerified = false;
+        is_sampling_verified_ = false;
         is_init_ = true;
     }
 
     void Insert(size_t index, const std::vector<dReal>& data, bool bOverwrite)
     {
-        BOOST_ASSERT(_bInit);
-        if( data.size() == 0 ) {
+        BOOST_ASSERT(is_init_);
+        if( data.size() == 0 ) 
+		{
             return;
         }
-        BOOST_ASSERT(_spec.GetDOF()>0);
-        OPENRAVE_ASSERT_FORMAT((data.size()%_spec.GetDOF()) == 0, "%d does not divide dof %d", data.size()%_spec.GetDOF(), ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP(index*_spec.GetDOF(),<=,_vtrajdata.size());
-        if( bOverwrite && index*_spec.GetDOF() < _vtrajdata.size() ) {
-            size_t copysize = min(data.size(),_vtrajdata.size()-index*_spec.GetDOF());
-            std::copy(data.begin(),data.begin()+copysize,_vtrajdata.begin()+index*_spec.GetDOF());
+        BOOST_ASSERT(config_specification_.GetDOF()>0);
+        OPENRAVE_ASSERT_FORMAT((data.size()%config_specification_.GetDOF()) == 0, "%d does not divide dof %d", data.size()%config_specification_.GetDOF(), ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP(index*config_specification_.GetDOF(),<=,trajectory_data_vector_.size());
+        if( bOverwrite && index*config_specification_.GetDOF() < trajectory_data_vector_.size() ) {
+            size_t copysize = min(data.size(),trajectory_data_vector_.size()-index*config_specification_.GetDOF());
+            std::copy(data.begin(),data.begin()+copysize,trajectory_data_vector_.begin()+index*config_specification_.GetDOF());
             if( copysize < data.size() ) {
-                _vtrajdata.insert(_vtrajdata.end(),data.begin()+copysize,data.end());
+                trajectory_data_vector_.insert(trajectory_data_vector_.end(),data.begin()+copysize,data.end());
             }
         }
         else {
-            _vtrajdata.insert(_vtrajdata.begin()+index*_spec.GetDOF(),data.begin(),data.end());
+            trajectory_data_vector_.insert(trajectory_data_vector_.begin()+index*config_specification_.GetDOF(),data.begin(),data.end());
         }
         _bChanged = true;
     }
 
     void Insert(size_t index, const std::vector<dReal>& data, const ConfigurationSpecification& spec, bool bOverwrite)
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         if( data.size() == 0 ) {
             return;
         }
         BOOST_ASSERT(spec.GetDOF()>0);
         OPENRAVE_ASSERT_FORMAT((data.size()%spec.GetDOF()) == 0, "%d does not divide dof %d", data.size()%spec.GetDOF(), ORE_InvalidArguments);
-        OPENRAVE_ASSERT_OP(index*_spec.GetDOF(),<=,_vtrajdata.size());
-        if( _spec == spec ) {
+        OPENRAVE_ASSERT_OP(index*config_specification_.GetDOF(),<=,trajectory_data_vector_.size());
+        if( config_specification_ == spec ) {
             Insert(index,data,bOverwrite);
         }
         else {
-            std::vector< std::vector<ConfigurationSpecification::Group>::const_iterator > vconvertgroups(_spec.groups_vector_.size());
+            std::vector< std::vector<ConfigurationSpecification::Group>::const_iterator > vconvertgroups(config_specification_.groups_vector_.size());
             for(size_t i = 0; i < vconvertgroups.size(); ++i) {
-                vconvertgroups[i] = spec.FindCompatibleGroup(_spec.groups_vector_[i]);
+                vconvertgroups[i] = spec.FindCompatibleGroup(config_specification_.groups_vector_[i]);
             }
             size_t numpoints = data.size()/spec.GetDOF();
             size_t sourceindex = 0;
             std::vector<dReal>::iterator ittargetdata;
             std::vector<dReal>::const_iterator itsourcedata;
-            if( bOverwrite && index*_spec.GetDOF() < _vtrajdata.size() ) {
-                size_t copyelements = min(numpoints,_vtrajdata.size()/_spec.GetDOF()-index);
-                ittargetdata = _vtrajdata.begin()+index*_spec.GetDOF();
+            if( bOverwrite && index*config_specification_.GetDOF() < trajectory_data_vector_.size() ) {
+                size_t copyelements = min(numpoints,trajectory_data_vector_.size()/config_specification_.GetDOF()-index);
+                ittargetdata = trajectory_data_vector_.begin()+index*config_specification_.GetDOF();
                 itsourcedata = data.begin();
                 _ConvertData(ittargetdata,itsourcedata,vconvertgroups,spec,copyelements,false);
                 sourceindex = copyelements*spec.GetDOF();
@@ -243,11 +256,11 @@ public:
             }
             if( sourceindex < data.size() ) {
                 size_t numelements = (data.size()-sourceindex)/spec.GetDOF();
-                std::vector<dReal> vtemp(numelements*_spec.GetDOF());
+                std::vector<dReal> vtemp(numelements*config_specification_.GetDOF());
                 ittargetdata = vtemp.begin();
                 itsourcedata = data.begin()+sourceindex;
                 _ConvertData(ittargetdata,itsourcedata,vconvertgroups,spec,numelements,true);
-                _vtrajdata.insert(_vtrajdata.begin()+index*_spec.GetDOF(),vtemp.begin(),vtemp.end());
+                trajectory_data_vector_.insert(trajectory_data_vector_.begin()+index*config_specification_.GetDOF(),vtemp.begin(),vtemp.end());
             }
             _bChanged = true;
         }
@@ -255,41 +268,45 @@ public:
 
     void Remove(size_t startindex, size_t endindex)
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         if( startindex == endindex ) {
             return;
         }
-        BOOST_ASSERT(startindex*_spec.GetDOF() <= _vtrajdata.size() && endindex*_spec.GetDOF() <= _vtrajdata.size());
+        BOOST_ASSERT(startindex*config_specification_.GetDOF() <= trajectory_data_vector_.size() && endindex*config_specification_.GetDOF() <= trajectory_data_vector_.size());
         OPENRAVE_ASSERT_OP(startindex,<,endindex);
-        _vtrajdata.erase(_vtrajdata.begin()+startindex*_spec.GetDOF(),_vtrajdata.begin()+endindex*_spec.GetDOF());
+        trajectory_data_vector_.erase(trajectory_data_vector_.begin()+startindex*config_specification_.GetDOF(),trajectory_data_vector_.begin()+endindex*config_specification_.GetDOF());
         _bChanged = true;
     }
 
     void Sample(std::vector<dReal>& data, dReal time) const
     {
-        BOOST_ASSERT(_bInit);
+        BOOST_ASSERT(is_init_);
         BOOST_ASSERT(_timeoffset>=0);
         BOOST_ASSERT(time >= 0);
         _ComputeInternal();
-        OPENRAVE_ASSERT_OP_FORMAT0((int)_vtrajdata.size(),>=,_spec.GetDOF(), "trajectory needs at least one point to sample from", ORE_InvalidArguments);
-        if( IS_DEBUGLEVEL(Level_Verbose) || (RaveGetDebugLevel() & Level_VerifyPlans) ) {
+        OPENRAVE_ASSERT_OP_FORMAT0((int)trajectory_data_vector_.size(),>=,config_specification_.GetDOF(), 
+			"trajectory needs at least one point to sample from", ORE_InvalidArguments);
+        if( IS_DEBUGLEVEL(Level_Verbose) || (RaveGetDebugLevel() & Level_VerifyPlans) )
+		{
             _VerifySampling();
         }
         data.resize(0);
-        data.resize(_spec.GetDOF(),0);
-        if( time >= GetDuration() ) {
-            std::copy(_vtrajdata.end()-_spec.GetDOF(),_vtrajdata.end(),data.begin());
+        data.resize(config_specification_.GetDOF(),0);
+        if( time >= GetDuration() ) 
+		{
+            std::copy(trajectory_data_vector_.end()-config_specification_.GetDOF(),trajectory_data_vector_.end(),data.begin());
         }
-        else {
+        else 
+		{
             std::vector<dReal>::iterator it = std::lower_bound(_vaccumtime.begin(),_vaccumtime.end(),time);
             if( it == _vaccumtime.begin() ) {
-                std::copy(_vtrajdata.begin(),_vtrajdata.begin()+_spec.GetDOF(),data.begin());
-                data.at(_timeoffset) = time;
+                std::copy(trajectory_data_vector_.begin(),trajectory_data_vector_.begin()+config_specification_.GetDOF(),data.begin());
+                data.at(time_offset_) = time;
             }
             else {
                 size_t index = it-_vaccumtime.begin();
                 dReal deltatime = time-_vaccumtime.at(index-1);
-                dReal waypointdeltatime = _vtrajdata.at(_spec.GetDOF()*index + _timeoffset);
+                dReal waypointdeltatime = trajectory_data_vector_.at(config_specification_.GetDOF()*index + time_offset_);
                 // unfortunately due to floating-point error deltatime might not be in the range [0, waypointdeltatime], so double check!
                 if( deltatime < 0 ) {
                     // most likely small epsilon
@@ -298,24 +315,25 @@ public:
                 else if( deltatime > waypointdeltatime ) {
                     deltatime = waypointdeltatime;
                 }
-                for(size_t i = 0; i < _vgroupinterpolators.size(); ++i) {
-                    if( !!_vgroupinterpolators[i] ) {
-                        _vgroupinterpolators[i](index-1,deltatime,data);
+                for(size_t i = 0; i < group_interpolators_vector_.size(); ++i) {
+                    if( !!group_interpolators_vector_[i] ) {
+                        group_interpolators_vector_[i](index-1,deltatime,data);
                     }
                 }
                 // should return the sample time relative to the last endpoint so it is easier to re-insert in the trajectory
-                data.at(_timeoffset) = deltatime;
+                data.at(time_offset_) = deltatime;
             }
         }
     }
 
-    void Sample(std::vector<dReal>& data, dReal time, const ConfigurationSpecification& spec, bool reintializeData) const
+    void Sample(std::vector<dReal>& data, dReal time, 
+		const ConfigurationSpecification& spec, bool reintializeData) const
     {
-        BOOST_ASSERT(_bInit);
-        OPENRAVE_ASSERT_OP(_timeoffset,>=,0);
+        BOOST_ASSERT(is_init_);
+        OPENRAVE_ASSERT_OP(time_offset_,>=,0);
         OPENRAVE_ASSERT_OP(time, >=, -g_fEpsilon);
         _ComputeInternal();
-        OPENRAVE_ASSERT_OP_FORMAT0((int)_vtrajdata.size(),>=,_spec.GetDOF(), "trajectory needs at least one point to sample from", ORE_InvalidArguments);
+        OPENRAVE_ASSERT_OP_FORMAT0((int)trajectory_data_vector_.size(),>=,config_specification_.GetDOF(), "trajectory needs at least one point to sample from", ORE_InvalidArguments);
         if( IS_DEBUGLEVEL(Level_Verbose) || (RaveGetDebugLevel() & Level_VerifyPlans) ) {
             _VerifySampling();
         }
@@ -324,19 +342,19 @@ public:
         }
         data.resize(spec.GetDOF(),0);
         if( time >= GetDuration() ) {
-            ConfigurationSpecification::ConvertData(data.begin(),spec,_vtrajdata.end()-_spec.GetDOF(),_spec,1,GetEnv());
+            ConfigurationSpecification::ConvertData(data.begin(),spec,trajectory_data_vector_.end()-config_specification_.GetDOF(),config_specification_,1,GetEnv());
         }
         else {
             std::vector<dReal>::iterator it = std::lower_bound(_vaccumtime.begin(),_vaccumtime.end(),time);
             if( it == _vaccumtime.begin() ) {
-                ConfigurationSpecification::ConvertData(data.begin(),spec,_vtrajdata.begin(),_spec,1,GetEnv());
+                ConfigurationSpecification::ConvertData(data.begin(),spec,trajectory_data_vector_.begin(),config_specification_,1,GetEnv());
             }
             else {
                 // could be faster
-                vector<dReal> vinternaldata(_spec.GetDOF(),0);
+                vector<dReal> vinternaldata(config_specification_.GetDOF(),0);
                 size_t index = it-_vaccumtime.begin();
                 dReal deltatime = time-_vaccumtime.at(index-1);
-                dReal waypointdeltatime = _vtrajdata.at(_spec.GetDOF()*index + _timeoffset);
+                dReal waypointdeltatime = trajectory_data_vector_.at(config_specification_.GetDOF()*index + time_offset_);
                 // unfortunately due to floating-point error deltatime might not be in the range [0, waypointdeltatime], so double check!
                 if( deltatime < 0 ) {
                     // most likely small epsilon
@@ -345,49 +363,49 @@ public:
                 else if( deltatime > waypointdeltatime ) {
                     deltatime = waypointdeltatime;
                 }
-                for(size_t i = 0; i < _vgroupinterpolators.size(); ++i) {
-                    if( !!_vgroupinterpolators[i] ) {
-                        _vgroupinterpolators[i](index-1,deltatime,vinternaldata);
+                for(size_t i = 0; i < group_interpolators_vector_.size(); ++i) {
+                    if( !!group_interpolators_vector_[i] ) {
+                        group_interpolators_vector_[i](index-1,deltatime,vinternaldata);
                     }
                 }
-                ConfigurationSpecification::ConvertData(data.begin(),spec,vinternaldata.begin(),_spec,1,GetEnv());
+                ConfigurationSpecification::ConvertData(data.begin(),spec,vinternaldata.begin(),config_specification_,1,GetEnv());
             }
         }
     }
 
     const ConfigurationSpecification& GetConfigurationSpecification() const
     {
-        return _spec;
+        return config_specification_;
     }
 
     size_t GetNumWaypoints() const
     {
         BOOST_ASSERT(is_init_);
-        return _vtrajdata.size()/_spec.GetDOF();
+        return trajectory_data_vector_.size()/config_specification_.GetDOF();
     }
 
     void GetWaypoints(size_t startindex, size_t endindex, std::vector<dReal>& data) const
     {
         BOOST_ASSERT(is_init_);
-        BOOST_ASSERT(startindex<=endindex && startindex*_spec.GetDOF() <= _vtrajdata.size() && endindex*_spec.GetDOF() <= _vtrajdata.size());
-        data.resize((endindex-startindex)*_spec.GetDOF(),0);
-        std::copy(_vtrajdata.begin()+startindex*_spec.GetDOF(),_vtrajdata.begin()+endindex*_spec.GetDOF(),data.begin());
+        BOOST_ASSERT(startindex<=endindex && startindex*config_specification_.GetDOF() <= trajectory_data_vector_.size() && endindex*config_specification_.GetDOF() <= trajectory_data_vector_.size());
+        data.resize((endindex-startindex)*config_specification_.GetDOF(),0);
+        std::copy(trajectory_data_vector_.begin()+startindex*config_specification_.GetDOF(),trajectory_data_vector_.begin()+endindex*config_specification_.GetDOF(),data.begin());
     }
 
     void GetWaypoints(size_t startindex, size_t endindex, std::vector<dReal>& data, const ConfigurationSpecification& spec) const
     {
         BOOST_ASSERT(is_init_);
-        BOOST_ASSERT(startindex<=endindex && startindex*_spec.GetDOF() <= _vtrajdata.size() && endindex*_spec.GetDOF() <= _vtrajdata.size());
+        BOOST_ASSERT(startindex<=endindex && startindex*config_specification_.GetDOF() <= trajectory_data_vector_.size() && endindex*config_specification_.GetDOF() <= trajectory_data_vector_.size());
         data.resize(spec.GetDOF()*(endindex-startindex),0);
         if( startindex < endindex ) {
-            ConfigurationSpecification::ConvertData(data.begin(),spec,_vtrajdata.begin()+startindex*_spec.GetDOF(),_spec,endindex-startindex,GetEnv());
+            ConfigurationSpecification::ConvertData(data.begin(),spec,trajectory_data_vector_.begin()+startindex*config_specification_.GetDOF(),config_specification_,endindex-startindex,GetEnv());
         }
     }
 
     size_t GetFirstWaypointIndexAfterTime(dReal time) const
     {
         BOOST_ASSERT(is_init_);
-        BOOST_ASSERT(_timeoffset>=0);
+        BOOST_ASSERT(time_offset_>=0);
         _ComputeInternal();
         if( _vaccumtime.size() == 0 ) {
             return 0;
@@ -438,7 +456,7 @@ public:
             }
 
             /* Store data waypoints */
-            WriteBinaryVector(O, this->_vtrajdata);
+            WriteBinaryVector(O, this->trajectory_data_vector_);
 
             WriteBinaryString(O, GetDescription());
         }
@@ -471,18 +489,18 @@ public:
             ReadBinaryUInt16(I, numGroups);
 
             is_init_ = false;
-            _spec.groups_vector_.resize(numGroups);
-            FOREACH(itgroup, _spec.groups_vector_)
+            config_specification_.groups_vector_.resize(numGroups);
+            FOREACH(itgroup, config_specification_.groups_vector_)
             {
                 ReadBinaryString(I, itgroup->name);             // Read group name
                 ReadBinaryInt(I, itgroup->offset);              // Read offset
                 ReadBinaryInt(I, itgroup->dof);                 // Read dof
                 ReadBinaryString(I, itgroup->interpolation);    // Read interpolation
             }
-            this->Init(_spec);
+            this->Init(config_specification_);
 
             /* Read trajectory data */
-            ReadBinaryVector(I, this->_vtrajdata);
+            ReadBinaryVector(I, this->trajectory_data_vector_);
             ReadBinaryString(I, description_);
         }
         else {
@@ -497,7 +515,7 @@ public:
         InterfaceBase::Clone(preference,cloningoptions);
         TrajectoryBaseConstPtr r = RaveInterfaceConstCast<TrajectoryBase>(preference);
         Init(r->GetConfigurationSpecification());
-        r->GetWaypoints(0,r->GetNumWaypoints(),_vtrajdata);
+        r->GetWaypoints(0,r->GetNumWaypoints(),trajectory_data_vector_);
         _bChanged = true;
     }
 
@@ -505,18 +523,18 @@ public:
     {
         OPENRAVE_ASSERT_OP(GetXMLId(),==,rawtraj->GetXMLId());
         std::shared_ptr<GenericTrajectory> traj = std::dynamic_pointer_cast<GenericTrajectory>(rawtraj);
-        _spec.Swap(traj->_spec);
-        _vderivoffsets.swap(traj->_vderivoffsets);
-        _vddoffsets.swap(traj->_vddoffsets);
-        _vdddoffsets.swap(traj->_vdddoffsets);
-        _vintegraloffsets.swap(traj->_vintegraloffsets);
-        std::swap(_timeoffset, traj->_timeoffset);
+        config_specification_.Swap(traj->config_specification_);
+        derivative_offsets_vector_.swap(traj->derivative_offsets_vector_);
+        deriv_deriv_offsets_vector_.swap(traj->deriv_deriv_offsets_vector_);
+        deriv_deriv_deriv_offsets_vector_.swap(traj->deriv_deriv_deriv_offsets_vector_);
+        intergral_offsets_vector_.swap(traj->intergral_offsets_vector_);
+        std::swap(time_offset_, traj->time_offset_);
         std::swap(is_init_, traj->is_init_);
-        std::swap(_vtrajdata, traj->_vtrajdata);
+        std::swap(trajectory_data_vector_, traj->trajectory_data_vector_);
         std::swap(_vaccumtime, traj->_vaccumtime);
-        std::swap(_vdeltainvtime, traj->_vdeltainvtime);
+        std::swap(delta_inv_time_vector_, traj->delta_inv_time_vector_);
         std::swap(_bChanged, traj->_bChanged);
-        std::swap(_bSamplingVerified, traj->_bSamplingVerified);
+        std::swap(is_sampling_verified_, traj->is_sampling_verified_);
         _InitializeGroupFunctions();
     }
 
@@ -525,11 +543,11 @@ protected:
     {
         for(size_t igroup = 0; igroup < vconvertgroups.size(); ++igroup) {
             if( vconvertgroups[igroup] != spec.groups_vector_.end() ) {
-                ConfigurationSpecification::ConvertGroupData(ittargetdata+_spec.groups_vector_[igroup].offset, _spec.GetDOF(), _spec.groups_vector_[igroup], itsourcedata+vconvertgroups[igroup]->offset, spec.GetDOF(), *vconvertgroups[igroup],numelements,GetEnv(),filluninitialized);
+                ConfigurationSpecification::ConvertGroupData(ittargetdata+config_specification_.groups_vector_[igroup].offset, config_specification_.GetDOF(), config_specification_.groups_vector_[igroup], itsourcedata+vconvertgroups[igroup]->offset, spec.GetDOF(), *vconvertgroups[igroup],numelements,GetEnv(),filluninitialized);
             }
             else if( filluninitialized ) {
-                vector<dReal> vdefaultvalues(_spec.groups_vector_[igroup].dof,0);
-                const string& groupname = _spec.groups_vector_[igroup].name;
+                vector<dReal> vdefaultvalues(config_specification_.groups_vector_[igroup].dof,0);
+                const string& groupname = config_specification_.groups_vector_[igroup].name;
                 if( groupname.size() >= 16 && groupname.substr(0,16) == "affine_transform" ) {
                     stringstream ss(groupname.substr(16));
                     string robotname;
@@ -543,9 +561,9 @@ protected:
                 else if( groupname.size() >= 13 && groupname.substr(0,13) == "outputSignals") {
                     std::fill(vdefaultvalues.begin(), vdefaultvalues.end(), -1);
                 }
-                int offset = _spec.groups_vector_[igroup].offset;
-                for(size_t ielement = 0; ielement < numelements; ++ielement, offset += _spec.GetDOF()) {
-                    for(int j = 0; j < _spec.groups_vector_[igroup].dof; ++j) {
+                int offset = config_specification_.groups_vector_[igroup].offset;
+                for(size_t ielement = 0; ielement < numelements; ++ielement, offset += config_specification_.GetDOF()) {
+                    for(int j = 0; j < config_specification_.groups_vector_[igroup].dof; ++j) {
                         *(ittargetdata+offset+j) = vdefaultvalues[j];
                     }
                 }
@@ -558,29 +576,29 @@ protected:
         if( !_bChanged ) {
             return;
         }
-        if( _timeoffset < 0 ) {
+        if( time_offset_ < 0 ) {
             _vaccumtime.resize(0);
-            _vdeltainvtime.resize(0);
+            delta_inv_time_vector_.resize(0);
         }
         else {
             _vaccumtime.resize(GetNumWaypoints());
-            _vdeltainvtime.resize(_vaccumtime.size());
+            delta_inv_time_vector_.resize(_vaccumtime.size());
             if( _vaccumtime.size() == 0 ) {
                 return;
             }
-            _vaccumtime.at(0) = _vtrajdata.at(_timeoffset);
-            _vdeltainvtime.at(0) = 1/_vtrajdata.at(_timeoffset);
+            _vaccumtime.at(0) = trajectory_data_vector_.at(time_offset_);
+            delta_inv_time_vector_.at(0) = 1/trajectory_data_vector_.at(time_offset_);
             for(size_t i = 1; i < _vaccumtime.size(); ++i) {
-                dReal deltatime = _vtrajdata[_spec.GetDOF()*i+_timeoffset];
+                dReal deltatime = trajectory_data_vector_[config_specification_.GetDOF()*i+time_offset_];
                 if( deltatime < 0 ) {
                     throw OPENRAVE_EXCEPTION_FORMAT("deltatime (%.15e) is < 0 at point %d/%d", deltatime%i%_vaccumtime.size(), ORE_InvalidState);
                 }
-                _vdeltainvtime[i] = 1/deltatime;
+                delta_inv_time_vector_[i] = 1/deltatime;
                 _vaccumtime[i] = _vaccumtime[i-1] + deltatime;
             }
         }
         _bChanged = false;
-        _bSamplingVerified = false;
+        is_sampling_verified_ = false;
     }
 
     /// \brief assumes _ComputeInternal has finished
@@ -588,22 +606,23 @@ protected:
     {
         BOOST_ASSERT(!_bChanged);
         BOOST_ASSERT(is_init_);
-        if( _bSamplingVerified ) {
+        if( is_sampling_verified_ ) 
+		{
             return;
         }
-        for(size_t i = 0; i < _vgroupinterpolators.size(); ++i) {
-            if( _spec.groups_vector_.at(i).offset != _timeoffset ) {
-                if( !_vgroupinterpolators[i] ) {
-                    RAVELOG_WARN(str(boost::format("unknown interpolation method '%s' for group '%s'")%_spec.groups_vector_.at(i).interpolation%_spec.groups_vector_.at(i).name));
+        for(size_t i = 0; i < group_interpolators_vector_.size(); ++i) {
+            if( config_specification_.groups_vector_.at(i).offset != time_offset_ ) {
+                if( !group_interpolators_vector_[i] ) {
+                    RAVELOG_WARN(str(boost::format("unknown interpolation method '%s' for group '%s'")%config_specification_.groups_vector_.at(i).interpolation%config_specification_.groups_vector_.at(i).name));
                 }
             }
         }
 
-        for(size_t i = 0; i < _spec.groups_vector_.size(); ++i) {
-            const string& interpolation = _spec.groups_vector_[i].interpolation;
-            const string& name = _spec.groups_vector_[i].name;
-            for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                if( _vderivoffsets.at(_spec.groups_vector_[i].offset+j) < -2 && _vintegraloffsets.at(_spec.groups_vector_[i].offset+j) < -2 ) {
+        for(size_t i = 0; i < config_specification_.groups_vector_.size(); ++i) {
+            const string& interpolation = config_specification_.groups_vector_[i].interpolation;
+            const string& name = config_specification_.groups_vector_[i].name;
+            for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) {
+                if( derivative_offsets_vector_.at(config_specification_.groups_vector_[i].offset+j) < -2 && intergral_offsets_vector_.at(config_specification_.groups_vector_[i].offset+j) < -2 ) {
                     throw OPENRAVE_EXCEPTION_FORMAT(_("%s interpolation group '%s' needs derivatives/integrals for sampling"),interpolation%name,ORE_InvalidArguments);
                 }
             }
@@ -613,230 +632,314 @@ protected:
             // go through all the points
             for(size_t ipoint = 0; ipoint+1 < _vaccumtime.size(); ++ipoint) {
                 dReal deltatime = _vaccumtime[ipoint+1] - _vaccumtime[ipoint];
-                for(size_t i = 0; i < _vgroupvalidators.size(); ++i) {
-                    if( !!_vgroupvalidators[i] ) {
-                        _vgroupvalidators[i](ipoint,deltatime);
+                for(size_t i = 0; i < group_validators_vector_.size(); ++i) {
+                    if( !!group_validators_vector_[i] ) {
+                        group_validators_vector_[i](ipoint,deltatime);
                     }
                 }
             }
         }
-        _bSamplingVerified = true;
+        is_sampling_verified_ = true;
     }
 
-    /// \brief called in order to initialize _vgroupinterpolators and _vgroupvalidators, _vderivoffsets, _vintegraloffsets
+    /// \brief called in order to initialize group_interpolators_vector_ 
+	///  and group_validators_vector_, derivative_offsets_vector_, intergral_offsets_vector_
     void _InitializeGroupFunctions()
     {
         // first set sizes to 0
-        _vgroupinterpolators.resize(0);
-        _vgroupvalidators.resize(0);
-        _vderivoffsets.resize(0);
-        _vddoffsets.resize(0);
-        _vdddoffsets.resize(0);
-        _vintegraloffsets.resize(0);
-        _vgroupinterpolators.resize(_spec.groups_vector_.size());
-        _vgroupvalidators.resize(_spec.groups_vector_.size());
-        _vderivoffsets.resize(_spec.GetDOF(),-1);
-        _vddoffsets.resize(_spec.GetDOF(),-1);
-        _vdddoffsets.resize(_spec.GetDOF(),-1);
-        _vintegraloffsets.resize(_spec.GetDOF(),-1);
-        for(size_t i = 0; i < _spec.groups_vector_.size(); ++i) {
-            const string& interpolation = _spec.groups_vector_[i].interpolation;
-            int nNeedNeighboringInfo = 0;
-            if( interpolation == "previous" ) {
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolatePrevious,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
+        group_interpolators_vector_.resize(0);
+        group_validators_vector_.resize(0);
+        derivative_offsets_vector_.resize(0);
+        deriv_deriv_offsets_vector_.resize(0);
+        deriv_deriv_deriv_offsets_vector_.resize(0);
+        intergral_offsets_vector_.resize(0);
+        group_interpolators_vector_.resize(config_specification_.groups_vector_.size());
+        group_validators_vector_.resize(config_specification_.groups_vector_.size());
+        derivative_offsets_vector_.resize(config_specification_.GetDOF(),-1);
+        deriv_deriv_offsets_vector_.resize(config_specification_.GetDOF(),-1);
+        deriv_deriv_deriv_offsets_vector_.resize(config_specification_.GetDOF(),-1);
+        intergral_offsets_vector_.resize(config_specification_.GetDOF(),-1);
+        for(size_t i = 0; i < config_specification_.groups_vector_.size(); ++i)
+		{
+            const std::string& interpolation = config_specification_.groups_vector_[i].interpolation;
+            int need_neighboring_info_num = 0;
+            if( interpolation == "previous" ) 
+			{
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolatePrevious,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
             }
-            else if( interpolation == "next" ) {
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateNext,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
+            else if( interpolation == "next" ) 
+			{
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateNext,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
             }
-            else if( interpolation == "linear" ) {
-                if( _spec.groups_vector_[i].name.size() >= 14 && _spec.groups_vector_[i].name.substr(0,14) == "ikparam_values" ) {
-                    stringstream ss(_spec.groups_vector_[i].name.substr(14));
+            else if( interpolation == "linear" ) 
+			{
+                if( config_specification_.groups_vector_[i].name.size() >= 14 
+					&& config_specification_.groups_vector_[i].name.substr(0,14) == "ikparam_values" ) 
+				{
+                    std::stringstream ss(config_specification_.groups_vector_[i].name.substr(14));
                     int niktype=0;
                     ss >> niktype;
-                    _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateLinearIk,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3,static_cast<IkParameterizationType>(niktype));
+                    group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateLinearIk,
+						this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3,
+						static_cast<IkParameterizationType>(niktype));
                     // TODO add validation for ikparam until
                 }
-                else {
-                    _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateLinear,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
-                    _vgroupvalidators[i] = boost::bind(&GenericTrajectory::_ValidateLinear,this,boost::ref(_spec.groups_vector_[i]),_1,_2);
+                else 
+				{
+                    group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateLinear,
+						this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
+                    group_validators_vector_[i] = boost::bind(&GenericTrajectory::_ValidateLinear,
+						this,boost::ref(config_specification_.groups_vector_[i]),_1,_2);
                 }
-                nNeedNeighboringInfo = 2;
+                need_neighboring_info_num = 2;
             }
-            else if( interpolation == "quadratic" ) {
-                if( _spec.groups_vector_[i].name.size() >= 14 && _spec.groups_vector_[i].name.substr(0,14) == "ikparam_values" ) {
-                    stringstream ss(_spec.groups_vector_[i].name.substr(14));
+            else if( interpolation == "quadratic" ) 
+			{
+                if( config_specification_.groups_vector_[i].name.size() >= 14 
+					&& config_specification_.groups_vector_[i].name.substr(0,14) == "ikparam_values" )
+				{
+                    std::stringstream ss(config_specification_.groups_vector_[i].name.substr(14));
                     int niktype=0;
                     ss >> niktype;
-                    _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateQuadraticIk,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3,static_cast<IkParameterizationType>(niktype));
+                    group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateQuadraticIk,
+						this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3,
+						static_cast<IkParameterizationType>(niktype));
                     // TODO add validation for ikparam until
                 }
-                else {
-                    _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateQuadratic,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
-                    _vgroupvalidators[i] = boost::bind(&GenericTrajectory::_ValidateQuadratic,this,boost::ref(_spec.groups_vector_[i]),_1,_2);
+                else 
+				{
+                    group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateQuadratic,this,
+						boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
+                    group_validators_vector_[i] = boost::bind(&GenericTrajectory::_ValidateQuadratic,this,
+						boost::ref(config_specification_.groups_vector_[i]),_1,_2);
                 }
-                nNeedNeighboringInfo = 3;
+                need_neighboring_info_num = 3;
             }
-            else if( interpolation == "cubic" ) {
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateCubic,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
-                _vgroupvalidators[i] = boost::bind(&GenericTrajectory::_ValidateCubic,this,boost::ref(_spec.groups_vector_[i]),_1,_2);
-                nNeedNeighboringInfo = 3;
+            else if( interpolation == "cubic" ) 
+			{
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateCubic,this,
+					boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
+                group_validators_vector_[i] = boost::bind(&GenericTrajectory::_ValidateCubic,this,
+					boost::ref(config_specification_.groups_vector_[i]),_1,_2);
+                need_neighboring_info_num = 3;
             }
-            else if( interpolation == "quartic" ) {
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateQuartic,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
-                _vgroupvalidators[i] = boost::bind(&GenericTrajectory::_ValidateQuartic,this,boost::ref(_spec.groups_vector_[i]),_1,_2);
-                nNeedNeighboringInfo = 3;
+            else if( interpolation == "quartic" ) 
+			{
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateQuartic,this,
+					boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
+                group_validators_vector_[i] = boost::bind(&GenericTrajectory::_ValidateQuartic,this,
+					boost::ref(config_specification_.groups_vector_[i]),_1,_2);
+                need_neighboring_info_num = 3;
             }
-            else if( interpolation == "quintic" ) {
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateQuintic,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
-                _vgroupvalidators[i] = boost::bind(&GenericTrajectory::_ValidateQuintic,this,boost::ref(_spec.groups_vector_[i]),_1,_2);
-                nNeedNeighboringInfo = 3;
+            else if( interpolation == "quintic" )
+			{
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateQuintic,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
+                group_validators_vector_[i] = boost::bind(&GenericTrajectory::_ValidateQuintic,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2);
+                need_neighboring_info_num = 3;
             }
-            else if( interpolation == "sextic" ) {
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateSextic,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
-                _vgroupvalidators[i] = boost::bind(&GenericTrajectory::_ValidateSextic,this,boost::ref(_spec.groups_vector_[i]),_1,_2);
-                nNeedNeighboringInfo = 3;
+            else if( interpolation == "sextic" ) 
+			{
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateSextic,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
+                group_validators_vector_[i] = boost::bind(&GenericTrajectory::_ValidateSextic,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2);
+                need_neighboring_info_num = 3;
             }
-            else if( interpolation == "" ) {
+            else if( interpolation == "" )
+			{
                 // if there is no interpolation, default to "next". deltatime is such a group, but that is overwritten
-                _vgroupinterpolators[i] = boost::bind(&GenericTrajectory::_InterpolateNext,this,boost::ref(_spec.groups_vector_[i]),_1,_2,_3);
+                group_interpolators_vector_[i] = boost::bind(&GenericTrajectory::_InterpolateNext,
+					this,boost::ref(config_specification_.groups_vector_[i]),_1,_2,_3);
             }
 
 
-            if( nNeedNeighboringInfo ) {
-                std::vector<ConfigurationSpecification::Group>::const_iterator itderiv = _spec.FindTimeDerivativeGroup(_spec.groups_vector_[i]);
+            if( need_neighboring_info_num )
+			{
+                std::vector<ConfigurationSpecification::Group>::const_iterator itderiv 
+					= config_specification_.FindTimeDerivativeGroup(config_specification_.groups_vector_[i]);
 
-                // only correct derivative if interpolation is the expected one compared to _spec.groups_vector_[i].interpolation
+                // only correct derivative if interpolation is the expected one compared to config_specification_.groups_vector_[i].interpolation
                 // this is necessary in order to prevent using wrong information. For example, sometimes position and velocity can both be linear, which means they are decoupled from their interpolation
-                if( itderiv != _spec.groups_vector_.end() ) {
-                    if( itderiv->interpolation.size() == 0 || itderiv->interpolation != ConfigurationSpecification::GetInterpolationDerivative(_spec.groups_vector_[i].interpolation) ) {
+                if( itderiv != config_specification_.groups_vector_.end() ) 
+				{
+                    if( itderiv->interpolation.size() == 0 
+						|| itderiv->interpolation != ConfigurationSpecification::GetInterpolationDerivative(config_specification_.groups_vector_[i].interpolation) ) 
+					{
                         // not correct interpolation, so remove from being a real derivative
-                        itderiv = _spec.groups_vector_.end();
+                        itderiv = config_specification_.groups_vector_.end();
                     }
                 }
 
-                if( itderiv == _spec.groups_vector_.end() ) {
+                if( itderiv == config_specification_.groups_vector_.end() ) 
+				{
                     // don't throw an error here since it is unknown if the trajectory will be sampled
-                    for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                        _vderivoffsets[_spec.groups_vector_[i].offset+j] = -nNeedNeighboringInfo;
+                    for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) 
+					{
+                        derivative_offsets_vector_[config_specification_.groups_vector_[i].offset+j]
+							= -need_neighboring_info_num;
                     }
                 }
-                else {
-                    for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                        _vderivoffsets[_spec.groups_vector_[i].offset+j] = itderiv->offset+j;
+                else 
+				{
+                    for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j)
+					{
+                        derivative_offsets_vector_[config_specification_.groups_vector_[i].offset+j]
+							= itderiv->offset+j;
                     }
-                    std::vector<ConfigurationSpecification::Group>::const_iterator itdd = _spec.FindTimeDerivativeGroup(*itderiv);
-                    if( itdd != _spec.groups_vector_.end() ) {
+                    std::vector<ConfigurationSpecification::Group>::const_iterator itdd = config_specification_.FindTimeDerivativeGroup(*itderiv);
+                    if( itdd != config_specification_.groups_vector_.end() ) 
+					{
                         if( itdd->interpolation.size() == 0 || itdd->interpolation != ConfigurationSpecification::GetInterpolationDerivative(itderiv->interpolation) ) {
                             // not correct interpolation, so remove from being a real derivative
-                            itdd = _spec.groups_vector_.end();
+                            itdd = config_specification_.groups_vector_.end();
                         }
                     }
 
-                    if( itdd == _spec.groups_vector_.end() ) {
+                    if( itdd == config_specification_.groups_vector_.end() ) 
+					{
                         // don't throw an error here since it is unknown if the trajectory will be sampled
-                        for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                            _vddoffsets[_spec.groups_vector_[i].offset+j] = -nNeedNeighboringInfo;
+                        for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) 
+						{
+                            deriv_deriv_offsets_vector_[config_specification_.groups_vector_[i].offset+j] 
+								= -need_neighboring_info_num;
                         }
                     }
-                    else {
-                        for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                            _vddoffsets[_spec.groups_vector_[i].offset+j] = itdd->offset+j;
+                    else 
+					{
+                        for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) 
+						{
+                            deriv_deriv_offsets_vector_[config_specification_.groups_vector_[i].offset+j] 
+								= itdd->offset+j;
                         }
-                        std::vector<ConfigurationSpecification::Group>::const_iterator itddd = _spec.FindTimeDerivativeGroup(*itdd);
-                        if( itddd != _spec.groups_vector_.end() ) {
-                            if( itddd->interpolation.size() == 0 || itddd->interpolation != ConfigurationSpecification::GetInterpolationDerivative(itdd->interpolation) ) {
+                        std::vector<ConfigurationSpecification::Group>::const_iterator itddd 
+							= config_specification_.FindTimeDerivativeGroup(*itdd);
+                        if( itddd != config_specification_.groups_vector_.end() )
+						{
+                            if( itddd->interpolation.size() == 0 
+								|| itddd->interpolation != ConfigurationSpecification::GetInterpolationDerivative(itdd->interpolation) ) {
                                 // not correct interpolation, so remove from being a real derivative
-                                itddd = _spec.groups_vector_.end();
+                                itddd = config_specification_.groups_vector_.end();
                             }
                         }
 
-                        if( itddd == _spec.groups_vector_.end() ) {
+                        if( itddd == config_specification_.groups_vector_.end() ) 
+						{
                             // don't throw an error here since it is unknown if the trajectory will be sampled
-                            for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                                _vdddoffsets[_spec.groups_vector_[i].offset+j] = -nNeedNeighboringInfo;
+                            for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) 
+							{
+                                deriv_deriv_deriv_offsets_vector_[config_specification_.groups_vector_[i].offset+j] 
+									= -need_neighboring_info_num;
                             }
                         }
-                        else {
-                            for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                                _vdddoffsets[_spec.groups_vector_[i].offset+j] = itddd->offset+j;
+                        else 
+						{
+                            for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) 
+							{
+                                deriv_deriv_deriv_offsets_vector_[config_specification_.groups_vector_[i].offset+j] 
+									= itddd->offset+j;
                             }
                         }
                     }
                 }
-                std::vector<ConfigurationSpecification::Group>::const_iterator itintegral = _spec.FindTimeIntegralGroup(_spec.groups_vector_[i]);
+                std::vector<ConfigurationSpecification::Group>::const_iterator itintegral 
+					= config_specification_.FindTimeIntegralGroup(config_specification_.groups_vector_[i]);
                 // TODO check interpolation param for consistency
-                if( itintegral == _spec.groups_vector_.end() ) {
+                if( itintegral == config_specification_.groups_vector_.end() )
+				{
                     // don't throw an error here since it is unknown if the trajectory will be sampled
-                    for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                        _vintegraloffsets[_spec.groups_vector_[i].offset+j] = -nNeedNeighboringInfo;
+                    for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j)
+					{
+                        intergral_offsets_vector_[config_specification_.groups_vector_[i].offset+j] 
+							= -need_neighboring_info_num;
                     }
                 }
-                else {
-                    for(int j = 0; j < _spec.groups_vector_[i].dof; ++j) {
-                        _vintegraloffsets[_spec.groups_vector_[i].offset+j] = itintegral->offset+j;
+                else 
+				{
+                    for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j)
+					{
+                        intergral_offsets_vector_[config_specification_.groups_vector_[i].offset+j] 
+							= itintegral->offset+j;
                     }
                 }
             }
         }
     }
 
-    void _InterpolatePrevious(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data)
+    void _InterpolatePrevious(const ConfigurationSpecification::Group& g, 
+		size_t ipoint, dReal deltatime, std::vector<dReal>& data)
     {
-        size_t offset = ipoint*_spec.GetDOF()+g.offset;
-        if( (ipoint+1)*_spec.GetDOF() < _vtrajdata.size() ) {
+        size_t offset = ipoint*config_specification_.GetDOF()+g.offset;
+        if( (ipoint+1)*config_specification_.GetDOF() < trajectory_data_vector_.size() )
+		{
             // if point is so close the previous, then choose the next
-            dReal f = _vdeltainvtime.at(ipoint+1)*deltatime;
-            if( f > 1-g_fEpsilon ) {
-                offset += _spec.GetDOF();
+            dReal f = delta_inv_time_vector_.at(ipoint+1)*deltatime;
+            if( f > 1-g_fEpsilon ) 
+			{
+                offset += config_specification_.GetDOF();
             }
         }
-        std::copy(_vtrajdata.begin()+offset,_vtrajdata.begin()+offset+g.dof,data.begin()+g.offset);
+        std::copy(trajectory_data_vector_.begin()+offset,trajectory_data_vector_.begin()+offset+g.dof,data.begin()+g.offset);
     }
 
     void _InterpolateNext(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data)
     {
-        if( (ipoint+1)*_spec.GetDOF() < _vtrajdata.size() ) {
+        if( (ipoint+1)*config_specification_.GetDOF() < trajectory_data_vector_.size() ) 
+		{
             ipoint += 1;
         }
-        size_t offset = ipoint*_spec.GetDOF() + g.offset;
-        if( deltatime <= g_fEpsilon && ipoint > 0 ) {
+        size_t offset = ipoint*config_specification_.GetDOF() + g.offset;
+        if( deltatime <= g_fEpsilon && ipoint > 0 )
+		{
             // if point is so close the previous, then choose the previous
-            offset -= _spec.GetDOF();
+            offset -= config_specification_.GetDOF();
         }
-        std::copy(_vtrajdata.begin()+offset,_vtrajdata.begin()+offset+g.dof,data.begin()+g.offset);
+        std::copy(trajectory_data_vector_.begin()+offset,trajectory_data_vector_.begin()+offset+g.dof,data.begin()+g.offset);
     }
 
     void _InterpolateLinear(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data)
     {
-        size_t offset = ipoint*_spec.GetDOF();
-        int derivoffset = _vderivoffsets[g.offset];
-        if( derivoffset < 0 ) {
+        size_t offset = ipoint*config_specification_.GetDOF();
+        int derivoffset = derivative_offsets_vector_[g.offset];
+        if( derivoffset < 0 ) 
+		{
             // expected derivative offset, interpolation can be wrong for circular joints
-            dReal f = _vdeltainvtime.at(ipoint+1)*deltatime;
-            for(int i = 0; i < g.dof; ++i) {
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i]*(1-f) + f*_vtrajdata[_spec.GetDOF()+offset+g.offset+i];
+            dReal f = delta_inv_time_vector_.at(ipoint+1)*deltatime;
+            for(int i = 0; i < g.dof; ++i)
+			{
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i]*(1-f) 
+					+ f*trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+i];
             }
         }
-        else {
-            for(int i = 0; i < g.dof; ++i) {
-                dReal deriv0 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i] + deltatime*deriv0;
+        else 
+		{
+            for(int i = 0; i < g.dof; ++i) 
+			{
+                dReal deriv0 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i] + deltatime*deriv0;
             }
         }
     }
 
-    void _InterpolateLinearIk(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data, IkParameterizationType iktype)
+    void _InterpolateLinearIk(const ConfigurationSpecification::Group& g, 
+		size_t ipoint, dReal deltatime, std::vector<dReal>& data, IkParameterizationType iktype)
     {
         _InterpolateLinear(g,ipoint,deltatime,data);
-        if( deltatime > g_fEpsilon ) {
-            size_t offset = ipoint*_spec.GetDOF();
-            dReal f = _vdeltainvtime.at(ipoint+1)*deltatime;
-            switch(iktype) {
+        if( deltatime > g_fEpsilon ) 
+		{
+            size_t offset = ipoint*config_specification_.GetDOF();
+            dReal f = delta_inv_time_vector_.at(ipoint+1)*deltatime;
+            switch(iktype) 
+			{
             case IKP_Rotation3D:
-            case IKP_Transform6D: {
+            case IKP_Transform6D:
+			{
                 Vector q0, q1;
-                q0.Set4(&_vtrajdata[offset+g.offset]);
-                q1.Set4(&_vtrajdata[_spec.GetDOF()+offset+g.offset]);
+                q0.Set4(&trajectory_data_vector_[offset+g.offset]);
+                q1.Set4(&trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset]);
                 Vector q = quatSlerp(q0,q1,f);
                 data[g.offset+0] = q[0];
                 data[g.offset+1] = q[1];
@@ -844,12 +947,18 @@ protected:
                 data[g.offset+3] = q[3];
                 break;
             }
-            case IKP_TranslationDirection5D: {
-                Vector dir0(_vtrajdata[offset+g.offset+0],_vtrajdata[offset+g.offset+1],_vtrajdata[offset+g.offset+2]);
-                Vector dir1(_vtrajdata[_spec.GetDOF()+offset+g.offset+0],_vtrajdata[_spec.GetDOF()+offset+g.offset+1],_vtrajdata[_spec.GetDOF()+offset+g.offset+2]);
+            case IKP_TranslationDirection5D:
+			{
+                Vector dir0(trajectory_data_vector_[offset+g.offset+0],
+					trajectory_data_vector_[offset+g.offset+1],
+					trajectory_data_vector_[offset+g.offset+2]);
+                Vector dir1(trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+0],
+					trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+1],
+					trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+2]);
                 Vector axisangle = dir0.cross(dir1);
                 dReal fsinangle = RaveSqrt(axisangle.lengthsqr3());
-                if( fsinangle > g_fEpsilon ) {
+                if( fsinangle > g_fEpsilon )
+				{
                     axisangle *= f*RaveAsin(min(dReal(1),fsinangle))/fsinangle;
                     Vector newdir = quatRotate(quatFromAxisAngle(axisangle),dir0);
                     data[g.offset+0] = newdir[0];
@@ -864,35 +973,41 @@ protected:
         }
     }
 
-    void _InterpolateQuadratic(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data)
+    void _InterpolateQuadratic(const ConfigurationSpecification::Group& g, 
+		size_t ipoint, dReal deltatime, std::vector<dReal>& data)
     {
-        size_t offset = ipoint*_spec.GetDOF();
-        if( deltatime > g_fEpsilon ) {
-            int derivoffset = _vderivoffsets[g.offset];
-            if( derivoffset >= 0 ) {
-                for(int i = 0; i < g.dof; ++i) {
+        size_t offset = ipoint*config_specification_.GetDOF();
+        if( deltatime > g_fEpsilon ) 
+		{
+            int derivoffset = derivative_offsets_vector_[g.offset];
+            if( derivoffset >= 0 )
+			{
+                for(int i = 0; i < g.dof; ++i) 
+				{
                     // coeff*t^2 + deriv0*t + pos0
-                    dReal deriv0 = _vtrajdata[offset+derivoffset+i];
-                    dReal deriv1 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                    dReal coeff = 0.5*_vdeltainvtime.at(ipoint+1)*(deriv1-deriv0);
-                    data[g.offset+i] = _vtrajdata[offset+g.offset+i] + deltatime*(deriv0 + deltatime*coeff);
+                    dReal deriv0 = trajectory_data_vector_[offset+derivoffset+i];
+                    dReal deriv1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                    dReal coeff = 0.5*delta_inv_time_vector_.at(ipoint+1)*(deriv1-deriv0);
+                    data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i] + deltatime*(deriv0 + deltatime*coeff);
                 }
             }
-            else {
-                dReal ideltatime = _vdeltainvtime.at(ipoint+1);
+            else
+			{
+                dReal ideltatime = delta_inv_time_vector_.at(ipoint+1);
                 dReal ideltatime2 = ideltatime*ideltatime;
-                int integraloffset = _vintegraloffsets[g.offset];
-                for(int i = 0; i < g.dof; ++i) {
+                int integraloffset = intergral_offsets_vector_[g.offset];
+                for(int i = 0; i < g.dof; ++i) 
+				{
                     // c2*t**2 + c1*t + v0
                     // c2*deltatime**2 + c1*deltatime + v0 = v1
                     // integral: c2/3*deltatime**3 + c1/2*deltatime**2 + v0*deltatime = p1-p0
                     // mult by (3/deltatime): c2*deltatime**2 + 3/2*c1*deltatime + 3*v0 = 3*(p1-p0)/deltatime
                     // subtract by original: 0.5*c1*deltatime + 2*v0 - 3*(p1-p0)/deltatime + v1 = 0
                     // c1*deltatime = 6*(p1-p0)/deltatime - 4*v0 - 2*v1
-                    dReal integral0 = _vtrajdata[offset+integraloffset+i];
-                    dReal integral1 = _vtrajdata[_spec.GetDOF()+offset+integraloffset+i];
-                    dReal value0 = _vtrajdata[offset+g.offset+i];
-                    dReal value1 = _vtrajdata[_spec.GetDOF()+offset+g.offset+i];
+                    dReal integral0 = trajectory_data_vector_[offset+integraloffset+i];
+                    dReal integral1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+integraloffset+i];
+                    dReal value0 = trajectory_data_vector_[offset+g.offset+i];
+                    dReal value1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+i];
                     dReal c1TimesDelta = 6*(integral1-integral0)*ideltatime - 4*value0 - 2*value1;
                     dReal c1 = c1TimesDelta*ideltatime;
                     dReal c2 = (value1 - value0 - c1TimesDelta)*ideltatime2;
@@ -900,30 +1015,33 @@ protected:
                 }
             }
         }
-        else {
-            for(int i = 0; i < g.dof; ++i) {
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i];
+        else 
+		{
+            for(int i = 0; i < g.dof; ++i) 
+			{
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i];
             }
         }
     }
 
-    void _InterpolateQuadraticIk(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data, IkParameterizationType iktype)
+    void _InterpolateQuadraticIk(const ConfigurationSpecification::Group& g, 
+		size_t ipoint, dReal deltatime, std::vector<dReal>& data, IkParameterizationType iktype)
     {
         _InterpolateQuadratic(g, ipoint, deltatime, data);
         if( deltatime > g_fEpsilon ) {
-            int derivoffset = _vderivoffsets[g.offset];
-            size_t offset = ipoint*_spec.GetDOF();
+            int derivoffset = derivative_offsets_vector_[g.offset];
+            size_t offset = ipoint*config_specification_.GetDOF();
             Vector q0, q0vel, q1, q1vel;
             switch(iktype) {
             case IKP_Rotation3D:
             case IKP_Transform6D: {
-                q0.Set4(&_vtrajdata[offset+g.offset]);
-                q0vel.Set4(&_vtrajdata[offset+derivoffset]);
-                q1.Set4(&_vtrajdata[_spec.GetDOF()+offset+g.offset]);
-                q1vel.Set4(&_vtrajdata[_spec.GetDOF()+offset+derivoffset]);
+                q0.Set4(&trajectory_data_vector_[offset+g.offset]);
+                q0vel.Set4(&trajectory_data_vector_[offset+derivoffset]);
+                q1.Set4(&trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset]);
+                q1vel.Set4(&trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset]);
                 Vector angularvelocity0 = quatMultiply(q0vel,quatInverse(q0))*2;
                 Vector angularvelocity1 = quatMultiply(q1vel,quatInverse(q1))*2;
-                Vector coeff = (angularvelocity1-angularvelocity0)*(0.5*_vdeltainvtime.at(ipoint+1));
+                Vector coeff = (angularvelocity1-angularvelocity0)*(0.5*delta_inv_time_vector_.at(ipoint+1));
                 Vector vtotaldelta = angularvelocity0*deltatime + coeff*(deltatime*deltatime);
                 Vector q = quatMultiply(quatFromAxisAngle(Vector(vtotaldelta.y,vtotaldelta.z,vtotaldelta.w)),q0);
                 data[g.offset+0] = q[0];
@@ -934,13 +1052,13 @@ protected:
             }
             case IKP_TranslationDirection5D: {
                 Vector dir0, dir1, angularvelocity0, angularvelocity1;
-                dir0.Set3(&_vtrajdata[offset+g.offset]);
-                dir1.Set3(&_vtrajdata[_spec.GetDOF()+offset+g.offset]);
+                dir0.Set3(&trajectory_data_vector_[offset+g.offset]);
+                dir1.Set3(&trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset]);
                 Vector axisangle = dir0.cross(dir1);
                 if( axisangle.lengthsqr3() > g_fEpsilon ) {
-                    angularvelocity0.Set3(&_vtrajdata[offset+derivoffset]);
-                    angularvelocity1.Set3(&_vtrajdata[_spec.GetDOF()+offset+derivoffset]);
-                    Vector coeff = (angularvelocity1-angularvelocity0)*(0.5*_vdeltainvtime.at(ipoint+1));
+                    angularvelocity0.Set3(&trajectory_data_vector_[offset+derivoffset]);
+                    angularvelocity1.Set3(&trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset]);
+                    Vector coeff = (angularvelocity1-angularvelocity0)*(0.5*delta_inv_time_vector_.at(ipoint+1));
                     Vector vtotaldelta = angularvelocity0*deltatime + coeff*(deltatime*deltatime);
                     Vector newdir = quatRotate(quatFromAxisAngle(vtotaldelta),dir0);
                     data[g.offset+0] = newdir[0];
@@ -962,21 +1080,21 @@ protected:
         // c2 = (3*px - 2*v0*dt - v1*dt)/(dt**2)
         // c1 = v0
         // c0 = p0
-        size_t offset = ipoint*_spec.GetDOF();
+        size_t offset = ipoint*config_specification_.GetDOF();
         if( deltatime > g_fEpsilon ) {
-            int derivoffset = _vderivoffsets[g.offset];
+            int derivoffset = derivative_offsets_vector_[g.offset];
             if( derivoffset >= 0 ) {
-                dReal ideltatime = _vdeltainvtime.at(ipoint+1);
+                dReal ideltatime = delta_inv_time_vector_.at(ipoint+1);
                 dReal ideltatime2 = ideltatime*ideltatime;
                 dReal ideltatime3 = ideltatime2*ideltatime;
                 for(int i = 0; i < g.dof; ++i) {
                     // coeff*t^2 + deriv0*t + pos0
-                    dReal deriv0 = _vtrajdata[offset+derivoffset+i];
-                    dReal deriv1 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                    dReal px = _vtrajdata.at(_spec.GetDOF()+offset+g.offset+i) - _vtrajdata[offset+g.offset+i];
+                    dReal deriv0 = trajectory_data_vector_[offset+derivoffset+i];
+                    dReal deriv1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                    dReal px = trajectory_data_vector_.at(config_specification_.GetDOF()+offset+g.offset+i) - trajectory_data_vector_[offset+g.offset+i];
                     dReal c3 = (deriv1+deriv0)*ideltatime2 - 2*px*ideltatime3;
                     dReal c2 = 3*px*ideltatime2 - (2*deriv0+deriv1)*ideltatime;
-                    data[g.offset+i] = _vtrajdata[offset+g.offset+i] + deltatime*(deriv0 + deltatime*(c2 + deltatime*c3));
+                    data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i] + deltatime*(deriv0 + deltatime*(c2 + deltatime*c3));
                 }
             }
             else {
@@ -985,7 +1103,7 @@ protected:
         }
         else {
             for(int i = 0; i < g.dof; ++i) {
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i];
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i];
             }
         }
     }
@@ -1002,22 +1120,22 @@ protected:
         // c2 = a0/2
         // c1 = v0
         // c0 = p0
-        size_t offset = ipoint*_spec.GetDOF();
+        size_t offset = ipoint*config_specification_.GetDOF();
         if( deltatime > g_fEpsilon ) {
-            int derivoffset = _vderivoffsets[g.offset];
-            int ddoffset = _vddoffsets[g.offset];
+            int derivoffset = derivative_offsets_vector_[g.offset];
+            int ddoffset = deriv_deriv_offsets_vector_[g.offset];
             if( derivoffset >= 0 && ddoffset >= 0 ) {
-                dReal ideltatime = _vdeltainvtime.at(ipoint+1);
+                dReal ideltatime = delta_inv_time_vector_.at(ipoint+1);
                 dReal ideltatime2 = ideltatime*ideltatime;
                 dReal ideltatime3 = ideltatime2*ideltatime;
                 for(int i = 0; i < g.dof; ++i) {
-                    dReal deriv0 = _vtrajdata[offset+derivoffset+i];
-                    dReal deriv1 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                    dReal dd0 = _vtrajdata[offset+ddoffset+i];
-                    dReal dd1 = _vtrajdata[_spec.GetDOF()+offset+ddoffset+i];
+                    dReal deriv0 = trajectory_data_vector_[offset+derivoffset+i];
+                    dReal deriv1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                    dReal dd0 = trajectory_data_vector_[offset+ddoffset+i];
+                    dReal dd1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+ddoffset+i];
                     dReal c4 = -0.5*(deriv1-deriv0)*ideltatime3 + (dd0 + dd1)*ideltatime2*0.25;
                     dReal c3 = (deriv1-deriv0)*ideltatime2 - (2*dd0+dd1)*ideltatime/3.0;
-                    data[g.offset+i] = _vtrajdata[offset+g.offset+i] + deltatime*(deriv0 + deltatime*(0.5*dd0 + deltatime*(c3 + deltatime*c4)));
+                    data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i] + deltatime*(deriv0 + deltatime*(0.5*dd0 + deltatime*(c3 + deltatime*c4)));
                 }
             }
             else {
@@ -1026,12 +1144,13 @@ protected:
         }
         else {
             for(int i = 0; i < g.dof; ++i) {
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i];
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i];
             }
         }
     }
 
-    void _InterpolateQuintic(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime, std::vector<dReal>& data)
+    void _InterpolateQuintic(const ConfigurationSpecification::Group& g, 
+		size_t ipoint, dReal deltatime, std::vector<dReal>& data)
     {
         // p0, p1, v0, v1, a0, a1, dt, t, c5, c4, c3 = symbols('p0, p1, v0, v1, a0, a1, dt, t, c5, c4, c3')
         // p = c5*t**5 + c4*t**4 + c3*t**3 + c2*t**2 + c1*t + c0
@@ -1048,23 +1167,23 @@ protected:
         // c2 = a0/2
         // c1 = v0
         // c0 = p0
-        size_t offset = ipoint*_spec.GetDOF();
+        size_t offset = ipoint*config_specification_.GetDOF();
         if( deltatime > g_fEpsilon ) {
-            int derivoffset = _vderivoffsets[g.offset];
-            int ddoffset = _vddoffsets[g.offset];
+            int derivoffset = derivative_offsets_vector_[g.offset];
+            int ddoffset = deriv_deriv_offsets_vector_[g.offset];
             if( derivoffset >= 0 && ddoffset >= 0 ) {
-                dReal ideltatime = _vdeltainvtime.at(ipoint+1);
+                dReal ideltatime = delta_inv_time_vector_.at(ipoint+1);
                 dReal ideltatime2 = ideltatime*ideltatime;
                 dReal ideltatime3 = ideltatime2*ideltatime;
                 dReal ideltatime4 = ideltatime2*ideltatime2;
                 dReal ideltatime5 = ideltatime4*ideltatime;
                 for(int i = 0; i < g.dof; ++i) {
-                    dReal p0 = _vtrajdata[offset+g.offset+i];
-                    dReal px = _vtrajdata[_spec.GetDOF()+offset+g.offset+i] - p0;
-                    dReal deriv0 = _vtrajdata[offset+derivoffset+i];
-                    dReal deriv1 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                    dReal dd0 = _vtrajdata[offset+ddoffset+i];
-                    dReal dd1 = _vtrajdata[_spec.GetDOF()+offset+ddoffset+i];
+                    dReal p0 = trajectory_data_vector_[offset+g.offset+i];
+                    dReal px = trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+i] - p0;
+                    dReal deriv0 = trajectory_data_vector_[offset+derivoffset+i];
+                    dReal deriv1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                    dReal dd0 = trajectory_data_vector_[offset+ddoffset+i];
+                    dReal dd1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+ddoffset+i];
                     dReal c5 = (-0.5*dd0 + dd1*0.5)*ideltatime3 - (3*deriv0 + 3*deriv1)*ideltatime4 + px*6*ideltatime5;
                     dReal c4 = (1.5*dd0 - dd1)*ideltatime2 + (8*deriv0 + 7*deriv1)*ideltatime3 - px*15*ideltatime4;
                     dReal c3 = (-1.5*dd0 + dd1*0.5)*ideltatime + (-6*deriv0 - 4*deriv1)*ideltatime2 + px*10*ideltatime3;
@@ -1077,7 +1196,7 @@ protected:
         }
         else {
             for(int i = 0; i < g.dof; ++i) {
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i];
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i];
             }
         }
     }
@@ -1097,13 +1216,13 @@ protected:
         // c2 = a0/2
         // c1 = v0
         // c0 = p0
-        size_t offset = ipoint*_spec.GetDOF();
+        size_t offset = ipoint*config_specification_.GetDOF();
         if( deltatime > g_fEpsilon ) {
-            int derivoffset = _vderivoffsets[g.offset];
-            int ddoffset = _vddoffsets[g.offset];
-            int dddoffset = _vdddoffsets[g.offset];
+            int derivoffset = derivative_offsets_vector_[g.offset];
+            int ddoffset = deriv_deriv_offsets_vector_[g.offset];
+            int dddoffset = deriv_deriv_deriv_offsets_vector_[g.offset];
             if( derivoffset >= 0 && ddoffset >= 0 && dddoffset >= 0 ) {
-                dReal ideltatime = _vdeltainvtime.at(ipoint+1);
+                dReal ideltatime = delta_inv_time_vector_.at(ipoint+1);
                 dReal ideltatime2 = ideltatime*ideltatime;
                 dReal ideltatime3 = ideltatime2*ideltatime;
                 dReal ideltatime4 = ideltatime2*ideltatime2;
@@ -1113,14 +1232,14 @@ protected:
                 //dReal deltatime4 = deltatime2*deltatime2;
                 //dReal deltatime5 = deltatime4*deltatime;
                 for(int i = 0; i < g.dof; ++i) {
-                    dReal p0 = _vtrajdata[offset+g.offset+i];
-                    //dReal px = _vtrajdata[_spec.GetDOF()+offset+g.offset+i] - p0;
-                    dReal deriv0 = _vtrajdata[offset+derivoffset+i];
-                    dReal deriv1 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                    dReal dd0 = _vtrajdata[offset+ddoffset+i];
-                    dReal dd1 = _vtrajdata[_spec.GetDOF()+offset+ddoffset+i];
-                    dReal ddd0 = _vtrajdata[offset+dddoffset+i];
-                    dReal ddd1 = _vtrajdata[_spec.GetDOF()+offset+dddoffset+i];
+                    dReal p0 = trajectory_data_vector_[offset+g.offset+i];
+                    //dReal px = trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+i] - p0;
+                    dReal deriv0 = trajectory_data_vector_[offset+derivoffset+i];
+                    dReal deriv1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                    dReal dd0 = trajectory_data_vector_[offset+ddoffset+i];
+                    dReal dd1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+ddoffset+i];
+                    dReal ddd0 = trajectory_data_vector_[offset+dddoffset+i];
+                    dReal ddd1 = trajectory_data_vector_[config_specification_.GetDOF()+offset+dddoffset+i];
                     // matrix inverse is slow but at least it will work for now
                     // A=Matrix(3,3,[6*dt**5, 5*dt**4, 4*dt**3, 30*dt**4, 20*dt**3, 12*dt**2, 120*dt**3, 60*dt**2, 24*dt])
                     // A.inv() = [   dt**(-5), -1/(2*dt**4), 1/(12*dt**3)]
@@ -1147,20 +1266,20 @@ protected:
         }
         else {
             for(int i = 0; i < g.dof; ++i) {
-                data[g.offset+i] = _vtrajdata[offset+g.offset+i];
+                data[g.offset+i] = trajectory_data_vector_[offset+g.offset+i];
             }
         }
     }
 
     void _ValidateLinear(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime)
     {
-        size_t offset = ipoint*_spec.GetDOF();
-        int derivoffset = _vderivoffsets[g.offset];
+        size_t offset = ipoint*config_specification_.GetDOF();
+        int derivoffset = derivative_offsets_vector_[g.offset];
         if( derivoffset >= 0 ) {
             for(int i = 0; i < g.dof; ++i) {
-                dReal deriv0 = _vtrajdata[_spec.GetDOF()+offset+derivoffset+i];
-                dReal expected = _vtrajdata[offset+g.offset+i] + deltatime*deriv0;
-                dReal error = RaveFabs(_vtrajdata[_spec.GetDOF()+offset+g.offset+i] - expected);
+                dReal deriv0 = trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i];
+                dReal expected = trajectory_data_vector_[offset+g.offset+i] + deltatime*deriv0;
+                dReal error = RaveFabs(trajectory_data_vector_[config_specification_.GetDOF()+offset+g.offset+i] - expected);
                 if( RaveFabs(error-2*PI) > g_fEpsilonLinear ) { // TODO, officially track circular joints
                     OPENRAVE_ASSERT_OP_FORMAT(error,<=,g_fEpsilonLinear, "trajectory segment for group %s interpolation %s points %d-%d dof %d is invalid", g.name%g.interpolation%ipoint%(ipoint+1)%i, ORE_InvalidState);
                 }
@@ -1171,22 +1290,22 @@ protected:
     void _ValidateQuadratic(const ConfigurationSpecification::Group& g, size_t ipoint, dReal deltatime)
     {
         if( deltatime > g_fEpsilon ) {
-            size_t offset = ipoint*_spec.GetDOF();
-            int derivoffset = _vderivoffsets[g.offset];
+            size_t offset = ipoint*config_specification_.GetDOF();
+            int derivoffset = derivative_offsets_vector_[g.offset];
             if( derivoffset >= 0 ) {
                 for(int i = 0; i < g.dof; ++i) {
                     // coeff*t^2 + deriv0*t + pos0
-                    dReal deriv0 = _vtrajdata[offset+derivoffset+i];
-                    dReal coeff = 0.5*_vdeltainvtime.at(ipoint+1)*(_vtrajdata[_spec.GetDOF()+offset+derivoffset+i]-deriv0);
-                    dReal expected = _vtrajdata[offset+g.offset+i] + deltatime*(deriv0 + deltatime*coeff);
-                    dReal error = RaveFabs(_vtrajdata.at(_spec.GetDOF()+offset+g.offset+i)-expected);
+                    dReal deriv0 = trajectory_data_vector_[offset+derivoffset+i];
+                    dReal coeff = 0.5*delta_inv_time_vector_.at(ipoint+1)*(trajectory_data_vector_[config_specification_.GetDOF()+offset+derivoffset+i]-deriv0);
+                    dReal expected = trajectory_data_vector_[offset+g.offset+i] + deltatime*(deriv0 + deltatime*coeff);
+                    dReal error = RaveFabs(trajectory_data_vector_.at(config_specification_.GetDOF()+offset+g.offset+i)-expected);
                     if( RaveFabs(error-2*PI) > 1e-5 ) { // TODO, officially track circular joints
                         OPENRAVE_ASSERT_OP_FORMAT(error,<=,1e-4, "trajectory segment for group %s interpolation %s time %f points %d-%d dof %d is invalid", g.name%g.interpolation%deltatime%ipoint%(ipoint+1)%i, ORE_InvalidState);
                     }
                 }
             }
             else {
-                int integraloffset = _vintegraloffsets[g.offset];
+                int integraloffset = intergral_offsets_vector_[g.offset];
                 BOOST_ASSERT(integraloffset>=0);
                 // cannot verify since there's not enough constraints
             }
@@ -1210,18 +1329,18 @@ protected:
     {
     }
 
-    ConfigurationSpecification _spec;
-    std::vector< boost::function<void(size_t,dReal,std::vector<dReal>&)> > _vgroupinterpolators;
-    std::vector< boost::function<void(size_t,dReal)> > _vgroupvalidators;
-    std::vector<int> _vderivoffsets, _vddoffsets, _vdddoffsets; //!< for every group that relies on other info to compute its position, this will point to the derivative offset. -1 if invalid and not needed, -2 if invalid and needed
-    std::vector<int> _vintegraloffsets; //!< for every group that relies on other info to compute its position, this will point to the integral offset (ie the position for a velocity group). -1 if invalid and not needed, -2 if invalid and needed
-    int _timeoffset;
+    ConfigurationSpecification config_specification_;
+    std::vector< boost::function<void(size_t,dReal,std::vector<dReal>&)> > group_interpolators_vector_;
+    std::vector< boost::function<void(size_t,dReal)> > group_validators_vector_;
+    std::vector<int> derivative_offsets_vector_, deriv_deriv_offsets_vector_, deriv_deriv_deriv_offsets_vector_; //!< for every group that relies on other info to compute its position, this will point to the derivative offset. -1 if invalid and not needed, -2 if invalid and needed
+    std::vector<int> intergral_offsets_vector_; //!< for every group that relies on other info to compute its position, this will point to the integral offset (ie the position for a velocity group). -1 if invalid and not needed, -2 if invalid and needed
+    int time_offset_;
 
-    std::vector<dReal> _vtrajdata;
-    mutable std::vector<dReal> _vaccumtime, _vdeltainvtime;
+    std::vector<dReal> trajectory_data_vector_;
+    mutable std::vector<dReal> _vaccumtime, delta_inv_time_vector_;
     bool is_init_;
-    mutable bool _bChanged; //!< if true, then _ComputeInternal() has to be called in order to compute _vaccumtime and _vdeltainvtime
-    mutable bool _bSamplingVerified; //!< if false, then _VerifySampling() has not be called yet to verify that all points can be sampled.
+    mutable bool _bChanged; //!< if true, then _ComputeInternal() has to be called in order to compute _vaccumtime and delta_inv_time_vector_
+    mutable bool is_sampling_verified_; //!< if false, then _VerifySampling() has not be called yet to verify that all points can be sampled.
 };
 
 TrajectoryBasePtr CreateGenericTrajectory(EnvironmentBasePtr penv, std::istream& sinput)

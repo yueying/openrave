@@ -778,8 +778,8 @@ void KinBody::Joint::_GetVelocities(std::vector<dReal>& pVelocities, bool bAppen
         pVelocities.push_back(GetVelocity(0));
         return;
     }
-    const Transform& linkparenttransform = _attachedbodies[0]->info_._t;
-    const Transform& linkchildtransform = _attachedbodies[1]->info_._t;
+    const Transform& linkparenttransform = _attachedbodies[0]->info_.transform_;
+    const Transform& linkchildtransform = _attachedbodies[1]->info_.transform_;
     Vector quatdelta = quatMultiply(linkparenttransform.rot,_tLeft.rot);
     Vector quatdeltainv = quatInverse(quatdelta);
     if( info_.type_ & KinBody::JointSpecialBit ) {
@@ -813,8 +813,8 @@ void KinBody::Joint::_GetVelocities(std::vector<dReal>& pVelocities, bool bAppen
 
 dReal KinBody::Joint::_GetVelocity(int axis, const std::pair<Vector,Vector>&linkparentvelocity, const std::pair<Vector,Vector>&linkchildvelocity) const
 {
-    const Transform& linkparenttransform = _attachedbodies[0]->info_._t;
-    const Transform& linkchildtransform = _attachedbodies[1]->info_._t;
+    const Transform& linkparenttransform = _attachedbodies[0]->info_.transform_;
+    const Transform& linkchildtransform = _attachedbodies[1]->info_.transform_;
     Vector quatdelta = quatMultiply(linkparenttransform.rot,_tLeft.rot);
     Vector quatdeltainv = quatInverse(quatdelta);
     if( info_.type_ & KinBody::JointSpecialBit ) {

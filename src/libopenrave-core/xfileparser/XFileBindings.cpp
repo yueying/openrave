@@ -233,7 +233,7 @@ protected:
             if( !!pjoint || !plink || level == 0 ) {
                 pchildlink.reset(new KinBody::Link(pbody));
                 pchildlink->info_.name_ = _prefix+node->mName;
-                pchildlink->info_._t = tflipyz*tpivot*tflipyz.inverse();
+                pchildlink->info_.transform_ = tflipyz*tpivot*tflipyz.inverse();
                 pchildlink->info_.is_static_ = false;
                 pchildlink->info_.is_enabled_ = true;
                 pchildlink->index_ = pbody->links_vector_.size();
@@ -247,7 +247,7 @@ protected:
                 }
                 if( node->mFramePivot->mAttribute & 4 ) {
                     // end effector?
-                    _listendeffectors.emplace_back(pchildlink, pchildlink->info_._t.inverse()*tflipyz*tpivot*tflipyz.inverse());
+                    _listendeffectors.emplace_back(pchildlink, pchildlink->info_.transform_.inverse()*tflipyz*tpivot*tflipyz.inverse());
                 }
                 if( node->mFramePivot->mAttribute & 8 ) {
                     // also used, possibly revolute joint type?
@@ -258,7 +258,7 @@ protected:
                 std::vector<Vector> vaxes(1);
                 Transform t = tflipyz*tnode; // i guess we don't apply the pivot for the joint axis...?
                 if( !!plink ) {
-                    t = plink->info_._t.inverse()*t;
+                    t = plink->info_.transform_.inverse()*t;
                 }
                 else {
                     RAVELOG_DEBUG_FORMAT("level=%d parent link is not specified for joint %s, so taking first link", level%pjoint->info_.name_);
@@ -341,7 +341,7 @@ protected:
 
             KinBody::GeometryInfo g;
             _ExtractGeometry(*it, g);
-            g._t = plink->info_._t.inverse() * tflipyz * tnode;
+            g.transform_ = plink->info_.transform_.inverse() * tflipyz * tnode;
             plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(plink,g)));
         }
 

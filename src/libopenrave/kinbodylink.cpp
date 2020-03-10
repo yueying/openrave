@@ -18,7 +18,8 @@
 #include <algorithm>
 #include <openrave/kinbody.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
 KinBody::LinkInfo::LinkInfo()
     : mass_(0)
@@ -37,7 +38,7 @@ void KinBody::LinkInfo::SerializeJSON(rapidjson::Value& value,
 {
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
 
-    Transform tmpTransform{ _t };
+    Transform tmpTransform{ transform_ };
     Transform tmpMassTransform{ mass_frame_transform_ };
     tmpTransform.trans *= unit_scale;
     tmpMassTransform.trans *= unit_scale;
@@ -103,7 +104,7 @@ void KinBody::LinkInfo::SerializeJSON(rapidjson::Value& value,
 void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
     openravejson::LoadJsonValueByKey(value, "name", name_);
-    openravejson::LoadJsonValueByKey(value, "transform", _t);
+    openravejson::LoadJsonValueByKey(value, "transform", transform_);
     openravejson::LoadJsonValueByKey(value, "massTransform", mass_frame_transform_);
     openravejson::LoadJsonValueByKey(value, "mass", mass_);
     openravejson::LoadJsonValueByKey(value, "intertialMoments", _vinertiamoments);
@@ -112,7 +113,7 @@ void KinBody::LinkInfo::DeserializeJSON(const rapidjson::Value& value, dReal uni
     openravejson::LoadJsonValueByKey(value, "stringParameters", _mapStringParameters);
     openravejson::LoadJsonValueByKey(value, "forcedAdjacentLinks", _vForcedAdjacentLinks);
 
-    _t.trans *= unit_scale;
+    transform_.trans *= unit_scale;
     mass_frame_transform_.trans *= unit_scale;
 
     if (value.HasMember("geometries")) {
@@ -163,7 +164,7 @@ KinBody::LinkInfo& KinBody::LinkInfo::operator=(const KinBody::LinkInfo& other)
     }
 
     name_ = other.name_;
-    _t = other._t;
+    transform_ = other.transform_;
     mass_frame_transform_ = other.mass_frame_transform_;
     mass_ = other.mass_;
     _vinertiamoments = other._vinertiamoments;
@@ -286,7 +287,7 @@ TransformMatrix KinBody::Link::GetLocalInertia() const
 
 TransformMatrix KinBody::Link::GetGlobalInertia() const
 {
-    return ComputeInertia(info_._t * info_.mass_frame_transform_, info_._vinertiamoments);
+    return ComputeInertia(info_.transform_ * info_.mass_frame_transform_, info_._vinertiamoments);
 }
 
 void KinBody::Link::SetLocalMassFrame(const Transform& massframe)
@@ -314,7 +315,7 @@ AABB KinBody::Link::ComputeLocalAABB() const
 
 AABB KinBody::Link::ComputeAABB() const
 {
-    return ComputeAABBFromTransform(info_._t);
+    return ComputeAABBFromTransform(info_.transform_);
 }
 
 AABB KinBody::Link::ComputeAABBFromTransform(const Transform& tLink) const
@@ -399,7 +400,7 @@ void KinBody::Link::SetStatic(bool is_static)
 
 void KinBody::Link::SetTransform(const Transform& t)
 {
-    info_._t = t;
+    info_.transform_ = t;
     GetParent()->_nUpdateStampId++;
 }
 

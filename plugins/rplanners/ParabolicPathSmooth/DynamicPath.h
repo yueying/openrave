@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
  *
  * Copyright (c) 2010-2011, the Trustees of Indiana University
  * All rights reserved.
@@ -33,11 +33,18 @@
 
 #include "ParabolicRamp.h"
 
-namespace ParabolicRampInternal {
+namespace ParabolicRampInternal
+{
 
 struct CheckReturn
 {
-    CheckReturn(int retcode = 0, Real fmult=1.0, Real fvel=0, Real faccel=0) : retcode(retcode), fTimeBasedSurpassMult(fmult), bDifferentVelocity(false), fMaxManipSpeed(fvel), fMaxManipAccel(faccel) {
+    CheckReturn(int retcode = 0, Real fmult=1.0, Real fvel=0, Real faccel=0) 
+		: retcode(retcode), 
+		fTimeBasedSurpassMult(fmult), 
+		bDifferentVelocity(false), 
+		fMaxManipSpeed(fvel), 
+		fMaxManipAccel(faccel) 
+	{
     }
     int retcode; // one of CFO_X
     Real fTimeBasedSurpassMult; // if retcode == CFO_CheckTimeBasedConstraints, then the multiplier of |max|/|cur|

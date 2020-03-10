@@ -133,9 +133,9 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
     FOREACHC(itab, vaabbs) {
         GeometryInfo info;
         info.type_ = GT_Box;
-        info._t.trans = itab->pos;
+        info.transform_.trans = itab->pos;
         info.is_visible_ = visible;
-        info.geom_data_vec_ = itab->extents;
+        info.gemo_outer_extents_data_ = itab->extents;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
@@ -175,9 +175,9 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         tm.m[8] = itobb->right.z; tm.m[9] = itobb->up.z; tm.m[10] = itobb->dir.z;
         GeometryInfo info;
         info.type_ = GT_Box;
-        info._t = tm;
+        info.transform_ = tm;
         info.is_visible_ = visible;
-        info.geom_data_vec_ = itobb->extents;
+        info.gemo_outer_extents_data_ = itobb->extents;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
@@ -212,9 +212,9 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
     FOREACHC(itv, vspheres) {
         GeometryInfo info;
         info.type_ = GT_Sphere;
-        info._t.trans.x = itv->x; info._t.trans.y = itv->y; info._t.trans.z = itv->z;
+        info.transform_.trans.x = itv->x; info.transform_.trans.y = itv->y; info.transform_.trans.z = itv->z;
         info.is_visible_ = visible;
-        info.geom_data_vec_.x = itv->w;
+        info.gemo_outer_extents_data_.x = itv->w;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
@@ -2719,7 +2719,7 @@ void KinBody::ComputeInverseDynamics(std::vector<dReal>& doftorques, const std::
     // forward recursion
     std::vector<Vector> vLinkCOMLinearAccelerations(links_vector_.size()), vLinkCOMMomentOfInertia(links_vector_.size());
     for(size_t i = 0; i < vLinkVelocities.size(); ++i) {
-        Vector vglobalcomfromlink = links_vector_.at(i)->GetGlobalCOM() - links_vector_.at(i)->info_._t.trans;
+        Vector vglobalcomfromlink = links_vector_.at(i)->GetGlobalCOM() - links_vector_.at(i)->info_.transform_.trans;
         Vector vangularaccel = vLinkAccelerations.at(i).second;
         Vector vangularvelocity = vLinkVelocities.at(i).second;
         vLinkCOMLinearAccelerations[i] = vLinkAccelerations.at(i).first + vangularaccel.cross(vglobalcomfromlink) + vangularvelocity.cross(vangularvelocity.cross(vglobalcomfromlink));
@@ -2863,9 +2863,9 @@ void KinBody::ComputeInverseDynamics(std::array< std::vector<dReal>, 3>& vDOFTor
             // remove the base link velocity frame
             // v_B = v_A + angularvel x (B-A)
             vLinkVelocities[2].resize(links_vector_.size());
-            Vector vbasepos = links_vector_.at(0)->info_._t.trans;
+            Vector vbasepos = links_vector_.at(0)->info_.transform_.trans;
             for(size_t i = 1; i < vLinkVelocities[0].size(); ++i) {
-                Vector voffset = links_vector_.at(i)->info_._t.trans - vbasepos;
+                Vector voffset = links_vector_.at(i)->info_.transform_.trans - vbasepos;
                 vLinkVelocities[2][i].first = vbaselinear + vbaseangular.cross(voffset);
                 vLinkVelocities[2][i].second = vbaseangular;
             }
@@ -2919,7 +2919,7 @@ void KinBody::ComputeInverseDynamics(std::array< std::vector<dReal>, 3>& vDOFTor
     }
 
     for(size_t i = 0; i < links_vector_.size(); ++i) {
-        Vector vglobalcomfromlink = links_vector_.at(i)->GetGlobalCOM() - links_vector_.at(i)->info_._t.trans;
+        Vector vglobalcomfromlink = links_vector_.at(i)->GetGlobalCOM() - links_vector_.at(i)->info_.transform_.trans;
         TransformMatrix tm = links_vector_.at(i)->GetGlobalInertia();
         for(size_t j = 0; j < 3; ++j) {
             if( vLinkAccelerations[j].size() > 0 ) {
@@ -3042,10 +3042,10 @@ void KinBody::_ComputeDOFLinkVelocities(std::vector<dReal>& dofvelocities, std::
         return;
     }
     if( !usebaselinkvelocity ) {
-        Vector vbasepos = links_vector_.at(0)->info_._t.trans;
+        Vector vbasepos = links_vector_.at(0)->info_.transform_.trans;
         // v_B = v_A + angularvel x (B-A)
         for(size_t i = 1; i < vLinkVelocities.size(); ++i) {
-            Vector voffset = links_vector_.at(i)->info_._t.trans - vbasepos;
+            Vector voffset = links_vector_.at(i)->info_.transform_.trans - vbasepos;
             vLinkVelocities[i].first -= vLinkVelocities[0].first + vLinkVelocities[0].second.cross(voffset);
             vLinkVelocities[i].second -= vLinkVelocities[0].second;
         }
@@ -3238,9 +3238,9 @@ void KinBody::_ComputeLinkAccelerations(const std::vector<dReal>& vDOFVelocities
 
         const pair<Vector, Vector>& vParentVelocities = vLinkVelocities.at(parentindex);
         const pair<Vector, Vector>& vParentAccelerations = vLinkAccelerations.at(parentindex);
-        Vector xyzdelta = tchild.trans - links_vector_.at(parentindex)->info_._t.trans;
+        Vector xyzdelta = tchild.trans - links_vector_.at(parentindex)->info_.transform_.trans;
         if( !!pdofaccelerations || !!pdofvelocities ) {
-            tdelta = links_vector_.at(parentindex)->info_._t * pjoint->GetInternalHierarchyLeftTransform();
+            tdelta = links_vector_.at(parentindex)->info_.transform_ * pjoint->GetInternalHierarchyLeftTransform();
             vlocalaxis = pjoint->GetInternalHierarchyAxis(0);
         }
 
@@ -4427,7 +4427,7 @@ public:
         }
         ~TransformsSaver() {
             for(size_t i = 0; i < _pbody->links_vector_.size(); ++i) {
-                std::static_pointer_cast<Link>(_pbody->links_vector_[i])->info_._t = vcurtrans.at(i);
+                std::static_pointer_cast<Link>(_pbody->links_vector_[i])->info_.transform_ = vcurtrans.at(i);
             }
             for(size_t i = 0; i < _pbody->_vecjoints.size(); ++i) {
                 for(int j = 0; j < _pbody->_vecjoints[i]->GetDOF(); ++j) {
@@ -4449,7 +4449,7 @@ private:
         CollisionCheckerBasePtr collisionchecker = !!self_collision_checker_ ? self_collision_checker_ : GetEnv()->GetCollisionChecker();
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         for(size_t i = 0; i < links_vector_.size(); ++i) {
-            std::static_pointer_cast<Link>(links_vector_[i])->info_._t = _vInitialLinkTransformations.at(i);
+            std::static_pointer_cast<Link>(links_vector_[i])->info_.transform_ = _vInitialLinkTransformations.at(i);
         }
         _nUpdateStampId++; // because transforms were modified
         non_adjacent_links_vector_[0].resize(0);

@@ -632,13 +632,13 @@ private:
         case OpenRAVE::GT_None:
             break;
         case OpenRAVE::GT_Box:
-            odegeom = dCreateBox(0,info.geom_data_vec_.x*2.0f,info.geom_data_vec_.y*2.0f,info.geom_data_vec_.z*2.0f);
+            odegeom = dCreateBox(0,info.gemo_outer_extents_data_.x*2.0f,info.gemo_outer_extents_data_.y*2.0f,info.gemo_outer_extents_data_.z*2.0f);
             break;
         case OpenRAVE::GT_Sphere:
-            odegeom = dCreateSphere(0,info.geom_data_vec_.x);
+            odegeom = dCreateSphere(0,info.gemo_outer_extents_data_.x);
             break;
         case OpenRAVE::GT_Cylinder:
-            odegeom = dCreateCylinder(0,info.geom_data_vec_.x,info.geom_data_vec_.y);
+            odegeom = dCreateCylinder(0,info.gemo_outer_extents_data_.x,info.gemo_outer_extents_data_.y);
             break;
         case OpenRAVE::GT_Container:
         case OpenRAVE::GT_Cage:
@@ -675,7 +675,7 @@ private:
         //dGeomSetData(odegeom, (void*)geom.get());
 
         // set the transformation
-        RaveTransform<dReal> t = link->tlinkmassinv * info._t;
+        RaveTransform<dReal> t = link->tlinkmassinv * info.transform_;
         dGeomSetQuaternion(odegeom,&t.rot[0]);
         dGeomSetPosition(odegeom,t.trans.x, t.trans.y, t.trans.z);
 

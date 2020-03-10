@@ -24,7 +24,7 @@ public:
     {
 public:
         ConveyorLink(const std::string& name, Transform tinernal, KinBodyPtr parent) : Link(parent) {
-            info_._t = tinernal;
+            info_.transform_ = tinernal;
             info_.mass_ = 0.01; // just an estimate
             info_._vinertiamoments = Vector(1,1,1);
             info_.name_ = name;

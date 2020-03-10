@@ -1137,9 +1137,9 @@ public:
                     string norender = string("__norenderif__:")+extension;
                     FOREACH(itinfo,listGeometries) {
                         itinfo->is_visible_ = true;
-                        itinfo->_filenamerender = norender;
+                        itinfo->render_file_name_ = norender;
                     }
-                    listGeometries.front()._filenamerender = fullfilename;
+                    listGeometries.front().render_file_name_ = fullfilename;
                     if( robot->InitFromGeometries(listGeometries) ) {
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
@@ -1292,9 +1292,9 @@ public:
                     string norender = string("__norenderif__:")+extension;
                     FOREACH(itinfo,listGeometries) {
                         itinfo->is_visible_ = true;
-                        itinfo->_filenamerender = norender;
+                        itinfo->render_file_name_ = norender;
                     }
-                    listGeometries.front()._filenamerender = fullfilename;
+                    listGeometries.front().render_file_name_ = fullfilename;
                     if( body->InitFromGeometries(listGeometries) ) {
                         body->str_uri_ = fullfilename;
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36

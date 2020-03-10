@@ -107,7 +107,7 @@ public:
         _returncode = 0;
         _fTimeWhenInvalid = 0;
         _bHasRampDeviatedFromInterpolation = false;
-        _report.Reset();
+        report_.Reset();
     }
 
     std::vector<dReal> _configurations; //!< N*dof vector of the configurations used to check constraints. If the constraints were invalid, they stop at the first invalid constraint
@@ -116,7 +116,7 @@ public:
     std::vector<dReal> _invalidvalues, _invalidvelocities; //!< if the constraint returned with an error, contains invalid configuration where it failed
     dReal _fTimeWhenInvalid; //!< if the constraint has an elapsed time, will contain the time when invalidated
     int _returncode; //!< if == 0, the constraint is good. If != 0 means constraint was violated and bitmasks in ConstraintFilterOptions can be used to find what constraint was violated.
-    CollisionReport _report; //!< if in collision (_returncode&(CFO_CheckEnvCollisions|CFO_CheckSelfCollisions)), then stores the collision report
+    CollisionReport report_; //!< if in collision (_returncode&(CFO_CheckEnvCollisions|CFO_CheckSelfCollisions)), then stores the collision report
     bool _bHasRampDeviatedFromInterpolation; //!< if true, then it means that the checked ramp that passed is different from the interpolation expected on the start and end points, and the new points are filled in _configurations
 };
 
@@ -422,9 +422,13 @@ private:
 
 protected:
     // router to a default implementation of _checkpathconstraintsfn that calls on _checkpathvelocityconstraintsfn
-    bool _CheckPathConstraintsOld(const std::vector<dReal>&q0, const std::vector<dReal>&q1, IntervalType interval, ConfigurationListPtr pvCheckedConfigurations) {
-        RAVELOG_VERBOSE("using deprecated PlannerParameters::_checkpathconstraintsfn, consider switching to PlannerParameters::_checkpathvelocityconstraintsfn\n");
-        if( !_checkpathvelocityconstraintsfn ) {
+    bool _CheckPathConstraintsOld(const std::vector<dReal>&q0, 
+		const std::vector<dReal>&q1, IntervalType interval, ConfigurationListPtr pvCheckedConfigurations) 
+	{
+        RAVELOG_VERBOSE("using deprecated PlannerParameters::_checkpathconstraintsfn, \
+               consider switching to PlannerParameters::_checkpathvelocityconstraintsfn\n");
+        if( !_checkpathvelocityconstraintsfn ) 
+		{
             return true;
         }
 

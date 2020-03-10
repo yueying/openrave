@@ -2095,10 +2095,12 @@ void GetDHParameters(std::vector<DHParameter>& vparameters, KinBodyConstPtr pbod
     }
 }
 
-DynamicsCollisionConstraint::DynamicsCollisionConstraint(PlannerBase::PlannerParametersConstPtr parameters, const std::list<KinBodyPtr>& listCheckBodies, int filtermask) : _listCheckBodies(listCheckBodies), _filtermask(filtermask), _torquelimitmode(0), _perturbation(0.1)
+DynamicsCollisionConstraint::DynamicsCollisionConstraint(PlannerBase::PlannerParametersConstPtr parameters,
+	const std::list<KinBodyPtr>& listCheckBodies, int filtermask) 
+	: _listCheckBodies(listCheckBodies), _filtermask(filtermask), _torquelimitmode(0), _perturbation(0.1)
 {
     BOOST_ASSERT(listCheckBodies.size()>0);
-    _report.reset(new CollisionReport());
+    report_.reset(new CollisionReport());
     _parameters = parameters;
     if( !!parameters ) {
         _specvel = parameters->_configurationspecification.ConvertToVelocitySpecification();
@@ -2253,21 +2255,21 @@ int DynamicsCollisionConstraint::_CheckState(const std::vector<dReal>& vdofveloc
         }
     }
     FOREACHC(itbody, _listCheckBodies) {
-        if( (options&CFO_CheckEnvCollisions) && (*itbody)->GetEnv()->CheckCollision(KinBodyConstPtr(*itbody),_report) ) {
+        if( (options&CFO_CheckEnvCollisions) && (*itbody)->GetEnv()->CheckCollision(KinBodyConstPtr(*itbody),report_) ) {
             if( (options & CFO_FillCollisionReport) && !!filterreturn ) {
-                filterreturn->_report = *_report;
+                filterreturn->report_ = *report_;
             }
             if( IS_DEBUGLEVEL(Level_Verbose) ) {
-                _PrintOnFailure(std::string("collision failed ")+_report->__str__());
+                _PrintOnFailure(std::string("collision failed ")+report_->__str__());
             }
             return CFO_CheckEnvCollisions;
         }
-        if( (options&CFO_CheckSelfCollisions) && (*itbody)->CheckSelfCollision(_report) ) {
+        if( (options&CFO_CheckSelfCollisions) && (*itbody)->CheckSelfCollision(report_) ) {
             if( (options & CFO_FillCollisionReport) && !!filterreturn ) {
-                filterreturn->_report = *_report;
+                filterreturn->report_ = *report_;
             }
             if( IS_DEBUGLEVEL(Level_Verbose) ) {
-                _PrintOnFailure(std::string("self-collision failed ")+_report->__str__());
+                _PrintOnFailure(std::string("self-collision failed ")+report_->__str__());
             }
             return CFO_CheckSelfCollisions;
         }
@@ -3384,7 +3386,14 @@ bool SimpleNeighborhoodSampler::Sample(std::vector<dReal>& samples)
     return samples.size()>0;
 }
 
-ManipulatorIKGoalSampler::ManipulatorIKGoalSampler(RobotBase::ManipulatorConstPtr pmanip, const std::list<IkParameterization>& listparameterizations, int nummaxsamples, int nummaxtries, dReal fsampleprob, bool searchfreeparameters, int ikfilteroptions, const std::vector<dReal>& freevalues) : _pmanip(pmanip), _nummaxsamples(nummaxsamples), _nummaxtries(nummaxtries), _fsampleprob(fsampleprob), _ikfilteroptions(ikfilteroptions), _searchfreeparameters(searchfreeparameters), _vfreegoalvalues(freevalues)
+ManipulatorIKGoalSampler::ManipulatorIKGoalSampler(RobotBase::ManipulatorConstPtr pmanip, 
+	const std::list<IkParameterization>& listparameterizations, 
+	int nummaxsamples, int nummaxtries, dReal fsampleprob, 
+	bool searchfreeparameters, int ikfilteroptions, const std::vector<dReal>& freevalues) 
+	: _pmanip(pmanip), _nummaxsamples(nummaxsamples),
+	_nummaxtries(nummaxtries), _fsampleprob(fsampleprob),
+	_ikfilteroptions(ikfilteroptions), _searchfreeparameters(searchfreeparameters),
+	_vfreegoalvalues(freevalues)
 {
     _tempikindex = -1;
     _fjittermaxdist = 0;
@@ -3398,7 +3407,7 @@ ManipulatorIKGoalSampler::ManipulatorIKGoalSampler(RobotBase::ManipulatorConstPt
         s._numleft = _nummaxsamples;
         _listsamples.push_back(s);
     }
-    _report.reset(new CollisionReport());
+    report_.reset(new CollisionReport());
     pmanip->GetIkSolver()->GetFreeParameters(_vfreestart);
 
     std::stringstream ssout, ssin;
@@ -3493,7 +3502,7 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
             // could be jittered.
             // if bCheckEndEffector is true, then should call CheckEndEffectorCollision to quickly prune samples; otherwise, have to rely on calling FindIKSolution
             try {
-                if( (bCheckEndEffector && _pmanip->CheckEndEffectorCollision(ikparam,_report, numRedundantSamplesForEEChecking)) || (bCheckEndEffectorSelf && _pmanip->CheckEndEffectorSelfCollision(ikparam,_report, numRedundantSamplesForEEChecking,true))) {
+                if( (bCheckEndEffector && _pmanip->CheckEndEffectorCollision(ikparam,report_, numRedundantSamplesForEEChecking)) || (bCheckEndEffectorSelf && _pmanip->CheckEndEffectorSelfCollision(ikparam,report_, numRedundantSamplesForEEChecking,true))) {
                     bool bcollision=true;
                     if( _fjittermaxdist > 0 ) {
                         // try jittering the end effector out
@@ -3513,7 +3522,7 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
                                 }
                                 IkParameterization ikparamjittered = tjitter * ikparam;
                                 try {
-                                    if( (!bCheckEndEffector || !_pmanip->CheckEndEffectorCollision(ikparamjittered,_report, numRedundantSamplesForEEChecking)) && (!bCheckEndEffectorSelf || !_pmanip->CheckEndEffectorSelfCollision(ikparamjittered,_report, numRedundantSamplesForEEChecking,true)) ) {
+                                    if( (!bCheckEndEffector || !_pmanip->CheckEndEffectorCollision(ikparamjittered,report_, numRedundantSamplesForEEChecking)) && (!bCheckEndEffectorSelf || !_pmanip->CheckEndEffectorSelfCollision(ikparamjittered,report_, numRedundantSamplesForEEChecking,true)) ) {
                                         // make sure at least one ik solution exists...
                                         if( !ikreturnjittered ) {
                                             ikreturnjittered.reset(new IkReturn(IKRA_Success));
@@ -3548,7 +3557,7 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
                                 tjitter.trans = Vector(xyzsamples[0]-0.5f, xyzsamples[1]-0.5f, xyzsamples[2]-0.5f) * (delta*iiter);
                                 IkParameterization ikparamjittered = tjitter * ikparam;
                                 try {
-                                    if( (!bCheckEndEffector || !_pmanip->CheckEndEffectorCollision(ikparamjittered, _report, numRedundantSamplesForEEChecking)) && (!bCheckEndEffectorSelf || !_pmanip->CheckEndEffectorSelfCollision(ikparamjittered, _report, numRedundantSamplesForEEChecking,true)) ) {
+                                    if( (!bCheckEndEffector || !_pmanip->CheckEndEffectorCollision(ikparamjittered, report_, numRedundantSamplesForEEChecking)) && (!bCheckEndEffectorSelf || !_pmanip->CheckEndEffectorSelfCollision(ikparamjittered, report_, numRedundantSamplesForEEChecking,true)) ) {
                                         if( !ikreturnjittered ) {
                                             ikreturnjittered.reset(new IkReturn(IKRA_Success));
                                         }
@@ -3570,7 +3579,7 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
                         }
                     }
                     if( bcollision ) {
-                        RAVELOG_VERBOSE(str(boost::format("sampleiksolutions gripper in collision: %s.\n")%_report->__str__()));
+                        RAVELOG_VERBOSE(str(boost::format("sampleiksolutions gripper in collision: %s.\n")%report_->__str__()));
                         _listsamples.erase(itsample);
                         continue;
                     }

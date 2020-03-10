@@ -31,7 +31,9 @@ namespace cppexamples {
 class OpenRAVEExample
 {
 public:
-    OpenRAVEExample(const std::string& viewername="qtosg") : _viewername(viewername), _bDestroyThread(false) {
+    OpenRAVEExample(const std::string& viewername="qtcoin")
+		: viewer_name_(viewername), _bDestroyThread(false) 
+	{
         OPENRAVE_ASSERT_FORMAT0(GetSingleton()==NULL,"expecting only once instance of OpenRAVEExample",OpenRAVE::ORE_Assert);
         GetSingleton() = this;
         signal(SIGINT,sigint_handler); // for control C
@@ -53,8 +55,8 @@ public:
 
         // create a viewer
         _viewer.reset();
-        if( _viewername.size() > 0 ) {
-            _viewer = OpenRAVE::RaveCreateViewer(penv,_viewername);
+        if( viewer_name_.size() > 0 ) {
+            _viewer = OpenRAVE::RaveCreateViewer(penv,viewer_name_);
         }
         if( !!_viewer ) {
             penv->Add(_viewer);
@@ -89,7 +91,7 @@ protected:
 
 private:
     OpenRAVE::ViewerBasePtr _viewer;
-    std::string _viewername;
+    std::string viewer_name_;
     bool _bDestroyThread;
     boost::thread _thopenrave;
 
