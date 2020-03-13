@@ -1,4 +1,4 @@
-/** \example orplanning_ik.cpp
+﻿/** \example orplanning_ik.cpp
     \author Rosen Diankov
 
     Shows how to use inverse kinematics and planners to move a robot's end-effector safely through the environment.

@@ -124,12 +124,12 @@ public:
             }
 
             KinBody::LinkPtr GetLink() {
-                return _plink.lock();
+                return link_.lock();
             }
 
             list<dTriIndex*> listtrimeshinds;
             list<dReal*> listvertices;
-            KinBody::LinkWeakPtr _plink;
+            KinBody::LinkWeakPtr link_;
             bool _bEnabled;
             Transform tlinkmass, tlinkmassinv; // the local mass frame ODE was initialized with
             std::string bodylinkname; // for debugging purposes
@@ -373,7 +373,7 @@ private:
                 dBodySetMass(link->body, &mass);
             }
 
-            link->_plink = *itlink;
+            link->link_ = *itlink;
             link->bodylinkname = pbody->GetName() + "/" + (*itlink)->GetName();
             // Calculate ODE transform consisting of link origin + center of mass offset
             RaveTransform<dReal> t = (*itlink)->GetTransform() * link->tlinkmass;

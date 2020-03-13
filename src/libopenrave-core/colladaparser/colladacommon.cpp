@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -42,14 +42,17 @@ void ResetGlobalDAEWithLock()
 /// \brief should have s_daemutex locked before calling
 std::shared_ptr<DAE> GetGlobalDAE(bool resetdefaults)
 {
-    if( !s_daedestroycallback ) {
+    if( !s_daedestroycallback )
+	{
         RaveAddCallbackForDestroy(ResetGlobalDAEWithLock);
         s_daedestroycallback = true;
     }
-    if( !s_dae ) {
+    if( !s_dae ) 
+	{
         s_dae.reset(new DAE());
     }
-    if( resetdefaults ) {
+    if( resetdefaults ) 
+	{
         // load the normal resolvers
         s_dae->getURIResolvers().list().clear();
         s_dae->getURIResolvers().list().append(new daeRawResolver(*s_dae));

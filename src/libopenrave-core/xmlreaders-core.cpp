@@ -815,8 +815,10 @@ public:
         return true;
     }
 
-    LinkXMLReader(KinBody::LinkPtr& plink, KinBodyPtr pparent, const AttributesList &atts) : _plink(plink) {
-        _pparent = pparent;
+    LinkXMLReader(KinBody::LinkPtr& plink, KinBodyPtr pparent, const AttributesList &atts)
+		: link_(plink) 
+	{
+        parent_ = pparent;
         _masstype = MT_None;
         _fMassDensity = 1;
         _vMassExtents = Vector(1,1,1);
@@ -834,7 +836,7 @@ public:
                 linkname = itatt->second;
                 FOREACHC(itcurlink,pparent->GetLinks()) {
                     if( (*itcurlink)->GetName() == linkname ) {
-                        _plink = *itcurlink;
+                        link_ = *itcurlink;
                         break;
                     }
                 }
@@ -866,23 +868,23 @@ public:
         }
 
         // if not appending to a body and plink pointer valid, append to it instead
-        if( !_plink && !!plink &&( plink->GetParent() == pparent) ) {
-            _plink = plink;
+        if( !link_ && !!plink &&( plink->GetParent() == pparent) ) {
+            link_ = plink;
         }
         if( linkfilename.size() > 0 ) {
-            ParseXMLFile(BaseXMLReaderPtr(new LinkXMLReader(_plink, _pparent, AttributesList())), linkfilename);
+            ParseXMLFile(BaseXMLReaderPtr(new LinkXMLReader(link_, parent_, AttributesList())), linkfilename);
         }
 
-        if( !_plink ) {
-            _plink.reset(new KinBody::Link(pparent));
+        if( !link_ ) {
+            link_.reset(new KinBody::Link(pparent));
         }
         if( linkname.size() > 0 ) {
-            _plink->info_.name_ = linkname;
+            link_->info_.name_ = linkname;
         }
         if( bStaticSet ) {
-            _plink->info_.is_static_ = bStatic;
+            link_->info_.is_static_ = bStatic;
         }
-        _plink->info_.is_enabled_ = bIsEnabled;
+        link_->info_.is_enabled_ = bIsEnabled;
     }
     virtual ~LinkXMLReader() {
     }
@@ -903,13 +905,13 @@ public:
         }
 
         if( xmlname == "body" ) {
-            tOrigTrans = _plink->GetTransform();
-            _plink->SetTransform(Transform());
+            tOrigTrans = link_->GetTransform();
+            link_->SetTransform(Transform());
             _processingtag = "";
             AttributesList newatts = atts;
             newatts.emplace_back("skipgeometry", _bSkipGeometry ? "1" : "0");
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            _pcurreader.reset(new LinkXMLReader(_plink, _pparent, newatts));
+            _pcurreader.reset(new LinkXMLReader(link_, parent_, newatts));
             return PE_Support;
         }
 
@@ -958,12 +960,12 @@ public:
             if( _pcurreader->endElement(xmlname) ) {
                 if( xmlname == "body" ) {
                     // directly apply transform to all geomteries
-                    Transform tnew = _plink->GetTransform();
-                    FOREACH(itgeom, _plink->geometries_vector_) {
+                    Transform tnew = link_->GetTransform();
+                    FOREACH(itgeom, link_->geometries_vector_) {
                         (*itgeom)->info_.transform_ = tnew * (*itgeom)->info_.transform_;
                     }
-                    _plink->_collision.ApplyTransform(tnew);
-                    _plink->SetTransform(tOrigTrans);
+                    link_->_collision.ApplyTransform(tnew);
+                    link_->SetTransform(tOrigTrans);
                 }
 
                 xmlreaders::GeometryInfoReaderPtr geomreader = std::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(_pcurreader);
@@ -973,7 +975,7 @@ public:
                     // geometry is not in the default group, so we add it to the LinkInfo without instantiating it
                     string groupname = geomreader->GetGroupName();
                     if( groupname != "self" ) {
-                        _plink->info_._mapExtraGeometries[groupname].push_back(info);
+                        link_->info_._mapExtraGeometries[groupname].push_back(info);
                         _pcurreader.reset();
                         return false;
                     }
@@ -1001,7 +1003,7 @@ public:
                     if( info->type_ == GT_TriMesh ) {
                         bool bSuccess = false;
                         if( info->_filenamecollision.size() > 0 ) {
-                            if( !CreateGeometries(_pparent->GetEnv(),info->_filenamecollision, info->collision_scale_vec_, listGeometries) ) {
+                            if( !CreateGeometries(parent_->GetEnv(),info->_filenamecollision, info->collision_scale_vec_, listGeometries) ) {
                                 RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->_filenamecollision));
                             }
                             else {
@@ -1010,7 +1012,7 @@ public:
                         }
                         if( info->render_file_name_.size() > 0 ) {
                             if( !bSuccess ) {
-                                if( !CreateGeometries(_pparent->GetEnv(), info->render_file_name_, info->render_scale_vec_, listGeometries) ) {
+                                if( !CreateGeometries(parent_->GetEnv(), info->render_file_name_, info->render_scale_vec_, listGeometries) ) {
                                     RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->render_file_name_));
                                 }
                                 else {
@@ -1043,7 +1045,7 @@ public:
                                     itnewgeom->transparency_ = info->transparency_;
                                 }
                                 itnewgeom->transform_.trans *= _vScaleGeometry;
-                                _plink->_collision.Append(itnewgeom->mesh_collision_, itnewgeom->transform_);
+                                link_->_collision.Append(itnewgeom->mesh_collision_, itnewgeom->transform_);
                             }
                             listGeometries.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
                             listGeometries.front().render_file_name_ = info->render_file_name_;
@@ -1051,7 +1053,7 @@ public:
                             listGeometries.front()._filenamecollision = info->_filenamecollision;
                             listGeometries.front().is_visible_ = info->is_visible_;
                             FOREACH(itinfo, listGeometries) {
-                                _plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*itinfo)));
+                                link_->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*itinfo)));
                             }
                         }
                         else {
@@ -1060,8 +1062,8 @@ public:
                                 *it = tmres * *it;
                             }
                             info->transform_.trans *= _vScaleGeometry;
-                            _plink->_collision.Append(info->mesh_collision_, info->transform_);
-                            _plink->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(_plink,*info)));
+                            link_->_collision.Append(info->mesh_collision_, info->transform_);
+                            link_->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*info)));
                         }
                     }
                     else {
@@ -1075,15 +1077,15 @@ public:
                         }
 
                         // call before attaching the geom
-                        KinBody::Link::GeometryPtr geom(new KinBody::Link::Geometry(_plink,*info));
+                        KinBody::Link::GeometryPtr geom(new KinBody::Link::Geometry(link_,*info));
                         geom->info_.InitCollisionMesh();
                         FOREACH(it,info->mesh_collision_.vertices) {
                             *it = tmres * *it;
                         }
                         info->transform_.trans *= _vScaleGeometry;
                         info->gemo_outer_extents_data_ *= geomspacescale;
-                        _plink->_collision.Append(geom->GetCollisionMesh(), info->transform_);
-                        _plink->geometries_vector_.push_back(geom);
+                        link_->_collision.Append(geom->GetCollisionMesh(), info->transform_);
+                        link_->geometries_vector_.push_back(geom);
                     }
                 }
 
@@ -1141,13 +1143,13 @@ public:
         }
 
         if( xmlname == "body" ) {
-            if(( _plink->GetGeometries().size() == 0) && !_bSkipGeometry) {
-                RAVELOG_VERBOSE(str(boost::format("link %s has no geometry attached!\n")%_plink->GetName()));
+            if(( link_->GetGeometries().size() == 0) && !_bSkipGeometry) {
+                RAVELOG_VERBOSE(str(boost::format("link %s has no geometry attached!\n")%link_->GetName()));
             }
             // perform final processing stages
             MASS totalmass;
             if( _masstype == MT_MimicGeom ) {
-                FOREACHC(itgeom, _plink->GetGeometries()) {
+                FOREACHC(itgeom, link_->GetGeometries()) {
                     MASS mass;
                     switch((*itgeom)->GetType()) {
                     case GT_Sphere:
@@ -1175,7 +1177,7 @@ public:
             else if( _masstype == MT_MimicGeomMass ) {
                 std::vector<MASS> masses;
                 dReal dummytotal=0;
-                FOREACHC(itgeom, _plink->GetGeometries()) {
+                FOREACHC(itgeom, link_->GetGeometries()) {
                     MASS mass;
                     switch((*itgeom)->GetType()) {
                     case GT_Sphere:
@@ -1223,9 +1225,9 @@ public:
                 totalmass = MASS::GetSphericalMass(_vMassExtents.x, Vector(), _fTotalMass);
             }
 
-            totalmass.GetMassFrame(_plink->info_.mass_frame_transform_, _plink->info_._vinertiamoments);
-            _plink->info_.mass_ =totalmass.fTotalMass;
-            tOrigTrans = _plink->GetTransform();
+            totalmass.GetMassFrame(link_->info_.mass_frame_transform_, link_->info_._vinertiamoments);
+            link_->info_.mass_ =totalmass.fTotalMass;
+            tOrigTrans = link_->GetTransform();
 
             Transform cur;
             if( !!_offsetfrom ) {
@@ -1237,10 +1239,10 @@ public:
                 else {
                     root = _offsetfrom->GetTransform();
                 }
-                cur = _plink->GetTransform();
+                cur = link_->GetTransform();
                 cur = root * cur;
                 tOrigTrans = root * tOrigTrans;         // update orig trans separately
-                _plink->SetTransform(cur);
+                link_->SetTransform(cur);
             }
 
             return true;
@@ -1249,30 +1251,30 @@ public:
         if( xmlname == "translation" ) {
             Vector v;
             _ss >> v.x >> v.y >> v.z;
-            _plink->info_.transform_.trans += v*_vScaleGeometry;
+            link_->info_.transform_.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
             _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-            _plink->info_.transform_.rot = (Transform(tnew)*_plink->info_.transform_).rot;
+            link_->info_.transform_.rot = (Transform(tnew)*link_->info_.transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
             _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-            _plink->info_.transform_.rot = (tnew*_plink->info_.transform_).rot;
+            link_->info_.transform_.rot = (tnew*link_->info_.transform_).rot;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
             _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
-            _plink->info_.transform_.rot = (tnew*_plink->info_.transform_).rot;
+            link_->info_.transform_.rot = (tnew*link_->info_.transform_).rot;
         }
         else if( xmlname == "offsetfrom" ) {
             // figure out which body
             string linkname;
             _ss >> linkname;
-            _offsetfrom = _pparent->GetLink(linkname);
+            _offsetfrom = parent_->GetLink(linkname);
             if( !_offsetfrom ) {
                 RAVELOG_WARN(str(boost::format("Failed to find offsetfrom body %s\n")%linkname));
                 GetXMLErrorCount()++;
@@ -1313,8 +1315,8 @@ public:
 
 private:
     MASS _mass;                            //!< current mass of the object
-    KinBody::LinkPtr& _plink;
-    KinBodyPtr _pparent;
+    KinBody::LinkPtr& link_;
+    KinBodyPtr parent_;
     KinBody::LinkPtr _offsetfrom;                            //!< all transformations are relative to the this body
     bool _bSkipGeometry;
     Vector _vScaleGeometry;

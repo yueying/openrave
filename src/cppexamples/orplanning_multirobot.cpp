@@ -23,7 +23,7 @@ class PlanningPlannerExample : public OpenRAVEExample
 public:
     virtual void demothread(int argc, char ** argv) {
         // create a scene with two robots
-        string robotfilename = "robots/barrettwam.robot.xml";
+        std::string robotfilename = "robots/barrettwam.robot.xml";
         RaveSetDebugLevel(Level_Debug);
         RobotBasePtr probot1 = penv->ReadRobotURI(RobotBasePtr(), robotfilename);
         penv->Add(probot1,true);

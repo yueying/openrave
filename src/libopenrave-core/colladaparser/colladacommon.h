@@ -49,16 +49,20 @@ class ColladaWriter;
 class ColladaXMLReadable : public XMLReadable
 {
 public:
-    static std::string GetXMLIdStatic() {
-        return string("__collada__");
+    static std::string GetXMLIdStatic() 
+	{
+        return std::string("__collada__");
     }
 
     /// \brief sid bindings for kinematics, physics, and visual
     struct LinkBinding
     {
-        LinkBinding() : index(-1) {
+        LinkBinding() : index(-1) 
+		{
         }
-        LinkBinding(const std::string& kmodel, const std::string& pmodel, const std::string& vmodel) : kmodel(kmodel), pmodel(pmodel), vmodel(vmodel), index(-1) {
+        LinkBinding(const std::string& kmodel, const std::string& pmodel, const std::string& vmodel)
+			: kmodel(kmodel), pmodel(pmodel), vmodel(vmodel), index(-1) 
+		{
         }
         std::string kmodel, pmodel, vmodel;
         int index; ///< for _bindingLinkSIDs, it is the index inside the _bindingModelURIs vector
@@ -153,19 +157,21 @@ inline bool RaveParseColladaURI(EnvironmentBasePtr penv, const std::string& uri,
     return false;
 }
 
-inline bool RaveParseColladaURI(EnvironmentBasePtr penv, KinBodyPtr& pbody, const string& uri, const AttributesList& atts)
+inline bool RaveParseColladaURI(EnvironmentBasePtr penv, KinBodyPtr& pbody, 
+	const std::string& uri, const AttributesList& atts)
 {
     RAVELOG_ERROR("collada files not supported\n");
     return false;
 }
 
-inline bool RaveParseColladaURI(EnvironmentBasePtr penv, RobotBasePtr& probot, const string& uri, const AttributesList& atts)
+inline bool RaveParseColladaURI(EnvironmentBasePtr penv, RobotBasePtr& probot,
+	const std::string& uri, const AttributesList& atts)
 {
     RAVELOG_ERROR("collada files not supported\n");
     return false;
 }
 
-inline bool RaveParseColladaFile(EnvironmentBasePtr penv, const string& filename,const AttributesList& atts)
+inline bool RaveParseColladaFile(EnvironmentBasePtr penv, const std::string& filename,const AttributesList& atts)
 {
     RAVELOG_ERROR("collada files not supported\n");
     return false;

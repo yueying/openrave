@@ -157,11 +157,11 @@
 		// however, do not clear the modules_list_ yet
 		RAVELOG_DEBUG_FORMAT("env=%d destroy module", GetId());
 		list< pair<ModuleBasePtr, std::string> > listModules;
-		list<ViewerBasePtr> listViewers = _listViewers;
+		list<ViewerBasePtr> listViewers = viewers_list_;
 		{
 			boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
 			listModules = modules_list_;
-			listViewers = _listViewers;
+			listViewers = viewers_list_;
 		}
 		FOREACH(itmodule, listModules) {
 			itmodule->first->Destroy();
@@ -199,7 +199,7 @@
 				_vPublishedBodies.clear();
 				bodies_modified_stamp_++;
 				modules_list_.clear();
-				_listViewers.clear();
+				viewers_list_.clear();
 				_listOwnedInterfaces.clear();
 			}
 

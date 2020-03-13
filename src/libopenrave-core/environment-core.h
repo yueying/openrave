@@ -665,10 +665,10 @@ public:
         }
         case PT_Viewer: {
             ViewerBasePtr pviewer = RaveInterfaceCast<ViewerBase>(pinterface);
-            list<ViewerBasePtr>::iterator itviewer = find(_listViewers.begin(), _listViewers.end(), pviewer);
-            if( itviewer != _listViewers.end() ) {
+            list<ViewerBasePtr>::iterator itviewer = find(viewers_list_.begin(), viewers_list_.end(), pviewer);
+            if( itviewer != viewers_list_.end() ) {
                 (*itviewer)->quitmainloop();
-                _listViewers.erase(itviewer);
+                viewers_list_.erase(itviewer);
                 return true;
             }
             break;
@@ -1084,49 +1084,67 @@ public:
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
 
-        if( !!robot ) {
+        if( !!robot ) 
+		{
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            FOREACH(itviewer, _listViewers) {
-                (*itviewer)->RemoveKinBody(robot);
+            for(auto& itviewer: viewers_list_)
+			{
+                itviewer->RemoveKinBody(robot);
             }
-            if( std::find(robots_vector_.begin(),robots_vector_.end(),robot) != robots_vector_.end() ) {
-                throw OpenRAVEException(str(boost::format(_("KinRobot::Init for %s, cannot Init a robot while it is added to the environment\n"))%robot->GetName()));
+            if( std::find(robots_vector_.begin(),robots_vector_.end(),robot) != robots_vector_.end() )
+			{
+                throw OpenRAVEException(str(boost::format(_("KinRobot::Init for %s,\
+                cannot Init a robot while it is added to the environment\n"))%robot->GetName()));
             }
         }
 
-        if( _IsColladaURI(filename) ) {
-            if( !RaveParseColladaURI(shared_from_this(), robot, filename, atts) ) {
+        if( _IsColladaURI(filename) )
+		{
+            if( !RaveParseColladaURI(shared_from_this(), robot, filename, atts) )
+			{
                 return RobotBasePtr();
             }
         }
-        else if( _IsJSONURI(filename) ) {
-            if( !RaveParseJSONURI(shared_from_this(), robot, filename, atts) ) {
+        else if( _IsJSONURI(filename) )
+		{
+            if( !RaveParseJSONURI(shared_from_this(), robot, filename, atts) ) 
+			{
                 return RobotBasePtr();
             }
         }
-        else if( _IsColladaFile(filename) ) {
-            if( !RaveParseColladaFile(shared_from_this(), robot, filename, atts) ) {
+        else if( _IsColladaFile(filename) ) 
+		{
+            if( !RaveParseColladaFile(shared_from_this(), robot, filename, atts) )
+			{
                 return RobotBasePtr();
             }
         }
-        else if( _IsJSONFile(filename) ) {
-            if( !RaveParseJSONFile(shared_from_this(), robot, filename, atts) ) {
+        else if( _IsJSONFile(filename) ) 
+		{
+            if( !RaveParseJSONFile(shared_from_this(), robot, filename, atts) )
+			{
                 return RobotBasePtr();
             }
         }
-        else if( _IsXFile(filename) ) {
-            if( !RaveParseXFile(shared_from_this(), robot, filename, atts) ) {
+        else if( _IsXFile(filename) ) 
+		{
+            if( !RaveParseXFile(shared_from_this(), robot, filename, atts) ) 
+			{
                 return RobotBasePtr();
             }
         }
-        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) {
-            if( !robot ) {
+        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) 
+		{
+            if( !robot )
+			{
                 robot = RaveCreateRobot(shared_from_this(),"GenericRobot");
             }
-            if( !robot ) {
+            if( !robot ) 
+			{
                 robot = RaveCreateRobot(shared_from_this(),"");
             }
-            if( !!robot ) {
+            if( !!robot )
+			{
                 std::list<KinBody::GeometryInfo> listGeometries;
                 std::string fullfilename = _ReadGeometriesFile(listGeometries,filename,atts);
                 if( fullfilename.size() > 0 ) {
@@ -1182,7 +1200,7 @@ public:
 
         if( !!robot ) {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            FOREACH(itviewer, _listViewers) {
+            FOREACH(itviewer, viewers_list_) {
                 (*itviewer)->RemoveKinBody(robot);
             }
             if( std::find(robots_vector_.begin(),robots_vector_.end(),robot) != robots_vector_.end() ) {
@@ -1245,7 +1263,7 @@ public:
         if( !!body )
 		{
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            FOREACH(itviewer, _listViewers) 
+            FOREACH(itviewer, viewers_list_) 
 			{
                 (*itviewer)->RemoveKinBody(body);
             }
@@ -1342,7 +1360,7 @@ public:
 
         if( !!body ) {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            FOREACH(itviewer, _listViewers) {
+            FOREACH(itviewer, viewers_list_) {
                 (*itviewer)->RemoveKinBody(body);
             }
             if( std::find(bodies_vector_.begin(),bodies_vector_.end(),body) != bodies_vector_.end() ) {
@@ -1648,18 +1666,18 @@ public:
         CHECK_INTERFACE(pnewviewer);
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        BOOST_ASSERT(find(_listViewers.begin(),_listViewers.end(),pnewviewer) == _listViewers.end() );
+        BOOST_ASSERT(find(viewers_list_.begin(),viewers_list_.end(),pnewviewer) == viewers_list_.end() );
         _CheckUniqueName(ViewerBaseConstPtr(pnewviewer),true);
-        _listViewers.push_back(pnewviewer);
+        viewers_list_.push_back(pnewviewer);
     }
 
     virtual ViewerBasePtr GetViewer(const std::string& name) const
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
         if( name.size() == 0 ) {
-            return _listViewers.size() > 0 ? _listViewers.front() : ViewerBasePtr();
+            return viewers_list_.size() > 0 ? viewers_list_.front() : ViewerBasePtr();
         }
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             if( (*itviewer)->GetName() == name ) {
                 return *itviewer;
             }
@@ -1670,17 +1688,17 @@ public:
     void GetViewers(std::list<ViewerBasePtr>& listViewers) const
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        listViewers = _listViewers;
+        listViewers = viewers_list_;
     }
 
     virtual OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, const RaveVector<float>& color, int drawstyle)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->plot3(ppoints, numPoints, stride, fPointSize, color, drawstyle));
         }
         return handles;
@@ -1688,11 +1706,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float fPointSize, const float* colors, int drawstyle, bool bhasalpha)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->plot3(ppoints, numPoints, stride, fPointSize, colors, drawstyle, bhasalpha));
         }
         return handles;
@@ -1700,11 +1718,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const RaveVector<float>& color)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawlinestrip(ppoints, numPoints, stride, fwidth,color));
         }
         return handles;
@@ -1712,11 +1730,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawlinestrip(ppoints, numPoints, stride, fwidth,colors));
         }
         return handles;
@@ -1724,11 +1742,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const RaveVector<float>& color)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawlinelist(ppoints, numPoints, stride, fwidth,color));
         }
         return handles;
@@ -1736,11 +1754,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawlinelist(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawlinelist(ppoints, numPoints, stride, fwidth,colors));
         }
         return handles;
@@ -1748,11 +1766,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawarrow(const RaveVector<float>& p1, const RaveVector<float>& p2, float fwidth, const RaveVector<float>& color)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawarrow(p1,p2,fwidth,color));
         }
         return handles;
@@ -1760,11 +1778,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawbox(const RaveVector<float>& vpos, const RaveVector<float>& vextents)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawbox(vpos, vextents));
         }
         return handles;
@@ -1772,11 +1790,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawplane(const RaveTransform<float>& tplane, const RaveVector<float>& vextents, const boost::multi_array<float,3>& vtexture)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawplane(tplane, vextents, vtexture));
         }
         return handles;
@@ -1784,11 +1802,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, int numTriangles, const RaveVector<float>& color)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawtrimesh(ppoints, stride, pIndices, numTriangles, color));
         }
         return handles;
@@ -1796,11 +1814,11 @@ public:
     virtual OpenRAVE::GraphHandlePtr drawtrimesh(const float* ppoints, int stride, const int* pIndices, int numTriangles, const boost::multi_array<float,2>& colors)
     {
         boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-        if( _listViewers.size() == 0 ) {
+        if( viewers_list_.size() == 0 ) {
             return OpenRAVE::GraphHandlePtr();
         }
         GraphHandleMultiPtr handles(new GraphHandleMulti());
-        FOREACHC(itviewer, _listViewers) {
+        FOREACHC(itviewer, viewers_list_) {
             handles->Add((*itviewer)->drawtrimesh(ppoints, stride, pIndices, numTriangles, colors));
         }
         return handles;
@@ -2137,11 +2155,11 @@ protected:
             mapBodies.clear();
         }
 
-        list<ViewerBasePtr> listViewers = _listViewers;
+        list<ViewerBasePtr> listViewers = viewers_list_;
         list< pair<ModuleBasePtr, std::string> > listModules = modules_list_;
         {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            _listViewers.clear();
+            viewers_list_.clear();
             modules_list_.clear();
         }
 
@@ -2472,7 +2490,7 @@ protected:
     }
     virtual bool _CheckUniqueName(ViewerBaseConstPtr pviewer, bool bDoThrow=false) const
     {
-        FOREACHC(itviewer,_listViewers) {
+        FOREACHC(itviewer,viewers_list_) {
             if(( *itviewer != pviewer) &&( (*itviewer)->GetName() == pviewer->GetName()) ) {
                 if( bDoThrow ) {
                     throw OpenRAVEException(str(boost::format(_("env=%d, viewer '%s' does not have unique name"))%GetId()%pviewer->GetName()));
@@ -2775,7 +2793,7 @@ protected:
 
     std::list< std::pair<ModuleBasePtr, std::string> > modules_list_;     //!< modules loaded in the environment and the strings they were intialized with. Initialization strings are used for cloning.
 	std::list<SensorBasePtr> sensors_list_;     //!< sensors loaded in the environment
-	std::list<ViewerBasePtr> _listViewers;     //!< viewers loaded in the environment
+	std::list<ViewerBasePtr> viewers_list_;     //!< viewers loaded in the environment
 
     dReal delta_simulation_time_;                    //!< delta time for simulate step
     uint64_t cur_simulation_time_;                        //!< simulation time since the start of the environment

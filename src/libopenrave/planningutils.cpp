@@ -1160,12 +1160,17 @@ PlannerStatus AffineTrajectoryRetimer::PlanPath(TrajectoryBasePtr traj, const st
     return _planner->PlanPath(traj, planningoptions);
 }
 
-PlannerStatus SmoothActiveDOFTrajectory(TrajectoryBasePtr traj, RobotBasePtr robot, dReal fmaxvelmult, dReal fmaxaccelmult, const std::string& plannername, const std::string& plannerparameters)
+PlannerStatus SmoothActiveDOFTrajectory(TrajectoryBasePtr traj, 
+	RobotBasePtr robot, dReal fmaxvelmult, dReal fmaxaccelmult, 
+	const std::string& plannername, const std::string& plannerparameters)
 {
-    return _PlanActiveDOFTrajectory(traj,robot,false,fmaxvelmult,fmaxaccelmult,plannername.size() > 0 ? plannername : "parabolicsmoother", true,plannerparameters);
+    return _PlanActiveDOFTrajectory(traj,robot,false,fmaxvelmult,fmaxaccelmult,plannername.size() > 0 
+		? plannername : "parabolicsmoother", true,plannerparameters);
 }
 
-PlannerStatus SmoothAffineTrajectory(TrajectoryBasePtr traj, const std::vector<dReal>& maxvelocities, const std::vector<dReal>& maxaccelerations, const std::string& plannername, const std::string& plannerparameters)
+PlannerStatus SmoothAffineTrajectory(TrajectoryBasePtr traj, 
+	const std::vector<dReal>& maxvelocities, const std::vector<dReal>& maxaccelerations,
+	const std::string& plannername, const std::string& plannerparameters)
 {
     return _PlanAffineTrajectory(traj, maxvelocities, maxaccelerations, false, plannername.size() > 0 ? plannername : "parabolicsmoother", true, plannerparameters);
 }

@@ -47,7 +47,8 @@ std::istream& operator>>(std::istream& I, PlannerParameters& pp)
             if (c == pMatchPlannerParameters[nMatchPlannerParametersSize - 1]) {
                 // matches at the end, check if previous string matches
                 if (vstrbuf.size() >= nMatchPlannerParametersSize) {
-                    if (strncmp(&vstrbuf[vstrbuf.size() - nMatchPlannerParametersSize], pMatchPlannerParameters, nMatchPlannerParametersSize) == 0) {
+					//TODO:give an OS-independent version of strnicmp.
+                    if (_strnicmp(&vstrbuf[vstrbuf.size() - nMatchPlannerParametersSize], pMatchPlannerParameters, nMatchPlannerParametersSize) == 0) {
                         // matches, so quit
                         bFoundMatch = true;
                         break;
