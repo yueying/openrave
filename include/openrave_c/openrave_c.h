@@ -65,7 +65,7 @@ enum DebugLevel {
 OPENRAVE_C_API void ORCSetDebugLevel(int level);
 
 /// \brief Calls \ref RaveInitialize
-OPENRAVE_C_API void ORCInitialize(int bLoadAllPlugins, int level);
+OPENRAVE_C_API void ORCInitialize(int is_load_all_plugins, int level);
 
 /// \brief Calls \ref RaveDestroy
 OPENRAVE_C_API void ORCDestroy();

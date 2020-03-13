@@ -282,9 +282,9 @@ OPENRAVE_API std::string RaveFindDatabaseFile(const std::string& filename, bool 
 /// Although environment creation will automatically make sure this function is called, users might want
 /// explicit control of when this happens.
 /// Will not do anything if OpenRAVE runtime is already initialized. If OPENRAVE_* environment variables must be re-read, first call \ref RaveDestroy.
-/// \param bLoadAllPlugins If true will load all the openrave plugins automatically that can be found in the OPENRAVE_PLUGINS environment path
+/// \param is_load_all_plugins If true will load all the openrave plugins automatically that can be found in the OPENRAVE_PLUGINS environment path
 /// \return 0 if successful, otherwise an error code
-OPENRAVE_API int RaveInitialize(bool bLoadAllPlugins=true, int level = Level_Info);
+OPENRAVE_API int RaveInitialize(bool is_load_all_plugins=true, int level = Level_Info);
 
 /// \brief Initializes the global state from an already loaded OpenRAVE environment.
 ///

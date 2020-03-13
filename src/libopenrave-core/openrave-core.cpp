@@ -25,7 +25,7 @@ namespace OpenRAVE
 		return p;
 	}
 
-	EnvironmentBasePtr CreateEnvironment(bool bLoadAllPlugins)
+	EnvironmentBasePtr CreateEnvironment(bool is_load_all_plugins)
 	{
 		return RaveCreateEnvironment();
 	}

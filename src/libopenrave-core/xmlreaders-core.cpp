@@ -1735,12 +1735,18 @@ typedef std::shared_ptr<InterfaceXMLReader const> InterfaceXMLReaderConstPtr;
 class InterfaceXMLReader : public StreamXMLReader
 {
 public:
-    InterfaceXMLReader(EnvironmentBasePtr penv, InterfaceBasePtr& pinterface, InterfaceType type, const string &xmltag, const AttributesList &atts) : _penv(penv), _type(type), _pinterface(pinterface), _xmltag(xmltag) {
-        _bProcessedLastTag = false;
+    InterfaceXMLReader(EnvironmentBasePtr penv, 
+		InterfaceBasePtr& pinterface, InterfaceType type, 
+		const std::string &xmltag, const AttributesList &atts)
+		: _penv(penv), _type(type), _pinterface(pinterface), _xmltag(xmltag) 
+	{
+        is_processed_last_tag_ = false;
         _atts = atts;
-        string strtype;
-        FOREACHC(itatt,atts) {
-            if( itatt->first == "type" ) {
+        std::string strtype;
+        FOREACHC(itatt,atts)
+		{
+            if( itatt->first == "type" ) 
+			{
                 strtype = itatt->second;
             }
             else if( itatt->first == "file" ) {
@@ -1762,9 +1768,11 @@ public:
 #ifdef HAVE_BOOST_FILESYSTEM
                     SetParseDirectoryScope scope(boost::filesystem::path(filedata).parent_path().string());
 #endif
-                    if( !_pinterface ) {
+                    if( !_pinterface ) 
+					{
                         // reason to bring all the other attributes since interface is not created yet? (there might be a problem with this?)
-                        switch(_type) {
+                        switch(_type) 
+						{
                         case PT_KinBody:
                             _pinterface = _penv->ReadKinBodyURI(KinBodyPtr(), filedata, listnewatts);
                             break;
@@ -1774,13 +1782,17 @@ public:
                         default:
                             _pinterface = _penv->ReadInterfaceURI(filedata, listnewatts);
                         }
-                        if( !!_pinterface &&( _pinterface->GetInterfaceType() != _type) ) {
-                            RAVELOG_ERROR(str(boost::format("unexpected interface created %s\n")%RaveGetInterfaceName(_pinterface->GetInterfaceType())));
+                        if( !!_pinterface &&( _pinterface->GetInterfaceType() != _type) )
+						{
+                            RAVELOG_ERROR(str(boost::format("unexpected interface created %s\n")
+								%RaveGetInterfaceName(_pinterface->GetInterfaceType())));
                             _pinterface.reset();
                         }
                     }
-                    else {
-                        switch(_type) {
+                    else 
+					{
+                        switch(_type)
+						{
                         case PT_KinBody:
                             _pinterface = _penv->ReadKinBodyURI(RaveInterfaceCast<KinBody>(_pinterface),filedata,listnewatts);
                             break;
@@ -1793,7 +1805,8 @@ public:
 
                     }
                 }
-                catch(const std::exception& ex) {
+                catch(const std::exception& ex) 
+				{
                     RAVELOG_ERROR(str(boost::format("failed to process %s: %s\n")%itatt->second%ex.what()));
                     _pinterface.reset();
                 }
@@ -1802,7 +1815,8 @@ public:
 //                    _pinterface.reset();
 //                }
 
-                if( !_pinterface ) {
+                if( !_pinterface ) 
+				{
                     RAVELOG_DEBUG(str(boost::format("Failed to load filename %s\n")%itatt->second));
                     GetXMLErrorCount()++;
                     break;
@@ -1944,10 +1958,10 @@ public:
         }
         else if( xmlname == _xmltag ) {
             _CheckInterface();
-            if( _bProcessedLastTag ) {
+            if( is_processed_last_tag_ ) {
                 RAVELOG_WARN(str(boost::format("already processed last tag for %s!\n")%xmlname));
             }
-            _bProcessedLastTag = true;
+            is_processed_last_tag_ = true;
             return true;
         }
         return false;
@@ -1977,7 +1991,7 @@ protected:
     BaseXMLReaderPtr _pcustomreader;
     string _xmltag, _interfaceprocessingtag;
     string _interfacename, _readername;
-    bool _bProcessedLastTag;
+    bool is_processed_last_tag_;
     AttributesList _atts;
 };
 /// KinBody reader

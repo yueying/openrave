@@ -472,7 +472,7 @@ namespace OpenRAVE
 			return RaveInterfaceCast<SpaceSamplerBase>(Create(penv, PT_SpaceSampler, name));
 		}
 
-		virtual bool Init(bool bLoadAllPlugins)
+		virtual bool Init(bool is_load_all_plugins)
 		{
 			_threadPluginLoader.reset(new boost::thread(boost::bind(&PluginDatabase::_PluginLoaderThread, this)));
 			std::vector<std::string> vplugindirs;
@@ -532,7 +532,7 @@ namespace OpenRAVE
 					RAVELOG_VERBOSE(str(boost::format("plugin dir: %s") % *it));
 				}
 			}
-			if (bLoadAllPlugins) {
+			if (is_load_all_plugins) {
 				FOREACH(it, vplugindirs) {
 					if (it->size() > 0) {
 						AddDirectory(*it);

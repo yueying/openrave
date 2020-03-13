@@ -159,7 +159,7 @@
 		list< pair<ModuleBasePtr, std::string> > listModules;
 		list<ViewerBasePtr> listViewers = _listViewers;
 		{
-			boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
+			boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
 			listModules = modules_list_;
 			listViewers = _listViewers;
 		}
@@ -187,12 +187,12 @@
 				current_collision_checker_->DestroyEnvironment();
 			}
 
-			// clear internal interface lists, have to Destroy all kinbodys without locking _mutexInterfaces since some can hold BodyCallbackData, which requires to lock _mutexInterfaces
+			// clear internal interface lists, have to Destroy all kinbodys without locking mutex_interfaces_ since some can hold BodyCallbackData, which requires to lock mutex_interfaces_
 			std::vector<RobotBasePtr> vecrobots;
 			std::vector<KinBodyPtr> vecbodies;
 			list<SensorBasePtr> listSensors;
 			{
-				boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
+				boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
 				vecrobots.swap(robots_vector_);
 				vecbodies.swap(bodies_vector_);
 				listSensors.swap(sensors_list_);
@@ -203,7 +203,7 @@
 				_listOwnedInterfaces.clear();
 			}
 
-			// destroy the dangling pointers outside of _mutexInterfaces
+			// destroy the dangling pointers outside of mutex_interfaces_
 
 			// release all grabbed
 			FOREACH(itrobot, vecrobots) {
@@ -252,7 +252,7 @@
 		}
 		std::vector<KinBodyPtr> vcallbackbodies;
 		{
-			boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
+			boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
 			boost::mutex::scoped_lock locknetworkid(_mutexEnvironmentIds);
 
 			FOREACH(itbody, bodies_vector_) {
@@ -291,7 +291,7 @@
 
 		list< pair<ModuleBasePtr, std::string> > listModules;
 		{
-			boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
+			boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
 			listModules = modules_list_;
 		}
 

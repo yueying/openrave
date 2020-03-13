@@ -37,7 +37,7 @@ extern "C" {
 #endif
 
 /// \brief Creates an OpenRAVE environment.
-/// \param bLoadAllPlugins passed into \ref RaveInitialize
+/// \param is_load_all_plugins passed into \ref RaveInitialize
 OPENRAVE_C_CORE_API void* ORCEnvironmentCreate();
 
 /// \brief releases the environment pointer returned from ORCEnvironmentCreate
