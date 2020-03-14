@@ -498,12 +498,12 @@ bool PyCollisionCheckerBase::CheckCollision(PyKinBodyPtr pbody, object bodyexclu
     return bCollision;
 }
 
-bool PyCollisionCheckerBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody)
+bool PyCollisionCheckerBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody)
 {
     return _pCollisionChecker->CheckCollision(pyray->r,KinBodyConstPtr(openravepy::GetKinBody(pbody)));
 }
 
-bool PyCollisionCheckerBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport)
+bool PyCollisionCheckerBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport)
 {
     bool bCollision = _pCollisionChecker->CheckCollision(pyray->r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), openravepy::GetCollisionReport(pReport));
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -562,12 +562,12 @@ object PyCollisionCheckerBase::CheckCollisionRays(object rays, PyKinBodyPtr pbod
     return py::make_tuple(py::to_array_astype<bool>(pycollision), py::to_array_astype<dReal>(pypos));
 }
 
-bool PyCollisionCheckerBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray)
+bool PyCollisionCheckerBase::CheckCollision(std::shared_ptr<PyRay> pyray)
 {
     return _pCollisionChecker->CheckCollision(pyray->r);
 }
 
-bool PyCollisionCheckerBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyCollisionReportPtr pReport)
+bool PyCollisionCheckerBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyCollisionReportPtr pReport)
 {
     bool bCollision = _pCollisionChecker->CheckCollision(pyray->r, openravepy::GetCollisionReport(pReport));
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -726,11 +726,11 @@ void init_openravepy_collisionchecker()
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     // should this be inside CollisionReport, instead of module "m"?
-    class_<PyCollisionReport::PYCONTACT, OPENRAVE_SHARED_PTR<PyCollisionReport::PYCONTACT> >(m, "Contact", DOXY_CLASS(CollisionReport::CONTACT))
+    class_<PyCollisionReport::PYCONTACT, std::shared_ptr<PyCollisionReport::PYCONTACT> >(m, "Contact", DOXY_CLASS(CollisionReport::CONTACT))
     .def(init<>())
     .def(init<const CollisionReport::CONTACT&>(), "c"_a)
 #else
-    class_<PyCollisionReport::PYCONTACT, OPENRAVE_SHARED_PTR<PyCollisionReport::PYCONTACT> >("Contact", DOXY_CLASS(CollisionReport::CONTACT))
+    class_<PyCollisionReport::PYCONTACT, std::shared_ptr<PyCollisionReport::PYCONTACT> >("Contact", DOXY_CLASS(CollisionReport::CONTACT))
 #endif
     .def_readonly("pos",&PyCollisionReport::PYCONTACT::pos)
     .def_readonly("norm",&PyCollisionReport::PYCONTACT::norm)
@@ -739,11 +739,11 @@ void init_openravepy_collisionchecker()
     .def("__unicode__",&PyCollisionReport::PYCONTACT::__unicode__)
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyCollisionReport, OPENRAVE_SHARED_PTR<PyCollisionReport> >(m, "CollisionReport", DOXY_CLASS(CollisionReport))
+    class_<PyCollisionReport, std::shared_ptr<PyCollisionReport> >(m, "CollisionReport", DOXY_CLASS(CollisionReport))
     .def(init<>())
     .def(init<CollisionReportPtr>(), "preport"_a)
 #else
-    class_<PyCollisionReport, OPENRAVE_SHARED_PTR<PyCollisionReport> >("CollisionReport", DOXY_CLASS(CollisionReport))
+    class_<PyCollisionReport, std::shared_ptr<PyCollisionReport> >("CollisionReport", DOXY_CLASS(CollisionReport))
 #endif
     .def_readonly("options",&PyCollisionReport::options)
     .def_readonly("plink1",&PyCollisionReport::plink1)
@@ -771,19 +771,19 @@ void init_openravepy_collisionchecker()
     bool (PyCollisionCheckerBase::*pcoller)(object, object,object,PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollision;
     bool (PyCollisionCheckerBase::*pcolbe)(PyKinBodyPtr,object,object) = &PyCollisionCheckerBase::CheckCollision;
     bool (PyCollisionCheckerBase::*pcolber)(PyKinBodyPtr, object,object,PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollision;
-    bool (PyCollisionCheckerBase::*pcolyb)(OPENRAVE_SHARED_PTR<PyRay>,PyKinBodyPtr) = &PyCollisionCheckerBase::CheckCollision;
-    bool (PyCollisionCheckerBase::*pcolybr)(OPENRAVE_SHARED_PTR<PyRay>, PyKinBodyPtr, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollision;
-    bool (PyCollisionCheckerBase::*pcoly)(OPENRAVE_SHARED_PTR<PyRay>) = &PyCollisionCheckerBase::CheckCollision;
-    bool (PyCollisionCheckerBase::*pcolyr)(OPENRAVE_SHARED_PTR<PyRay>, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollision;
+    bool (PyCollisionCheckerBase::*pcolyb)(std::shared_ptr<PyRay>,PyKinBodyPtr) = &PyCollisionCheckerBase::CheckCollision;
+    bool (PyCollisionCheckerBase::*pcolybr)(std::shared_ptr<PyRay>, PyKinBodyPtr, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollision;
+    bool (PyCollisionCheckerBase::*pcoly)(std::shared_ptr<PyRay>) = &PyCollisionCheckerBase::CheckCollision;
+    bool (PyCollisionCheckerBase::*pcolyr)(std::shared_ptr<PyRay>, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollision;
     bool (PyCollisionCheckerBase::*pcoltbr)(object, PyKinBodyPtr, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollisionTriMesh;
     bool (PyCollisionCheckerBase::*pcolter)(object, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollisionTriMesh;
     bool (PyCollisionCheckerBase::*pcolobb)(object, object, PyCollisionReportPtr) = &PyCollisionCheckerBase::CheckCollisionOBB;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyCollisionCheckerBase, OPENRAVE_SHARED_PTR<PyCollisionCheckerBase>, PyInterfaceBase>(m, "CollisionChecker", DOXY_CLASS(CollisionCheckerBase))
+    class_<PyCollisionCheckerBase, std::shared_ptr<PyCollisionCheckerBase>, PyInterfaceBase>(m, "CollisionChecker", DOXY_CLASS(CollisionCheckerBase))
     .def(init<CollisionCheckerBasePtr, PyEnvironmentBasePtr>(), "pcollisionchecker"_a, "penv"_a)
 #else
-    class_<PyCollisionCheckerBase, OPENRAVE_SHARED_PTR<PyCollisionCheckerBase>, bases<PyInterfaceBase> >("CollisionChecker", DOXY_CLASS(CollisionCheckerBase), no_init)
+    class_<PyCollisionCheckerBase, std::shared_ptr<PyCollisionCheckerBase>, bases<PyInterfaceBase> >("CollisionChecker", DOXY_CLASS(CollisionCheckerBase), no_init)
 #endif
     .def("InitEnvironment", &PyCollisionCheckerBase::InitEnvironment, DOXY_FN(CollisionCheckerBase, InitEnvironment))
     .def("DestroyEnvironment", &PyCollisionCheckerBase::DestroyEnvironment, DOXY_FN(CollisionCheckerBase, DestroyEnvironment))

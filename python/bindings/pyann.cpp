@@ -115,7 +115,7 @@ public:
 };
 
 // Constructor from list        TODO: change to iterator
-OPENRAVE_SHARED_PTR<ANNkd_tree>       init_from_list(object lst)
+std::shared_ptr<ANNkd_tree>       init_from_list(object lst)
 {
     BOOST_ASSERT(sizeof(ANNdist)==8 || sizeof(ANNdist)==4);
     BOOST_ASSERT(sizeof(ANNidx)==4);
@@ -132,7 +132,7 @@ OPENRAVE_SHARED_PTR<ANNkd_tree>       init_from_list(object lst)
         }
     }
 
-    OPENRAVE_SHARED_PTR<ANNkd_tree>   p(new ANNkd_tree(dataPts, npts, dimension));
+    std::shared_ptr<ANNkd_tree>   p(new ANNkd_tree(dataPts, npts, dimension));
     return p;
 }
 
@@ -352,14 +352,14 @@ OPENRAVE_PYTHON_MODULE(pyANN_int)
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<ANNkd_tree, OPENRAVE_SHARED_PTR<ANNkd_tree> >(m, "KDTree")
+    class_<ANNkd_tree, std::shared_ptr<ANNkd_tree> >(m, "KDTree")
     .def(init<int, int, int>(), "n"_a = 0, "dd"_a = 0, "bs"_a = 1)
     // ANNpointArray is double**; pybind11 does not know how to convert, unless it is smart_ptr
     // .def(init<ANNpointArray, int, int, int, ANNsplitRule>(), "pa"_a, "n"_a, "dd"_a, "bs"_a = 1, "split"_a = ANN_KD_SUGGEST)
     // https://pybind11.readthedocs.io/en/stable/advanced/classes.html#custom-constructors
     .def( init<>(&init_from_list))
 #else
-    class_<ANNkd_tree, OPENRAVE_SHARED_PTR<ANNkd_tree> >("KDTree")
+    class_<ANNkd_tree, std::shared_ptr<ANNkd_tree> >("KDTree")
     .def("__init__", make_constructor(&init_from_list))
 #endif
     .def("__del__", &destroy_points)

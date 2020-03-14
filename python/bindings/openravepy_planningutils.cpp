@@ -124,7 +124,7 @@ public:
     OpenRAVE::planningutils::ActiveDOFTrajectorySmoother _smoother;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyActiveDOFTrajectorySmoother> PyActiveDOFTrajectorySmootherPtr;
+typedef std::shared_ptr<PyActiveDOFTrajectorySmoother> PyActiveDOFTrajectorySmootherPtr;
 
 // assume python GIL is locked
 object pySmoothAffineTrajectory(PyTrajectoryBasePtr pytraj, object omaxvelocities, object omaxaccelerations, const std::string& plannername="", const std::string& plannerparameters="")
@@ -167,7 +167,7 @@ public:
     OpenRAVE::planningutils::ActiveDOFTrajectoryRetimer _retimer;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyActiveDOFTrajectoryRetimer> PyActiveDOFTrajectoryRetimerPtr;
+typedef std::shared_ptr<PyActiveDOFTrajectoryRetimer> PyActiveDOFTrajectoryRetimerPtr;
 
 class PyAffineTrajectoryRetimer
 {
@@ -194,7 +194,7 @@ public:
     OpenRAVE::planningutils::AffineTrajectoryRetimer _retimer;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyAffineTrajectoryRetimer> PyAffineTrajectoryRetimerPtr;
+typedef std::shared_ptr<PyAffineTrajectoryRetimer> PyAffineTrajectoryRetimerPtr;
 
 class PyDynamicsCollisionConstraint
 {
@@ -268,7 +268,7 @@ public:
     OpenRAVE::planningutils::DynamicsCollisionConstraintPtr _pconstraints;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyDynamicsCollisionConstraint> PyDynamicsCollisionConstraintPtr;
+typedef std::shared_ptr<PyDynamicsCollisionConstraint> PyDynamicsCollisionConstraintPtr;
 
 object pyRetimeAffineTrajectory(PyTrajectoryBasePtr pytraj, object omaxvelocities, object omaxaccelerations, bool hastimestamps=false, const std::string& plannername="", const std::string& plannerparameters="")
 {
@@ -362,7 +362,7 @@ public:
 
 object toPyDHParameter(const OpenRAVE::planningutils::DHParameter& p, PyEnvironmentBasePtr pyenv)
 {
-    return py::to_object(OPENRAVE_SHARED_PTR<PyDHParameter>(new PyDHParameter(p,pyenv)));
+    return py::to_object(std::shared_ptr<PyDHParameter>(new PyDHParameter(p,pyenv)));
 }
 
 class DHParameter_pickle_suite
@@ -454,7 +454,7 @@ public:
     OpenRAVE::planningutils::ManipulatorIKGoalSamplerPtr _sampler;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyManipulatorIKGoalSampler> PyManipulatorIKGoalSamplerPtr;
+typedef std::shared_ptr<PyManipulatorIKGoalSampler> PyManipulatorIKGoalSamplerPtr;
 
 
 } // end namespace planningutils
@@ -707,11 +707,11 @@ void InitPlanningUtils()
         ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<planningutils::PyDHParameter, OPENRAVE_SHARED_PTR<planningutils::PyDHParameter> >(planningutils, "DHParameter", DOXY_CLASS(planningutils::DHParameter))
+        class_<planningutils::PyDHParameter, std::shared_ptr<planningutils::PyDHParameter> >(planningutils, "DHParameter", DOXY_CLASS(planningutils::DHParameter))
         .def(init<>())
         .def(init<object, int, object, dReal, dReal, dReal, dReal>(), "joint"_a, "parentindex"_a, "transform"_a, "d"_a, "a"_a, "theta"_a, "alpha"_a)
 #else
-        class_<planningutils::PyDHParameter, OPENRAVE_SHARED_PTR<planningutils::PyDHParameter> >("DHParameter", DOXY_CLASS(planningutils::DHParameter))
+        class_<planningutils::PyDHParameter, std::shared_ptr<planningutils::PyDHParameter> >("DHParameter", DOXY_CLASS(planningutils::DHParameter))
         .def(init<>())
         .def(init<object, int, object, dReal, dReal, dReal, dReal>(py::args("joint","parentindex","transform","d","a","theta","alpha")))
 #endif

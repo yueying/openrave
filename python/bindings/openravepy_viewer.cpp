@@ -364,9 +364,9 @@ void init_openravepy_viewer()
         void (PyViewerBase::*setcamera1)(object) = &PyViewerBase::SetCamera;
         void (PyViewerBase::*setcamera2)(object,float) = &PyViewerBase::SetCamera;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        scope_ viewer = class_<PyViewerBase, OPENRAVE_SHARED_PTR<PyViewerBase>, PyInterfaceBase>(m, "Viewer", DOXY_CLASS(ViewerBase))
+        scope_ viewer = class_<PyViewerBase, std::shared_ptr<PyViewerBase>, PyInterfaceBase>(m, "Viewer", DOXY_CLASS(ViewerBase))
 #else
-        scope_ viewer = class_<PyViewerBase, OPENRAVE_SHARED_PTR<PyViewerBase>, bases<PyInterfaceBase> >("Viewer", DOXY_CLASS(ViewerBase), no_init)
+        scope_ viewer = class_<PyViewerBase, std::shared_ptr<PyViewerBase>, bases<PyInterfaceBase> >("Viewer", DOXY_CLASS(ViewerBase), no_init)
 #endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
                        .def("main", &PyViewerBase::main,

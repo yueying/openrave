@@ -1,4 +1,4 @@
-// -*- Coding: utf-8 -*-
+﻿// -*- Coding: utf-8 -*-
 // Copyright (C) 2014 Rosen Diankov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -186,7 +186,7 @@ protected:
     configurationcache::ConfigurationCachePtr _cache;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyConfigurationCache> PyConfigurationCachePtr;
+typedef std::shared_ptr<PyConfigurationCache> PyConfigurationCachePtr;
 
 } // end namespace configurationcachepy
 

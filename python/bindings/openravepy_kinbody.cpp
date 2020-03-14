@@ -183,7 +183,7 @@ KinBody::GeometryInfoPtr PyGeometryInfo::GetGeometryInfo() {
     info.side_walls_vector_.clear();
     for (size_t i = 0; i < (size_t)len(_vSideWalls); ++i) {
         info.side_walls_vector_.push_back({});
-        OPENRAVE_SHARED_PTR<PySideWall> pysidewall = py::extract<OPENRAVE_SHARED_PTR<PySideWall> >(_vSideWalls[i]);
+        std::shared_ptr<PySideWall> pysidewall = py::extract<std::shared_ptr<PySideWall> >(_vSideWalls[i]);
         pysidewall->Get(info.side_walls_vector_[i]);
     }
 
@@ -1094,10 +1094,10 @@ object PyLink::PyGeometry::ComputeInnerEmptyVolume() const
     }
     return py::make_tuple(py::none_(), py::none_());
 }
-bool PyLink::PyGeometry::__eq__(OPENRAVE_SHARED_PTR<PyGeometry> p) {
+bool PyLink::PyGeometry::__eq__(std::shared_ptr<PyGeometry> p) {
     return !!p && _pgeometry == p->_pgeometry;
 }
-bool PyLink::PyGeometry::__ne__(OPENRAVE_SHARED_PTR<PyGeometry> p) {
+bool PyLink::PyGeometry::__ne__(std::shared_ptr<PyGeometry> p) {
     return !p || _pgeometry != p->_pgeometry;
 }
 int PyLink::PyGeometry::__hash__() {
@@ -1157,7 +1157,7 @@ object PyLink::GetParentLinks() const
     return links;
 }
 
-bool PyLink::IsParentLink(OPENRAVE_SHARED_PTR<PyLink> pylink) const {
+bool PyLink::IsParentLink(std::shared_ptr<PyLink> pylink) const {
     return _plink->IsParentLink(*pylink->GetLink());
 }
 
@@ -1253,7 +1253,7 @@ object PyLink::GetGeometries() {
     py::list geoms;
     size_t N = _plink->GetGeometries().size();
     for(size_t i = 0; i < N; ++i) {
-        geoms.append(OPENRAVE_SHARED_PTR<PyGeometry>(new PyGeometry(_plink->GetGeometry(i))));
+        geoms.append(std::shared_ptr<PyGeometry>(new PyGeometry(_plink->GetGeometry(i))));
     }
     return geoms;
 }
@@ -1327,7 +1327,7 @@ object PyLink::GetRigidlyAttachedLinks() const {
     return links;
 }
 
-bool PyLink::IsRigidlyAttached(OPENRAVE_SHARED_PTR<PyLink> plink) {
+bool PyLink::IsRigidlyAttached(std::shared_ptr<PyLink> plink) {
     CHECK_POINTER(plink);
     return _plink->IsRigidlyAttached(*plink->GetLink());
 }
@@ -1402,10 +1402,10 @@ std::string PyLink::__str__() {
 object PyLink::__unicode__() {
     return ConvertStringToUnicode(__str__());
 }
-bool PyLink::__eq__(OPENRAVE_SHARED_PTR<PyLink> p) {
+bool PyLink::__eq__(std::shared_ptr<PyLink> p) {
     return !!p && _plink == p->_plink;
 }
-bool PyLink::__ne__(OPENRAVE_SHARED_PTR<PyLink> p) {
+bool PyLink::__ne__(std::shared_ptr<PyLink> p) {
     return !p || _plink != p->_plink;
 }
 int PyLink::__hash__() {
@@ -1757,10 +1757,10 @@ std::string PyJoint::__str__() {
 object PyJoint::__unicode__() {
     return ConvertStringToUnicode(__str__());
 }
-bool PyJoint::__eq__(OPENRAVE_SHARED_PTR<PyJoint> p) {
+bool PyJoint::__eq__(std::shared_ptr<PyJoint> p) {
     return !!p && _pjoint==p->_pjoint;
 }
-bool PyJoint::__ne__(OPENRAVE_SHARED_PTR<PyJoint> p) {
+bool PyJoint::__ne__(std::shared_ptr<PyJoint> p) {
     return !p || _pjoint!=p->_pjoint;
 }
 int PyJoint::__hash__() {
@@ -1878,10 +1878,10 @@ std::string PyManageData::__str__() {
 object PyManageData::__unicode__() {
     return ConvertStringToUnicode(__str__());
 }
-bool PyManageData::__eq__(OPENRAVE_SHARED_PTR<PyManageData> p) {
+bool PyManageData::__eq__(std::shared_ptr<PyManageData> p) {
     return !!p && _pdata==p->_pdata;
 }
-bool PyManageData::__ne__(OPENRAVE_SHARED_PTR<PyManageData> p) {
+bool PyManageData::__ne__(std::shared_ptr<PyManageData> p) {
     return !p || _pdata!=p->_pdata;
 }
 
@@ -3310,7 +3310,7 @@ void PyKinBody::__enter__()
     if( _listStateSavers.size() == 0 ) {
         openravepy::LockEnvironment(_pyenv);
     }
-    _listStateSavers.push_back(OPENRAVE_SHARED_PTR<void>(new KinBody::KinBodyStateSaver(_pbody)));
+    _listStateSavers.push_back(std::shared_ptr<void>(new KinBody::KinBodyStateSaver(_pbody)));
 }
 
 void PyKinBody::__exit__(object type, object value, object traceback)
@@ -3820,10 +3820,10 @@ void init_openravepy_kinbody()
                           .value("SWT_PY",KinBody::GeometryInfo::SideWallType::SWT_PY)
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object electricmotoractuatorinfo = class_<PyElectricMotorActuatorInfo, OPENRAVE_SHARED_PTR<PyElectricMotorActuatorInfo> >(m, "ElectricMotorActuatorInfo", DOXY_CLASS(KinBody::ElectricMotorActuatorInfo))
+    object electricmotoractuatorinfo = class_<PyElectricMotorActuatorInfo, std::shared_ptr<PyElectricMotorActuatorInfo> >(m, "ElectricMotorActuatorInfo", DOXY_CLASS(KinBody::ElectricMotorActuatorInfo))
                                        .def(init<>())
 #else
-    object electricmotoractuatorinfo = class_<PyElectricMotorActuatorInfo, OPENRAVE_SHARED_PTR<PyElectricMotorActuatorInfo> >("ElectricMotorActuatorInfo", DOXY_CLASS(KinBody::ElectricMotorActuatorInfo))
+    object electricmotoractuatorinfo = class_<PyElectricMotorActuatorInfo, std::shared_ptr<PyElectricMotorActuatorInfo> >("ElectricMotorActuatorInfo", DOXY_CLASS(KinBody::ElectricMotorActuatorInfo))
 #endif
                                        .def_readwrite("model_type",&PyElectricMotorActuatorInfo::model_type)
                                        .def_readwrite("assigned_power_rating",&PyElectricMotorActuatorInfo::assigned_power_rating)
@@ -3913,11 +3913,11 @@ void init_openravepy_kinbody()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object geometryinfo = class_<PyGeometryInfo, OPENRAVE_SHARED_PTR<PyGeometryInfo> >(m, "GeometryInfo", DOXY_CLASS(KinBody::GeometryInfo))
+    object geometryinfo = class_<PyGeometryInfo, std::shared_ptr<PyGeometryInfo> >(m, "GeometryInfo", DOXY_CLASS(KinBody::GeometryInfo))
                           .def(init<>())
                           //.def(init<const KinBody::GeometryInfo&>(), "info"_a)
 #else
-    object geometryinfo = class_<PyGeometryInfo, OPENRAVE_SHARED_PTR<PyGeometryInfo> >("GeometryInfo", DOXY_CLASS(KinBody::GeometryInfo))
+    object geometryinfo = class_<PyGeometryInfo, std::shared_ptr<PyGeometryInfo> >("GeometryInfo", DOXY_CLASS(KinBody::GeometryInfo))
 #endif
                           .def_readwrite("_t",&PyGeometryInfo::_t)
                           .def_readwrite("_vGeomData",&PyGeometryInfo::_vGeomData)
@@ -3974,10 +3974,10 @@ void init_openravepy_kinbody()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object sidewall = class_<PySideWall, OPENRAVE_SHARED_PTR<PySideWall> >(m, "SideWall", DOXY_CLASS(KinBody::GeometryInfo::SideWall))
+    object sidewall = class_<PySideWall, std::shared_ptr<PySideWall> >(m, "SideWall", DOXY_CLASS(KinBody::GeometryInfo::SideWall))
                       .def(init<>())
 #else
-    object sidewall = class_<PySideWall, OPENRAVE_SHARED_PTR<PySideWall> >("SideWall", DOXY_CLASS(KinBody::GeometryInfo::SideWall))
+    object sidewall = class_<PySideWall, std::shared_ptr<PySideWall> >("SideWall", DOXY_CLASS(KinBody::GeometryInfo::SideWall))
 #endif
                       .def_readwrite("transf",&PySideWall::transf)
                       .def_readwrite("vExtents",&PySideWall::vExtents)
@@ -3985,10 +3985,10 @@ void init_openravepy_kinbody()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object linkinfo = class_<PyLinkInfo, OPENRAVE_SHARED_PTR<PyLinkInfo> >(m, "LinkInfo", DOXY_CLASS(KinBody::LinkInfo))
+    object linkinfo = class_<PyLinkInfo, std::shared_ptr<PyLinkInfo> >(m, "LinkInfo", DOXY_CLASS(KinBody::LinkInfo))
                       .def(init<>())
 #else
-    object linkinfo = class_<PyLinkInfo, OPENRAVE_SHARED_PTR<PyLinkInfo> >("LinkInfo", DOXY_CLASS(KinBody::LinkInfo))
+    object linkinfo = class_<PyLinkInfo, std::shared_ptr<PyLinkInfo> >("LinkInfo", DOXY_CLASS(KinBody::LinkInfo))
 #endif
                       .def_readwrite("_vgeometryinfos",&PyLinkInfo::_vgeometryinfos)
                       .def_readwrite("_name",&PyLinkInfo::_name)
@@ -4036,10 +4036,10 @@ void init_openravepy_kinbody()
 
     object jointcontrolinfo_robotcontroller =
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<PyJointControlInfo_RobotController, OPENRAVE_SHARED_PTR<PyJointControlInfo_RobotController> >(m, "JointControlInfo_RobotController", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_RobotController))
+        class_<PyJointControlInfo_RobotController, std::shared_ptr<PyJointControlInfo_RobotController> >(m, "JointControlInfo_RobotController", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_RobotController))
         .def(init<>())
 #else
-        class_<PyJointControlInfo_RobotController, OPENRAVE_SHARED_PTR<PyJointControlInfo_RobotController> >("JointControlInfo_RobotController", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_RobotController))
+        class_<PyJointControlInfo_RobotController, std::shared_ptr<PyJointControlInfo_RobotController> >("JointControlInfo_RobotController", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_RobotController))
 #endif
         .def_readwrite("robotId", &PyJointControlInfo_RobotController::robotId)
         .def_readwrite("robotControllerDOFIndex", &PyJointControlInfo_RobotController::robotControllerDOFIndex)
@@ -4064,10 +4064,10 @@ void init_openravepy_kinbody()
 
     object jointcontrolinfo_io =
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<PyJointControlInfo_IO, OPENRAVE_SHARED_PTR<PyJointControlInfo_IO> >(m, "JointControlInfo_IO", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_IO))
+        class_<PyJointControlInfo_IO, std::shared_ptr<PyJointControlInfo_IO> >(m, "JointControlInfo_IO", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_IO))
         .def(init<>())
 #else
-        class_<PyJointControlInfo_IO, OPENRAVE_SHARED_PTR<PyJointControlInfo_IO> >("JointControlInfo_IO", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_IO))
+        class_<PyJointControlInfo_IO, std::shared_ptr<PyJointControlInfo_IO> >("JointControlInfo_IO", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_IO))
 #endif
         .def_readwrite("deviceId", &PyJointControlInfo_IO::deviceId)
         .def_readwrite("vMoveIONames", &PyJointControlInfo_IO::vMoveIONames)
@@ -4096,10 +4096,10 @@ void init_openravepy_kinbody()
 
     object jointcontrolinfo_externaldevice =
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<PyJointControlInfo_ExternalDevice, OPENRAVE_SHARED_PTR<PyJointControlInfo_ExternalDevice> >(m, "JointControlInfo_ExternalDevice", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_ExternalDevice))
+        class_<PyJointControlInfo_ExternalDevice, std::shared_ptr<PyJointControlInfo_ExternalDevice> >(m, "JointControlInfo_ExternalDevice", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_ExternalDevice))
         .def(init<>())
 #else
-        class_<PyJointControlInfo_ExternalDevice, OPENRAVE_SHARED_PTR<PyJointControlInfo_ExternalDevice> >("JointControlInfo_ExternalDevice", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_ExternalDevice))
+        class_<PyJointControlInfo_ExternalDevice, std::shared_ptr<PyJointControlInfo_ExternalDevice> >("JointControlInfo_ExternalDevice", DOXY_CLASS(KinBody::JointInfo::JointControlInfo_ExternalDevice))
 #endif
         .def_readwrite("externalDeviceId", &PyJointControlInfo_ExternalDevice::externalDeviceId)
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
@@ -4122,10 +4122,10 @@ void init_openravepy_kinbody()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object jointinfo = class_<PyJointInfo, OPENRAVE_SHARED_PTR<PyJointInfo> >(m, "JointInfo", DOXY_CLASS(KinBody::JointInfo))
+    object jointinfo = class_<PyJointInfo, std::shared_ptr<PyJointInfo> >(m, "JointInfo", DOXY_CLASS(KinBody::JointInfo))
                        .def(init<>())
 #else
-    object jointinfo = class_<PyJointInfo, OPENRAVE_SHARED_PTR<PyJointInfo> >("JointInfo", DOXY_CLASS(KinBody::JointInfo))
+    object jointinfo = class_<PyJointInfo, std::shared_ptr<PyJointInfo> >("JointInfo", DOXY_CLASS(KinBody::JointInfo))
 #endif
                        .def_readwrite("_type",&PyJointInfo::_type)
                        .def_readwrite("_name",&PyJointInfo::_name)
@@ -4194,11 +4194,11 @@ void init_openravepy_kinbody()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object grabbedinfo = class_<PyKinBody::PyGrabbedInfo, OPENRAVE_SHARED_PTR<PyKinBody::PyGrabbedInfo> >(m, "GrabbedInfo", DOXY_CLASS(KinBody::GrabbedInfo))
+    object grabbedinfo = class_<PyKinBody::PyGrabbedInfo, std::shared_ptr<PyKinBody::PyGrabbedInfo> >(m, "GrabbedInfo", DOXY_CLASS(KinBody::GrabbedInfo))
                          .def(init<>())
                          .def(init<const RobotBase::GrabbedInfo&>(), "info"_a)
 #else
-    object grabbedinfo = class_<PyKinBody::PyGrabbedInfo, OPENRAVE_SHARED_PTR<PyKinBody::PyGrabbedInfo> >("GrabbedInfo", DOXY_CLASS(KinBody::GrabbedInfo))
+    object grabbedinfo = class_<PyKinBody::PyGrabbedInfo, std::shared_ptr<PyKinBody::PyGrabbedInfo> >("GrabbedInfo", DOXY_CLASS(KinBody::GrabbedInfo))
 #endif
                          .def_readwrite("_grabbedname",&PyKinBody::PyGrabbedInfo::_grabbedname)
                          .def_readwrite("_robotlinkname",&PyKinBody::PyGrabbedInfo::_robotlinkname)
@@ -4289,9 +4289,9 @@ void init_openravepy_kinbody()
         std::string sGetChainDoc = std::string(DOXY_FN(KinBody,GetChain)) + std::string("If returnjoints is false will return a list of links, otherwise will return a list of links (default is true)");
         std::string sComputeInverseDynamicsDoc = std::string(":param returncomponents: If True will return three N-element arrays that represents the torque contributions to M, C, and G.\n\n:param externalforcetorque: A dictionary of link indices and a 6-element array of forces/torques in that order.\n\n") + std::string(DOXY_FN(KinBody, ComputeInverseDynamics));
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        scope_ kinbody = class_<PyKinBody, OPENRAVE_SHARED_PTR<PyKinBody>, PyInterfaceBase>(m, "KinBody", DOXY_CLASS(KinBody))
+        scope_ kinbody = class_<PyKinBody, std::shared_ptr<PyKinBody>, PyInterfaceBase>(m, "KinBody", DOXY_CLASS(KinBody))
 #else
-        scope_ kinbody = class_<PyKinBody, OPENRAVE_SHARED_PTR<PyKinBody>, bases<PyInterfaceBase> >("KinBody", DOXY_CLASS(KinBody), no_init)
+        scope_ kinbody = class_<PyKinBody, std::shared_ptr<PyKinBody>, bases<PyInterfaceBase> >("KinBody", DOXY_CLASS(KinBody), no_init)
 #endif
                          .def("Destroy",&PyKinBody::Destroy, DOXY_FN(KinBody,Destroy))
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
@@ -4695,9 +4695,9 @@ void init_openravepy_kinbody()
         {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
             // link belongs to kinbody
-            scope_ link = class_<PyLink, OPENRAVE_SHARED_PTR<PyLink> >(kinbody, "Link", DOXY_CLASS(KinBody::Link))
+            scope_ link = class_<PyLink, std::shared_ptr<PyLink> >(kinbody, "Link", DOXY_CLASS(KinBody::Link))
 #else
-            scope_ link = class_<PyLink, OPENRAVE_SHARED_PTR<PyLink> >("Link", DOXY_CLASS(KinBody::Link), no_init)
+            scope_ link = class_<PyLink, std::shared_ptr<PyLink> >("Link", DOXY_CLASS(KinBody::Link), no_init)
 #endif
                           .def("GetName",&PyLink::GetName, DOXY_FN(KinBody::Link,GetName))
                           .def("GetIndex",&PyLink::GetIndex, DOXY_FN(KinBody::Link,GetIndex))
@@ -4789,9 +4789,9 @@ void init_openravepy_kinbody()
             {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
                 // PyGeometry belongs to PyLink, not openravepy._openravepy_.openravepy_int
-                scope_ geometry = class_<PyLink::PyGeometry, OPENRAVE_SHARED_PTR<PyLink::PyGeometry> >(link, "Geometry", DOXY_CLASS(KinBody::Link::Geometry))
+                scope_ geometry = class_<PyLink::PyGeometry, std::shared_ptr<PyLink::PyGeometry> >(link, "Geometry", DOXY_CLASS(KinBody::Link::Geometry))
 #else
-                scope_ geometry = class_<PyLink::PyGeometry, OPENRAVE_SHARED_PTR<PyLink::PyGeometry> >("Geometry", DOXY_CLASS(KinBody::Link::Geometry),no_init)
+                scope_ geometry = class_<PyLink::PyGeometry, std::shared_ptr<PyLink::PyGeometry> >("Geometry", DOXY_CLASS(KinBody::Link::Geometry),no_init)
 #endif
                                   .def("SetCollisionMesh",&PyLink::PyGeometry::SetCollisionMesh,PY_ARGS("trimesh") DOXY_FN(KinBody::Link::Geometry,SetCollisionMesh))
                                   .def("GetCollisionMesh",&PyLink::PyGeometry::GetCollisionMesh, DOXY_FN(KinBody::Link::Geometry,GetCollisionMesh))
@@ -4846,9 +4846,9 @@ void init_openravepy_kinbody()
         }
         {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-            scope_ joint = class_<PyJoint, OPENRAVE_SHARED_PTR<PyJoint> >(kinbody, "Joint", DOXY_CLASS(KinBody::Joint))
+            scope_ joint = class_<PyJoint, std::shared_ptr<PyJoint> >(kinbody, "Joint", DOXY_CLASS(KinBody::Joint))
 #else
-            scope_ joint = class_<PyJoint, OPENRAVE_SHARED_PTR<PyJoint> >("Joint", DOXY_CLASS(KinBody::Joint),no_init)
+            scope_ joint = class_<PyJoint, std::shared_ptr<PyJoint> >("Joint", DOXY_CLASS(KinBody::Joint),no_init)
 #endif
                            .def("GetName", &PyJoint::GetName, DOXY_FN(KinBody::Joint,GetName))
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
@@ -5052,9 +5052,9 @@ void init_openravepy_kinbody()
 
         {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-            scope_ statesaver = class_<PyKinBodyStateSaver, OPENRAVE_SHARED_PTR<PyKinBodyStateSaver> >(kinbody, "KinBodyStateSaver", DOXY_CLASS(KinBody::KinBodyStateSaver))
+            scope_ statesaver = class_<PyKinBodyStateSaver, std::shared_ptr<PyKinBodyStateSaver> >(kinbody, "KinBodyStateSaver", DOXY_CLASS(KinBody::KinBodyStateSaver))
 #else
-            scope_ statesaver = class_<PyKinBodyStateSaver, OPENRAVE_SHARED_PTR<PyKinBodyStateSaver> >("KinBodyStateSaver", DOXY_CLASS(KinBody::KinBodyStateSaver), no_init)
+            scope_ statesaver = class_<PyKinBodyStateSaver, std::shared_ptr<PyKinBodyStateSaver> >("KinBodyStateSaver", DOXY_CLASS(KinBody::KinBodyStateSaver), no_init)
 #endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
                                 .def(init<PyKinBodyPtr>(), "body"_a)
@@ -5080,9 +5080,9 @@ void init_openravepy_kinbody()
 
         {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-            scope_ managedata = class_<PyManageData, OPENRAVE_SHARED_PTR<PyManageData> >(m, "ManageData", DOXY_CLASS(KinBody::ManageData))
+            scope_ managedata = class_<PyManageData, std::shared_ptr<PyManageData> >(m, "ManageData", DOXY_CLASS(KinBody::ManageData))
 #else
-            scope_ managedata = class_<PyManageData, OPENRAVE_SHARED_PTR<PyManageData> >("ManageData", DOXY_CLASS(KinBody::ManageData),no_init)
+            scope_ managedata = class_<PyManageData, std::shared_ptr<PyManageData> >("ManageData", DOXY_CLASS(KinBody::ManageData),no_init)
 #endif
                                 .def("GetSystem", &PyManageData::GetSystem, DOXY_FN(KinBody::ManageData,GetSystem))
                                 .def("GetData", &PyManageData::GetData, DOXY_FN(KinBody::ManageData,GetData))

@@ -83,14 +83,14 @@ PyPlannerStatus::PyPlannerStatus(const PlannerStatus& status) {
 
 object toPyPlannerStatus(const PlannerStatus& status)
 {
-    return py::to_object(OPENRAVE_SHARED_PTR<PyPlannerStatus>(new PyPlannerStatus(status)));
+    return py::to_object(std::shared_ptr<PyPlannerStatus>(new PyPlannerStatus(status)));
 }
 
 PyPlannerBase::PyPlannerParameters::PyPlannerParameters() {
     _paramswrite.reset(new PlannerBase::PlannerParameters());
     _paramsread = _paramswrite;
 }
-PyPlannerBase::PyPlannerParameters::PyPlannerParameters(OPENRAVE_SHARED_PTR<PyPlannerParameters> pyparameters) {
+PyPlannerBase::PyPlannerParameters::PyPlannerParameters(std::shared_ptr<PyPlannerParameters> pyparameters) {
     _paramswrite.reset(new PlannerBase::PlannerParameters());
     if( !!pyparameters ) {
         _paramswrite->copy(pyparameters->GetParameters());
@@ -217,15 +217,15 @@ std::string PyPlannerBase::PyPlannerParameters::__str__() {
 object PyPlannerBase::PyPlannerParameters::__unicode__() {
     return ConvertStringToUnicode(__str__());
 }
-bool PyPlannerBase::PyPlannerParameters::__eq__(OPENRAVE_SHARED_PTR<PyPlannerParameters> p) {
+bool PyPlannerBase::PyPlannerParameters::__eq__(std::shared_ptr<PyPlannerParameters> p) {
     return !!p && _paramsread == p->_paramsread;
 }
-bool PyPlannerBase::PyPlannerParameters::__ne__(OPENRAVE_SHARED_PTR<PyPlannerParameters> p) {
+bool PyPlannerBase::PyPlannerParameters::__ne__(std::shared_ptr<PyPlannerParameters> p) {
     return !p || _paramsread != p->_paramsread;
 }
 
-typedef OPENRAVE_SHARED_PTR<PyPlannerBase::PyPlannerParameters> PyPlannerParametersPtr;
-typedef OPENRAVE_SHARED_PTR<PyPlannerBase::PyPlannerParameters const> PyPlannerParametersConstPtr;
+typedef std::shared_ptr<PyPlannerBase::PyPlannerParameters> PyPlannerParametersPtr;
+typedef std::shared_ptr<PyPlannerBase::PyPlannerParameters const> PyPlannerParametersConstPtr;
 
 PyPlannerBase::PyPlannerBase(PlannerBasePtr pplanner, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pplanner, pyenv), _pplanner(pplanner) {
 }
@@ -275,7 +275,7 @@ PlannerAction PyPlannerBase::_PlanCallback(object fncallback, PyEnvironmentBaseP
     object res;
     PyGILState_STATE gstate = PyGILState_Ensure();
     try {
-        OPENRAVE_SHARED_PTR<PyPlannerProgress> pyprogress(new PyPlannerProgress(progress));
+        std::shared_ptr<PyPlannerProgress> pyprogress(new PyPlannerProgress(progress));
         res = fncallback(py::to_object(pyprogress));
     }
     catch(...) {
@@ -396,9 +396,9 @@ void init_openravepy_planner()
                            .value("ReturnWithAnySolution",PA_ReturnWithAnySolution)
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyPlannerStatus, OPENRAVE_SHARED_PTR<PyPlannerStatus> >(m, "PlannerStatus", DOXY_CLASS(PlannerStatus))
+    class_<PyPlannerStatus, std::shared_ptr<PyPlannerStatus> >(m, "PlannerStatus", DOXY_CLASS(PlannerStatus))
 #else
-    class_<PyPlannerStatus, OPENRAVE_SHARED_PTR<PyPlannerStatus> >("PlannerStatus", DOXY_CLASS(PlannerStatus))
+    class_<PyPlannerStatus, std::shared_ptr<PyPlannerStatus> >("PlannerStatus", DOXY_CLASS(PlannerStatus))
 #endif
     .def_readwrite("report",&PyPlannerStatus::report)
     .def_readwrite("description",&PyPlannerStatus::description)
@@ -409,9 +409,9 @@ void init_openravepy_planner()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyPlannerProgress, OPENRAVE_SHARED_PTR<PyPlannerProgress> >(m, "PlannerProgress", DOXY_CLASS(PlannerBase::PlannerProgress))
+    class_<PyPlannerProgress, std::shared_ptr<PyPlannerProgress> >(m, "PlannerProgress", DOXY_CLASS(PlannerBase::PlannerProgress))
 #else
-    class_<PyPlannerProgress, OPENRAVE_SHARED_PTR<PyPlannerProgress> >("PlannerProgress", DOXY_CLASS(PlannerBase::PlannerProgress))
+    class_<PyPlannerProgress, std::shared_ptr<PyPlannerProgress> >("PlannerProgress", DOXY_CLASS(PlannerBase::PlannerProgress))
 #endif
     .def_readwrite("_iteration",&PyPlannerProgress::_iteration)
     ;
@@ -420,9 +420,9 @@ void init_openravepy_planner()
         bool (PyPlannerBase::*InitPlan1)(PyRobotBasePtr, PyPlannerBase::PyPlannerParametersPtr,bool) = &PyPlannerBase::InitPlan;
         bool (PyPlannerBase::*InitPlan2)(PyRobotBasePtr, const string &) = &PyPlannerBase::InitPlan;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        scope_ planner = class_<PyPlannerBase, OPENRAVE_SHARED_PTR<PyPlannerBase>, PyInterfaceBase>(m, "Planner", DOXY_CLASS(PlannerBase))
+        scope_ planner = class_<PyPlannerBase, std::shared_ptr<PyPlannerBase>, PyInterfaceBase>(m, "Planner", DOXY_CLASS(PlannerBase))
 #else
-        scope_ planner = class_<PyPlannerBase, OPENRAVE_SHARED_PTR<PyPlannerBase>, bases<PyInterfaceBase> >("Planner", DOXY_CLASS(PlannerBase), no_init)
+        scope_ planner = class_<PyPlannerBase, std::shared_ptr<PyPlannerBase>, bases<PyInterfaceBase> >("Planner", DOXY_CLASS(PlannerBase), no_init)
 #endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
                          .def("InitPlan", InitPlan1,

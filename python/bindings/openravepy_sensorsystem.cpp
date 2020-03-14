@@ -88,10 +88,10 @@ void init_openravepy_sensorsystem()
 {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
-    class_<PySensorSystemBase, OPENRAVE_SHARED_PTR<PySensorSystemBase>, PyInterfaceBase>(m, "SensorSystem", DOXY_CLASS(SensorSystemBase))
+    class_<PySensorSystemBase, std::shared_ptr<PySensorSystemBase>, PyInterfaceBase>(m, "SensorSystem", DOXY_CLASS(SensorSystemBase))
     .def(init<SensorSystemBasePtr, PyEnvironmentBasePtr>(), "sensorsystem"_a, "env"_a)
 #else
-    class_<PySensorSystemBase, OPENRAVE_SHARED_PTR<PySensorSystemBase>, bases<PyInterfaceBase> >("SensorSystem", DOXY_CLASS(SensorSystemBase), no_init)
+    class_<PySensorSystemBase, std::shared_ptr<PySensorSystemBase>, bases<PyInterfaceBase> >("SensorSystem", DOXY_CLASS(SensorSystemBase), no_init)
 #endif
     ;
 

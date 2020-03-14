@@ -61,9 +61,9 @@ PyIkParameterization::PyIkParameterization(object o, IkParameterizationType type
     case IKP_Rotation3D: SetRotation3D(o); break;
     case IKP_Translation3D: SetTranslation3D(o); break;
     case IKP_Direction3D: SetDirection3D(o); break;
-    case IKP_Ray4D: SetRay4D(extract<OPENRAVE_SHARED_PTR<PyRay> >(o)); break;
+    case IKP_Ray4D: SetRay4D(extract<std::shared_ptr<PyRay> >(o)); break;
     case IKP_Lookat3D: SetLookat3D(o); break;
-    case IKP_TranslationDirection5D: SetTranslationDirection5D(extract<OPENRAVE_SHARED_PTR<PyRay> >(o)); break;
+    case IKP_TranslationDirection5D: SetTranslationDirection5D(extract<std::shared_ptr<PyRay> >(o)); break;
     case IKP_TranslationXY2D: SetTranslationXY2D(o); break;
     case IKP_TranslationXYOrientation3D: SetTranslationXYOrientation3D(o); break;
     case IKP_TranslationLocalGlobal6D: SetTranslationLocalGlobal6D(o[0],o[1]); break;
@@ -76,7 +76,7 @@ PyIkParameterization::PyIkParameterization(object o, IkParameterizationType type
     default: throw OPENRAVE_EXCEPTION_FORMAT(_tr("incorrect ik parameterization type 0x%x"), type, ORE_InvalidArguments);
     }
 }
-PyIkParameterization::PyIkParameterization(OPENRAVE_SHARED_PTR<PyIkParameterization> pyikparam) {
+PyIkParameterization::PyIkParameterization(std::shared_ptr<PyIkParameterization> pyikparam) {
     _param = pyikparam->_param;
 }
 PyIkParameterization::PyIkParameterization(const IkParameterization &ikparam) : _param(ikparam) {
@@ -97,9 +97,9 @@ int PyIkParameterization::GetDOF(object o) {
     if( pyik.check() ) {
         return ((PyIkParameterization*)pyik)->_param.GetDOF();
     }
-    extract_<OPENRAVE_SHARED_PTR<PyIkParameterization> > pyikptr(o);
+    extract_<std::shared_ptr<PyIkParameterization> > pyikptr(o);
     if( pyikptr.check() ) {
-        return ((OPENRAVE_SHARED_PTR<PyIkParameterization>)pyikptr)->_param.GetDOF();
+        return ((std::shared_ptr<PyIkParameterization>)pyikptr)->_param.GetDOF();
     }
     return IkParameterization::GetDOF((IkParameterizationType)extract<IkParameterizationType>(o));
 }
@@ -113,9 +113,9 @@ int PyIkParameterization::GetNumberOfValues(object o) {
     if( pyik.check() ) {
         return ((PyIkParameterization*)pyik)->_param.GetNumberOfValues();
     }
-    extract_<OPENRAVE_SHARED_PTR<PyIkParameterization> > pyikptr(o);
+    extract_<std::shared_ptr<PyIkParameterization> > pyikptr(o);
     if( pyikptr.check() ) {
-        return ((OPENRAVE_SHARED_PTR<PyIkParameterization>)pyikptr)->_param.GetNumberOfValues();
+        return ((std::shared_ptr<PyIkParameterization>)pyikptr)->_param.GetNumberOfValues();
     }
     return IkParameterization::GetNumberOfValues((IkParameterizationType)extract<IkParameterizationType>(o));
 }
@@ -129,9 +129,9 @@ object PyIkParameterization::GetConfigurationSpecification(object ointerpolation
     if( pyik.check() ) {
         return py::to_object(openravepy::toPyConfigurationSpecification(((PyIkParameterization*)pyik)->_param.GetConfigurationSpecification(std::string(), robotname, manipname)));
     }
-    extract_<OPENRAVE_SHARED_PTR<PyIkParameterization> > pyikptr(ointerpolation);
+    extract_<std::shared_ptr<PyIkParameterization> > pyikptr(ointerpolation);
     if( pyikptr.check() ) {
-        return py::to_object(openravepy::toPyConfigurationSpecification(((OPENRAVE_SHARED_PTR<PyIkParameterization>)pyikptr)->_param.GetConfigurationSpecification(std::string(), robotname, manipname)));
+        return py::to_object(openravepy::toPyConfigurationSpecification(((std::shared_ptr<PyIkParameterization>)pyikptr)->_param.GetConfigurationSpecification(std::string(), robotname, manipname)));
     }
     extract_<IkParameterizationType> pyiktype(ointerpolation);
     if( pyiktype.check() ) {
@@ -157,13 +157,13 @@ void PyIkParameterization::SetTranslation3D(object o) {
 void PyIkParameterization::SetDirection3D(object o) {
     _param.SetDirection3D(ExtractVector3(o));
 }
-void PyIkParameterization::SetRay4D(OPENRAVE_SHARED_PTR<PyRay> ray) {
+void PyIkParameterization::SetRay4D(std::shared_ptr<PyRay> ray) {
     _param.SetRay4D(ray->r);
 }
 void PyIkParameterization::SetLookat3D(object o) {
     _param.SetLookat3D(ExtractVector3(o));
 }
-void PyIkParameterization::SetTranslationDirection5D(OPENRAVE_SHARED_PTR<PyRay> ray) {
+void PyIkParameterization::SetTranslationDirection5D(std::shared_ptr<PyRay> ray) {
     _param.SetTranslationDirection5D(ray->r);
 }
 void PyIkParameterization::SetTranslationXY2D(object o) {
@@ -251,7 +251,7 @@ object PyIkParameterization::GetTranslationZAxisAngleYNorm4D() {
     std::pair<Vector,dReal> p = _param.GetTranslationZAxisAngleYNorm4D();
     return py::make_tuple(toPyVector3(p.first), py::to_object(p.second));
 }
-dReal PyIkParameterization::ComputeDistanceSqr(OPENRAVE_SHARED_PTR<PyIkParameterization> pyikparam)
+dReal PyIkParameterization::ComputeDistanceSqr(std::shared_ptr<PyIkParameterization> pyikparam)
 {
     return _param.ComputeDistanceSqr(pyikparam->_param);
 }
@@ -451,7 +451,7 @@ void init_openravepy_ikparameterization()
                                    .def(init<>())
                                    .def(init<std::string>(), "str"_a)
                                    .def(init<object, IkParameterizationType>(), "primitive"_a, "type"_a)
-                                   .def(init<OPENRAVE_SHARED_PTR<PyIkParameterization>>(), "ikparam"_a)
+                                   .def(init<std::shared_ptr<PyIkParameterization>>(), "ikparam"_a)
                                    .def(init<IkParameterization>(), "ikparam"_a)
                                    .def("__copy__", [](const PyIkParameterization& self){ return self; })
                                    .def("__deepcopy__", [](const PyIkParameterization& self, const py::dict& memo) {
@@ -462,7 +462,7 @@ void init_openravepy_ikparameterization()
         scope_ ikparameterization = class_<PyIkParameterization, PyIkParameterizationPtr >("IkParameterization", DOXY_CLASS(IkParameterization))
                                    .def(init<object,IkParameterizationType>(py::args("primitive","type")))
                                    .def(init<string>(py::args("str")))
-                                   .def(init<OPENRAVE_SHARED_PTR<PyIkParameterization> >(py::args("ikparam")))
+                                   .def(init<std::shared_ptr<PyIkParameterization> >(py::args("ikparam")))
 #endif
                                    .def("GetType",&PyIkParameterization::GetType, DOXY_FN(IkParameterization,GetType))
                                    .def("SetTransform6D",&PyIkParameterization::SetTransform6D, PY_ARGS("transform") DOXY_FN(IkParameterization,SetTransform6D))

@@ -82,10 +82,10 @@ void init_openravepy_module()
 {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
-    class_<PyModuleBase, OPENRAVE_SHARED_PTR<PyModuleBase>, PyInterfaceBase>(m, "Module", DOXY_CLASS(ModuleBase))
+    class_<PyModuleBase, std::shared_ptr<PyModuleBase>, PyInterfaceBase>(m, "Module", DOXY_CLASS(ModuleBase))
     .def(init<ModuleBasePtr, PyEnvironmentBasePtr>(), "module"_a, "env"_a)
 #else
-    class_<PyModuleBase, OPENRAVE_SHARED_PTR<PyModuleBase>, bases<PyInterfaceBase> >("Module", DOXY_CLASS(ModuleBase), no_init)
+    class_<PyModuleBase, std::shared_ptr<PyModuleBase>, bases<PyInterfaceBase> >("Module", DOXY_CLASS(ModuleBase), no_init)
 #endif
     .def("SimulationStep",&PyModuleBase::SimulationStep, DOXY_FN(ModuleBase,"SimulationStep"))
     .def("Destroy",&PyModuleBase::Destroy, DOXY_FN(ModuleBase,"Destroy"))

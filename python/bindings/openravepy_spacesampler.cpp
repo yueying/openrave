@@ -224,9 +224,9 @@ void init_openravepy_spacesampler()
 #endif
     {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        scope_ spacesampler = class_<PySpaceSamplerBase, OPENRAVE_SHARED_PTR<PySpaceSamplerBase>, PyInterfaceBase>(m, "SpaceSampler", DOXY_CLASS(SpaceSamplerBase))
+        scope_ spacesampler = class_<PySpaceSamplerBase, std::shared_ptr<PySpaceSamplerBase>, PyInterfaceBase>(m, "SpaceSampler", DOXY_CLASS(SpaceSamplerBase))
 #else
-        scope_ spacesampler = class_<PySpaceSamplerBase, OPENRAVE_SHARED_PTR<PySpaceSamplerBase>, bases<PyInterfaceBase> >("SpaceSampler", DOXY_CLASS(SpaceSamplerBase), no_init)
+        scope_ spacesampler = class_<PySpaceSamplerBase, std::shared_ptr<PySpaceSamplerBase>, bases<PyInterfaceBase> >("SpaceSampler", DOXY_CLASS(SpaceSamplerBase), no_init)
 #endif        
                              .def("SetSeed",&PySpaceSamplerBase::SetSeed, PY_ARGS("seed") DOXY_FN(SpaceSamplerBase,SetSeed))
                              .def("SetSpaceDOF",&PySpaceSamplerBase::SetSpaceDOF, PY_ARGS("dof") DOXY_FN(SpaceSamplerBase,SetSpaceDOF))

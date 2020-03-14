@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2009 Rosen Diankov (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2006-2009 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -249,12 +249,12 @@ void init_python_bindings()
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyVoidHandle, OPENRAVE_SHARED_PTR<PyVoidHandle>>(m, "VoidHandle")
+    class_<PyVoidHandle, std::shared_ptr<PyVoidHandle>>(m, "VoidHandle")
     .def(init<>())
     // error: static assertion failed: Holder classes are only supported for custom types, so cannot do
-    // .def(init<OPENRAVE_SHARED_PTR<void>>(), "handle"_a)
+    // .def(init<std::shared_ptr<void>>(), "handle"_a)
 #else
-    class_<PyVoidHandle, OPENRAVE_SHARED_PTR<PyVoidHandle> >("VoidHandle")
+    class_<PyVoidHandle, std::shared_ptr<PyVoidHandle> >("VoidHandle")
 #endif
     .def("close",&PyVoidHandle::Close,"deprecated")
     .def("Close",&PyVoidHandle::Close)
