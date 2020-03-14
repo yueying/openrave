@@ -43,7 +43,7 @@ namespace OpenRAVE
 				return static_cast<IkParameterizationType>(it->first | (uniqueid&IKP_VelocityDataBit));
 			}
 		}
-		throw OPENRAVE_EXCEPTION_FORMAT(_("no ik exists of unique id 0x%x"), uniqueid, ORE_InvalidArguments);
+		throw OPENRAVE_EXCEPTION_FORMAT(_tr("no ik exists of unique id 0x%x"), uniqueid, ORE_InvalidArguments);
 	}
 
 	ConfigurationSpecification IkParameterization::GetConfigurationSpecification(IkParameterizationType iktype, const std::string& interpolation, const std::string& robotname, const std::string& manipname)
@@ -153,7 +153,7 @@ namespace OpenRAVE
 			break;
 		}
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
 		}
 		if (ikparam._mapCustomData.size() > 0) {
 			O << ikparam._mapCustomData.size() << " ";
@@ -261,7 +261,7 @@ namespace OpenRAVE
 			I >> ikparam._transform.rot.x >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
 			break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
 		}
 		ikparam._mapCustomData.clear();
 		if (type & IKP_CustomDataBit) {
@@ -342,7 +342,7 @@ namespace OpenRAVE
 			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
 			break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization %s"), GetName(), ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization %s"), GetName(), ORE_InvalidArguments);
 		}
 		if (_mapCustomData.size() > 0) {
 			// TODO have to scale _mapCustomData by fUnitScale
@@ -432,7 +432,7 @@ namespace OpenRAVE
 			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
 			break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), _type, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), _type, ORE_InvalidArguments);
 		}
 		_transform.trans *= fUnitScale;
 

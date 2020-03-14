@@ -417,7 +417,7 @@ int RaveGetIndexFromAffineDOF(int affinedofs, DOFAffine _dof)
     if( dof&DOF_RotationQuat ) {
         return index;
     }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("unspecified dof 0x%x, 0x%x"),affinedofs%dof,ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT(_tr("unspecified dof 0x%x, 0x%x"),affinedofs%dof,ORE_InvalidArguments);
 }
 
 DOFAffine RaveGetAffineDOFFromIndex(int affinedofs, int requestedindex)
@@ -451,7 +451,7 @@ DOFAffine RaveGetAffineDOFFromIndex(int affinedofs, int requestedindex)
     if( index <= requestedindex && index+4 > requestedindex && (affinedofs&DOF_RotationQuat) ) {
         return DOF_RotationQuat;
     }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("requested index out of bounds %d (affinemask=0x%x)"),requestedindex%affinedofs, ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT(_tr("requested index out of bounds %d (affinemask=0x%x)"),requestedindex%affinedofs, ORE_InvalidArguments);
 }
 
 int RaveGetAffineDOF(int affinedofs)

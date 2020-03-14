@@ -207,7 +207,7 @@ IkReturnAction IkSolverBase::_CallFilters(std::vector<dReal>& solution, RobotBas
                     ss << *itvalue << ", ";
                 }
                 ss << "]";
-                throw OPENRAVE_EXCEPTION_FORMAT(_("_CallFilters on robot %s manip %s need to start with robot configuration set to the solution, most likely a problem with internal ik solver call. %s"),robot->GetName()%manipulator->GetName()%ss.str(), ORE_InconsistentConstraints);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("_CallFilters on robot %s manip %s need to start with robot configuration set to the solution, most likely a problem with internal ik solver call. %s"),robot->GetName()%manipulator->GetName()%ss.str(), ORE_InconsistentConstraints);
             }
         }
     }
@@ -245,7 +245,7 @@ IkReturnAction IkSolverBase::_CallFilters(std::vector<dReal>& solution, RobotBas
 
                         robot->GetConfigurationValues(vtestsolution2);
                         pitdata->_filterfn(solution,manipulator,param); // for debugging internals
-                        throw OPENRAVE_EXCEPTION_FORMAT(_("one of the filters set on robot %s manip %s did not restore the robot configuraiton. %s"),robot->GetName()%manipulator->GetName()%ss.str(), ORE_InconsistentConstraints);
+                        throw OPENRAVE_EXCEPTION_FORMAT(_tr("one of the filters set on robot %s manip %s did not restore the robot configuraiton. %s"),robot->GetName()%manipulator->GetName()%ss.str(), ORE_InconsistentConstraints);
                     }
                 }
             }

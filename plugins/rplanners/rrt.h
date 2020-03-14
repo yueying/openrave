@@ -506,7 +506,7 @@ Some python code to display data::\n\
         }
 
         if( _vgoalpaths.size() == 0 ) {
-            std::string description = str(boost::format(_("env=%d, plan failed in %fs, iter=%d, nMaxIterations=%d"))%GetEnv()->GetId()%(0.001f*(float)(utils::GetMilliTime()-basetime))%(iter/3)%_parameters->max_iterations_);
+            std::string description = str(boost::format(_tr("env=%d, plan failed in %fs, iter=%d, nMaxIterations=%d"))%GetEnv()->GetId()%(0.001f*(float)(utils::GetMilliTime()-basetime))%(iter/3)%_parameters->max_iterations_);
             RAVELOG_WARN(description);
             return PlannerStatus(description, PS_Failed);
         }
@@ -523,7 +523,7 @@ Some python code to display data::\n\
             ptraj->Init(_parameters->_configurationspecification);
         }
         ptraj->Insert(ptraj->GetNumWaypoints(), itbest->qall, _parameters->_configurationspecification);
-        std::string description = str(boost::format(_("env=%d, plan success, iters=%d, path=%d points, computation time=%fs\n"))%GetEnv()->GetId()%progress._iteration%ptraj->GetNumWaypoints()%(0.001f*(float)(utils::GetMilliTime()-basetime)));
+        std::string description = str(boost::format(_tr("env=%d, plan success, iters=%d, path=%d points, computation time=%fs\n"))%GetEnv()->GetId()%progress._iteration%ptraj->GetNumWaypoints()%(0.001f*(float)(utils::GetMilliTime()-basetime)));
         RAVELOG_DEBUG(description);
         PlannerStatus status = _ProcessPostPlanners(_robot,ptraj);
         //TODO should use accessor to change description

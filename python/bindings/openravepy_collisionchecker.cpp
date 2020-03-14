@@ -212,7 +212,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1)
     if( !!pbody ) {
         return _pCollisionChecker->CheckCollision(pbody);
     }
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
 }
 
 bool PyCollisionCheckerBase::CheckCollision(object o1, PyCollisionReportPtr pReport)
@@ -229,7 +229,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, PyCollisionReportPtr pRep
             bCollision = _pCollisionChecker->CheckCollision(pbody,openravepy::GetCollisionReport(pReport));
         }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument"),ORE_InvalidArguments);
         }
     }
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -256,7 +256,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object o2)
             openravepy::UpdateCollisionReport(o2,_pyenv);
             return bCollision;
         }
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
     }
     KinBodyConstPtr pbody = openravepy::GetKinBody(o1);
     if( !!pbody ) {
@@ -274,9 +274,9 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object o2)
             openravepy::UpdateCollisionReport(o2,_pyenv);
             return bCollision;
         }
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
     }
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
 }
 bool PyCollisionCheckerBase::CheckCollision(object o1, object o2, PyCollisionReportPtr pReport)
 {
@@ -295,7 +295,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object o2, PyCollisionRep
                 bCollision = _pCollisionChecker->CheckCollision(plink,pbody2, openravepy::GetCollisionReport(pReport));
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
             }
         }
     }
@@ -312,12 +312,12 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object o2, PyCollisionRep
                     bCollision = _pCollisionChecker->CheckCollision(pbody,pbody2, openravepy::GetCollisionReport(pReport));
                 }
                 else {
-                    throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
                 }
             }
         }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
         }
     }
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -337,7 +337,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, PyKinBodyPtr pybody2)
     if( !!pbody1 ) {
         return _pCollisionChecker->CheckCollision(pbody1,pbody2);
     }
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
 }
 
 bool PyCollisionCheckerBase::CheckCollision(object o1, PyKinBodyPtr pybody2, PyCollisionReportPtr pReport)
@@ -356,7 +356,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, PyKinBodyPtr pybody2, PyC
             bCollision = _pCollisionChecker->CheckCollision(pbody1,pbody2,openravepy::GetCollisionReport(pReport));
         }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
         }
     }
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -367,7 +367,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object bodyexcluded, obje
 {
     CollisionReportPtr preport = openravepy::GetCollisionReport(linkexcluded);
     if( !!preport ) {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("3rd argument should be linkexcluded, rather than CollisionReport! Try report="),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("3rd argument should be linkexcluded, rather than CollisionReport! Try report="),ORE_InvalidArguments);
     }
 
     KinBody::LinkConstPtr plink1 = openravepy::GetKinBodyLinkConst(o1);
@@ -400,7 +400,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object bodyexcluded, obje
         return _pCollisionChecker->CheckCollision(pbody1,vbodyexcluded,vlinkexcluded);
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
     }
 }
 
@@ -438,7 +438,7 @@ bool PyCollisionCheckerBase::CheckCollision(object o1, object bodyexcluded, obje
         bCollision = _pCollisionChecker->CheckCollision(pbody1, vbodyexcluded, vlinkexcluded, openravepy::GetCollisionReport(pReport));
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
     }
 
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -518,7 +518,7 @@ object PyCollisionCheckerBase::CheckCollisionRays(object rays, PyKinBodyPtr pbod
         return py::make_tuple(py::empty_array_astype<int>(), py::empty_array_astype<dReal>());
     }
     if( extract<int>(shape[1]) != 6 ) {
-        throw OpenRAVEException(_("rays object needs to be a Nx6 vector\n"));
+        throw OpenRAVEException(_tr("rays object needs to be a Nx6 vector\n"));
     }
     CollisionReport report;
     CollisionReportPtr preport(&report,null_deleter());
@@ -578,7 +578,7 @@ bool PyCollisionCheckerBase::CheckCollisionTriMesh(object otrimesh, PyKinBodyPtr
 {
     TriMesh trimesh;
     if( !ExtractTriMesh(otrimesh,trimesh) ) {
-        throw OpenRAVEException(_("bad trimesh"));
+        throw OpenRAVEException(_tr("bad trimesh"));
     }
     KinBodyConstPtr pbody(openravepy::GetKinBody(pybody));
     bool bCollision = _pCollisionChecker->CheckCollision(trimesh, pbody, openravepy::GetCollisionReport(pReport));
@@ -590,7 +590,7 @@ bool PyCollisionCheckerBase::CheckCollisionTriMesh(object otrimesh, PyCollisionR
 {
     TriMesh trimesh;
     if( !ExtractTriMesh(otrimesh,trimesh) ) {
-        throw OpenRAVEException(_("bad trimesh"));
+        throw OpenRAVEException(_tr("bad trimesh"));
     }
     bool bCollision = _pCollisionChecker->CheckCollision(trimesh, openravepy::GetCollisionReport(pReport));
     openravepy::UpdateCollisionReport(pReport,_pyenv);
@@ -618,7 +618,7 @@ bool PyCollisionCheckerBase::CheckSelfCollision(object o1, PyCollisionReportPtr 
         bCollision = _pCollisionChecker->CheckSelfCollision(pbody1, openravepy::GetCollisionReport(pReport));
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid parameters to CheckSelfCollision"), ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid parameters to CheckSelfCollision"), ORE_InvalidArguments);
     }
     openravepy::UpdateCollisionReport(pReport,_pyenv);
     return bCollision;

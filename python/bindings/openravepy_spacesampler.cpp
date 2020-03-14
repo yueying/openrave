@@ -88,7 +88,7 @@ public:
             _pspacesampler->GetLimits(vlower,vupper);
             return py::make_tuple(toPyArray(vlower),toPyArray(vupper));
         }
-        throw OPENRAVE_EXCEPTION_FORMAT(_("%d sampling type not supported"),type,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("%d sampling type not supported"),type,ORE_InvalidArguments);
     }
 
     object SampleSequence(SampleDataType type, size_t num, int interval = IntervalType::IT_Closed)
@@ -103,7 +103,7 @@ public:
             _pspacesampler->SampleSequence(samples,num);
             return toPyArray(samples);
         }
-        throw OPENRAVE_EXCEPTION_FORMAT(_("%d sampling type not supported"),type,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("%d sampling type not supported"),type,ORE_InvalidArguments);
     }
 
     object SampleSequence2D(SampleDataType type, size_t num, int interval = IntervalType::IT_Closed)
@@ -118,7 +118,7 @@ public:
             _pspacesampler->SampleSequence(samples,num);
             return _ReturnSamples2D(samples);
         }
-        throw OPENRAVE_EXCEPTION_FORMAT(_("%d sampling type not supported"),type,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("%d sampling type not supported"),type,ORE_InvalidArguments);
     }
 
     dReal SampleSequenceOneReal(int interval = IntervalType::IT_Closed)
@@ -143,7 +143,7 @@ public:
             _pspacesampler->SampleComplete(samples,num);
             return toPyArray(samples);
         }
-        throw OPENRAVE_EXCEPTION_FORMAT(_("%d sampling type not supported"),type,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("%d sampling type not supported"),type,ORE_InvalidArguments);
     }
 
     object SampleComplete2D(SampleDataType type, size_t num, int interval = IntervalType::IT_Closed)
@@ -158,7 +158,7 @@ public:
             _pspacesampler->SampleComplete(samples,num);
             return _ReturnSamples2D(samples);
         }
-        throw OPENRAVE_EXCEPTION_FORMAT(_("%d sampling type not supported"),type,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("%d sampling type not supported"),type,ORE_InvalidArguments);
     }
 protected:
     object _ReturnSamples2D(const std::vector<dReal>&samples)

@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Dmitriy Morozov, modifications by Rosen Diankov
+﻿// Copyright (C) 2010 Dmitriy Morozov, modifications by Rosen Diankov
 //
 // pyANN is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -328,7 +328,7 @@ object k_priority_search_array(ANNkd_tree& kdtree, object q, int k, double eps)
 
 OPENRAVE_PYTHON_MODULE(pyANN_int)
 {
-    import_array();
+    import_array1();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
 #else

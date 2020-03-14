@@ -100,6 +100,6 @@ namespace OpenRAVE
 	OPENRAVE_API const char *RaveGetLocalizedTextForDomain(const std::string& domainname, const char *msgid);
 }
 
-#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
+#define _tr(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
 
 #endif // OPENRAVE_OPENRAVE_MACROS_H_

@@ -59,7 +59,7 @@
 #include <boost/range/detail/any_iterator.hpp>
 #include <boost/unordered_map.hpp>
 
-#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_oderave", msgid)
+#define _tr(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_oderave", msgid)
 
 using namespace std;
 

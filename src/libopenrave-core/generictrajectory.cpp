@@ -484,7 +484,7 @@ public:
         stringstream::streampos pos = I.tellg();  // Save old position
         uint16_t binaryFileHeader = 0;
         if( !ReadBinaryUInt16(I, binaryFileHeader) ) {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("cannot read first 2 bytes for deserializing traj, stream might be empty "),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cannot read first 2 bytes for deserializing traj, stream might be empty "),ORE_InvalidArguments);
         }
 
         // Read binary trajectory files
@@ -496,7 +496,7 @@ public:
             // currently supported versions: 0x0001, 0x0002
             if (versionNumber > VERSION_NUMBER || versionNumber < 0x0001)
             {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("unsupported trajectory format version %d "),versionNumber,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("unsupported trajectory format version %d "),versionNumber,ORE_InvalidArguments);
             }
 
             /* Read metadata */
@@ -665,7 +665,7 @@ protected:
             const string& name = config_specification_.groups_vector_[i].name;
             for(int j = 0; j < config_specification_.groups_vector_[i].dof; ++j) {
                 if( derivative_offsets_vector_.at(config_specification_.groups_vector_[i].offset+j) < -2 && intergral_offsets_vector_.at(config_specification_.groups_vector_[i].offset+j) < -2 ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("%s interpolation group '%s' needs derivatives/integrals for sampling"),interpolation%name,ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("%s interpolation group '%s' needs derivatives/integrals for sampling"),interpolation%name,ORE_InvalidArguments);
                 }
             }
         }
@@ -1140,7 +1140,7 @@ protected:
                 }
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("cubic interpolation does not have all data"),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cubic interpolation does not have all data"),ORE_InvalidArguments);
             }
         }
         else {
@@ -1181,7 +1181,7 @@ protected:
                 }
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("cubic interpolation does not have all data"),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cubic interpolation does not have all data"),ORE_InvalidArguments);
             }
         }
         else {
@@ -1233,7 +1233,7 @@ protected:
                 }
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("cubic interpolation does not have all data"),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cubic interpolation does not have all data"),ORE_InvalidArguments);
             }
         }
         else {
@@ -1303,7 +1303,7 @@ protected:
                 }
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("cubic interpolation does not have all data"),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cubic interpolation does not have all data"),ORE_InvalidArguments);
             }
         }
         else {

@@ -55,10 +55,10 @@
 #include <openravepy/bindings.h>
 #include <openravepy/docstrings.h>
 
-#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
+#define _tr(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave", msgid)
 
 #define CHECK_POINTER(p) { \
-        if( !(p) ) { throw OpenRAVEException(boost::str(boost::format(_("[%s:%d]: invalid pointer"))%__PRETTY_FUNCTION__%__LINE__)); } \
+        if( !(p) ) { throw OpenRAVEException(boost::str(boost::format(_tr("[%s:%d]: invalid pointer"))%__PRETTY_FUNCTION__%__LINE__)); } \
 }
 
 using namespace std;

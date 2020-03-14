@@ -95,7 +95,7 @@ bool PyControllerBase::SetDesired(object o)
 {
     std::vector<dReal> values = ExtractArray<dReal>(o);
     if( values.size() == 0 ) {
-        throw OpenRAVEException(_("no values specified"));
+        throw OpenRAVEException(_tr("no values specified"));
     }
     return _pcontroller->SetDesired(values);
 }

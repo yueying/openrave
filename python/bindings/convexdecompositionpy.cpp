@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Rosen Diankov
+﻿// Copyright (C) 2010 Rosen Diankov
 //
 // convexdecompositionpy is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -171,7 +171,7 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(computeConvexDecomposition_overloads, computeCon
 
 OPENRAVE_PYTHON_MODULE(convexdecompositionpy)
 {
-    import_array();
+    import_array1();
 #ifndef USE_PYBIND11_PYTHON_BINDINGS
     numeric::array::set_module_and_type("numpy", "ndarray");
     int_from_number<int>();

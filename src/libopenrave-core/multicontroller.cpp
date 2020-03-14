@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
+﻿// Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -64,11 +64,11 @@ public:
     {
         boost::mutex::scoped_lock lock(_mutex);
         if( control_transformation && !!_ptransformcontroller ) {
-            throw OpenRAVEException(_("controller already attached for transformation"),ORE_InvalidArguments);
+            throw OpenRAVEException(_tr("controller already attached for transformation"),ORE_InvalidArguments);
         }
         FOREACHC(it,dofindices) {
             if( !!_vcontrollersbydofs.at(*it) ) {
-                throw OpenRAVEException(str(boost::format(_("controller already attached to dof %d"))%*it));
+                throw OpenRAVEException(str(boost::format(_tr("controller already attached to dof %d"))%*it));
             }
         }
         if( !controller->Init(_probot,dofindices,control_transformation) ) {

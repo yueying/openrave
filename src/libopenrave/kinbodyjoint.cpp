@@ -79,7 +79,7 @@ int KinBody::JointInfo::GetDOF() const
         case KinBody::JointSpherical: return 3;
         case KinBody::JointTrajectory: return 1;
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("invalid joint type 0x%x"), type_, ORE_Failed);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("invalid joint type 0x%x"), type_, ORE_Failed);
         }
     }
     return int(type_ & 0xf);
@@ -554,7 +554,7 @@ void KinBody::Joint::GetValues(vector<dReal>& pValues, bool bAppend) const
             break;
         }
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("unknown joint type 0x%x"), info_.type_, ORE_Failed);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("unknown joint type 0x%x"), info_.type_, ORE_Failed);
         }
     }
     else {
@@ -747,7 +747,7 @@ dReal KinBody::Joint::GetValue(int iaxis) const
             }
         }
     }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("unknown joint type 0x%x axis %d\n"), info_.type_%iaxis, ORE_Failed);
+    throw OPENRAVE_EXCEPTION_FORMAT(_tr("unknown joint type 0x%x axis %d\n"), info_.type_%iaxis, ORE_Failed);
 }
 
 void KinBody::Joint::GetVelocities(std::vector<dReal>& pVelocities, bool bAppend) const
@@ -792,7 +792,7 @@ void KinBody::Joint::_GetVelocities(std::vector<dReal>& pVelocities, bool bAppen
             break;
         }
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("unknown joint type 0x%x"), info_.type_, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("unknown joint type 0x%x"), info_.type_, ORE_InvalidArguments);
         }
     }
     else {
@@ -824,7 +824,7 @@ dReal KinBody::Joint::_GetVelocity(int axis, const std::pair<Vector,Vector>&link
             return v[axis];
         }
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("unknown joint type 0x%x"), info_.type_, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("unknown joint type 0x%x"), info_.type_, ORE_InvalidArguments);
         }
     }
     else {
@@ -855,7 +855,7 @@ dReal KinBody::Joint::_GetVelocity(int axis, const std::pair<Vector,Vector>&link
             }
         }
     }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("unsupported joint type 0x%x"), info_.type_, ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT(_tr("unsupported joint type 0x%x"), info_.type_, ORE_InvalidArguments);
 }
 
 Vector KinBody::Joint::GetAnchor() const
@@ -935,12 +935,12 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
             break;
         case KinBody::JointTrajectory:
             if( !info_._trajfollow ) {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("trajectory joint requires Joint::_trajfollow to be initialized"),ORE_InvalidState);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("trajectory joint requires Joint::_trajfollow to be initialized"),ORE_InvalidState);
             }
             _tRight = _tRight * trel;
             break;
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("unrecognized joint type 0x%x"), info_.type_, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("unrecognized joint type 0x%x"), info_.type_, ORE_InvalidArguments);
         }
         _tLeftNoOffset = _tLeft;
         _tRightNoOffset = _tRight;
@@ -988,11 +988,11 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
             Transform t0, t1;
             info_._trajfollow->Sample(vsampledata,0);
             if( !info_._trajfollow->GetConfigurationSpecification().ExtractTransform(t0,vsampledata.begin(),KinBodyConstPtr()) ) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("failed to sample trajectory for joint %s"),GetName(),ORE_Assert);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to sample trajectory for joint %s"),GetName(),ORE_Assert);
             }
             info_._trajfollow->Sample(vsampledata,vcurrentvalues.at(0));
             if( !info_._trajfollow->GetConfigurationSpecification().ExtractTransform(t1,vsampledata.begin(),KinBodyConstPtr()) ) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("failed to sample trajectory for joint %s"),GetName(),ORE_Assert);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to sample trajectory for joint %s"),GetName(),ORE_Assert);
             }
             toffset = t0*t1.inverse();
         }
@@ -1675,7 +1675,7 @@ std::string KinBody::Joint::GetMimicEquation(int iaxis, int itype, const std::st
         }
         return sout;
     }
-    throw OPENRAVE_EXCEPTION_FORMAT(_("unsupported math format %s"), format, ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT(_tr("unsupported math format %s"), format, ORE_InvalidArguments);
 }
 
 void KinBody::Joint::GetMimicDOFIndices(std::vector<int>& vmimicdofs, int iaxis) const
@@ -1737,7 +1737,7 @@ void KinBody::Joint::SetMimicEquations(int iaxis, const std::string& poseq,
     std::string eq;
     int ret = posfn->ParseAndDeduceVariables(utils::SearchAndReplace(eq,mimic->_equations[0],jointnamepairs),resultVars);
     if( ret >= 0 ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("failed to set equation '%s' on %s:%s, at %d. Error is %s\n"), mimic->_equations[0]%parent->GetName()%GetName()%ret%posfn->ErrorMsg(),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to set equation '%s' on %s:%s, at %d. Error is %s\n"), mimic->_equations[0]%parent->GetName()%GetName()%ret%posfn->ErrorMsg(),ORE_InvalidArguments);
     }
     // process the variables
     FOREACH(itvar,resultVars) {
@@ -1810,7 +1810,7 @@ void KinBody::Joint::SetMimicEquations(int iaxis, const std::string& poseq,
             OpenRAVEFunctionParserRealPtr fn = CreateJointFunctionParser();
             ret = fn->Parse(sequation,sVars.str());
             if( ret >= 0 ) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("failed to set equation '%s' on %s:%s, at %d. Error is %s"), sequation%parent->GetName()%GetName()%ret%fn->ErrorMsg(),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to set equation '%s' on %s:%s, at %d. Error is %s"), sequation%parent->GetName()%GetName()%ret%fn->ErrorMsg(),ORE_InvalidArguments);
             }
             vfns.at(itnameindex-resultVars.begin()) = fn;
         }
@@ -1931,7 +1931,7 @@ int KinBody::Joint::_Eval(int axis, uint32_t timederiv, const std::vector<dReal>
         }
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("timederiv %d not supported"),timederiv,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("timederiv %d not supported"),timederiv,ORE_InvalidArguments);
     }
     return 0;
 }

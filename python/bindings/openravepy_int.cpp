@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -154,7 +154,7 @@ object toPyObject(const rapidjson::Value& value)
             FILL_RAPIDJSON_FROMARRAY_2D(pyarrayvalues, T, rapidjsonsetfn); \
         } \
         else { \
-            throw OPENRAVE_EXCEPTION_FORMAT(_("do not support array object with %d dims"), ndims, ORE_InvalidArguments); \
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("do not support array object with %d dims"), ndims, ORE_InvalidArguments); \
         } \
 }
 
@@ -282,7 +282,7 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
                     FILL_RAPIDJSON_FROMARRAY(pyarrayvalues, double, SetDouble, ndims);
                 }
                 else {
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("do not support array object float with %d type size"), typeSize, ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("do not support array object float with %d type size"), typeSize, ORE_InvalidArguments);
                 }
             }
             else if (PyArray_ISINTEGER(pyarrayvalues) ) {
@@ -303,17 +303,17 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
                     }
                 }
                 else {
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("do not support array object integer with %d type size"), typeSize, ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("do not support array object integer with %d type size"), typeSize, ORE_InvalidArguments);
                 }
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("do not support array object with %d type size"), typeSize, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("do not support array object with %d type size"), typeSize, ORE_InvalidArguments);
             }
         }
     }
     else
     {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("unsupported python type"), ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("unsupported python type"), ORE_InvalidArguments);
     }
 }
 
@@ -364,7 +364,7 @@ object toPyArray(const std::vector<KinBody::GeometryInfoPtr>& infos)
     py::list pyvalues;
     for(size_t i = 0; i < infos.size(); ++i) {
         if( !infos[i] ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("geometryInfo[%d] is invalid"),i, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("geometryInfo[%d] is invalid"),i, ORE_InvalidArguments);
         }
         pyvalues.append(toPyGeometryInfo(*infos[i]));
     }
@@ -988,7 +988,7 @@ bool PyEnvironmentBase::CheckCollision(object o1)
     if( !!pbody ) {
         return _penv->CheckCollision(pbody);
     }
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
 }
 
 bool PyEnvironmentBase::CheckCollision(object o1, PyCollisionReportPtr pReport)
@@ -1005,7 +1005,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, PyCollisionReportPtr pReport)
             bCollision = _penv->CheckCollision(pbody,openravepy::GetCollisionReport(pReport));
         }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument"),ORE_InvalidArguments);
         }
     }
     openravepy::UpdateCollisionReport(pReport,shared_from_this());
@@ -1032,7 +1032,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, object o2)
             openravepy::UpdateCollisionReport(o2,shared_from_this());
             return bCollision;
         }
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
     }
     KinBodyConstPtr pbody = openravepy::GetKinBody(o1);
     if( !!pbody ) {
@@ -1050,9 +1050,9 @@ bool PyEnvironmentBase::CheckCollision(object o1, object o2)
             openravepy::UpdateCollisionReport(o2,shared_from_this());
             return bCollision;
         }
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
     }
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
 }
 bool PyEnvironmentBase::CheckCollision(object o1, object o2, PyCollisionReportPtr pReport)
 {
@@ -1071,7 +1071,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, object o2, PyCollisionReportPt
                 bCollision = _penv->CheckCollision(plink,pbody2, openravepy::GetCollisionReport(pReport));
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
             }
         }
     }
@@ -1088,12 +1088,12 @@ bool PyEnvironmentBase::CheckCollision(object o1, object o2, PyCollisionReportPt
                     bCollision = _penv->CheckCollision(pbody,pbody2, openravepy::GetCollisionReport(pReport));
                 }
                 else {
-                    throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 2"),ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 2"),ORE_InvalidArguments);
                 }
             }
         }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
         }
     }
     openravepy::UpdateCollisionReport(pReport,shared_from_this());
@@ -1113,7 +1113,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, PyKinBodyPtr pybody2)
     if( !!pbody1 ) {
         return _penv->CheckCollision(pbody1,pbody2);
     }
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
 }
 
 bool PyEnvironmentBase::CheckCollision(object o1, PyKinBodyPtr pybody2, PyCollisionReportPtr pReport)
@@ -1132,7 +1132,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, PyKinBodyPtr pybody2, PyCollis
             bCollision = _penv->CheckCollision(pbody1,pbody2,openravepy::GetCollisionReport(pReport));
         }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("CheckCollision(object) invalid argument"),ORE_InvalidArguments);
         }
     }
     openravepy::UpdateCollisionReport(pReport,shared_from_this());
@@ -1143,7 +1143,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, object bodyexcluded, object li
 {
     CollisionReportPtr preport = openravepy::GetCollisionReport(linkexcluded);
     if( !!preport ) {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("3rd argument should be linkexcluded, rather than CollisionReport! Try report="),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("3rd argument should be linkexcluded, rather than CollisionReport! Try report="),ORE_InvalidArguments);
     }
 
     KinBody::LinkConstPtr plink1 = openravepy::GetKinBodyLinkConst(o1);
@@ -1176,7 +1176,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, object bodyexcluded, object li
         return _penv->CheckCollision(pbody1,vbodyexcluded,vlinkexcluded);
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
     }
 }
 
@@ -1214,7 +1214,7 @@ bool PyEnvironmentBase::CheckCollision(object o1, object bodyexcluded, object li
         bCollision = _penv->CheckCollision(pbody1, vbodyexcluded, vlinkexcluded, openravepy::GetCollisionReport(pReport));
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("invalid argument 1"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("invalid argument 1"),ORE_InvalidArguments);
     }
 
     openravepy::UpdateCollisionReport(pReport,shared_from_this());
@@ -1294,7 +1294,7 @@ object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyP
         return py::make_tuple(py::empty_array_astype<int>(), py::empty_array_astype<dReal>());
     }
     if( extract<int>(shape[1]) != 6 ) {
-        throw OpenRAVEException(_("rays object needs to be a Nx6 vector\n"));
+        throw OpenRAVEException(_tr("rays object needs to be a Nx6 vector\n"));
     }
     CollisionReport report;
     CollisionReportPtr preport(&report,null_deleter());
@@ -1303,7 +1303,7 @@ object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyP
     AutoPyArrayObjectDereferencer pyderef(pPyRays);
 
     if( !PyArray_ISFLOAT(pPyRays) ) {
-        throw OpenRAVEException(_("rays has to be a float array\n"));
+        throw OpenRAVEException(_tr("rays has to be a float array\n"));
     }
 
     bool isFloat = PyArray_ITEMSIZE(pPyRays) == sizeof(float); // or double
@@ -1638,11 +1638,11 @@ object PyEnvironmentBase::GetPhysicsEngine() {
 object PyEnvironmentBase::RegisterBodyCallback(object fncallback)
 {
     if( !fncallback ) {
-        throw OpenRAVEException(_("callback not specified"));
+        throw OpenRAVEException(_tr("callback not specified"));
     }
     UserDataPtr p = _penv->RegisterBodyCallback(boost::bind(&PyEnvironmentBase::_BodyCallback,shared_from_this(),fncallback,_1,_2));
     if( !p ) {
-        throw OpenRAVEException(_("registration handle is NULL"));
+        throw OpenRAVEException(_tr("registration handle is NULL"));
     }
     return openravepy::GetUserData(p);
 }
@@ -1650,11 +1650,11 @@ object PyEnvironmentBase::RegisterBodyCallback(object fncallback)
 object PyEnvironmentBase::RegisterCollisionCallback(object fncallback)
 {
     if( !fncallback ) {
-        throw OpenRAVEException(_("callback not specified"));
+        throw OpenRAVEException(_tr("callback not specified"));
     }
     UserDataPtr p = _penv->RegisterCollisionCallback(boost::bind(&PyEnvironmentBase::_CollisionCallback,shared_from_this(),fncallback,_1,_2));
     if( !p ) {
-        throw OpenRAVEException(_("registration handle is NULL"));
+        throw OpenRAVEException(_tr("registration handle is NULL"));
     }
     return openravepy::GetUserData(p);
 }
@@ -1823,7 +1823,7 @@ size_t PyEnvironmentBase::_getGraphPoints(object opoints, std::vector<float>&vpo
         case 1:
             vpoints = ExtractArray<float>(opoints);
             if( vpoints.size()%3 ) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("points have bad size %d"), vpoints.size(),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("points have bad size %d"), vpoints.size(),ORE_InvalidArguments);
             }
             return vpoints.size()/3;
         case 2: {
@@ -1831,18 +1831,18 @@ size_t PyEnvironmentBase::_getGraphPoints(object opoints, std::vector<float>&vpo
             int dim = extract<int>(pointshape[1]);
             vpoints = ExtractArray<float>(opoints.attr("flat"));
             if(dim % 3) {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("points have bad size %dx%d"), num%dim,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("points have bad size %dx%d"), num%dim,ORE_InvalidArguments);
             }
             return num*(dim/3);
         }
         default:
-            throw OpenRAVEException(_("points have bad dimension"));
+            throw OpenRAVEException(_tr("points have bad dimension"));
         }
     }
     // assume it is a regular 1D list
     vpoints = ExtractArray<float>(opoints);
     if( vpoints.size()% 3 ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("points have bad size %d"), vpoints.size(),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("points have bad size %d"), vpoints.size(),ORE_InvalidArguments);
     }
     return vpoints.size()/3;
 }
@@ -1860,13 +1860,13 @@ size_t PyEnvironmentBase::_getGraphColors(object ocolors, std::vector<float>&vco
                 int numcolors = extract<int>(colorshape[0]);
                 int colordim = extract<int>(colorshape[1]);
                 if(( colordim != 3) &&( colordim != 4) ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("colors dim %d needs to be 3 or 4"),colordim, ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("colors dim %d needs to be 3 or 4"),colordim, ORE_InvalidArguments);
                 }
                 vcolors = ExtractArray<float>(ocolors.attr("flat"));
                 return numcolors;
             }
             default:
-                throw OPENRAVE_EXCEPTION_FORMAT(_("colors has %d dimensions"),len(colorshape), ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("colors has %d dimensions"),len(colorshape), ORE_InvalidArguments);
             }
         }
         vcolors = ExtractArray<float>(ocolors);
@@ -1874,7 +1874,7 @@ size_t PyEnvironmentBase::_getGraphColors(object ocolors, std::vector<float>&vco
             vcolors.push_back(1.0f);
         }
         else if( vcolors.size() != 4 ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("colors has incorrect number of values %d"),vcolors.size(), ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("colors has incorrect number of values %d"),vcolors.size(), ORE_InvalidArguments);
         }
         return 1;
     }
@@ -1890,10 +1890,10 @@ std::pair<size_t,size_t> PyEnvironmentBase::_getGraphPointsColors(object opoints
     size_t numpoints = _getGraphPoints(opoints,vpoints);
     size_t numcolors = _getGraphColors(ocolors,vcolors);
     if( numpoints <= 0 ) {
-        throw OpenRAVEException(_("points cannot be empty"),ORE_InvalidArguments);
+        throw OpenRAVEException(_tr("points cannot be empty"),ORE_InvalidArguments);
     }
     if(( numcolors > 1) &&( numpoints != numcolors) ) {
-        throw OpenRAVEException(boost::str(boost::format(_("number of points (%d) need to match number of colors (%d)"))%numpoints%numcolors));
+        throw OpenRAVEException(boost::str(boost::format(_tr("number of points (%d) need to match number of colors (%d)"))%numpoints%numcolors));
     }
     return make_pair(numpoints,numcolors);
 }

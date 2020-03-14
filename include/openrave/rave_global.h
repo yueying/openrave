@@ -205,7 +205,7 @@ namespace OpenRAVE
 		{
 			JSONREADERSMAP::iterator it = _mapjsonreaders[type].find(id);
 			if (it == _mapjsonreaders[type].end()) {
-				//throw openrave_exception(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%id),ORE_InvalidArguments);
+				//throw openrave_exception(str(boost::format(_tr("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%id),ORE_InvalidArguments);
 				return BaseJSONReaderPtr();
 			}
 			return it->second(pinterface, atts);
@@ -220,7 +220,7 @@ namespace OpenRAVE
 		{
 			XMLREADERSMAP::iterator it = _mapxmlreaders[type].find(xmltag);
 			if (it == _mapxmlreaders[type].end()) {
-				//throw OpenRAVEException(str(boost::format(_("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
+				//throw OpenRAVEException(str(boost::format(_tr("No function registered for interface %s xml tag %s"))%GetInterfaceName(type)%xmltag),ORE_InvalidArguments);
 				return BaseXMLReaderPtr();
 			}
 			return it->second(pinterface, atts);
@@ -243,7 +243,7 @@ namespace OpenRAVE
 		{
 			std::map<InterfaceType, std::string>::const_iterator it = interface_names_map_.find(type);
 			if (it == interface_names_map_.end()) {
-				throw OPENRAVE_EXCEPTION_FORMAT(_("Invalid type %d specified"), type, ORE_Failed);
+				throw OPENRAVE_EXCEPTION_FORMAT(_tr("Invalid type %d specified"), type, ORE_Failed);
 			}
 			return it->second;
 		}
@@ -319,7 +319,7 @@ namespace OpenRAVE
 		std::string FindLocalFile(const std::string& _filename, const std::string& curdir)
 		{
 #ifndef HAVE_BOOST_FILESYSTEM
-			throw OPENRAVE_EXCEPTION_FORMAT0(_("need to compile with boost::filesystem"), ORE_Assert);
+			throw OPENRAVE_EXCEPTION_FORMAT0(_tr("need to compile with boost::filesystem"), ORE_Assert);
 #else
 			if (_filename.size() == 0) {
 				return std::string();

@@ -314,7 +314,7 @@ namespace OpenRAVE
 
 				try {
 					if (!Load_CreateInterfaceGlobal()) {
-						throw OpenRAVEException(str(boost::format(_("%s: can't load CreateInterface function\n")) % ppluginname), ORE_InvalidPlugin);
+						throw OpenRAVEException(str(boost::format(_tr("%s: can't load CreateInterface function\n")) % ppluginname), ORE_InvalidPlugin);
 					}
 					InterfaceBasePtr pinterface;
 					if (pfnCreateNew != NULL) {
@@ -381,7 +381,7 @@ namespace OpenRAVE
 							return;
 						}
 						if (_bShutdown) {
-							throw OpenRAVEException(_("library is shutting down"), ORE_InvalidPlugin);
+							throw OpenRAVEException(_tr("library is shutting down"), ORE_InvalidPlugin);
 						}
 						_cond.wait(lock);
 					} while (1);
@@ -926,10 +926,10 @@ namespace OpenRAVE
 			BOOST_ASSERT(!!createfn);
 			BOOST_ASSERT(name.size() > 0);
 			if (strcmp(envhash, OPENRAVE_ENVIRONMENT_HASH)) {
-				throw OpenRAVEException(str(boost::format(_("environment invalid hash %s!=%s\n")) % envhash%OPENRAVE_ENVIRONMENT_HASH), ORE_InvalidInterfaceHash);
+				throw OpenRAVEException(str(boost::format(_tr("environment invalid hash %s!=%s\n")) % envhash%OPENRAVE_ENVIRONMENT_HASH), ORE_InvalidInterfaceHash);
 			}
 			if (strcmp(interfacehash, RaveGetInterfaceHash(type))) {
-				throw OpenRAVEException(str(boost::format(_("interface %s invalid hash %s!=%s\n")) % RaveGetInterfaceName(type) % interfacehash%RaveGetInterfaceHash(type)), ORE_InvalidInterfaceHash);
+				throw OpenRAVEException(str(boost::format(_tr("interface %s invalid hash %s!=%s\n")) % RaveGetInterfaceName(type) % interfacehash%RaveGetInterfaceHash(type)), ORE_InvalidInterfaceHash);
 			}
 			boost::mutex::scoped_lock lock(_mutex);
 			RegisteredInterfacePtr pdata(new RegisteredInterface(type, name, createfn, shared_from_this()));

@@ -1056,7 +1056,7 @@ bool PyRobotBase::Init(object olinkinfos, object ojointinfos, object omanipinfos
     for(size_t i = 0; i < vmanipinfos.size(); ++i) {
         PyManipulatorInfoPtr pymanip = py::extract<PyManipulatorInfoPtr>(omanipinfos[i]);
         if( !pymanip ) {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("cannot cast to KinBody.ManipInfo"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cannot cast to KinBody.ManipInfo"),ORE_InvalidArguments);
         }
         vmanipinfos[i] = pymanip->GetManipulatorInfo();
     }
@@ -1064,7 +1064,7 @@ bool PyRobotBase::Init(object olinkinfos, object ojointinfos, object omanipinfos
     for(size_t i = 0; i < vattachedsensorinfos.size(); ++i) {
         PyAttachedSensorInfoPtr pyattachedsensor = py::extract<PyAttachedSensorInfoPtr>(oattachedsensorinfos[i]);
         if( !pyattachedsensor ) {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("cannot cast to KinBody.AttachedsensorInfo"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cannot cast to KinBody.AttachedsensorInfo"),ORE_InvalidArguments);
         }
         vattachedsensorinfos[i] = pyattachedsensor->GetAttachedSensorInfo();
     }
@@ -1072,7 +1072,7 @@ bool PyRobotBase::Init(object olinkinfos, object ojointinfos, object omanipinfos
     for(size_t i = 0; i < vconnectedbodyinfos.size(); ++i) {
         PyConnectedBodyInfoPtr pyconnectedbody = py::extract<PyConnectedBodyInfoPtr>(oconnectedbodyinfos[i]);
         if( !pyconnectedbody ) {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("cannot cast to KinBody.AttachedsensorInfo"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("cannot cast to KinBody.AttachedsensorInfo"),ORE_InvalidArguments);
         }
         vconnectedbodyinfos[i] = pyconnectedbody->GetConnectedBodyInfo();
     }

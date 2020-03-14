@@ -213,7 +213,7 @@ unsigned long long ORCEnvironmentGetSimulationTime(void* env)
 void ORCEnvironmentLock(void* env)
 {
 #if BOOST_VERSION < 103500
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("locking with boost version < 1.35 is not supported"), ORE_Failed);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("locking with boost version < 1.35 is not supported"), ORE_Failed);
 #else
     GetEnvironment(env)->GetMutex().lock();
 #endif
@@ -222,7 +222,7 @@ void ORCEnvironmentLock(void* env)
 void ORCEnvironmentUnlock(void* env)
 {
 #if BOOST_VERSION < 103500
-    throw OPENRAVE_EXCEPTION_FORMAT0(_("unlocking with boost version < 1.35 is not supported"), ORE_Failed);
+    throw OPENRAVE_EXCEPTION_FORMAT0(_tr("unlocking with boost version < 1.35 is not supported"), ORE_Failed);
 #else
     GetEnvironment(env)->GetMutex().unlock();
 #endif

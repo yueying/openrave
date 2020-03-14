@@ -219,7 +219,7 @@ protected:
             return max(angmintime,transmintime);
         }
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
         }
     }
 

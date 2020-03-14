@@ -385,7 +385,7 @@ find_package(Boost 1.54 REQUIRED COMPONENTS thread system regex timer filesystem
 
 include_directories(${Boost_INCLUDE_DIRS})
 set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${Boost_LIBRARY_DIRS} ${Boost_LIBRARIES})
-
+set(Boost_PYTHON_FOUND TRUE)
 message(STATUS "found boost version: ${Boost_VERSION}")
 if( NOT Boost_THREAD_LIBRARY OR NOT Boost_DATE_TIME_LIBRARY )
   message(FATAL_ERROR "boost thread and date_time libraries are necessary")

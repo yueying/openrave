@@ -323,22 +323,22 @@ protected:
 
     dReal _ComputeMinimumTimeAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity)
     {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("_ComputeMinimumTimeAffine not implemented"), ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_ComputeMinimumTimeAffine not implemented"), ORE_NotImplemented);
     }
 
     void _ComputeVelocitiesAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata)
     {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("_ComputeVelocitiesAffine not implemented"), ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_ComputeVelocitiesAffine not implemented"), ORE_NotImplemented);
     }
 
     bool _CheckAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata, int checkoptions)
     {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("not implemented"), ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("not implemented"), ORE_NotImplemented);
     }
 
     bool _WriteAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata)
     {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("_WriteAffine not implemented"), ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_WriteAffine not implemented"), ORE_NotImplemented);
     }
 
     // speed of rotations is always the speed of the angle along the minimum rotation
@@ -490,7 +490,7 @@ protected:
             break;
         }
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
         }
         if( transoffset >= 0 ) {
             std::vector<dReal> xyz0(3, 0), xyz1(3), xyzvelprev(3), xyzvel(3), vlowerlimit(3), vupperlimit(3);
@@ -600,7 +600,7 @@ protected:
             break;
         }
         default:
-            throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), iktype,ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), iktype,ORE_InvalidArguments);
         }
         if( transoffset >= 0 ) {
             for(int j = 0; j < 3; ++j) {
@@ -777,7 +777,7 @@ protected:
                 break;
             }
             default:
-                throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
             }
 
             if( transoffset >= 0 ) {
@@ -896,7 +896,7 @@ protected:
                     break;
                 }
                 default:
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
                 }
 
                 if( transoffset >= 0 && transindex >= 0 ) {
@@ -989,7 +989,7 @@ protected:
                     break;
                 }
                 default:
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(),ORE_InvalidArguments);
                 }
 
                 if( transoffset >= 0 && transindex >= 0 ) {

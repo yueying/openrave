@@ -69,7 +69,7 @@ void TrajectoryBase::deserialize(std::istream& I)
         I.seekg((size_t)pos+ppsize);
     }
     else {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("error, failed to find </trajectory> in %s"),buf.str(),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("error, failed to find </trajectory> in %s"),buf.str(),ORE_InvalidArguments);
     }
     xmlreaders::TrajectoryReader readerdata(GetEnv(),shared_trajectory());
     LocalXML::ParseXMLData(readerdata, pbuf.c_str(), ppsize);

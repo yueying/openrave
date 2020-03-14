@@ -1,4 +1,4 @@
-// -*- coding: utf-8 --*
+﻿// -*- coding: utf-8 --*
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -85,7 +85,7 @@ BOOST_TYPEOF_REGISTER_TEMPLATE(IkSolution, 1)
 BOOST_TYPEOF_REGISTER_TEMPLATE(IkSolutionList, 1)
 #endif
 
-#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_ikfastsolvers", msgid)
+#define _tr(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_ikfastsolvers", msgid)
 
 inline std::ostream& SerializeTransform(std::ostream& O, const Transform& t, char delim=',')
 {

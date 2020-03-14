@@ -341,7 +341,7 @@ RobotBase::ConnectedBodyPtr RobotBase::AddConnectedBody(const RobotBase::Connect
                 break;
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("attached sensor with name %s already exists"),connectedBodyInfo.name_,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("attached sensor with name %s already exists"),connectedBodyInfo.name_,ORE_InvalidArguments);
             }
         }
     }

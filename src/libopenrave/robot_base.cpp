@@ -808,7 +808,7 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
             angularvel.z = *pAffineValues++;
         }
         else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
-            throw OPENRAVE_EXCEPTION_FORMAT0(_("quaternions not supported"),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT0(_tr("quaternions not supported"),ORE_InvalidArguments);
         }
 
         if( _vActiveDOFIndices.size() == 0 ) {
@@ -868,7 +868,7 @@ void RobotBase::GetActiveDOFVelocities(std::vector<dReal>& velocities) const
         *pVelocities++ = angularvel.z;
     }
     else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("quaternions not supported"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("quaternions not supported"),ORE_InvalidArguments);
     }
 }
 
@@ -1431,11 +1431,11 @@ void RobotBase::CalculateActiveRotationJacobian(int index, const Vector& q, std:
         ind++;
     }
     else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("robot %s rotation 3d not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s rotation 3d not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
         ind += 3;
     }
     else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("robot %s quaternion not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s quaternion not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
         ind += 4;
     }
 }
@@ -1509,10 +1509,10 @@ void RobotBase::CalculateActiveAngularVelocityJacobian(int index, std::vector<dR
 
     }
     else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("robot %s rotation 3d not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s rotation 3d not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
     }
     else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("robot %s quaternion not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s quaternion not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
 
         // most likely wrong
         Transform t; t.rot = quatInverse(_vRotationQuatLimitStart);
@@ -1575,7 +1575,7 @@ const std::vector<int>& RobotBase::GetNonAdjacentLinks(int adjacentoptions) cons
             }
         }
         if( requestedoptions & ~(AO_Enabled|AO_ActiveDOFs) ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("does not support adjacentoptions %d"),adjacentoptions,ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support adjacentoptions %d"),adjacentoptions,ORE_InvalidArguments);
         }
 
         // compute it
@@ -1684,7 +1684,7 @@ RobotBase::ManipulatorPtr RobotBase::SetActiveManipulator(const std::string& man
                 return _pManipActive;
             }
         }
-        throw OPENRAVE_EXCEPTION_FORMAT(_("failed to find manipulator with name: %s"), manipname, ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to find manipulator with name: %s"), manipname, ORE_InvalidArguments);
     }
     _pManipActive.reset();
     return _pManipActive;
@@ -1711,7 +1711,7 @@ RobotBase::ManipulatorPtr RobotBase::AddManipulator(const RobotBase::Manipulator
                 break;
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator with name %s already exists"),manipinfo.name_,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("manipulator with name %s already exists"),manipinfo.name_,ORE_InvalidArguments);
             }
         }
     }
@@ -1754,7 +1754,7 @@ RobotBase::AttachedSensorPtr RobotBase::AddAttachedSensor(const RobotBase::Attac
                 break;
             }
             else {
-                throw OPENRAVE_EXCEPTION_FORMAT(_("attached sensor with name %s already exists"),attachedsensorinfo.name_,ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("attached sensor with name %s already exists"),attachedsensorinfo.name_,ORE_InvalidArguments);
             }
         }
     }
@@ -1886,7 +1886,7 @@ void RobotBase::_ComputeInternalInformation()
             (*itsensor)->info_.name_ = ss.str();
         }
         else if( !utils::IsValidName((*itsensor)->GetName()) ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("sensor name \"%s\" is not valid"), (*itsensor)->GetName(), ORE_Failed);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("sensor name \"%s\" is not valid"), (*itsensor)->GetName(), ORE_Failed);
         }
         //(*itsensor)->_ComputeInternalInformation();
         sensorindex++;

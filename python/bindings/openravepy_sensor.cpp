@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -320,7 +320,7 @@ PySensorBase::PyLaserSensorData::~PyLaserSensorData() {
 PySensorBase::PyCameraSensorData::PyCameraSensorData(OPENRAVE_SHARED_PTR<SensorBase::CameraGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::CameraSensorData> pdata) : PySensorData(pdata), intrinsics(pgeom->intrinsics)
 {
     if( (int)pdata->vimagedata.size() != pgeom->height*pgeom->width*3 ) {
-        throw OpenRAVEException(_("bad image data"));
+        throw OpenRAVEException(_tr("bad image data"));
     }
     {
         npy_intp dims[] = { pgeom->height,pgeom->width,3};
@@ -501,7 +501,7 @@ OPENRAVE_SHARED_PTR<PySensorGeometry> PySensorBase::GetSensorGeometry(SensorBase
     case SensorBase::ST_Invalid:
         break;
     }
-    throw OpenRAVEException(boost::str(boost::format(_("unknown sensor data type %d\n"))%type));
+    throw OpenRAVEException(boost::str(boost::format(_tr("unknown sensor data type %d\n"))%type));
 }
 
 OPENRAVE_SHARED_PTR<PySensorBase::PySensorData> PySensorBase::CreateSensorData(SensorBase::SensorType type)
@@ -524,7 +524,7 @@ OPENRAVE_SHARED_PTR<PySensorBase::PySensorData> PySensorBase::GetSensorData(Sens
         psensordata = _mapsensordata[type];
     }
     if( !_psensor->GetSensorData(psensordata) ) {
-        throw OpenRAVEException(_("SensorData failed"));
+        throw OpenRAVEException(_tr("SensorData failed"));
     }
     return ConvertToPySensorData(psensordata);
 }
@@ -554,7 +554,7 @@ OPENRAVE_SHARED_PTR<PySensorBase::PySensorData> PySensorBase::ConvertToPySensorD
     case SensorBase::ST_Invalid:
         break;
     }
-    throw OpenRAVEException(boost::str(boost::format(_("unknown sensor data type %d\n"))%psensordata->GetType()));
+    throw OpenRAVEException(boost::str(boost::format(_tr("unknown sensor data type %d\n"))%psensordata->GetType()));
 }
 
 bool PySensorBase::Supports(SensorBase::SensorType type) {

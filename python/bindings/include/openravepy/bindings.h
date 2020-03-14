@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
+﻿// Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -266,7 +266,7 @@ inline std::string GetPyErrorString()
     if(error != nullptr) {
         string = PyObject_Str(value);
         if(string != nullptr) {
-            s.assign(PyString_AsString(string));
+            s.assign(PyBytes_AsString(string));
             Py_DECREF(string);
         }
     }

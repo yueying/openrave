@@ -125,7 +125,7 @@ if(USE_PYBIND11_PYTHON_BINDINGS)
     set(SUCCESS_BUILD_PYTHON_BINDINGS OFF)
   endif()
 
-elseif( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
+elseif( Boost_PYTHON_FOUND)
   add_definitions(${Boost_CFLAGS})
   set(CMAKE_REQUIRED_INCLUDES ${PYTHON_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${REQUIRED_INCLUDES})
   # Need to link Boost::System on macOS for symbols boost::system::system_category(), boost::system::generic_category()

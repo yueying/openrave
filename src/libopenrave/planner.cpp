@@ -58,7 +58,7 @@ std::istream& operator>>(std::istream& I, PlannerParameters& pp)
         }
 
         if (!bFoundMatch) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("error, failed to find </PlannerParameters> in %s"), buf.str(), ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("error, failed to find </PlannerParameters> in %s"), buf.str(), ORE_InvalidArguments);
         }
 
         pp._plannerparametersdepth = 0;
@@ -166,7 +166,7 @@ PlannerStatus::PlannerStatus(const int status_code)
 
     if (description.empty()) 
 	{
-        RAVELOG_WARN_FORMAT(_("planner status code (0x%x) is not supported by planner status default constructor"), status_code);
+        RAVELOG_WARN_FORMAT(_tr("planner status code (0x%x) is not supported by planner status default constructor"), status_code);
     }
 }
 
@@ -366,7 +366,7 @@ int PlannerParameters::SetStateValues(const std::vector<dReal>& values, int opti
     if (!!_setstatevaluesfn) {
         return _setstatevaluesfn(values, options);
     }
-    throw OpenRAVEException(_("need to set PlannerParameters::_setstatevaluesfn"));
+    throw OpenRAVEException(_tr("need to set PlannerParameters::_setstatevaluesfn"));
 }
 
 bool PlannerParameters::serialize(std::ostream& O, int options) const
@@ -901,7 +901,7 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
                     ss << *itindex << " ";
                 }
                 if (!pconfigsampler->SendCommand(ssout, ss)) {
-                    throw OPENRAVE_EXCEPTION_FORMAT(_("failed to set body %s configuration to %s"), pbody->GetName() % ss.str(), ORE_Assert);
+                    throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to set body %s configuration to %s"), pbody->GetName() % ss.str(), ORE_Assert);
                 }
             }
             std::shared_ptr<SimpleNeighborhoodSampler> defaultsamplefn(new SimpleNeighborhoodSampler(pconfigsampler, distmetricfns[isavegroup].first, diffstatefns[isavegroup].first));
@@ -937,7 +937,7 @@ void PlannerParameters::SetConfigurationSpecification(EnvironmentBasePtr penv, c
         //        else if( g.name.size() >= 4 && g.name.substr(0,4) == "grab" ) {
         //        }
         else {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("group %s not supported for for planner parameters configuration"), g.name, ORE_InvalidArguments);
         }
     }
     _diffstatefn = boost::bind(_CallDiffStateFns, diffstatefns, spec.GetDOF(), nMaxDOFForGroup, _1, _2);

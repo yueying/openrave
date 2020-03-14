@@ -147,7 +147,7 @@ bool TrajectoryReader::endElement(const std::string& name)
             _ss >> _vdata[i];
         }
         if( !_ss ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_("failed reading %d numbers from trajectory <data> element"), _vdata.size(), ORE_Assert);
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed reading %d numbers from trajectory <data> element"), _vdata.size(), ORE_Assert);
         }
         else {
             _ptraj->Insert(_ptraj->GetNumWaypoints(),_vdata);
@@ -491,7 +491,7 @@ ElectricMotorActuatorInfoReader::ElectricMotorActuatorInfoReader(ElectricMotorAc
     }
 
     if( type != "electric_motor" ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("does not support actuator '%s' type"), type, ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support actuator '%s' type"), type, ORE_InvalidArguments);
     }
 
     _pinfo.reset(new ElectricMotorActuatorInfo());

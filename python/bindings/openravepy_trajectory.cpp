@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -249,7 +249,7 @@ object PyTrajectoryBase::__getitem__(py::slice indices) const
     int stop = !IS_PYTHONOBJECT_NONE(indices.stop()) ? extract<int>(indices.stop()) : step>0 ? len : -1;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     if(step==0) {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("step cannot be 0"),ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT0(_tr("step cannot be 0"),ORE_InvalidArguments);
     }
     for(int i=start; step>0 ? i<stop : i>stop; i+=step) {
         vindices.push_back(i);

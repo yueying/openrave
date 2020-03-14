@@ -316,7 +316,7 @@ public:
                 }
                 if(!res) {
                     std::string filename = _DumpTrajectory(ptraj, Level_Verbose);
-                    std::string description = _("Could not obtain a feasible trajectory from initial quadratic trajectory\n");
+                    std::string description = _tr("Could not obtain a feasible trajectory from initial quadratic trajectory\n");
                     RAVELOG_WARN(description);
                     return PlannerStatus(description, PS_Failed);
                 }
@@ -387,7 +387,7 @@ public:
                 FOREACHC(itramp,ramps){
                     if(checker.Check(*itramp,options) != 0) {
                         _DumpTrajectory(ptraj, Level_Verbose);
-                        std::string description = str(boost::format(_("Ramp %d/%d of original traj invalid"))%iramp%ramps.size());
+                        std::string description = str(boost::format(_tr("Ramp %d/%d of original traj invalid"))%iramp%ramps.size());
                         RAVELOG_WARN(description);
                         return PlannerStatus(description, PS_Failed);
                     }
@@ -493,7 +493,7 @@ public:
         }
         catch (const std::exception& ex) {
             _DumpTrajectory(ptraj, Level_Verbose);
-            std::string description = str(boost::format(_("parabolic planner failed: %s"))% ex.what());
+            std::string description = str(boost::format(_tr("parabolic planner failed: %s"))% ex.what());
             RAVELOG_WARN(description);
             return PlannerStatus(description, PS_Failed);
 
