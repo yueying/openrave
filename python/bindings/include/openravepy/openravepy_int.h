@@ -31,6 +31,7 @@
 
 #include <sstream>
 #include <exception>
+#include <memory>
 
 #include <boost/array.hpp>
 #include <boost/thread/thread.hpp>
@@ -118,55 +119,55 @@ class PyConnectedBodyInfo;
 class PyLink;
 class PyJoint;
 
-typedef OPENRAVE_SHARED_PTR<PyInterfaceBase> PyInterfaceBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyInterfaceBase const> PyInterfaceBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyKinBody> PyKinBodyPtr;
-typedef OPENRAVE_SHARED_PTR<PyKinBody const> PyKinBodyConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyRobotBase> PyRobotBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyRobotBase const> PyRobotBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyEnvironmentBase> PyEnvironmentBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyEnvironmentBase const> PyEnvironmentBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyIkSolverBase> PyIkSolverBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyIkSolverBase const> PyIkSolverBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyTrajectoryBase> PyTrajectoryBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyTrajectoryBase const> PyTrajectoryBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyPhysicsEngineBase> PyPhysicsEngineBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyPhysicsEngineBase const> PyPhysicsEngineBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyCollisionCheckerBase> PyCollisionCheckerBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyCollisionCheckerBase const> PyCollisionCheckerBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyCollisionReport> PyCollisionReportPtr;
-typedef OPENRAVE_SHARED_PTR<PyCollisionReport const> PyCollisionReportConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyPlannerBase> PyPlannerBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyPlannerBase const> PyPlannerBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PySensorBase> PySensorBasePtr;
-typedef OPENRAVE_SHARED_PTR<PySensorBase const> PySensorBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PySensorSystemBase> PySensorSystemBasePtr;
-typedef OPENRAVE_SHARED_PTR<PySensorSystemBase const> PySensorSystemBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyControllerBase> PyControllerBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyControllerBase const> PyControllerBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyMultiControllerBase> PyMultiControllerBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyMultiControllerBase const> PyMultiControllerBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyModuleBase> PyModuleBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyModuleBase const> PyModuleBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyViewerBase> PyViewerBasePtr;
-typedef OPENRAVE_SHARED_PTR<PyViewerBase const> PyViewerBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PySpaceSamplerBase> PySpaceSamplerBasePtr;
-typedef OPENRAVE_SHARED_PTR<PySpaceSamplerBase const> PySpaceSamplerBaseConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyConfigurationSpecification> PyConfigurationSpecificationPtr;
-typedef OPENRAVE_SHARED_PTR<PyConfigurationSpecification const> PyConfigurationSpecificationConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyIkParameterization> PyIkParameterizationPtr;
-typedef OPENRAVE_SHARED_PTR<PyReadable> PyReadablePtr;
-typedef OPENRAVE_SHARED_PTR<PyCameraIntrinsics> PyCameraIntrinsicsPtr;
-typedef OPENRAVE_SHARED_PTR<PyLinkInfo> PyLinkInfoPtr;
-typedef OPENRAVE_SHARED_PTR<PyJointInfo> PyJointInfoPtr;
-typedef OPENRAVE_SHARED_PTR<PyGeometryInfo> PyGeometryInfoPtr;
-typedef OPENRAVE_SHARED_PTR<PyManipulatorInfo> PyManipulatorInfoPtr;
-typedef OPENRAVE_SHARED_PTR<PyAttachedSensorInfo> PyAttachedSensorInfoPtr;
-typedef OPENRAVE_SHARED_PTR<PyConnectedBodyInfo> PyConnectedBodyInfoPtr;
-typedef OPENRAVE_SHARED_PTR<PyLink> PyLinkPtr;
-typedef OPENRAVE_SHARED_PTR<PyLink const> PyLinkConstPtr;
-typedef OPENRAVE_SHARED_PTR<PyJoint> PyJointPtr;
-typedef OPENRAVE_SHARED_PTR<PyJoint const> PyJointConstPtr;
+typedef std::shared_ptr<PyInterfaceBase> PyInterfaceBasePtr;
+typedef std::shared_ptr<PyInterfaceBase const> PyInterfaceBaseConstPtr;
+typedef std::shared_ptr<PyKinBody> PyKinBodyPtr;
+typedef std::shared_ptr<PyKinBody const> PyKinBodyConstPtr;
+typedef std::shared_ptr<PyRobotBase> PyRobotBasePtr;
+typedef std::shared_ptr<PyRobotBase const> PyRobotBaseConstPtr;
+typedef std::shared_ptr<PyEnvironmentBase> PyEnvironmentBasePtr;
+typedef std::shared_ptr<PyEnvironmentBase const> PyEnvironmentBaseConstPtr;
+typedef std::shared_ptr<PyIkSolverBase> PyIkSolverBasePtr;
+typedef std::shared_ptr<PyIkSolverBase const> PyIkSolverBaseConstPtr;
+typedef std::shared_ptr<PyTrajectoryBase> PyTrajectoryBasePtr;
+typedef std::shared_ptr<PyTrajectoryBase const> PyTrajectoryBaseConstPtr;
+typedef std::shared_ptr<PyPhysicsEngineBase> PyPhysicsEngineBasePtr;
+typedef std::shared_ptr<PyPhysicsEngineBase const> PyPhysicsEngineBaseConstPtr;
+typedef std::shared_ptr<PyCollisionCheckerBase> PyCollisionCheckerBasePtr;
+typedef std::shared_ptr<PyCollisionCheckerBase const> PyCollisionCheckerBaseConstPtr;
+typedef std::shared_ptr<PyCollisionReport> PyCollisionReportPtr;
+typedef std::shared_ptr<PyCollisionReport const> PyCollisionReportConstPtr;
+typedef std::shared_ptr<PyPlannerBase> PyPlannerBasePtr;
+typedef std::shared_ptr<PyPlannerBase const> PyPlannerBaseConstPtr;
+typedef std::shared_ptr<PySensorBase> PySensorBasePtr;
+typedef std::shared_ptr<PySensorBase const> PySensorBaseConstPtr;
+typedef std::shared_ptr<PySensorSystemBase> PySensorSystemBasePtr;
+typedef std::shared_ptr<PySensorSystemBase const> PySensorSystemBaseConstPtr;
+typedef std::shared_ptr<PyControllerBase> PyControllerBasePtr;
+typedef std::shared_ptr<PyControllerBase const> PyControllerBaseConstPtr;
+typedef std::shared_ptr<PyMultiControllerBase> PyMultiControllerBasePtr;
+typedef std::shared_ptr<PyMultiControllerBase const> PyMultiControllerBaseConstPtr;
+typedef std::shared_ptr<PyModuleBase> PyModuleBasePtr;
+typedef std::shared_ptr<PyModuleBase const> PyModuleBaseConstPtr;
+typedef std::shared_ptr<PyViewerBase> PyViewerBasePtr;
+typedef std::shared_ptr<PyViewerBase const> PyViewerBaseConstPtr;
+typedef std::shared_ptr<PySpaceSamplerBase> PySpaceSamplerBasePtr;
+typedef std::shared_ptr<PySpaceSamplerBase const> PySpaceSamplerBaseConstPtr;
+typedef std::shared_ptr<PyConfigurationSpecification> PyConfigurationSpecificationPtr;
+typedef std::shared_ptr<PyConfigurationSpecification const> PyConfigurationSpecificationConstPtr;
+typedef std::shared_ptr<PyIkParameterization> PyIkParameterizationPtr;
+typedef std::shared_ptr<PyReadable> PyReadablePtr;
+typedef std::shared_ptr<PyCameraIntrinsics> PyCameraIntrinsicsPtr;
+typedef std::shared_ptr<PyLinkInfo> PyLinkInfoPtr;
+typedef std::shared_ptr<PyJointInfo> PyJointInfoPtr;
+typedef std::shared_ptr<PyGeometryInfo> PyGeometryInfoPtr;
+typedef std::shared_ptr<PyManipulatorInfo> PyManipulatorInfoPtr;
+typedef std::shared_ptr<PyAttachedSensorInfo> PyAttachedSensorInfoPtr;
+typedef std::shared_ptr<PyConnectedBodyInfo> PyConnectedBodyInfoPtr;
+typedef std::shared_ptr<PyLink> PyLinkPtr;
+typedef std::shared_ptr<PyLink const> PyLinkConstPtr;
+typedef std::shared_ptr<PyJoint> PyJointPtr;
+typedef std::shared_ptr<PyJoint const> PyJointConstPtr;
 
 inline uint64_t GetMicroTime()
 {
@@ -226,7 +227,7 @@ private:
     PyArrayObject* _pyarrobj;
 };
 
-typedef OPENRAVE_SHARED_PTR<PythonThreadSaver> PythonThreadSaverPtr;
+typedef std::shared_ptr<PythonThreadSaver> PythonThreadSaverPtr;
 
 inline RaveVector<float> ExtractFloat3(const py::object& o)
 {
@@ -278,7 +279,7 @@ inline RaveVector<T> ExtractVector34(const py::object& oraw,T fdefaultw)
     else if( n == 4 ) {
         return ExtractVector4Type<T>(oraw);
     }
-    throw openrave_exception(_("unexpected vector size"));
+    throw OpenRAVEException(_tr("unexpected vector size"));
 }
 
 template <typename T>
@@ -286,7 +287,7 @@ inline RaveVector<T> ExtractVector(const py::object& oraw)
 {
     int n = len(oraw);
     if( n > 4 ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_("unexpected vector size %d"),n,ORE_InvalidArguments);
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("unexpected vector size %d"),n,ORE_InvalidArguments);
     }
     Vector v;
     for(int i = 0; i < n; ++i) {
@@ -445,7 +446,7 @@ protected:
     PyEnvironmentBasePtr _pyenv;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyEnvironmentLockSaver> PyEnvironmentLockSaverPtr;
+typedef std::shared_ptr<PyEnvironmentLockSaver> PyEnvironmentLockSaverPtr;
 
 class OPENRAVEPY_API PyUserData
 {
@@ -588,10 +589,10 @@ public:
         _pbase->SetUserData(key, pdata._handle);
     }
     void SetUserData(py::object o) {
-        _pbase->SetUserData(std::string(), OPENRAVE_SHARED_PTR<UserData>(new PyUserObject(o)));
+        _pbase->SetUserData(std::string(), std::shared_ptr<UserData>(new PyUserObject(o)));
     }
     void SetUserData(const std::string& key, py::object o) {
-        _pbase->SetUserData(key, OPENRAVE_SHARED_PTR<UserData>(new PyUserObject(o)));
+        _pbase->SetUserData(key, std::shared_ptr<UserData>(new PyUserObject(o)));
     }
     bool RemoveUserData(const std::string& key) {
         return _pbase->RemoveUserData(key);
@@ -641,7 +642,7 @@ public:
     virtual SensorBase::SensorGeometryPtr GetGeometry()=0;
 };
 
-typedef OPENRAVE_SHARED_PTR<PySensorGeometry> PySensorGeometryPtr;
+typedef std::shared_ptr<PySensorGeometry> PySensorGeometryPtr;
 
 OPENRAVEPY_API PySensorGeometryPtr toPySensorGeometry(SensorBase::SensorGeometryPtr);
 

@@ -197,7 +197,7 @@ KinBody::GeometryInfoPtr PyGeometryInfo::GetGeometryInfo() {
         info.name_ = py::extract<std::string>(_name);
     }
     if( !IS_PYTHONOBJECT_NONE(_filenamerender) ) {
-        info..render_file_name_ = py::extract<std::string>(_filenamerender);
+        info.render_file_name_ = py::extract<std::string>(_filenamerender);
     }
     if( !IS_PYTHONOBJECT_NONE(_filenamecollision) ) {
         info._filenamecollision = py::extract<std::string>(_filenamecollision);
@@ -753,7 +753,7 @@ object PyJointInfo::GetDOF() {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     return py::handle_to_object(PyInt_FromLong(pInfo->GetDOF()));
 #else
-    return py::to_object(py::handle<>(PyInt_FromLong(pInfo->GetDOF())));
+    return py::to_object(py::handle<>(PyLong_FromLong(pInfo->GetDOF())));
 #endif
 }
 
@@ -1339,7 +1339,7 @@ void PyLink::SetVelocity(object olinear, object oangular) {
 object PyLink::GetVelocity() const {
     std::pair<Vector,Vector> velocity;
     velocity = _plink->GetVelocity();
-    boost::array<dReal,6> v = {{ velocity.first.x, velocity.first.y, velocity.first.z, velocity.second.x, velocity.second.y, velocity.second.z}};
+    std::array<dReal,6> v = {{ velocity.first.x, velocity.first.y, velocity.first.z, velocity.second.x, velocity.second.y, velocity.second.z}};
     return toPyArray<dReal,6>(v);
 }
 
@@ -3042,7 +3042,7 @@ object PyKinBody::ComputeInverseDynamics(object odofaccelerations, object oexter
 #endif
     }
     if( returncomponents ) {
-        boost::array< std::vector<dReal>, 3> vDOFTorqueComponents;
+        std::array< std::vector<dReal>, 3> vDOFTorqueComponents;
         _pbody->ComputeInverseDynamics(vDOFTorqueComponents,vDOFAccelerations,mapExternalForceTorque);
         return py::make_tuple(toPyArray(vDOFTorqueComponents[0]), toPyArray(vDOFTorqueComponents[1]), toPyArray(vDOFTorqueComponents[2]));
     }
@@ -3458,7 +3458,8 @@ class GeometryInfo_pickle_suite
 public:
     static py::tuple getstate(const PyGeometryInfo& r)
     {
-        return py::make_tuple(r._t, py::make_tuple(r._vGeomData, r._vGeomData2, r._vGeomData3, r._vGeomData4), r._vDiffuseColor, r._vAmbientColor, r._meshcollision, (int)r._type, py::make_tuple(r.name_, r._filenamerender, r._filenamecollision), r._vRenderScale, r._vCollisionScale, r._fTransparency, r._bVisible, r._bModifiable);
+        return py::make_tuple(r._t, py::make_tuple(r._vGeomData, r._vGeomData2, r._vGeomData3, r._vGeomData4),
+			r._vDiffuseColor, r._vAmbientColor, r._meshcollision, (int)r._type, py::make_tuple(r._name, r._filenamerender, r._filenamecollision), r._vRenderScale, r._vCollisionScale, r._fTransparency, r._bVisible, r._bModifiable);
     }
     static void setstate(PyGeometryInfo& r, py::tuple state) {
         //int num = len(state);
@@ -3479,7 +3480,7 @@ public:
             // old format
             r._filenamerender = state[6];
             r._filenamecollision = state[7];
-            r.name_ = py::none_();
+            r._name = py::none_();
             r._vRenderScale = state[8];
             r._vCollisionScale = state[9];
             r._fTransparency = py::extract<float>(state[10]);
@@ -3488,7 +3489,7 @@ public:
         }
         else {
             // new format
-            r.name_ = state[6][0];
+            r._name = state[6][0];
             r._filenamerender = state[6][1];
             r._filenamecollision = state[6][2];
             r._vRenderScale = state[7];
@@ -3928,7 +3929,7 @@ void init_openravepy_kinbody()
                           .def_readwrite("_vAmbientColor",&PyGeometryInfo::_vAmbientColor)
                           .def_readwrite("_meshcollision",&PyGeometryInfo::_meshcollision)
                           .def_readwrite("_type",&PyGeometryInfo::_type)
-                          .def_readwrite("name_",&PyGeometryInfo::name_)
+                          .def_readwrite("name_",&PyGeometryInfo::_name)
                           .def_readwrite("_filenamerender",&PyGeometryInfo::_filenamerender)
                           .def_readwrite("_filenamecollision",&PyGeometryInfo::_filenamecollision)
                           .def_readwrite("_vRenderScale",&PyGeometryInfo::_vRenderScale)

@@ -81,7 +81,7 @@ public:
     }
     std::string GetXMLId() const {
         // some readable are not xml readable and does have a xml id
-        XMLReadablePtr pxmlreadable = OPENRAVE_DYNAMIC_POINTER_CAST<XMLReadable>(_readable);
+        XMLReadablePtr pxmlreadable = std::dynamic_pointer_cast<XMLReadable>(_readable);
         if (!pxmlreadable) {
             return "";
         }
@@ -90,7 +90,7 @@ public:
 
     object Serialize(int options=0) {
         // some readable are not xml readable and does not get serialized here
-        XMLReadablePtr pxmlreadable = OPENRAVE_DYNAMIC_POINTER_CAST<XMLReadable>(_readable);
+        XMLReadablePtr pxmlreadable = std::dynamic_pointer_cast<XMLReadable>(_readable);
         if (!pxmlreadable) {
             return py::none_();
         }
@@ -104,7 +104,7 @@ public:
 
     py::object SerializeJSON(dReal unit_scale=1.0, int options=0) const
     {
-        JSONReadablePtr pjsonreadable = OPENRAVE_DYNAMIC_POINTER_CAST<JSONReadable>(_readable);
+        JSONReadablePtr pjsonreadable = std::dynamic_pointer_cast<JSONReadable>(_readable);
         if (!pjsonreadable) {
             return py::none_();
         }
@@ -117,7 +117,7 @@ public:
     {
         rapidjson::Document doc;
         toRapidJSONValue(obj, doc, doc.GetAllocator());
-        JSONReadablePtr pjsonreadable = OPENRAVE_DYNAMIC_POINTER_CAST<JSONReadable>(_readable);
+        JSONReadablePtr pjsonreadable = std::dynamic_pointer_cast<JSONReadable>(_readable);
         pjsonreadable->DeserializeJSON(doc, unit_scale);
     }
 
@@ -474,8 +474,9 @@ const ConfigurationSpecification::Group& PyConfigurationSpecification::GetGroupF
 
 object PyConfigurationSpecification::FindCompatibleGroup(const std::string& name, bool exactmatch) const
 {
-    std::vector<ConfigurationSpecification::Group>::const_iterator it  = _spec.FindCompatibleGroup(name,exactmatch);
-    if( it == _spec._vgroups.end() ) {
+    std::vector<ConfigurationSpecification::Group>::const_iterator it  
+		= _spec.FindCompatibleGroup(name,exactmatch);
+    if( it == _spec.groups_vector_.end() ) {
         return py::none_();
     }
     return py::to_object(std::shared_ptr<ConfigurationSpecification::Group>(new ConfigurationSpecification::Group(*it)));
@@ -484,7 +485,7 @@ object PyConfigurationSpecification::FindCompatibleGroup(const std::string& name
 object PyConfigurationSpecification::FindTimeDerivativeGroup(const std::string& name, bool exactmatch) const
 {
     std::vector<ConfigurationSpecification::Group>::const_iterator it  = _spec.FindTimeDerivativeGroup(name,exactmatch);
-    if( it == _spec._vgroups.end() ) {
+    if( it == _spec.groups_vector_.end() ) {
         return py::none_();
     }
     return py::to_object(std::shared_ptr<ConfigurationSpecification::Group>(new ConfigurationSpecification::Group(*it)));
@@ -684,7 +685,7 @@ object PyConfigurationSpecification::ConvertDataFromPrevious(object otargetdata,
 py::list PyConfigurationSpecification::GetGroups()
 {
     py::list ogroups;
-    FOREACHC(itgroup, _spec._vgroups) {
+    FOREACHC(itgroup, _spec.groups_vector_) {
         ogroups.append(*itgroup);
     }
     return ogroups;

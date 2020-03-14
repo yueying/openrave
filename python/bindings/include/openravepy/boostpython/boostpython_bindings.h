@@ -1,4 +1,4 @@
-/// BoostPython specific bindings
+﻿/// BoostPython specific bindings
 #ifndef OPENRAVE_BOOSTPYTHON_BINDINGS_H
 #define OPENRAVE_BOOSTPYTHON_BINDINGS_H
 
@@ -6,6 +6,8 @@
 
 #define OPENRAVEPY_API
 #include <boost/python.hpp> // already has #include <boost/shared_ptr.hpp>
+#include <boost/python/numpy.hpp>
+#include <boost/python/numeric.hpp>
 #define OPENRAVE_PYTHON_MODULE(X) BOOST_PYTHON_MODULE(X)
 // might need a space before "::"?
 #define PY_ARGS(...) py::args(__VA_ARGS__),
@@ -46,7 +48,7 @@ using array_int = object; // py::array_int
 #endif
 
 
-#define IS_PYTHONOBJECT_STRING(o) (!IS_PYTHONOBJECT_NONE(o) && (PyString_Check((o).ptr()) || PyUnicode_Check((o).ptr())))
+#define IS_PYTHONOBJECT_STRING(o) (!IS_PYTHONOBJECT_NONE(o) && (PyBytes_Check((o).ptr()) || PyUnicode_Check((o).ptr())))
 
 namespace openravepy {
 
@@ -114,7 +116,7 @@ inline py::numeric::array toPyArray(const std::vector<T>& v, std::vector<npy_int
 }
 
 template <typename T, int N>
-inline py::numeric::array toPyArray(const boost::array<T, N>& v)
+inline py::numeric::array toPyArray(const std::array<T, N>& v)
 {
     return toPyArrayN(v.data(), N);
 }

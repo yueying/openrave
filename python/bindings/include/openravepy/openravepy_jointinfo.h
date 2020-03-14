@@ -74,7 +74,7 @@ public:
     bool _bModifiable;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyGeometryInfo> PyGeometryInfoPtr;
+typedef std::shared_ptr<PyGeometryInfo> PyGeometryInfoPtr;
 
 class PyLinkInfo
 {
@@ -130,7 +130,7 @@ public:
 private:
     void _Update(const ElectricMotorActuatorInfo& info);
 };
-typedef OPENRAVE_SHARED_PTR<PyElectricMotorActuatorInfo> PyElectricMotorActuatorInfoPtr;
+typedef std::shared_ptr<PyElectricMotorActuatorInfo> PyElectricMotorActuatorInfoPtr;
 
 class PyJointControlInfo_RobotController
 {
@@ -142,7 +142,7 @@ public:
     int robotId = -1;
     object robotControllerDOFIndex = toPyVector3(Vector(-1, -1, -1));
 };
-typedef OPENRAVE_SHARED_PTR<PyJointControlInfo_RobotController> PyJointControlInfo_RobotControllerPtr;
+typedef std::shared_ptr<PyJointControlInfo_RobotController> PyJointControlInfo_RobotControllerPtr;
 
 class PyJointControlInfo_IO
 {
@@ -158,7 +158,7 @@ public:
     object vLowerLimitIONames = py::list();
     object vLowerLimitSensorIsOn = py::list();
 };
-typedef OPENRAVE_SHARED_PTR<PyJointControlInfo_IO> PyJointControlInfo_IOPtr;
+typedef std::shared_ptr<PyJointControlInfo_IO> PyJointControlInfo_IOPtr;
 
 class PyJointControlInfo_ExternalDevice
 {
@@ -168,7 +168,7 @@ public:
     KinBody::JointInfo::JointControlInfo_ExternalDevicePtr GetJointControlInfo();
     std::string externalDeviceId;
 };
-typedef OPENRAVE_SHARED_PTR<PyJointControlInfo_ExternalDevice> PyJointControlInfo_ExternalDevicePtr;
+typedef std::shared_ptr<PyJointControlInfo_ExternalDevice> PyJointControlInfo_ExternalDevicePtr;
 
 class PyJointInfo
 {
@@ -261,8 +261,8 @@ public:
         object GetAmbientColor() const;
         object GetInfo();
         object ComputeInnerEmptyVolume() const;
-        bool __eq__(OPENRAVE_SHARED_PTR<PyGeometry> p);
-        bool __ne__(OPENRAVE_SHARED_PTR<PyGeometry> p);
+        bool __eq__(std::shared_ptr<PyGeometry> p);
+        bool __ne__(std::shared_ptr<PyGeometry> p);
         int __hash__();
     };
 
@@ -283,7 +283,7 @@ public:
 
     object GetParentLinks() const;
 
-    bool IsParentLink(OPENRAVE_SHARED_PTR<PyLink> pylink) const;
+    bool IsParentLink(std::shared_ptr<PyLink> pylink) const;
 
     object GetCollisionData();
     object ComputeLocalAABB() const;
@@ -330,7 +330,7 @@ public:
 
     object GetRigidlyAttachedLinks() const;
 
-    bool IsRigidlyAttached(OPENRAVE_SHARED_PTR<PyLink> plink);
+    bool IsRigidlyAttached(std::shared_ptr<PyLink> plink);
 
     void SetVelocity(object olinear, object oangular);
 
@@ -355,8 +355,8 @@ public:
     std::string __repr__();
     std::string __str__();
     object __unicode__();
-    bool __eq__(OPENRAVE_SHARED_PTR<PyLink> p);
-    bool __ne__(OPENRAVE_SHARED_PTR<PyLink> p);
+    bool __eq__(std::shared_ptr<PyLink> p);
+    bool __ne__(std::shared_ptr<PyLink> p);
     int __hash__();
 };
 
@@ -468,8 +468,8 @@ public:
     std::string __repr__();
     std::string __str__();
     object __unicode__();
-    bool __eq__(OPENRAVE_SHARED_PTR<PyJoint> p);
-    bool __ne__(OPENRAVE_SHARED_PTR<PyJoint> p);
+    bool __eq__(std::shared_ptr<PyJoint> p);
+    bool __ne__(std::shared_ptr<PyJoint> p);
     int __hash__();
 };
 
@@ -493,7 +493,7 @@ public:
     std::string __str__();
     object __unicode__();
 };
-typedef OPENRAVE_SHARED_PTR<PyKinBodyStateSaver> PyKinBodyStateSaverPtr;
+typedef std::shared_ptr<PyKinBodyStateSaver> PyKinBodyStateSaverPtr;
 
 class PyManageData
 {
@@ -517,11 +517,11 @@ public:
     string __repr__();
     string __str__();
     object __unicode__();
-    bool __eq__(OPENRAVE_SHARED_PTR<PyManageData> p);
-    bool __ne__(OPENRAVE_SHARED_PTR<PyManageData> p);
+    bool __eq__(std::shared_ptr<PyManageData> p);
+    bool __ne__(std::shared_ptr<PyManageData> p);
 };
-typedef OPENRAVE_SHARED_PTR<PyManageData> PyManageDataPtr;
-typedef OPENRAVE_SHARED_PTR<PyManageData const> PyManageDataConstPtr;
+typedef std::shared_ptr<PyManageData> PyManageDataPtr;
+typedef std::shared_ptr<PyManageData const> PyManageDataConstPtr;
 
 } // namespace openravepy
 

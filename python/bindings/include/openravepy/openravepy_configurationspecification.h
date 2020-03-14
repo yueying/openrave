@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -23,7 +23,7 @@
 namespace openravepy {
 using py::object;
 
-class PyConfigurationSpecification : public OPENRAVE_ENABLE_SHARED_FROM_THIS<PyConfigurationSpecification>
+class PyConfigurationSpecification : public std::enable_shared_from_this<PyConfigurationSpecification>
 {
 public:
     PyConfigurationSpecification();

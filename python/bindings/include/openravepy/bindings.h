@@ -25,22 +25,6 @@
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
 
-#ifdef _MSC_VER
-#include <boost/typeof/std/string.hpp>
-#include <boost/typeof/std/vector.hpp>
-#include <boost/typeof/std/list.hpp>
-#include <boost/typeof/std/map.hpp>
-#include <boost/typeof/std/set.hpp>
-#include <boost/typeof/std/string.hpp>
-
-#define FOREACH(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACH_NOINC(it, v) for(BOOST_TYPEOF(v) ::iterator it = (v).begin(); it != (v).end(); )
-
-#define FOREACHC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACHC_NOINC(it, v) for(BOOST_TYPEOF(v) ::const_iterator it = (v).begin(); it != (v).end(); )
-#define RAVE_REGISTER_BOOST
-
-#else // _MSC_VER
 #include <string>
 #include <vector>
 #include <list>
@@ -49,27 +33,18 @@
 #include <string>
 #include <stdexcept>
 
-// apparently there's a problem with higher versions of C++
-#if __cplusplus > 199711L || defined(__GXX_EXPERIMENTAL_CXX0X__)
-#include <typeinfo>
-#define FOREACH(it, v) for(decltype((v).begin()) it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACH_NOINC(it, v) for(decltype((v).begin()) it = (v).begin(); it != (v).end(); )
-#else
-#define FOREACH(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); (it)++)
-#define FOREACH_NOINC(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); )
-#endif // __cplusplus > 199711L || defined(__GXX_EXPERIMENTAL_CXX0X__)
 
+#define FOREACH(it, v) for(auto it = (v).begin(); it != (v).end(); (it)++)
+#define FOREACH_NOINC(it, v) for(auto it = (v).begin(); it != (v).end(); )
 #define FOREACHC FOREACH
 #define FOREACHC_NOINC FOREACH_NOINC
-
-#endif // _MSC_VER
-
+#include <memory>
 #include <complex>
 #include <algorithm>
 // openrave
 #include <openrave/config.h>
 #include <openrave/logging.h>
-#include <openrave/smart_ptr.h>
+
 
 #ifndef _RAVE_DISPLAY
 #define _RAVE_DISPLAY(RUNCODE)                                               \
@@ -203,14 +178,18 @@ namespace openravepy {
 class PyVoidHandle
 {
 public:
-    PyVoidHandle() {
+    PyVoidHandle() 
+	{
     }
-    PyVoidHandle(OPENRAVE_SHARED_PTR<void> handle) : _handle(handle) {
+    PyVoidHandle(std::shared_ptr<void> handle) 
+		: _handle(handle) 
+	{
     }
-    void Close() {
+    void Close() 
+	{
         _handle.reset();
     }
-    OPENRAVE_SHARED_PTR<void> _handle;
+    std::shared_ptr<void> _handle;
 };
 
 class PyVoidHandleConst
@@ -218,12 +197,12 @@ class PyVoidHandleConst
 public:
     PyVoidHandleConst() {
     }
-    PyVoidHandleConst(OPENRAVE_SHARED_PTR<void const> handle) : _handle(handle) {
+    PyVoidHandleConst(std::shared_ptr<void const> handle) : _handle(handle) {
     }
     void Close() {
         _handle.reset();
     }
-    OPENRAVE_SHARED_PTR<void const> _handle;
+    std::shared_ptr<void const> _handle;
 };
 
 template <typename T>

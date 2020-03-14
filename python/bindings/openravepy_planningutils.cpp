@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -231,7 +231,7 @@ public:
             ofilterreturn["invalidvelocities"] = toPyArray(pfilterreturn->_invalidvelocities);
             ofilterreturn["fTimeWhenInvalid"] = pfilterreturn->_fTimeWhenInvalid;
             ofilterreturn["returncode"] = pfilterreturn->_returncode;
-            ofilterreturn["reportstr"] = pfilterreturn->_report.__str__();
+            ofilterreturn["reportstr"] = pfilterreturn->report_.__str__();
             return ofilterreturn;
         }
         else {
@@ -334,7 +334,7 @@ class PyDHParameter
 public:
     PyDHParameter() {
     }
-    PyDHParameter(const OpenRAVE::planningutils::DHParameter& p, PyEnvironmentBasePtr pyenv) : joint(toPyKinBodyJoint(OPENRAVE_CONST_POINTER_CAST<KinBody::Joint>(p.joint), pyenv)), parentindex(p.parentindex), transform(ReturnTransform(p.transform)), d(p.d), a(p.a), theta(p.theta), alpha(p.alpha) {
+    PyDHParameter(const OpenRAVE::planningutils::DHParameter& p, PyEnvironmentBasePtr pyenv) : joint(toPyKinBodyJoint(std::const_pointer_cast<KinBody::Joint>(p.joint), pyenv)), parentindex(p.parentindex), transform(ReturnTransform(p.transform)), d(p.d), a(p.a), theta(p.theta), alpha(p.alpha) {
     }
     PyDHParameter(object joint, int parentindex, object transform, dReal d, dReal a, dReal theta, dReal alpha) : joint(joint), parentindex(parentindex), transform(transform), d(d), a(a), theta(theta), alpha(alpha) {
     }

@@ -76,15 +76,15 @@ public:
 
     bool CheckCollision(PyKinBodyPtr pbody, object bodyexcluded, object linkexcluded, PyCollisionReportPtr pReport);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport);
 
     object CheckCollisionRays(object rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyCollisionReportPtr pReport);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray, PyCollisionReportPtr pReport);
 
     bool CheckCollisionTriMesh(object otrimesh, PyKinBodyPtr pybody, PyCollisionReportPtr pReport);
 

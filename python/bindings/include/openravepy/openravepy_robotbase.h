@@ -137,11 +137,11 @@ public:
         std::string __repr__();
         std::string __str__();
         object __unicode__();
-        bool __eq__(OPENRAVE_SHARED_PTR<PyManipulator> p);
-        bool __ne__(OPENRAVE_SHARED_PTR<PyManipulator> p);
+        bool __eq__(std::shared_ptr<PyManipulator> p);
+        bool __ne__(std::shared_ptr<PyManipulator> p);
         long __hash__();
     };
-    typedef OPENRAVE_SHARED_PTR<PyManipulator> PyManipulatorPtr;
+    typedef std::shared_ptr<PyManipulator> PyManipulatorPtr;
     PyManipulatorPtr _GetManipulator(RobotBase::ManipulatorPtr pmanip);
 
     class PyAttachedSensor
@@ -175,13 +175,13 @@ public:
         std::string __repr__();
         std::string __str__();
         object __unicode__();
-        bool __eq__(OPENRAVE_SHARED_PTR<PyAttachedSensor> p);
-        bool __ne__(OPENRAVE_SHARED_PTR<PyAttachedSensor> p);
+        bool __eq__(std::shared_ptr<PyAttachedSensor> p);
+        bool __ne__(std::shared_ptr<PyAttachedSensor> p);
         long __hash__();
     };
 
-    typedef OPENRAVE_SHARED_PTR<PyAttachedSensor> PyAttachedSensorPtr;
-    OPENRAVE_SHARED_PTR<PyAttachedSensor> _GetAttachedSensor(RobotBase::AttachedSensorPtr pattachedsensor);
+    typedef std::shared_ptr<PyAttachedSensor> PyAttachedSensorPtr;
+    std::shared_ptr<PyAttachedSensor> _GetAttachedSensor(RobotBase::AttachedSensorPtr pattachedsensor);
 
     class PyConnectedBody {
         RobotBase::ConnectedBodyPtr _pconnected;
@@ -221,15 +221,15 @@ public:
 
         object __unicode__();
 
-        bool __eq__(OPENRAVE_SHARED_PTR<PyConnectedBody> p);
+        bool __eq__(std::shared_ptr<PyConnectedBody> p);
 
-        bool __ne__(OPENRAVE_SHARED_PTR<PyConnectedBody> p);
+        bool __ne__(std::shared_ptr<PyConnectedBody> p);
 
         long __hash__();
     };
 
-    typedef OPENRAVE_SHARED_PTR<PyConnectedBody> PyConnectedBodyPtr;
-    OPENRAVE_SHARED_PTR<PyConnectedBody> _GetConnectedBody(RobotBase::ConnectedBodyPtr pConnectedBody);
+    typedef std::shared_ptr<PyConnectedBody> PyConnectedBodyPtr;
+    std::shared_ptr<PyConnectedBody> _GetConnectedBody(RobotBase::ConnectedBodyPtr pConnectedBody);
 
     class PyRobotStateSaver
     {
@@ -250,7 +250,7 @@ public:
         std::string __str__();
         object __unicode__();
     };
-    typedef OPENRAVE_SHARED_PTR<PyRobotStateSaver> PyRobotStateSaverPtr;
+    typedef std::shared_ptr<PyRobotStateSaver> PyRobotStateSaverPtr;
 
     PyRobotBase(RobotBasePtr probot, PyEnvironmentBasePtr pyenv);
     PyRobotBase(const PyRobotBase &r);
@@ -275,9 +275,9 @@ public:
     object GetSensors();
 
     object GetAttachedSensors();
-    OPENRAVE_SHARED_PTR<PyAttachedSensor> GetSensor(const std::string& sensorname);
+    std::shared_ptr<PyAttachedSensor> GetSensor(const std::string& sensorname);
 
-    OPENRAVE_SHARED_PTR<PyAttachedSensor> GetAttachedSensor(const std::string& sensorname);
+    std::shared_ptr<PyAttachedSensor> GetAttachedSensor(const std::string& sensorname);
 
     PyConnectedBodyPtr AddConnectedBody(PyConnectedBodyInfoPtr pConnectedBodyInfo, bool removeduplicate=false);
 

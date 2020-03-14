@@ -95,7 +95,7 @@ IkReturn PyIkSolverBase::_CallCustomFilter(object fncallback, PyEnvironmentBaseP
     PyGILState_STATE gstate = PyGILState_Ensure();
     std::string errmsg;
     try {
-        RobotBase::ManipulatorPtr pmanip2 = OPENRAVE_CONST_POINTER_CAST<RobotBase::Manipulator>(pmanip);
+        RobotBase::ManipulatorPtr pmanip2 = std::const_pointer_cast<RobotBase::Manipulator>(pmanip);
         res = fncallback(toPyArray(values), openravepy::toPyRobotManipulator(pmanip2,pyenv),toPyIkParameterization(ikparam));
     }
     catch(...) {

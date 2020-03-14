@@ -260,7 +260,7 @@ object PyRobotBase::PyManipulator::GetTransformPose() const {
 object PyRobotBase::PyManipulator::GetVelocity() const {
     std::pair<Vector, Vector> velocity;
     velocity = _pmanip->GetVelocity();
-    boost::array<dReal,6> v = {{ velocity.first.x, velocity.first.y, velocity.first.z, velocity.second.x, velocity.second.y, velocity.second.z}};
+    std::array<dReal,6> v = {{ velocity.first.x, velocity.first.y, velocity.first.z, velocity.second.x, velocity.second.y, velocity.second.z}};
     return toPyArray<dReal,6>(v);
 }
 

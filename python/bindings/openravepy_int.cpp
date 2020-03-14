@@ -110,7 +110,7 @@ object toPyObject(const rapidjson::Value& value)
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
             return py::int_(value.GetInt64());
 #else
-            return py::to_object(py::handle<>(PyInt_FromLong(value.GetInt64())));
+            return py::to_object(py::handle<>(PyLong_FromLong(value.GetInt64())));
 #endif
         }
     }
@@ -177,7 +177,7 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
     {
         value.SetDouble(PyFloat_AsDouble(obj.ptr()));
     }
-    else if (PyInt_Check(obj.ptr()))
+    else if (PyLong_Check(obj.ptr()))
     {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
         value.SetInt64(PyInt_AsLong(obj.ptr()));
@@ -191,9 +191,9 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
         value.SetInt64(PyLong_AsLong(obj.ptr()));
     }
 #endif
-    else if (PyString_Check(obj.ptr()))
+    else if (PyBytes_Check(obj.ptr()))
     {
-        value.SetString(PyString_AsString(obj.ptr()), PyString_GET_SIZE(obj.ptr()));
+        value.SetString(PyBytes_AsString(obj.ptr()), PyBytes_GET_SIZE(obj.ptr()));
     }
     else if (PyUnicode_Check(obj.ptr()))
     {
@@ -823,19 +823,19 @@ PyInterfaceBasePtr PyEnvironmentBase::_toPyInterface(InterfaceBasePtr pinterface
         return PyInterfaceBasePtr();
     }
     switch(pinterface->GetInterfaceType()) {
-    case PT_Planner: return openravepy::toPyPlanner(OPENRAVE_STATIC_POINTER_CAST<PlannerBase>(pinterface),shared_from_this());
-    case PT_Robot: return openravepy::toPyRobot(OPENRAVE_STATIC_POINTER_CAST<RobotBase>(pinterface),shared_from_this());
-    case PT_SensorSystem: return openravepy::toPySensorSystem(OPENRAVE_STATIC_POINTER_CAST<SensorSystemBase>(pinterface),shared_from_this());
-    case PT_Controller: return openravepy::toPyController(OPENRAVE_STATIC_POINTER_CAST<ControllerBase>(pinterface),shared_from_this());
-    case PT_Module: return openravepy::toPyModule(OPENRAVE_STATIC_POINTER_CAST<ModuleBase>(pinterface),shared_from_this());
-    case PT_IkSolver: return openravepy::toPyIkSolver(OPENRAVE_STATIC_POINTER_CAST<IkSolverBase>(pinterface),shared_from_this());
-    case PT_KinBody: return openravepy::toPyKinBody(OPENRAVE_STATIC_POINTER_CAST<KinBody>(pinterface),shared_from_this());
-    case PT_PhysicsEngine: return openravepy::toPyPhysicsEngine(OPENRAVE_STATIC_POINTER_CAST<PhysicsEngineBase>(pinterface),shared_from_this());
-    case PT_Sensor: return openravepy::toPySensor(OPENRAVE_STATIC_POINTER_CAST<SensorBase>(pinterface),shared_from_this());
-    case PT_CollisionChecker: return openravepy::toPyCollisionChecker(OPENRAVE_STATIC_POINTER_CAST<CollisionCheckerBase>(pinterface),shared_from_this());
-    case PT_Trajectory: return openravepy::toPyTrajectory(OPENRAVE_STATIC_POINTER_CAST<TrajectoryBase>(pinterface),shared_from_this());
-    case PT_Viewer: return openravepy::toPyViewer(OPENRAVE_STATIC_POINTER_CAST<ViewerBase>(pinterface),shared_from_this());
-    case PT_SpaceSampler: return openravepy::toPySpaceSampler(OPENRAVE_STATIC_POINTER_CAST<SpaceSamplerBase>(pinterface),shared_from_this());
+    case PT_Planner: return openravepy::toPyPlanner(std::static_pointer_cast<PlannerBase>(pinterface),shared_from_this());
+    case PT_Robot: return openravepy::toPyRobot(std::static_pointer_cast<RobotBase>(pinterface),shared_from_this());
+    case PT_SensorSystem: return openravepy::toPySensorSystem(std::static_pointer_cast<SensorSystemBase>(pinterface),shared_from_this());
+    case PT_Controller: return openravepy::toPyController(std::static_pointer_cast<ControllerBase>(pinterface),shared_from_this());
+    case PT_Module: return openravepy::toPyModule(std::static_pointer_cast<ModuleBase>(pinterface),shared_from_this());
+    case PT_IkSolver: return openravepy::toPyIkSolver(std::static_pointer_cast<IkSolverBase>(pinterface),shared_from_this());
+    case PT_KinBody: return openravepy::toPyKinBody(std::static_pointer_cast<KinBody>(pinterface),shared_from_this());
+    case PT_PhysicsEngine: return openravepy::toPyPhysicsEngine(std::static_pointer_cast<PhysicsEngineBase>(pinterface),shared_from_this());
+    case PT_Sensor: return openravepy::toPySensor(std::static_pointer_cast<SensorBase>(pinterface),shared_from_this());
+    case PT_CollisionChecker: return openravepy::toPyCollisionChecker(std::static_pointer_cast<CollisionCheckerBase>(pinterface),shared_from_this());
+    case PT_Trajectory: return openravepy::toPyTrajectory(std::static_pointer_cast<TrajectoryBase>(pinterface),shared_from_this());
+    case PT_Viewer: return openravepy::toPyViewer(std::static_pointer_cast<ViewerBase>(pinterface),shared_from_this());
+    case PT_SpaceSampler: return openravepy::toPySpaceSampler(std::static_pointer_cast<SpaceSamplerBase>(pinterface),shared_from_this());
     }
     return PyInterfaceBasePtr();
 }
@@ -1447,9 +1447,9 @@ object PyEnvironmentBase::WriteToMemory(const std::string &filetype, const int o
     else {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
         // https://github.com/pybind/pybind11/issues/1201
-        return py::cast<py::object>(PyString_FromStringAndSize(&output[0], output.size()));
+        return py::cast<py::object>(PyBytes_FromStringAndSize(&output[0], output.size()));
 #else
-        return py::to_object(py::handle<>(PyString_FromStringAndSize(&output[0], output.size())));
+        return py::to_object(py::handle<>(PyBytes_FromStringAndSize(&output[0], output.size())));
 #endif
     }
 }
@@ -1968,7 +1968,7 @@ object PyEnvironmentBase::drawplane(object otransform, object oextents, const bo
 {
     boost::multi_array<float,3> vtexture(boost::extents[1][_vtexture.shape()[0]][_vtexture.shape()[1]]);
     vtexture[0] = _vtexture;
-    boost::array<size_t,3> dims = { { _vtexture.shape()[0],_vtexture.shape()[1],1}};
+    std::array<size_t,3> dims = { { _vtexture.shape()[0],_vtexture.shape()[1],1}};
     vtexture.reshape(dims);
     return toPyGraphHandle(_penv->drawplane(RaveTransform<float>(ExtractTransform(otransform)), RaveVector<float>(extract<float>(oextents[0]),extract<float>(oextents[1]),0), vtexture));
 }
@@ -2200,12 +2200,12 @@ PyEnvironmentBasePtr PyInterfaceBase::GetEnv() const
 
 object GetUserData(UserDataPtr pdata)
 {
-    std::shared_ptr<PyUserObject> po = OPENRAVE_DYNAMIC_POINTER_CAST<PyUserObject>(pdata);
+    std::shared_ptr<PyUserObject> po = std::dynamic_pointer_cast<PyUserObject>(pdata);
     if( !!po ) {
         return po->_o;
     }
     else {
-        SerializableDataPtr pserializable = OPENRAVE_DYNAMIC_POINTER_CAST<SerializableData>(pdata);
+        SerializableDataPtr pserializable = std::dynamic_pointer_cast<SerializableData>(pdata);
         if( !!pserializable ) {
             return py::to_object(PySerializableData(pserializable));
         }
@@ -2359,7 +2359,7 @@ py::object GetCodeStringOpenRAVEException(OpenRAVEException* p)
 OPENRAVE_PYTHON_MODULE(openravepy_int)
 {
     using namespace openravepy;
-    import_array(); // not sure if this is necessary for pybind11
+    import_array1(); // not sure if this is necessary for pybind11
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
 #else // USE_PYBIND11_PYTHON_BINDINGS

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -23,11 +23,11 @@
 namespace openravepy {
 using py::object;
 
-class PyEnvironmentBase : public OPENRAVE_ENABLE_SHARED_FROM_THIS<PyEnvironmentBase>
+class PyEnvironmentBase : public std::enable_shared_from_this<PyEnvironmentBase>
 {
 #if BOOST_VERSION < 103500
     boost::mutex _envmutex;
-    std::list<OPENRAVE_SHARED_PTR<EnvironmentMutex::scoped_lock> > _listenvlocks, _listfreelocks;
+    std::list<std::shared_ptr<EnvironmentMutex::scoped_lock> > _listenvlocks, _listfreelocks;
 #endif
 protected:
     EnvironmentBasePtr _penv;
@@ -81,15 +81,15 @@ public:
 
     bool CheckCollision(PyKinBodyPtr pbody, object bodyexcluded, object linkexcluded, PyCollisionReportPtr pReport);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport);
 
     object CheckCollisionRays(py::numeric::array rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray);
 
-    bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyCollisionReportPtr pReport);
+    bool CheckCollision(std::shared_ptr<PyRay> pyray, PyCollisionReportPtr pReport);
 
     bool Load(const std::string &filename);
     bool Load(const std::string &filename, object odictatts);

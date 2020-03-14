@@ -483,21 +483,21 @@ std::shared_ptr<PySensorGeometry> PySensorBase::GetSensorGeometry(SensorBase::Se
 {
     switch(type) {
     case SensorBase::ST_Laser:
-        return std::shared_ptr<PySensorGeometry>(new PyLaserGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::LaserGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyLaserGeomData(std::static_pointer_cast<SensorBase::LaserGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_Camera:
-        return std::shared_ptr<PySensorGeometry>(new PyCameraGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::CameraGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyCameraGeomData(std::static_pointer_cast<SensorBase::CameraGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_JointEncoder:
-        return std::shared_ptr<PySensorGeometry>(new PyJointEncoderGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::JointEncoderGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyJointEncoderGeomData(std::static_pointer_cast<SensorBase::JointEncoderGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_Force6D:
-        return std::shared_ptr<PySensorGeometry>(new PyForce6DGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::Force6DGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyForce6DGeomData(std::static_pointer_cast<SensorBase::Force6DGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_IMU:
-        return std::shared_ptr<PySensorGeometry>(new PyIMUGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::IMUGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyIMUGeomData(std::static_pointer_cast<SensorBase::IMUGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_Odometry:
-        return std::shared_ptr<PySensorGeometry>(new PyOdometryGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::OdometryGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyOdometryGeomData(std::static_pointer_cast<SensorBase::OdometryGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_Tactile:
-        return std::shared_ptr<PySensorGeometry>(new PyTactileGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::TactileGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyTactileGeomData(std::static_pointer_cast<SensorBase::TactileGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_Actuator:
-        return std::shared_ptr<PySensorGeometry>(new PyActuatorGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::ActuatorGeomData const>(_psensor->GetSensorGeometry())));
+        return std::shared_ptr<PySensorGeometry>(new PyActuatorGeomData(std::static_pointer_cast<SensorBase::ActuatorGeomData const>(_psensor->GetSensorGeometry())));
     case SensorBase::ST_Invalid:
         break;
     }
@@ -536,21 +536,21 @@ std::shared_ptr<PySensorBase::PySensorData> PySensorBase::ConvertToPySensorData(
     }
     switch(psensordata->GetType()) {
     case SensorBase::ST_Laser:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyLaserSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::LaserGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::LaserSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyLaserSensorData(std::static_pointer_cast<SensorBase::LaserGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::LaserSensorData>(psensordata)));
     case SensorBase::ST_Camera:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyCameraSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::CameraGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::CameraSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyCameraSensorData(std::static_pointer_cast<SensorBase::CameraGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::CameraSensorData>(psensordata)));
     case SensorBase::ST_JointEncoder:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyJointEncoderSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::JointEncoderGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::JointEncoderSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyJointEncoderSensorData(std::static_pointer_cast<SensorBase::JointEncoderGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::JointEncoderSensorData>(psensordata)));
     case SensorBase::ST_Force6D:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyForce6DSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::Force6DGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::Force6DSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyForce6DSensorData(std::static_pointer_cast<SensorBase::Force6DGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::Force6DSensorData>(psensordata)));
     case SensorBase::ST_IMU:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyIMUSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::IMUGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::IMUSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyIMUSensorData(std::static_pointer_cast<SensorBase::IMUGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::IMUSensorData>(psensordata)));
     case SensorBase::ST_Odometry:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyOdometrySensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::OdometryGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::OdometrySensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyOdometrySensorData(std::static_pointer_cast<SensorBase::OdometryGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::OdometrySensorData>(psensordata)));
     case SensorBase::ST_Tactile:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyTactileSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::TactileGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::TactileSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyTactileSensorData(std::static_pointer_cast<SensorBase::TactileGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::TactileSensorData>(psensordata)));
     case SensorBase::ST_Actuator:
-        return std::shared_ptr<PySensorBase::PySensorData>(new PyActuatorSensorData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::ActuatorGeomData const>(_psensor->GetSensorGeometry()), OPENRAVE_STATIC_POINTER_CAST<SensorBase::ActuatorSensorData>(psensordata)));
+        return std::shared_ptr<PySensorBase::PySensorData>(new PyActuatorSensorData(std::static_pointer_cast<SensorBase::ActuatorGeomData const>(_psensor->GetSensorGeometry()), std::static_pointer_cast<SensorBase::ActuatorSensorData>(psensordata)));
     case SensorBase::ST_Invalid:
         break;
     }
@@ -625,10 +625,10 @@ PySensorGeometryPtr toPySensorGeometry(SensorBase::SensorGeometryPtr pgeom)
 {
     if( !!pgeom ) {
         if( pgeom->GetType() == SensorBase::ST_Camera ) {
-            return PySensorGeometryPtr(new PyCameraGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::CameraGeomData const>(pgeom)));
+            return PySensorGeometryPtr(new PyCameraGeomData(std::static_pointer_cast<SensorBase::CameraGeomData const>(pgeom)));
         }
         else if( pgeom->GetType() == SensorBase::ST_Laser ) {
-            return PySensorGeometryPtr(new PyLaserGeomData(OPENRAVE_STATIC_POINTER_CAST<SensorBase::LaserGeomData const>(pgeom)));
+            return PySensorGeometryPtr(new PyLaserGeomData(std::static_pointer_cast<SensorBase::LaserGeomData const>(pgeom)));
         }
 
     }

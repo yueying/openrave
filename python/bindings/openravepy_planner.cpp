@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -133,47 +133,47 @@ void PyPlannerBase::PyPlannerParameters::SetExtraParameters(const std::string& s
 }
 
 void PyPlannerBase::PyPlannerParameters::SetRandomGeneratorSeed(uint32_t seed) {
-    _paramswrite->_nRandomGeneratorSeed = seed;
+    _paramswrite->random_generator_seed_ = seed;
 }
 
 void PyPlannerBase::PyPlannerParameters::SetGoalConfig(object o)
 {
-    _paramswrite->vgoalconfig = ExtractArray<dReal>(o);
+    _paramswrite->goal_config_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetInitialConfig(object o)
 {
-    _paramswrite->vinitialconfig = ExtractArray<dReal>(o);
+    _paramswrite->initial_config_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetInitialConfigVelocities(object o)
 {
-    _paramswrite->_vInitialConfigVelocities = ExtractArray<dReal>(o);
+    _paramswrite->initial_config_velocities_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetGoalConfigVelocities(object o)
 {
-    _paramswrite->_vGoalConfigVelocities = ExtractArray<dReal>(o);
+    _paramswrite->goal_config_velocities_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetConfigVelocityLimit(object o)
 {
-    _paramswrite->_vConfigVelocityLimit = ExtractArray<dReal>(o);
+    _paramswrite->config_velocity_limit_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetConfigAccelerationLimit(object o)
 {
-    _paramswrite->_vConfigAccelerationLimit = ExtractArray<dReal>(o);
+    _paramswrite->config_acceleration_limit_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetConfigResolution(object o)
 {
-    _paramswrite->_vConfigResolution = ExtractArray<dReal>(o);
+    _paramswrite->config_resolution_vector_ = ExtractArray<dReal>(o);
 }
 
 void PyPlannerBase::PyPlannerParameters::SetMaxIterations(int nMaxIterations)
 {
-    _paramswrite->_nMaxIterations = nMaxIterations;
+    _paramswrite->max_iterations_ = nMaxIterations;
 }
 
 object PyPlannerBase::PyPlannerParameters::CheckPathAllConstraints(object oq0, object oq1, object odq0, object odq1, dReal timeelapsed, IntervalType interval, uint32_t options, bool filterreturn)
@@ -192,7 +192,7 @@ object PyPlannerBase::PyPlannerParameters::CheckPathAllConstraints(object oq0, o
         ofilterreturn["invalidvelocities"] = toPyArray(pfilterreturn->_invalidvelocities);
         ofilterreturn["fTimeWhenInvalid"] = pfilterreturn->_fTimeWhenInvalid;
         ofilterreturn["returncode"] = pfilterreturn->_returncode;
-        ofilterreturn["reportstr"] = pfilterreturn->_report.__str__();
+        ofilterreturn["reportstr"] = pfilterreturn->report_.__str__();
         return ofilterreturn;
     }
     return py::to_object(ret);
@@ -200,7 +200,7 @@ object PyPlannerBase::PyPlannerParameters::CheckPathAllConstraints(object oq0, o
 
 void PyPlannerBase::PyPlannerParameters::SetPostProcessing(const std::string& plannername, const std::string& plannerparameters)
 {
-    _paramswrite->_sPostProcessingPlanner = plannername;
+    _paramswrite->post_processing_planner_ = plannername;
     _paramswrite->_sPostProcessingParameters = plannerparameters;
 }
 

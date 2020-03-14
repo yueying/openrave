@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -19,6 +19,7 @@
 
 #include <openravepy/openravepy_int.h>
 #include <openrave/utils.h>
+#include <memory>
 
 namespace openravepy {
 using py::object;
@@ -185,11 +186,11 @@ public:
     py::object _setRobotLinksToIgnore = py::none_();
 #endif
 }; // class PyGrabbedInfo
-typedef OPENRAVE_SHARED_PTR<PyGrabbedInfo> PyGrabbedInfoPtr;
+typedef std::shared_ptr<PyGrabbedInfo> PyGrabbedInfoPtr;
 
 protected:
     KinBodyPtr _pbody;
-    std::list<OPENRAVE_SHARED_PTR<void> > _listStateSavers;
+    std::list<std::shared_ptr<void> > _listStateSavers;
 
 public:
     PyKinBody(KinBodyPtr pbody, PyEnvironmentBasePtr pyenv);

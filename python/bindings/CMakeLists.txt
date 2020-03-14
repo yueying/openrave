@@ -2,12 +2,18 @@
   add_definitions("-DBOOST_ENABLE_ASSERT_HANDLER") # turns segfault into exception
 endif()
 
+FILE(GLOB include_file_list 
+"./include/openravepy/*.h" 
+"./include/openravepy/pybind11/*.h" 
+"./include/openravepy/boostpython/*.h" 
+)
+
 # all cpp files for python bindings
 set(openravepy_int_cpp_files openravepy_int.cpp openravepy_kinbody.cpp openravepy_robot.cpp openravepy_global.cpp
     openravepy_collisionchecker.cpp openravepy_controller.cpp openravepy_ikparameterization.cpp openravepy_iksolver.cpp
     openravepy_module.cpp openravepy_physicsengine.cpp openravepy_planner.cpp openravepy_planningutils.cpp
     openravepy_sensor.cpp openravepy_sensorsystem.cpp openravepy_spacesampler.cpp openravepy_trajectory.cpp
-    openravepy_viewer.cpp bindings.cpp docstrings.cpp)
+    openravepy_viewer.cpp bindings.cpp docstrings.cpp ${include_file_list})
 
 if( NOT(PYTHONLIBS_FOUND OR PYTHON_LIBRARIES ) )
   message(STATUS "failed to find development python headers please install them")
@@ -57,14 +63,15 @@ if(USE_PYBIND11_PYTHON_BINDINGS)
         
     # link
     set(OPENRAVEPY_LINKED_LIBRARIES "${STDC_LIBRARY} ${PYTHON_LIBRARIES} ${Boost_THREAD_LIBRARY}")
-
+	
     if( CLOCK_GETTIME_FOUND )
       set(OPENRAVEPY_LINKED_LIBRARIES ${OPENRAVEPY_LINKED_LIBRARIES} rt)
     endif()
-
+	
 	include_directories(${pybind11_INCLUDE_DIRS})
     ## openrave bindings
     add_library(openravepy_int SHARED ${openravepy_int_cpp_files})
+	link_directories(${ASSIMP_LIBRARY_DIRS})
     # stdc++ has to be included before opengl libraries due to some ATI bug (http://wiki.fifengine.de/Segfault_in_cxa_allocate_exception#Workaround)
     target_link_libraries(openravepy_int PUBLIC ${OPENRAVEPY_LINKED_LIBRARIES} libopenrave libopenrave-core)
     add_dependencies(openravepy_int libopenrave libopenrave-core)
@@ -84,6 +91,7 @@ if(USE_PYBIND11_PYTHON_BINDINGS)
     if( ANN_FOUND )
       add_library(pyANN_int SHARED pyann.cpp bindings.cpp)
       include_directories(${ANN_INCLUDE_DIR})
+	  link_directories(${ASSIMP_LIBRARY_DIRS})
       # stdc++ has to be included before opengl libraries due to some ATI bug (http://wiki.fifengine.de/  Segfault_in_cxa_allocate_exception#Workaround)
       target_link_libraries(pyANN_int PUBLIC ${OPENRAVEPY_LINKED_LIBRARIES} ANN)
       set_target_properties(pyANN_int PROPERTIES PREFIX "" COMPILE_FLAGS "${ANN_CFLAGS} ${OPENRAVEPY_COMPILE_FLAGS}")
@@ -105,6 +113,7 @@ if(USE_PYBIND11_PYTHON_BINDINGS)
     if( CONVEXDECOMPOSITION_FOUND )
       add_library(convexdecompositionpy SHARED convexdecompositionpy.cpp bindings.cpp)
       include_directories(${CONVEXDECOMPOSITION_INCLUDE_DIR})
+	  link_directories(${ASSIMP_LIBRARY_DIRS})
       target_link_libraries(convexdecompositionpy PUBLIC ${OPENRAVEPY_LINKED_LIBRARIES} convexdecomposition)
       set_target_properties(convexdecompositionpy PROPERTIES PREFIX "" COMPILE_FLAGS "${CONVEXDECOMPOSITION_CFLAGS} ${OPENRAVEPY_COMPILE_FLAGS}" )
       add_dependencies(convexdecompositionpy convexdecomposition)
@@ -152,14 +161,17 @@ elseif( Boost_PYTHON_FOUND)
   if( HAVE_ALL_PYTHON_HEADERS )
     message(STATUS "python and boost-python found")
     message(STATUS "CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-    include_directories(${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${PYTHON_INCLUDE_DIRS} ${OPENRAVE_INCLUDE_LOCAL_DIRS} ${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS})
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/include 
+	${CMAKE_CURRENT_SOURCE_DIR}/include 
+	${PYTHON_INCLUDE_DIRS} 
+	${OPENRAVE_INCLUDE_LOCAL_DIRS} 
+	${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS})
 
     # libraries to link
-    set(OPENRAVEPY_LINKED_LIBRARIES "${STDC_LIBRARY} ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY}")
+    set(OPENRAVEPY_LINKED_LIBRARIES " ")
     if( CLOCK_GETTIME_FOUND )
       set(OPENRAVEPY_LINKED_LIBRARIES ${OPENRAVEPY_LINKED_LIBRARIES} rt)
     endif()
-
     set(extralibs)
     if( CLOCK_GETTIME_FOUND )
       set(extralibs ${extralibs} rt)
@@ -174,8 +186,12 @@ elseif( Boost_PYTHON_FOUND)
     endif()
 
     ## openrave bindings
+	link_directories(${ASSIMP_LIBRARY_DIRS})
     add_library(openravepy_int SHARED ${openravepy_int_cpp_files})
-    target_link_libraries(openravepy_int PUBLIC ${OPENRAVEPY_LINKED_LIBRARIES} libopenrave libopenrave-core)
+	
+	message("------------------------------------------"${PYTHON_LIBRARY} ${ASSIMP_LIBRARY_DIRS})
+    target_link_libraries(openravepy_int PUBLIC ${PYTHON_LIBRARY} ${ASSIMP_LIBRARIES}
+	${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} libopenrave libopenrave-core)
     add_dependencies(openravepy_int libopenrave libopenrave-core)
     set_target_properties(openravepy_int PROPERTIES PREFIX "" COMPILE_FLAGS "${OPENRAVEPY_COMPILE_FLAGS}")
     if( WIN32 )
@@ -192,7 +208,10 @@ elseif( Boost_PYTHON_FOUND)
     if( ANN_FOUND )
       add_library(pyANN_int SHARED pyann.cpp bindings.cpp)
       include_directories(${ANN_INCLUDE_DIR})
-      target_link_libraries(pyANN_int PUBLIC ${OPENRAVEPY_LINKED_LIBRARIES} libopenrave ANN)
+	  #link_directories(${ASSIMP_LIBRARY_DIRS})
+
+      target_link_libraries(pyANN_int PUBLIC  ${PYTHON_LIBRARY} 
+	  ${ASSIMP_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} libopenrave ANN)
       set_target_properties(pyANN_int PROPERTIES PREFIX "" COMPILE_FLAGS "${ANN_CFLAGS}" )
       add_dependencies(pyANN_int ANN)
       if( WIN32 )
@@ -211,7 +230,10 @@ elseif( Boost_PYTHON_FOUND)
     if( CONVEXDECOMPOSITION_FOUND )
       add_library(convexdecompositionpy SHARED convexdecompositionpy.cpp bindings.cpp)
       include_directories(${CONVEXDECOMPOSITION_INCLUDE_DIR})
-      target_link_libraries(convexdecompositionpy PUBLIC ${OPENRAVEPY_LINKED_LIBRARIES} libopenrave convexdecomposition)
+	  #link_directories(${ASSIMP_LIBRARY_DIRS})
+
+      target_link_libraries(convexdecompositionpy PUBLIC  ${PYTHON_LIBRARY} 
+	  ${ASSIMP_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} libopenrave convexdecomposition)
       set_target_properties(convexdecompositionpy PROPERTIES PREFIX "" COMPILE_FLAGS "${CONVEXDECOMPOSITION_CFLAGS}" )
       add_dependencies(convexdecompositionpy convexdecomposition)
       if( WIN32 )

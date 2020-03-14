@@ -29,7 +29,7 @@ public:
     PyIkParameterization();
     PyIkParameterization(const string &s);
     PyIkParameterization(object o, IkParameterizationType type);
-    PyIkParameterization(OPENRAVE_SHARED_PTR<PyIkParameterization> pyikparam);
+    PyIkParameterization(std::shared_ptr<PyIkParameterization> pyikparam);
     PyIkParameterization(const IkParameterization &ikparam);
     virtual ~PyIkParameterization();
 
@@ -52,9 +52,9 @@ public:
     void SetRotation3D(object o);
     void SetTranslation3D(object o);
     void SetDirection3D(object o);
-    void SetRay4D(OPENRAVE_SHARED_PTR<PyRay> ray);
+    void SetRay4D(std::shared_ptr<PyRay> ray);
     void SetLookat3D(object o);
-    void SetTranslationDirection5D(OPENRAVE_SHARED_PTR<PyRay> ray);
+    void SetTranslationDirection5D(std::shared_ptr<PyRay> ray);
     void SetTranslationXY2D(object o);
     void SetTranslationXYOrientation3D(object o);
     void SetTranslationLocalGlobal6D(object olocaltrans, object otrans);
@@ -82,7 +82,7 @@ public:
     object GetTranslationXAxisAngleZNorm4D();
     object GetTranslationYAxisAngleXNorm4D();
     object GetTranslationZAxisAngleYNorm4D();
-    dReal ComputeDistanceSqr(OPENRAVE_SHARED_PTR<PyIkParameterization> pyikparam);
+    dReal ComputeDistanceSqr(std::shared_ptr<PyIkParameterization> pyikparam);
 
     object Transform(object otrans) const;
 
