@@ -300,7 +300,7 @@ object PyTrajectoryBase::__getitem__(py::slice indices) const
         memcpy(ppos, values.data(), waypointSize);
         ppos += numdof;
 #else
-        memcpy(PyArray_BYTES(pypos)+(i*waypointSize), values.data(), waypointSize);
+        memcpy(PyArray_BYTES((PyArrayObject*)pypos)+(i*waypointSize), values.data(), waypointSize);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
 #ifdef USE_PYBIND11_PYTHON_BINDINGS

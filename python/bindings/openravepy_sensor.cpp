@@ -326,7 +326,7 @@ PySensorBase::PyCameraSensorData::PyCameraSensorData(std::shared_ptr<SensorBase:
     const std::vector<uint8_t>& vimagedata = pdata->vimagedata;
     const size_t numel = pgeom->height * pgeom->width * 3;
     if( vimagedata.size() != numel ) {
-        throw openrave_exception(_tr("bad image data"));
+        throw OpenRAVEException(_tr("bad image data"));
     }
 
     {

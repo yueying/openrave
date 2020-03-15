@@ -145,11 +145,11 @@ namespace openravepy {
 		return toPyArrayN(v.data(), dims);
 	}
 
-template <typename T, long unsigned int N>
-inline py::numeric::array toPyArray(const std::array<T, N>& v)
-{
-    return toPyArrayN(v.data(), N);
-}
+//template <typename T, long unsigned int N>
+//inline py::numpy::ndarray toPyArray(const std::array<T, N>& v)
+//{
+//    return toPyArrayN(v.data(), N);
+//}
 
 	template <typename T, int N>
 	inline py::numpy::ndarray toPyArray(const std::array<T, N>& v)
