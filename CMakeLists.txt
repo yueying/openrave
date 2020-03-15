@@ -71,7 +71,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake") # Directory for CMake
 add_definitions(-DNOMINMAX)
 add_definitions(-DBOOST_DISABLE_ASSERTS)
 
-# -std=c++11
 set(CMAKE_CXX_STANDARD 11)
 # Use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -331,7 +330,7 @@ if( MSVC )
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /EHc- ")
 
   # untar the source files
-  set(EXTRA_MSVC_DEPEND msvc_boost msvc_collada  msvc_libxml2 msvc_ode msvc_soqt)
+  set(EXTRA_MSVC_DEPEND  msvc_libxml2 )
   foreach(MSVC_LIBRARY ${EXTRA_MSVC_DEPEND})
     if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}" )
       execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

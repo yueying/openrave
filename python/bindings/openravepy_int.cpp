@@ -342,6 +342,26 @@ TransformMatrix ExtractTransformMatrix(const object& oraw)
 
 object toPyArray(const TransformMatrix& t)
 {
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+    py::array_t<dReal> pyvalues({4, 4});
+    py::buffer_info buf = pyvalues.request();
+    dReal* pvalue = (dReal*) buf.ptr;
+    pvalue[0] = t.m[0];
+    pvalue[1] = t.m[1];
+    pvalue[2] = t.m[2];
+    pvalue[3] = t.trans.x;
+    pvalue[4] = t.m[4];
+    pvalue[5] = t.m[5];
+    pvalue[6] = t.m[6];
+    pvalue[7] = t.trans.y;
+    pvalue[8] = t.m[8];
+    pvalue[9] = t.m[9];
+    pvalue[10] = t.m[10];
+    pvalue[11] = t.trans.z;
+    pvalue[12] = pvalue[13] = pvalue[14] = 0.0;
+    pvalue[15] = 1.0;
+    return pyvalues;
+#else // USE_PYBIND11_PYTHON_BINDINGS
     npy_intp dims[] = { 4,4};
     PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
@@ -350,17 +370,32 @@ object toPyArray(const TransformMatrix& t)
     pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
     pdata[12] = 0; pdata[13] = 0; pdata[14] = 0; pdata[15] = 1;
     return py::to_array_astype<dReal>(pyvalues);
+#endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
 
 object toPyArray(const Transform& t)
 {
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+    py::array_t<dReal> pyvalues({7});
+    py::buffer_info buf = pyvalues.request();
+    dReal* pvalue = (dReal*) buf.ptr;
+    pvalue[0] = t.rot.x;
+    pvalue[1] = t.rot.y;
+    pvalue[2] = t.rot.z;
+    pvalue[3] = t.rot.w;
+    pvalue[4] = t.trans.x;
+    pvalue[5] = t.trans.y;
+    pvalue[6] = t.trans.z;
+    return pyvalues;
+#else // USE_PYBIND11_PYTHON_BINDINGS
     npy_intp dims[] = { 7};
     PyObject *pyvalues = PyArray_SimpleNew(1,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
     pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
     return py::to_array_astype<dReal>(pyvalues);
+#endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
 object toPyArray(const std::vector<KinBody::GeometryInfoPtr>& infos)
@@ -749,7 +784,8 @@ bool PyInterfaceBase::SupportsJSONCommand(const string& cmd)
 
 object PyInterfaceBase::SendCommand(const string& in, bool releasegil, bool lockenv)
 {
-    std::stringstream sin(in), sout;
+    std::stringstream sin(in);
+    std::stringstream sout;
     {
         openravepy::PythonThreadSaverPtr statesaver;
         openravepy::PyEnvironmentLockSaverPtr envsaver;
@@ -1293,7 +1329,7 @@ bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPt
 object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyPtr pbody, bool bFrontFacingOnly)
 {
     object shape = rays.attr("shape");
-    int nRays = extract<int>(shape[0]);
+    const int nRays = extract<int>(shape[0]);
     if( nRays == 0 ) {
         return py::make_tuple(py::empty_array_astype<int>(), py::empty_array_astype<dReal>());
     }
@@ -1310,19 +1346,31 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
         throw OpenRAVEException(_tr("rays has to be a float array\n"));
     }
 
-    bool isFloat = PyArray_ITEMSIZE(pPyRays) == sizeof(float); // or double
+    const bool isFloat = PyArray_ITEMSIZE(pPyRays) == sizeof(float); // or double
     const float *pRaysFloat = isFloat ? reinterpret_cast<const float*>(PyArray_DATA(pPyRays)) : NULL;
     const double *pRaysDouble = isFloat ? NULL : reinterpret_cast<const double*>(PyArray_DATA(pPyRays));
 
     RAY r;
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+    // position
+    py::array_t<dReal> pypos({nRays, 6});
+    py::buffer_info bufpos = pypos.request();
+    dReal* ppos = (dReal*) bufpos.ptr;
+
+    // collision
+    py::array_t<bool> pycollision({nRays});
+    py::buffer_info bufcollision = pycollision.request();
+    bool* pcollision = (bool*) bufcollision.ptr;   
+#else // USE_PYBIND11_PYTHON_BINDINGS
     npy_intp dims[] = { nRays,6};
     PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal) == sizeof(double) ? NPY_DOUBLE : NPY_FLOAT);
     dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pypos);
     std::memset(ppos, 0, nRays * sizeof(dReal));
-    PyObject* pycollision = PyArray_SimpleNew(1,&dims[0], NPY_BOOL);
+    PyObject* pycollision = PyArray_SimpleNew(1,dims, NPY_BOOL);
     // numpy bool = uint8_t
     uint8_t* pcollision = (uint8_t*)PyArray_DATA((PyArrayObject*)pycollision);
     std::memset(pcollision, 0, nRays * sizeof(uint8_t));
+#endif // USE_PYBIND11_PYTHON_BINDINGS
     {
         openravepy::PythonThreadSaver threadsaver;
 
@@ -1345,13 +1393,7 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
                 pRaysDouble += 6;
             }
 
-            bool bCollision;
-            if( !pbody ) {
-                bCollision = _penv->CheckCollision(r, preport);
-            }
-            else {
-                bCollision = _penv->CheckCollision(r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), preport);
-            }
+            const bool bCollision = pbody ? _penv->CheckCollision(r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), preport) : _penv->CheckCollision(r, preport);
 
             if( bCollision &&( report.contacts.size() > 0) ) {
                 if( !bFrontFacingOnly ||( report.contacts[0].norm.dot3(r.dir)<0) ) {
@@ -1366,8 +1408,11 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
             }
         }
     }
-
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+    return py::make_tuple(pycollision, pypos);
+#else // USE_PYBIND11_PYTHON_BINDINGS
     return py::make_tuple(py::to_array_astype<bool>(pycollision), py::to_array_astype<dReal>(pypos));
+#endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
 bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray)
@@ -1451,9 +1496,9 @@ object PyEnvironmentBase::WriteToMemory(const std::string &filetype, const int o
     else {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
         // https://github.com/pybind/pybind11/issues/1201
-        return py::cast<py::object>(PyBytes_FromStringAndSize(&output[0], output.size()));
+        return py::cast<py::object>(PyBytes_FromStringAndSize(output.data(), output.size()));
 #else
-        return py::to_object(py::handle<>(PyBytes_FromStringAndSize(&output[0], output.size())));
+        return py::to_object(py::handle<>(PyBytes_FromStringAndSize(output.data(), output.size())));
 #endif
     }
 }
@@ -1908,14 +1953,14 @@ object PyEnvironmentBase::plot3(object opoints,float pointsize,object ocolors, i
     pair<size_t,size_t> sizes = _getGraphPointsColors(opoints,ocolors,vpoints,vcolors);
     bool bhasalpha = vcolors.size() == 4*sizes.second;
     if( sizes.first == sizes.second ) {
-        return toPyGraphHandle(_penv->plot3(&vpoints[0],sizes.first,sizeof(float)*3,pointsize,&vcolors[0],drawstyle,bhasalpha));
+        return toPyGraphHandle(_penv->plot3(vpoints.data(),sizes.first,sizeof(float)*3,pointsize,vcolors.data(),drawstyle,bhasalpha));
     }
     BOOST_ASSERT(vcolors.size()<=4);
     RaveVector<float> vcolor;
     for(int i = 0; i < (int)vcolors.size(); ++i) {
         vcolor[i] = vcolors[i];
     }
-    return toPyGraphHandle(_penv->plot3(&vpoints[0],sizes.first,sizeof(float)*3,pointsize,vcolor,drawstyle));
+    return toPyGraphHandle(_penv->plot3(vpoints.data(),sizes.first,sizeof(float)*3,pointsize,vcolor,drawstyle));
 }
 
 object PyEnvironmentBase::drawlinestrip(object opoints,float linewidth,object ocolors, int drawstyle)
@@ -1924,14 +1969,14 @@ object PyEnvironmentBase::drawlinestrip(object opoints,float linewidth,object oc
     pair<size_t,size_t> sizes = _getGraphPointsColors(opoints,ocolors,vpoints,vcolors);
     //bool bhasalpha = vcolors.size() == 4*sizes.second;
     if( sizes.first == sizes.second ) {
-        return toPyGraphHandle(_penv->drawlinestrip(&vpoints[0],sizes.first,sizeof(float)*3,linewidth,&vcolors[0]));
+        return toPyGraphHandle(_penv->drawlinestrip(vpoints.data(),sizes.first,sizeof(float)*3,linewidth,vcolors.data()));
     }
     BOOST_ASSERT(vcolors.size()<=4);
     RaveVector<float> vcolor;
     for(int i = 0; i < (int)vcolors.size(); ++i) {
         vcolor[i] = vcolors[i];
     }
-    return toPyGraphHandle(_penv->drawlinestrip(&vpoints[0],sizes.first,sizeof(float)*3,linewidth,vcolor));
+    return toPyGraphHandle(_penv->drawlinestrip(vpoints.data(),sizes.first,sizeof(float)*3,linewidth,vcolor));
 }
 
 object PyEnvironmentBase::drawlinelist(object opoints,float linewidth,object ocolors, int drawstyle)
@@ -1940,14 +1985,14 @@ object PyEnvironmentBase::drawlinelist(object opoints,float linewidth,object oco
     pair<size_t,size_t> sizes = _getGraphPointsColors(opoints,ocolors,vpoints,vcolors);
     //bool bhasalpha = vcolors.size() == 4*sizes.second;
     if( sizes.first == sizes.second ) {
-        return toPyGraphHandle(_penv->drawlinelist(&vpoints[0],sizes.first,sizeof(float)*3,linewidth,&vcolors[0]));
+        return toPyGraphHandle(_penv->drawlinelist(vpoints.data(),sizes.first,sizeof(float)*3,linewidth,vcolors.data()));
     }
     BOOST_ASSERT(vcolors.size()<=4);
     RaveVector<float> vcolor;
     for(int i = 0; i < (int)vcolors.size(); ++i) {
         vcolor[i] = vcolors[i];
     }
-    return toPyGraphHandle(_penv->drawlinelist(&vpoints[0],sizes.first,sizeof(float)*3,linewidth,vcolor));
+    return toPyGraphHandle(_penv->drawlinelist(vpoints.data(),sizes.first,sizeof(float)*3,linewidth,vcolor));
 }
 
 object PyEnvironmentBase::drawarrow(object op1, object op2, float linewidth, object ocolor)
@@ -1992,21 +2037,21 @@ object PyEnvironmentBase::drawtrimesh(object opoints, object oindices, object oc
         vindices = ExtractArray<int>(oindices.attr("flat"));
         if( vindices.size() > 0 ) {
             numTriangles = vindices.size()/3;
-            pindices = &vindices[0];
+            pindices = vindices.data();
         }
     }
     RaveVector<float> vcolor(1,0.5,0.5,1);
     if( !IS_PYTHONOBJECT_NONE(ocolors) ) {
         object shape = ocolors.attr("shape");
         if( len(shape) == 1 ) {
-            return toPyGraphHandle(_penv->drawtrimesh(&vpoints[0],sizeof(float)*3,pindices,numTriangles,ExtractVector34(ocolors,1.0f)));
+            return toPyGraphHandle(_penv->drawtrimesh(vpoints.data(),sizeof(float)*3,pindices,numTriangles,ExtractVector34(ocolors,1.0f)));
         }
         else {
             BOOST_ASSERT(extract<size_t>(shape[0])==vpoints.size()/3);
-            return toPyGraphHandle(_penv->drawtrimesh(&vpoints[0],sizeof(float)*3,pindices,numTriangles,extract<boost::multi_array<float,2> >(ocolors)));
+            return toPyGraphHandle(_penv->drawtrimesh(vpoints.data(),sizeof(float)*3,pindices,numTriangles,extract<boost::multi_array<float,2> >(ocolors)));
         }
     }
-    return toPyGraphHandle(_penv->drawtrimesh(&vpoints[0],sizeof(float)*3,pindices,numTriangles,RaveVector<float>(1,0.5,0.5,1)));
+    return toPyGraphHandle(_penv->drawtrimesh(vpoints.data(),sizeof(float)*3,pindices,numTriangles,RaveVector<float>(1,0.5,0.5,1)));
 }
 
 object PyEnvironmentBase::GetBodies()
@@ -2355,7 +2400,6 @@ py::object GetCodeStringOpenRAVEException(OpenRAVEException* p)
 {
     return ConvertStringToUnicode(RaveGetErrorCodeString(p->GetCode()));
 }
-
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
 } // namespace openravepy
@@ -2918,14 +2962,14 @@ Because race conditions can pop up when trying to lock the openrave environment 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     m.attr("__version__") = OPENRAVE_VERSION_STRING;
     m.attr("__author__") = "Rosen Diankov, Guangning Tan";
-    m.attr("__copyright__") = "2009-2019 Rosen Diankov (rosen.diankov@gmail.com), Guangning Tan (tgntanguangning@gmail.com)";
+    m.attr("__copyright__") = "2009-2020 Rosen Diankov (rosen.diankov@gmail.com), Guangning Tan (tgntanguangning@gmail.com)";
     m.attr("__license__") = "Lesser GPL";
     m.attr("__docformat__") = "restructuredtext";
     m.attr("__pythonbinding__") = "pybind11";
 #else
     scope().attr("__version__") = OPENRAVE_VERSION_STRING;
     scope().attr("__author__") = "Rosen Diankov, Guangning Tan";
-    scope().attr("__copyright__") = "2009-2019 Rosen Diankov (rosen.diankov@gmail.com), Guangning Tan (tgntanguangning@gmail.com)";
+    scope().attr("__copyright__") = "2009-2020 Rosen Diankov (rosen.diankov@gmail.com), Guangning Tan (tgntanguangning@gmail.com)";
     scope().attr("__license__") = "Lesser GPL";
     scope().attr("__docformat__") = "restructuredtext";
     scope().attr("__pythonbinding__") = "Boost.Python." + std::to_string(BOOST_VERSION);
