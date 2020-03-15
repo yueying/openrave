@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -43,7 +43,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 class PySpaceSamplerBase : public PyInterfaceBase
 {
@@ -168,8 +172,8 @@ protected:
         }
         int dim = _pspacesampler->GetNumberOfValues();
         npy_intp dims[] = { npy_intp(samples.size()/dim), npy_intp(dim) };
-        PyObject *pyvalues = PyArray_SimpleNew(2, dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        memcpy(PyArray_DATA(pyvalues),&samples.at(0),samples.size()*sizeof(samples[0]));
+        PyObject *pyvalues = PyArray_SimpleNew(2, dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+        memcpy(PyArray_DATA((PyArrayObject*)pyvalues),&samples.at(0),samples.size()*sizeof(samples[0]));
         return py::to_array_astype<dReal>(pyvalues);
     }
 
@@ -180,8 +184,8 @@ protected:
         }
         int dim = _pspacesampler->GetNumberOfValues();
         npy_intp dims[] = { npy_intp(samples.size()/dim), npy_intp(dim) };
-        PyObject *pyvalues = PyArray_SimpleNew(2,dims, PyArray_UINT32);
-        memcpy(PyArray_DATA(pyvalues),&samples.at(0),samples.size()*sizeof(samples[0]));
+        PyObject *pyvalues = PyArray_SimpleNew(2,dims, NPY_UINT32);
+        memcpy(PyArray_DATA((PyArrayObject*)pyvalues),&samples.at(0),samples.size()*sizeof(samples[0]));
         return py::to_array_astype<uint32_t>(pyvalues);
     }
 };

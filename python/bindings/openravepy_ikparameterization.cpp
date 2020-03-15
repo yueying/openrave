@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -46,7 +46,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 PyIkParameterization::PyIkParameterization() {
 }

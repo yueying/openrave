@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OPENRAVEPY_INTERNAL_H
 #define OPENRAVEPY_INTERNAL_H
-
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 
 #include <openrave-core.h>
@@ -333,8 +333,8 @@ inline RaveTransformMatrix<T> ExtractTransformMatrixType(const py::object& o)
 inline py::object toPyArrayRotation(const TransformMatrix& t)
 {
     npy_intp dims[] = {3,3};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
+    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
     pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
     pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
@@ -345,9 +345,9 @@ template <typename T>
 inline py::object toPyArray3(const std::vector<RaveVector<T> >& v)
 {
     npy_intp dims[] = { npy_intp(v.size()), npy_intp(3) };
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(T)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(T)==8 ? NPY_DOUBLE : NPY_FLOAT);
     if( v.size() > 0 ) {
-        T* pf = (T*)PyArray_DATA(pyvalues);
+        T* pf = (T*)PyArray_DATA((PyArrayObject*)pyvalues);
         FOREACHC(it,v) {
             *pf++ = it->x;
             *pf++ = it->y;

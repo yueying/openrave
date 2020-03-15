@@ -168,7 +168,7 @@ elseif( Boost_PYTHON_FOUND)
 	${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS})
 
     # libraries to link
-    set(OPENRAVEPY_LINKED_LIBRARIES " ")
+    set(OPENRAVEPY_LINKED_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_PYTHON_LIBRARY} ${Boost_NUMPY_LIBRARY})
     if( CLOCK_GETTIME_FOUND )
       set(OPENRAVEPY_LINKED_LIBRARIES ${OPENRAVEPY_LINKED_LIBRARIES} rt)
     endif()
@@ -190,8 +190,8 @@ elseif( Boost_PYTHON_FOUND)
     add_library(openravepy_int SHARED ${openravepy_int_cpp_files})
 	
 	message("------------------------------------------"${PYTHON_LIBRARY} ${ASSIMP_LIBRARY_DIRS})
-    target_link_libraries(openravepy_int PUBLIC ${PYTHON_LIBRARY} ${ASSIMP_LIBRARIES}
-	${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} libopenrave libopenrave-core)
+    target_link_libraries(openravepy_int PUBLIC ${PYTHON_LIBRARY} ${OPENRAVEPY_LINKED_LIBRARIES} ${ASSIMP_LIBRARIES}
+	 libopenrave libopenrave-core)
     add_dependencies(openravepy_int libopenrave libopenrave-core)
     set_target_properties(openravepy_int PROPERTIES PREFIX "" COMPILE_FLAGS "${OPENRAVEPY_COMPILE_FLAGS}")
     if( WIN32 )
@@ -210,8 +210,8 @@ elseif( Boost_PYTHON_FOUND)
       include_directories(${ANN_INCLUDE_DIR})
 	  #link_directories(${ASSIMP_LIBRARY_DIRS})
 
-      target_link_libraries(pyANN_int PUBLIC  ${PYTHON_LIBRARY} 
-	  ${ASSIMP_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} libopenrave ANN)
+      target_link_libraries(pyANN_int PUBLIC ${PYTHON_LIBRARY} ${OPENRAVEPY_LINKED_LIBRARIES} 
+	  ${ASSIMP_LIBRARIES} libopenrave ANN)
       set_target_properties(pyANN_int PROPERTIES PREFIX "" COMPILE_FLAGS "${ANN_CFLAGS}" )
       add_dependencies(pyANN_int ANN)
       if( WIN32 )
@@ -232,8 +232,8 @@ elseif( Boost_PYTHON_FOUND)
       include_directories(${CONVEXDECOMPOSITION_INCLUDE_DIR})
 	  #link_directories(${ASSIMP_LIBRARY_DIRS})
 
-      target_link_libraries(convexdecompositionpy PUBLIC  ${PYTHON_LIBRARY} 
-	  ${ASSIMP_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} libopenrave convexdecomposition)
+      target_link_libraries(convexdecompositionpy PUBLIC ${PYTHON_LIBRARY} ${OPENRAVEPY_LINKED_LIBRARIES} 
+	  ${ASSIMP_LIBRARIES} libopenrave convexdecomposition)
       set_target_properties(convexdecompositionpy PROPERTIES PREFIX "" COMPILE_FLAGS "${CONVEXDECOMPOSITION_CFLAGS}" )
       add_dependencies(convexdecompositionpy convexdecomposition)
       if( WIN32 )

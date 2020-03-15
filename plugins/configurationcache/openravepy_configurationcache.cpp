@@ -57,13 +57,18 @@ using py::pickle_suite;
 using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 using openravepy::ConvertStringToUnicode;
 
 using namespace OpenRAVE;
 
-namespace configurationcachepy {
+namespace configurationcachepy 
+{
 
 class PyConfigurationCache
 {
@@ -73,7 +78,8 @@ public:
         _pyenv = openravepy::toPyEnvironment(pyrobot);
         _cache.reset(new configurationcache::ConfigurationCache(openravepy::GetRobot(pyrobot)));
     }
-    virtual ~PyConfigurationCache(){
+    virtual ~PyConfigurationCache()
+	{
     }
 
     int InsertConfigurationDist(object ovalues, object pyreport, dReal dist)
@@ -92,10 +98,12 @@ public:
         dReal closestdist=0;
         int ret = _cache->CheckCollision(openravepy::ExtractArray<dReal>(ovalues), crobotlink, ccollidinglink, closestdist);
         KinBody::LinkPtr robotlink, collidinglink;
-        if( !!crobotlink ) {
+        if( !!crobotlink ) 
+		{
             robotlink = crobotlink->GetParent()->GetLinks().at(crobotlink->GetIndex());
         }
-        if( !!ccollidinglink ) {
+        if( !!ccollidinglink ) 
+		{
             collidinglink = ccollidinglink->GetParent()->GetLinks().at(ccollidinglink->GetIndex());
         }
         return py::make_tuple(ret, closestdist, py::make_tuple(openravepy::toPyKinBodyLink(robotlink, _pyenv), openravepy::toPyKinBodyLink(collidinglink, _pyenv)));
@@ -113,7 +121,8 @@ public:
         return openravepy::toPyArray(values);
     }
 
-    int GetNumNodes() {
+    int GetNumNodes() 
+	{
         return _cache->GetNumNodes();
     }
 
@@ -153,31 +162,38 @@ public:
         return _cache->GetInsertionDistanceMult();
     }
 
-    object GetRobot() {
+    object GetRobot() 
+	{
         return openravepy::toPyKinBody(_cache->GetRobot(), _pyenv);
     }
 
-    bool Validate() {
+    bool Validate() 
+	{
         return _cache->Validate();
     }
 
-    object GetNodeValues() {
+    object GetNodeValues() 
+	{
         std::vector<dReal> values;
         _cache->GetNodeValues(values);
         return openravepy::toPyArray(values);
     }
 
-    object FindNearestNode(object ovalues, dReal dist) {
+    object FindNearestNode(object ovalues, dReal dist) 
+	{
         std::pair<std::vector<dReal>, dReal> nn = _cache->FindNearestNode(openravepy::ExtractArray<dReal>(ovalues), dist);
-        if( nn.first.empty() ) {
+        if( nn.first.empty() ) 
+		{
             return py::none_(); // didn't find anything
         }
-        else {
+        else 
+		{
             return py::make_tuple(openravepy::toPyArray(nn.first), nn.second);
         }
     }
 
-    dReal ComputeDistance(object oconfi, object oconff) {
+    dReal ComputeDistance(object oconfi, object oconff)
+	{
         return _cache->ComputeDistance(openravepy::ExtractArray<dReal>(oconfi), openravepy::ExtractArray<dReal>(oconff));
     }
 

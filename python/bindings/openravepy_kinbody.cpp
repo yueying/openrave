@@ -46,7 +46,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 template <typename T>
 object GetCustomParameters(const std::map<std::string, std::vector<T> >& parameters, object oname, int index)
@@ -1197,8 +1201,8 @@ object PyLink::GetGlobalCOM() const {
 object PyLink::GetLocalInertia() const {
     TransformMatrix t = _plink->GetLocalInertia();
     npy_intp dims[] = { 3, 3};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
+    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
     pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
     pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
@@ -1207,8 +1211,8 @@ object PyLink::GetLocalInertia() const {
 object PyLink::GetGlobalInertia() const {
     TransformMatrix t = _plink->GetGlobalInertia();
     npy_intp dims[] = { 3, 3};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
+    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
     pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
     pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
@@ -2627,8 +2631,8 @@ object PyKinBody::GetLinkVelocities() const
     _pbody->GetLinkVelocities(velocities);
 
     npy_intp dims[] = {npy_intp(velocities.size()),npy_intp(6)};
-    PyObject *pyvel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pfvel = (dReal*)PyArray_DATA(pyvel);
+    PyObject *pyvel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pfvel = (dReal*)PyArray_DATA((PyArrayObject*)pyvel);
     for(size_t i = 0; i < velocities.size(); ++i) {
         pfvel[6*i+0] = velocities[i].first.x;
         pfvel[6*i+1] = velocities[i].first.y;
@@ -2673,8 +2677,8 @@ object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexterna
     _pbody->GetLinkAccelerations(vDOFAccelerations, vLinkAccelerations, pmapExternalAccelerations);
 
     npy_intp dims[] = {npy_intp(vLinkAccelerations.size()),npy_intp(6)};
-    PyObject *pyaccel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pf = (dReal*)PyArray_DATA(pyaccel);
+    PyObject *pyaccel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pf = (dReal*)PyArray_DATA((PyArrayObject*)pyaccel);
     for(size_t i = 0; i < vLinkAccelerations.size(); ++i) {
         pf[6*i+0] = vLinkAccelerations[i].first.x;
         pf[6*i+1] = vLinkAccelerations[i].first.y;

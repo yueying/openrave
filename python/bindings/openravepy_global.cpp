@@ -47,7 +47,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 PyRay::PyRay(object newpos, object newdir)
 {
@@ -278,8 +282,8 @@ public:
     }
     PyTriMesh(const TriMesh& mesh) {
         npy_intp dims[] = { npy_intp(mesh.vertices.size()), npy_intp(3)};
-        PyObject *pyvertices = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        dReal* pvdata = (dReal*)PyArray_DATA(pyvertices);
+        PyObject *pyvertices = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+        dReal* pvdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvertices);
         FOREACHC(itv, mesh.vertices) {
             *pvdata++ = itv->x;
             *pvdata++ = itv->y;
@@ -289,8 +293,8 @@ public:
 
         dims[0] = mesh.indices.size()/3;
         dims[1] = 3;
-        PyObject *pyindices = PyArray_SimpleNew(2,dims, PyArray_INT32);
-        int32_t* pidata = reinterpret_cast<int32_t*>PyArray_DATA(pyindices);
+        PyObject *pyindices = PyArray_SimpleNew(2,dims, NPY_INT32);
+        int32_t* pidata = reinterpret_cast<int32_t*>(PyArray_DATA((PyArrayObject*)pyindices));
         std::memcpy(pidata, mesh.indices.data(), mesh.indices.size() * sizeof(int32_t));
         indices = py::to_array_astype<int>(pyindices);
     }
@@ -307,10 +311,10 @@ public:
 
         PyObject *pPyVertices = vertices.ptr();
         if (PyArray_Check(pPyVertices)) {
-            if (PyArray_NDIM(pPyVertices) != 2) {
+            if (PyArray_NDIM((PyArrayObject*)pPyVertices) != 2) {
                 throw OpenRAVEException(_tr("vertices must be a 2D array"), ORE_InvalidArguments);
             }
-            if (!PyArray_ISFLOAT(pPyVertices)) {
+            if (!PyArray_ISFLOAT((PyArrayObject*)pPyVertices)) {
                 throw OpenRAVEException(_tr("vertices must be in float"), ORE_InvalidArguments);
             }
             PyArrayObject* pPyVerticesContiguous = PyArray_GETCONTIGUOUS(reinterpret_cast<PyArrayObject*>(pPyVertices));
@@ -353,7 +357,9 @@ public:
         mesh.indices.resize(3*numtris);
         PyObject *pPyIndices = indices.ptr();
         if (PyArray_Check(pPyIndices)) {
-            if (PyArray_NDIM(pPyIndices) != 2 || PyArray_DIM(pPyIndices, 1) != 3 || !PyArray_ISINTEGER(pPyIndices)) {
+            if (PyArray_NDIM((PyArrayObject*)pPyIndices) != 2 
+				|| PyArray_DIM((PyArrayObject*)pPyIndices, 1) != 3 
+				|| !PyArray_ISINTEGER((PyArrayObject*)pPyIndices)) {
                 throw OpenRAVEException(_tr("indices must be a Nx3 int array"), ORE_InvalidArguments);
             }
             PyArrayObject* pPyIndiciesContiguous = PyArray_GETCONTIGUOUS(reinterpret_cast<PyArrayObject*>(pPyIndices));
@@ -1060,8 +1066,8 @@ object poseFromMatrices(object otransforms)
         return py::empty_array_astype<dReal>();
     }
     npy_intp dims[] = { N,7};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pvalues = (dReal*)PyArray_DATA(pyvalues);
+    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pvalues = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     TransformMatrix tm;
     for(int j = 0; j < N; ++j) {
         object o = otransforms[j];
@@ -1086,8 +1092,8 @@ object InvertPoses(object o)
         return py::empty_array_astype<dReal>();
     }
     npy_intp dims[] = { N,7};
-    PyObject *pytrans = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* ptrans = (dReal*)PyArray_DATA(pytrans);
+    PyObject *pytrans = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* ptrans = (dReal*)PyArray_DATA((PyArrayObject*)pytrans);
     for(int i = 0; i < N; ++i, ptrans += 7) {
         object oinputtrans = o[i];
         Transform t = Transform(Vector(extract<dReal>(oinputtrans[0]),extract<dReal>(oinputtrans[1]),extract<dReal>(oinputtrans[2]),extract<dReal>(oinputtrans[3])),
@@ -1147,8 +1153,8 @@ object poseTransformPoints(object opose, object opoints)
     Transform t = ExtractTransformType<dReal>(opose);
     int N = len(opoints);
     npy_intp dims[] = { N,3};
-    PyObject *pytrans = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* ptrans = (dReal*)PyArray_DATA(pytrans);
+    PyObject *pytrans = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* ptrans = (dReal*)PyArray_DATA((PyArrayObject*)pytrans);
     for(int i = 0; i < N; ++i, ptrans += 3) {
         Vector newpoint = t*ExtractVector3(opoints[i]);
         ptrans[0] = newpoint.x; ptrans[1] = newpoint.y; ptrans[2] = newpoint.z;

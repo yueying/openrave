@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2014 Alejandro Perez & Rosen Diankov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,16 +22,21 @@ CollisionCheckerBasePtr CreateCacheCollisionChecker(EnvironmentBasePtr penv, std
 SpaceSamplerBasePtr CreateConfigurationJitterer(EnvironmentBasePtr penv, std::istream& sinput);
 }
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, std::istream& sinput, EnvironmentBasePtr penv)
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string& interfacename, 
+	std::istream& sinput, EnvironmentBasePtr penv)
 {
-    switch(type) {
+	RAVELOG_INFO_FORMAT("CreateInterfaceValidated %s", interfacename);
+    switch(type)
+	{
     case PT_CollisionChecker:
-        if( interfacename == "cachechecker") {
+        if( interfacename == "cachechecker")
+		{
             return InterfaceBasePtr(configurationcache::CreateCacheCollisionChecker(penv,sinput));
         }
         break;
     case PT_SpaceSampler:
-        if( interfacename == "configurationjitterer" ) {
+        if( interfacename == "configurationjitterer" ) 
+		{
             return configurationcache::CreateConfigurationJitterer(penv,sinput);
         }
         break;

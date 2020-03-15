@@ -54,8 +54,8 @@ public:
                         "get the cache times: insert, query, collision checking, load");
         std::string collisionname="ode";
         sinput >> collisionname;
-        _pintchecker = RaveCreateCollisionChecker(GetEnv(), collisionname);
-        OPENRAVE_ASSERT_FORMAT(!!_pintchecker, "internal checker %s is not valid", collisionname, ORE_Assert);
+        internal_checker_ = RaveCreateCollisionChecker(GetEnv(), collisionname);
+        OPENRAVE_ASSERT_FORMAT(!!internal_checker_, "internal checker %s is not valid", collisionname, ORE_Assert);
         _cachedcollisionchecks=0;
         _cachedcollisionhits=0;
         _cachedfreehits = 0;
@@ -80,7 +80,8 @@ public:
 
     }
 
-    virtual ~CacheCollisionChecker() {
+    virtual ~CacheCollisionChecker()
+	{
     }
 
     ConfigurationCachePtr GetCache()
@@ -95,21 +96,24 @@ public:
 
     virtual bool SetCollisionOptions(int collisionoptions)
     {
-        return _pintchecker->SetCollisionOptions(collisionoptions);
+        return internal_checker_->SetCollisionOptions(collisionoptions);
     }
 
-    virtual int GetCollisionOptions() const {
-        return _pintchecker->GetCollisionOptions();
+    virtual int GetCollisionOptions() const
+	{
+        return internal_checker_->GetCollisionOptions();
     }
 
-    virtual void SetTolerance(dReal tolerance) {
-        _pintchecker->SetTolerance(tolerance);
+    virtual void SetTolerance(dReal tolerance)
+	{
+        internal_checker_->SetTolerance(tolerance);
     }
 
     virtual void SetGeometryGroup(const std::string& groupname)
     {
         // reset cache if geometry group is different
-        if(  groupname != _pintchecker->GetGeometryGroup() ) {
+        if(  groupname != internal_checker_->GetGeometryGroup() ) 
+		{
             if( !!_cache ) {
                 _cache->Reset();
                 //_cache.reset(new ConfigurationCache(GetRobot()));
@@ -119,17 +123,17 @@ public:
                 //_selfcache.reset(new ConfigurationCache(GetRobot(),false));
             }
         }
-        _pintchecker->SetGeometryGroup(groupname);
+        internal_checker_->SetGeometryGroup(groupname);
     }
 
     virtual const std::string& GetGeometryGroup() const
     {
-        return _pintchecker->GetGeometryGroup();
+        return internal_checker_->GetGeometryGroup();
     }
 
     virtual bool InitEnvironment() {
         // reset cache?
-        return _pintchecker->InitEnvironment();
+        return internal_checker_->InitEnvironment();
     }
 
     virtual void DestroyEnvironment()
@@ -140,8 +144,8 @@ public:
         if( !!_selfcache ) {
             _selfcache->Reset();
         }
-        if( !!_pintchecker ) {
-            _pintchecker->DestroyEnvironment();
+        if( !!internal_checker_ ) {
+            internal_checker_->DestroyEnvironment();
         }
         _handleRobotDOFChange.reset();
         _probot.reset();
@@ -154,15 +158,15 @@ public:
 
         DestroyEnvironment();
 
-        if(!!clone->_pintchecker) {
-            CollisionCheckerBasePtr p = RaveCreateCollisionChecker(GetEnv(),clone->_pintchecker->GetXMLId());
-            p->Clone(clone->_pintchecker,cloningoptions);
+        if(!!clone->internal_checker_) {
+            CollisionCheckerBasePtr p = RaveCreateCollisionChecker(GetEnv(),clone->internal_checker_->GetXMLId());
+            p->Clone(clone->internal_checker_,cloningoptions);
 
-            _pintchecker = p;
-            _pintchecker->InitEnvironment();
+            internal_checker_ = p;
+            internal_checker_->InitEnvironment();
         }
         else{
-            _pintchecker.reset();
+            internal_checker_.reset();
         }
 
         _strRobotName = clone->_strRobotName;
@@ -181,12 +185,12 @@ public:
 
     virtual bool InitKinBody(KinBodyPtr pbody) {
         // reset cache for pbody (remove from free configurations since body has been added)
-        return _pintchecker->InitKinBody(pbody);
+        return internal_checker_->InitKinBody(pbody);
     }
 
     virtual void RemoveKinBody(KinBodyPtr pbody) {
         // reset cache for pbody (remove from collision configurations)?
-        _pintchecker->RemoveKinBody(pbody);
+        internal_checker_->RemoveKinBody(pbody);
     }
 
     /// \brief collisionchecker checks if there is a configuration in _cache within the threshold, and if so, uses that information, if not, runs standard collisioncheck and stores the result.
@@ -198,7 +202,7 @@ public:
         // run standard collisioncheck if there is no cache
         if( !_cache || pbody1 != probot ) {
             _stime = utils::GetMilliTime();
-            bool ccol = _pintchecker->CheckCollision(pbody1, report);
+            bool ccol = internal_checker_->CheckCollision(pbody1, report);
             _rawtime += utils::GetMilliTime()-_stime;
             return ccol;
         }
@@ -250,7 +254,7 @@ public:
 
         // raw collisioncheck
         _stime = utils::GetMilliTime();
-        bool col = _pintchecker->CheckCollision(pbody1, report);
+        bool col = internal_checker_->CheckCollision(pbody1, report);
         _rawtime += utils::GetMilliTime()-_stime;
 
 
@@ -264,47 +268,47 @@ public:
     }
 
     virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, CollisionReportPtr report = CollisionReportPtr()) {
-        bool col = _pintchecker->CheckCollision(pbody1, pbody2, report);
+        bool col = internal_checker_->CheckCollision(pbody1, pbody2, report);
         return col;
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr()) {
-        return _pintchecker->CheckCollision(plink, report);
+        return internal_checker_->CheckCollision(plink, report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink1, KinBody::LinkConstPtr plink2, CollisionReportPtr report = CollisionReportPtr()) {
-        return _pintchecker->CheckCollision(plink1, plink2, report);
+        return internal_checker_->CheckCollision(plink1, plink2, report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) {
 
-        return _pintchecker->CheckCollision(plink, pbody, report);
+        return internal_checker_->CheckCollision(plink, pbody, report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report = CollisionReportPtr()) {
 
-        return _pintchecker->CheckCollision(plink, vbodyexcluded, vlinkexcluded, report);
+        return internal_checker_->CheckCollision(plink, vbodyexcluded, vlinkexcluded, report);
     }
 
     virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report = CollisionReportPtr()) {
 
-        return _pintchecker->CheckCollision(pbody, vbodyexcluded, vlinkexcluded, report);
+        return internal_checker_->CheckCollision(pbody, vbodyexcluded, vlinkexcluded, report);
     }
 
     virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr()) {
-        return _pintchecker->CheckCollision(ray, plink, report);
+        return internal_checker_->CheckCollision(ray, plink, report);
     }
 
     virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) {
-        return _pintchecker->CheckCollision(ray, pbody, report);
+        return internal_checker_->CheckCollision(ray, pbody, report);
     }
 
     virtual bool CheckCollision(const RAY& ray, CollisionReportPtr report = CollisionReportPtr()) {
-        return _pintchecker->CheckCollision(ray, report);
+        return internal_checker_->CheckCollision(ray, report);
     }
 
     virtual bool CheckCollision(const TriMesh& trimesh, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) {
-        return _pintchecker->CheckCollision(trimesh, pbody, report);
+        return internal_checker_->CheckCollision(trimesh, pbody, report);
     }
 
     /// \brief collisionchecker checks if there is a configuration in _selfcache within the threshold, and if so, uses that information, if not, runs standard collisioncheck and stores the result.
@@ -313,7 +317,7 @@ public:
         RobotBasePtr probot = GetRobot();
         if( !_selfcache || pbody != probot ) {
             _stime = utils::GetMilliTime();
-            bool scol = _pintchecker->CheckStandaloneSelfCollision(pbody, report);
+            bool scol = internal_checker_->CheckStandaloneSelfCollision(pbody, report);
             _selfrawtime += utils::GetMilliTime()-_stime;
             return scol;
         }
@@ -372,7 +376,7 @@ public:
         }
 
         _stime = utils::GetMilliTime();
-        bool col = _pintchecker->CheckStandaloneSelfCollision(pbody, report);
+        bool col = internal_checker_->CheckStandaloneSelfCollision(pbody, report);
         _selfrawtime += utils::GetMilliTime()-_stime;
 
         _stime = utils::GetMilliTime();
@@ -385,7 +389,7 @@ public:
 
     virtual bool CheckStandaloneSelfCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report = CollisionReportPtr()) {
 
-        return _pintchecker->CheckStandaloneSelfCollision(plink, report);
+        return internal_checker_->CheckStandaloneSelfCollision(plink, report);
     }
 
 protected:
@@ -678,7 +682,7 @@ protected:
     std::vector<int> _dofindices;
     ConfigurationCachePtr _cache;
     ConfigurationCachePtr _selfcache;
-    CollisionCheckerBasePtr _pintchecker;
+    CollisionCheckerBasePtr internal_checker_;
     std::string _strRobotName; //!< the robot name to track
     std::string __cachehash;
     std::string _robothash;

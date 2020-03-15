@@ -45,7 +45,11 @@ using py::pickle_suite;
 using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 PyCollisionReport::PyCollisionReport() : report(new CollisionReport()) {
 }
@@ -525,10 +529,10 @@ object PyCollisionCheckerBase::CheckCollisionRays(object rays, PyKinBodyPtr pbod
 
     RAY r;
     npy_intp dims[] = { num,6};
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* ppos = (dReal*)PyArray_DATA(pypos);
-    PyObject* pycollision = PyArray_SimpleNew(1,&dims[0], PyArray_BOOL);
-    bool* pcollision = (bool*)PyArray_DATA(pycollision);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pypos);
+    PyObject* pycollision = PyArray_SimpleNew(1,&dims[0], NPY_BOOL);
+    bool* pcollision = (bool*)PyArray_DATA((PyArrayObject*)pycollision);
     for(int i = 0; i < num; ++i, ppos += 6) {
         std::vector<dReal> ray = ExtractArray<dReal>(rays[i]);
         r.pos.x = ray[0];

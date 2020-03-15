@@ -85,7 +85,7 @@ public:
 
     bool CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport);
 
-    object CheckCollisionRays(py::numeric::array rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false);
+    object CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false);
 
     bool CheckCollision(std::shared_ptr<PyRay> pyray);
 

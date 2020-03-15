@@ -50,7 +50,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 PyManipulatorInfo::PyManipulatorInfo() {
     _tLocalTool = ReturnTransform(Transform());
@@ -560,8 +564,8 @@ object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, int filteropti
         }
 
         npy_intp dims[] = { npy_intp(vsolutions.size()), npy_intp(_pmanip->GetArmIndices().size()) };
-        PyObject *pysolutions = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        dReal* ppos = (dReal*)PyArray_DATA(pysolutions);
+        PyObject *pysolutions = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+        dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pysolutions);
         FOREACH(itsol,vsolutions) {
             BOOST_ASSERT(itsol->size()==size_t(dims[1]));
             std::copy(itsol->begin(),itsol->end(),ppos);
@@ -607,8 +611,8 @@ object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, object freepar
         }
 
         npy_intp dims[] = { npy_intp(vsolutions.size()), npy_intp(_pmanip->GetArmIndices().size()) };
-        PyObject *pysolutions = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        dReal* ppos = (dReal*)PyArray_DATA(pysolutions);
+        PyObject *pysolutions = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+        dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pysolutions);
         FOREACH(itsol,vsolutions) {
             BOOST_ASSERT(itsol->size()==size_t(dims[1]));
             std::copy(itsol->begin(),itsol->end(),ppos);

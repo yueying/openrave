@@ -1,4 +1,4 @@
-/** \example orpythonbinding.cpp
+﻿/** \example orpythonbinding.cpp
     \author Rosen Diankov
 
     Shows how to creating python bindings with an OpenRAVE C++ plugin. The demo registers a python function to be called inside the environment simulation thread using a Module interface.
@@ -28,12 +28,13 @@
     <b>Full Example Code:</b>
  */
 #include <openrave/openrave.h>
+#include <openrave/user_data.h>
 
 #include <boost/python.hpp>
 #include <boost/python/exception_translator.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <pyconfig.h>
-
+#include <openravepy/bindings.h>
 #include <exception>
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
@@ -45,13 +46,15 @@
 
 using namespace OpenRAVE;
 using namespace std;
+using namespace openravepy;
 
 namespace cppexamples {
 
 class FunctionUserData : public UserData
 {
 public:
-    virtual ~FunctionUserData() {
+    virtual ~FunctionUserData() 
+	{
     }
     py::object simulationfn;
 };
@@ -60,14 +63,14 @@ class PythonBindingModule : public ModuleBase
 {
 public:
     PythonBindingModule(EnvironmentBasePtr penv, std::istream&) : ModuleBase(penv) {
-        SetUserData(UserDataPtr(new FunctionUserData()));
+        SetUserData("",UserDataPtr(new FunctionUserData()));
     }
     virtual ~PythonBindingModule() {
         RAVELOG_DEBUG("destroying python binding\n");
     }
 
     virtual bool SimulationStep(dReal fElapsedTime) {
-        boost::shared_ptr<FunctionUserData> p = boost::dynamic_pointer_cast<FunctionUserData>(GetUserData());
+        std::shared_ptr<FunctionUserData> p = std::dynamic_pointer_cast<FunctionUserData>(GetUserData());
         bool ret = false;
         if( !!p ) {
             PyGILState_STATE gstate = PyGILState_Ensure();
@@ -88,7 +91,7 @@ public:
     }
 };
 
-boost::shared_ptr<void> g_PythonBindingInterfaceHandle;
+std::shared_ptr<void> g_PythonBindingInterfaceHandle;
 
 InterfaceBasePtr PythonBindingCreateInterface(EnvironmentBasePtr penv, std::istream& istream)
 {
@@ -99,7 +102,7 @@ InterfaceBasePtr RegisterSimulationFunction(int environmentid, py::object simula
 {
     ModuleBasePtr module = RaveCreateModule(RaveGetEnvironment(environmentid), "PythonBinding");
     if( !!module ) {
-        boost::shared_ptr<FunctionUserData> p = boost::dynamic_pointer_cast<FunctionUserData>(module->GetUserData());
+        std::shared_ptr<FunctionUserData> p = std::dynamic_pointer_cast<FunctionUserData>(module->GetUserData());
         p->simulationfn = simulationfn;
         module->GetEnv()->Add(module,true,"");
     }
@@ -110,7 +113,8 @@ void Init(UserDataPtr globalstate)
 {
     RaveInitializeFromState(globalstate);
     if( !g_PythonBindingInterfaceHandle ) {
-        g_PythonBindingInterfaceHandle = RaveRegisterInterface(PT_Module, "PythonBinding", OPENRAVE_MODULE_HASH,OPENRAVE_ENVIRONMENT_HASH, PythonBindingCreateInterface);
+        g_PythonBindingInterfaceHandle = RaveRegisterInterface(PT_Module, 
+			"PythonBinding", OPENRAVE_MODULE_HASH,OPENRAVE_ENVIRONMENT_HASH, PythonBindingCreateInterface);
     }
 }
 

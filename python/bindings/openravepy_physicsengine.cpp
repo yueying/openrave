@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -45,7 +45,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 PyPhysicsEngineBase::PyPhysicsEngineBase(PhysicsEngineBasePtr pPhysicsEngine, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pPhysicsEngine, pyenv),_pPhysicsEngine(pPhysicsEngine) {
 }
@@ -117,8 +121,8 @@ object PyPhysicsEngineBase::GetLinkVelocities(PyKinBodyPtr pykinbody)
         return py::none_();
     }
     npy_intp dims[] = { npy_intp(velocities.size()), 6};
-    PyObject *pyvel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pfvel = (dReal*)PyArray_DATA(pyvel);
+    PyObject *pyvel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pfvel = (dReal*)PyArray_DATA((PyArrayObject*)pyvel);
     for(size_t i = 0; i < velocities.size(); ++i) {
         pfvel[6*i+0] = velocities[i].first.x;
         pfvel[6*i+1] = velocities[i].first.y;

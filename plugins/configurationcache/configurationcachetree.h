@@ -19,7 +19,7 @@
 #include <deque>
 #include <boost/pool/pool.hpp>
 
-#define _(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_configurationcache", msgid)
+#define _tr(msgid) OpenRAVE::RaveGetLocalizedTextForDomain("openrave_plugins_configurationcache", msgid)
 
 namespace configurationcache {
 

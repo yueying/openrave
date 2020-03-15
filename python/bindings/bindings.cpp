@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#define NO_IMPORT_ARRAY
 #include <openravepy/bindings.h>
 
 namespace mydetail {
@@ -27,13 +28,7 @@ struct get_dtype
 
 namespace openravepy {
 
-constexpr char select_dtype<double>::type[];
-constexpr char select_dtype<float>::type[];
-constexpr char select_dtype<int>::type[];
-constexpr char select_dtype<uint8_t>::type[];
-constexpr char select_dtype<uint16_t>::type[];
-constexpr char select_dtype<uint32_t>::type[];
-constexpr char select_dtype<bool>::type[];
+
 
 using py::object;
 using py::list;

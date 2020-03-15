@@ -59,7 +59,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 #ifndef USE_PYBIND11_PYTHON_BINDINGS
 using openravepy::int_from_number;
@@ -150,7 +154,7 @@ object search(ANNkd_tree& kdtree, object q, int k, double eps, bool priority = f
         annq.pt[c] = extract<ANNcoord>(q[c]);
 
     npy_intp dims[] = { k};
-    PyObject *pydists = PyArray_SimpleNew(1,dims, sizeof(ANNdist)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pydists = PyArray_SimpleNew(1,dims, sizeof(ANNdist)==8 ? NPY_DOUBLE : NPY_FLOAT);
     BOOST_ASSERT(!!pydists);
     PyObject *pyidx = PyArray_SimpleNew(1,dims, PyArray_INT);
     if( !pyidx ) {
@@ -181,7 +185,7 @@ object search_array(ANNkd_tree& kdtree, object qarray, int k, double eps, bool p
     BOOST_ASSERT(len(qarray[0])==kdtree.theDim());
     ANNpointManaged annq(kdtree.theDim());
     npy_intp dims[] = { N,k};
-    PyObject *pydists = PyArray_SimpleNew(2,dims, sizeof(ANNdist)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pydists = PyArray_SimpleNew(2,dims, sizeof(ANNdist)==8 ? NPY_DOUBLE : NPY_FLOAT);
     BOOST_ASSERT(!!pydists);
     PyObject *pyidx = PyArray_SimpleNew(2,dims, PyArray_INT);
     if( !pyidx ) {
@@ -229,7 +233,7 @@ object k_fixed_radius_search(ANNkd_tree& kdtree, object q, double sqRad, int k, 
     }
 
     npy_intp dims[] = {std::min(k, kball)};
-    PyObject *pydists = PyArray_SimpleNew(1,dims, sizeof(ANNdist)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pydists = PyArray_SimpleNew(1,dims, sizeof(ANNdist)==8 ? NPY_DOUBLE : NPY_FLOAT);
     BOOST_ASSERT(!!pydists);
     PyObject *pyidx = PyArray_SimpleNew(1,dims, PyArray_INT);
     if( !pyidx ) {
@@ -276,7 +280,7 @@ object k_fixed_radius_search_array(ANNkd_tree& kdtree, object qarray, double sqR
     }
 
     npy_intp dims[] = { N,k};
-    PyObject *pydists = PyArray_SimpleNew(2,dims, sizeof(ANNdist)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pydists = PyArray_SimpleNew(2,dims, sizeof(ANNdist)==8 ? NPY_DOUBLE : NPY_FLOAT);
     if( !pydists ) {
         Py_DECREF(pykball);
     }
@@ -332,7 +336,7 @@ OPENRAVE_PYTHON_MODULE(pyANN_int)
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
 #else
-    numeric::array::set_module_and_type("numpy", "ndarray");
+    //numeric::array::set_module_and_type("numpy", "ndarray");
     int_from_number<int>();
     float_from_number<float>();
     float_from_number<double>();

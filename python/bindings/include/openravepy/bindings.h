@@ -15,12 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // shouldn't include openrave.h!
-#ifndef OPENRAVE_BOOST_PYTHON_BINDINGS
-#define OPENRAVE_BOOST_PYTHON_BINDINGS
+#ifndef OPENRAVE_PYTHON_BINDINGS_
+#define OPENRAVE_PYTHON_BINDINGS_
 
 #include <openravepy/openravepy_config.h>
 
-#include <stdint.h>
+#include <cstdint>
 // numpy
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
@@ -59,207 +59,145 @@
 }
 #endif // _RAVE_DISPLAY
 
-namespace openravepy {
-
-// https://stackoverflow.com/questions/35041268/how-to-convert-a-vector-to-numpy-array-with-templates-and-boost
-template <typename T>
-struct select_dtype
-{};
-
-template <>
-struct select_dtype<double>
-{
-    static constexpr char type[] = "f8";
-};
-
-template <>
-struct select_dtype<float>
-{
-    static constexpr char type[] = "f4";
-};
-
-template <>
-struct select_dtype<int>
-{
-    static constexpr char type[] = "i4";
-};
-
-template <>
-struct select_dtype<uint8_t>
-{
-    static constexpr char type[] = "u1";
-};
-
-template <>
-struct select_dtype<uint16_t>
-{
-    static constexpr char type[] = "u2";
-};
-
-template <>
-struct select_dtype<uint32_t>
-{
-    static constexpr char type[] = "u4";
-};
-
-template <>
-struct select_dtype<uint64_t>
-{
-    static constexpr char type[] = "u8";
-};
-
-template <>
-struct select_dtype<bool>
-{
-    static constexpr char type[] = "?";
-};
-
-template <typename T>
-struct select_npy_type
-{};
-
-template <>
-struct select_npy_type<double>
-{
-    static constexpr NPY_TYPES type = NPY_DOUBLE;
-};
-
-template <>
-struct select_npy_type<float>
-{
-    static constexpr NPY_TYPES type = NPY_FLOAT;
-};
-
-template <>
-struct select_npy_type<int>
-{
-    static constexpr NPY_TYPES type = NPY_INT;
-};
-
-template <>
-struct select_npy_type<uint8_t>
-{
-    static constexpr NPY_TYPES type = NPY_UINT8;
-};
-
-template <>
-struct select_npy_type<uint16_t>
-{
-    static constexpr NPY_TYPES type = NPY_UINT16;
-};
-
-template <>
-struct select_npy_type<uint32_t>
-{
-    static constexpr NPY_TYPES type = NPY_UINT32;
-};
-
-template <>
-struct select_npy_type<uint64_t>
-{
-    static constexpr NPY_TYPES type = NPY_UINT64;
-};
-
-template <>
-struct select_npy_type<bool>
-{
-    static constexpr NPY_TYPES type = NPY_BOOL;
-};
-} // namespace openravepy
-
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
 #include "pybind11/pybind11_bindings.h"
 #else
 #include "boostpython/boostpython_bindings.h"
 #endif
 
-namespace openravepy {
-
-class PyVoidHandle
+namespace openravepy
 {
-public:
-    PyVoidHandle() 
+
+	template<typename T> inline NPY_TYPES getEnum(void)
 	{
-    }
-    PyVoidHandle(std::shared_ptr<void> handle) 
-		: _handle(handle) 
-	{
-    }
-    void Close() 
-	{
-        _handle.reset();
-    }
-    std::shared_ptr<void> _handle;
-};
+		PyErr_SetString(PyExc_ValueError, "no mapping available for this type");
+		py::throw_error_already_set();
+		return NPY_VOID;
+	}
 
-class PyVoidHandleConst
-{
-public:
-    PyVoidHandleConst() {
-    }
-    PyVoidHandleConst(std::shared_ptr<void const> handle) : _handle(handle) {
-    }
-    void Close() {
-        _handle.reset();
-    }
-    std::shared_ptr<void const> _handle;
-};
+	template <>inline NPY_TYPES getEnum<unsigned char>(void){ return NPY_UBYTE; }
 
-template <typename T>
-inline std::vector<T> ExtractArray(const py::object& o)
-{
-    if( IS_PYTHONOBJECT_NONE(o) ) {
-        return {};
-    }
-    std::vector<T> v;
-    try {
-        const size_t n = len(o);
-        v.resize(n);
-        for(size_t i = 0; i < n; ++i) {
-            v[i] = py::extract<T>(o[i]);
-        }
-    }
-    catch(...) {
-        RAVELOG_WARN("Cannot do ExtractArray for " + std::string(typeid(T).name()));
-    }
-    return v;
-}
+	template <>inline NPY_TYPES getEnum<signed char>(void){return NPY_BYTE;}
 
-template <typename T>
-inline std::set<T> ExtractSet(const py::object& o)
-{
-    std::set<T> v;
-    size_t nlen = len(o);
-    for(size_t i = 0; i < nlen; ++i) {
-        v.insert(py::extract<T>(o[i]));
-    }
-    return v;
-}
+	template <>inline NPY_TYPES getEnum<short>(void){return NPY_SHORT;}
 
-inline std::string GetPyErrorString()
-{
-    PyObject *error, *value, *traceback, *string;
-    PyErr_Fetch(&error, &value, &traceback);
-    PyErr_NormalizeException(&error, &value, &traceback);
-    std::string s;
-    if(error != nullptr) {
-        string = PyObject_Str(value);
-        if(string != nullptr) {
-            s.assign(PyBytes_AsString(string));
-            Py_DECREF(string);
-        }
-    }
-    // Does nothing when the ptr is nullptr
-    Py_DECREF(error);
-    Py_DECREF(value);
-    Py_DECREF(traceback);
+	template <>inline NPY_TYPES getEnum<unsigned short>(void){return NPY_USHORT;}
 
-    return s;
-}
+    template <>inline NPY_TYPES getEnum<unsigned int>(void){return NPY_UINT;}
 
-/// should call in the beginning of all BOOST_PYTHON_MODULE
-void init_python_bindings();
+	template <>inline NPY_TYPES getEnum<int>(void){return NPY_INT;}
+
+	template <>inline NPY_TYPES getEnum<long>(void){return NPY_LONG;}
+
+	template <>inline NPY_TYPES getEnum<unsigned long>(void){return NPY_ULONG;}
+
+	template <>inline NPY_TYPES getEnum<long long>(void){return NPY_LONGLONG;}
+
+	template <>inline NPY_TYPES getEnum<unsigned long long>(void){return NPY_ULONGLONG;}
+
+	template <>inline NPY_TYPES getEnum<float>(void){return NPY_FLOAT;}
+
+	template <>inline NPY_TYPES getEnum<double>(void){return NPY_DOUBLE;}
+
+	template <>inline NPY_TYPES getEnum<long double>(void){return NPY_LONGDOUBLE;}
+
+	template <>inline NPY_TYPES getEnum<std::complex<float> >(void){return NPY_CFLOAT;}
+
+	template <>inline NPY_TYPES getEnum<std::complex<double> >(void){return NPY_CDOUBLE;}
+
+	template <>inline NPY_TYPES getEnum<std::complex<long double> >(void){return NPY_CLONGDOUBLE;}
 
 } // namespace openravepy
 
-#endif // OPENRAVE_BOOST_PYTHON_BINDINGS
+
+
+namespace openravepy {
+
+	class PyVoidHandle
+	{
+	public:
+		PyVoidHandle()
+		{
+		}
+		PyVoidHandle(std::shared_ptr<void> handle)
+			: _handle(handle)
+		{
+		}
+		void Close()
+		{
+			_handle.reset();
+		}
+		std::shared_ptr<void> _handle;
+	};
+
+	class PyVoidHandleConst
+	{
+	public:
+		PyVoidHandleConst() {
+		}
+		PyVoidHandleConst(std::shared_ptr<void const> handle) : _handle(handle) {
+		}
+		void Close() {
+			_handle.reset();
+		}
+		std::shared_ptr<void const> _handle;
+	};
+
+	template <typename T>
+	inline std::vector<T> ExtractArray(const py::object& o)
+	{
+		if (IS_PYTHONOBJECT_NONE(o)) {
+			return {};
+		}
+		std::vector<T> v;
+		try {
+			const size_t n = len(o);
+			v.resize(n);
+			for (size_t i = 0; i < n; ++i) {
+				v[i] = py::extract<T>(o[i]);
+			}
+		}
+		catch (...) {
+			RAVELOG_WARN("Cannot do ExtractArray for " + std::string(typeid(T).name()));
+		}
+		return v;
+	}
+
+	template <typename T>
+	inline std::set<T> ExtractSet(const py::object& o)
+	{
+		std::set<T> v;
+		size_t nlen = len(o);
+		for (size_t i = 0; i < nlen; ++i) {
+			v.insert(py::extract<T>(o[i]));
+		}
+		return v;
+	}
+
+	inline std::string GetPyErrorString()
+	{
+		PyObject *error, *value, *traceback, *string;
+		PyErr_Fetch(&error, &value, &traceback);
+		PyErr_NormalizeException(&error, &value, &traceback);
+		std::string s;
+		if (error != nullptr) {
+			string = PyObject_Str(value);
+			if (string != nullptr) {
+				s.assign(PyBytes_AsString(string));
+				Py_DECREF(string);
+			}
+		}
+		// Does nothing when the ptr is nullptr
+		Py_DECREF(error);
+		Py_DECREF(value);
+		Py_DECREF(traceback);
+
+		return s;
+	}
+
+	/// should call in the beginning of all BOOST_PYTHON_MODULE
+	void init_python_bindings();
+
+} // namespace openravepy
+
+#endif // OPENRAVE_PYTHON_BINDINGS_

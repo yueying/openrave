@@ -10,6 +10,12 @@ endif( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
 
 find_package(Boost ${OpenRAVE_Boost_VERSION} EXACT COMPONENTS iostreams python thread system)
 
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/include 
+	${CMAKE_CURRENT_SOURCE_DIR}/include 
+	${PYTHON_INCLUDE_DIRS} 
+	${OPENRAVE_INCLUDE_LOCAL_DIRS} 
+	${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS})
+
 include_directories(${OpenRAVE_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} )
 if( Boost_INCLUDE_DIRS )
   include_directories(${Boost_INCLUDE_DIRS})
@@ -72,7 +78,7 @@ if( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
 
     include_directories(${PYTHON_INCLUDE_PATH} ${OpenRAVE_INCLUDE_DIRS})
     add_library(orpythonbinding SHARED orpythonbinding.cpp)
-    target_link_libraries(orpythonbinding ${OpenRAVE_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY})
+    target_link_libraries(orpythonbinding ${OpenRAVE_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY})
     set_target_properties(orpythonbinding PROPERTIES PREFIX "" COMPILE_FLAGS "${OpenRAVE_CXX_FLAGS}")
     if( WIN32 )
       set_target_properties(orpythonbinding PROPERTIES SUFFIX ".pyd")

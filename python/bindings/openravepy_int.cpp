@@ -55,7 +55,11 @@ using py::def;
 using py::scope;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 // convert from rapidjson to python object
 object toPyObject(const rapidjson::Value& value)
@@ -339,8 +343,8 @@ TransformMatrix ExtractTransformMatrix(const object& oraw)
 object toPyArray(const TransformMatrix& t)
 {
     npy_intp dims[] = { 4,4};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
+    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2]; pdata[3] = t.trans.x;
     pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
     pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
@@ -352,8 +356,8 @@ object toPyArray(const TransformMatrix& t)
 object toPyArray(const Transform& t)
 {
     npy_intp dims[] = { 7};
-    PyObject *pyvalues = PyArray_SimpleNew(1,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
+    PyObject *pyvalues = PyArray_SimpleNew(1,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
     pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
     pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
     return py::to_array_astype<dReal>(pyvalues);
@@ -1286,7 +1290,7 @@ bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPt
     return bCollision;
 }
 
-object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyPtr pbody, bool bFrontFacingOnly)
+object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyPtr pbody, bool bFrontFacingOnly)
 {
     object shape = rays.attr("shape");
     int nRays = extract<int>(shape[0]);
@@ -1312,12 +1316,12 @@ object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyP
 
     RAY r;
     npy_intp dims[] = { nRays,6};
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal) == sizeof(double) ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* ppos = (dReal*)PyArray_DATA(pypos);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal) == sizeof(double) ? NPY_DOUBLE : NPY_FLOAT);
+    dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pypos);
     std::memset(ppos, 0, nRays * sizeof(dReal));
-    PyObject* pycollision = PyArray_SimpleNew(1,&dims[0], PyArray_BOOL);
+    PyObject* pycollision = PyArray_SimpleNew(1,&dims[0], NPY_BOOL);
     // numpy bool = uint8_t
-    uint8_t* pcollision = (uint8_t*)PyArray_DATA(pycollision);
+    uint8_t* pcollision = (uint8_t*)PyArray_DATA((PyArrayObject*)pycollision);
     std::memset(pcollision, 0, nRays * sizeof(uint8_t));
     {
         openravepy::PythonThreadSaver threadsaver;
@@ -2369,7 +2373,7 @@ OPENRAVE_PYTHON_MODULE(openravepy_int)
     doc_options.enable_py_signatures();
     doc_options.enable_user_defined();
 #endif
-    numeric::array::set_module_and_type("numpy", "ndarray");
+    //numeric::array::set_module_and_type("numpy", "ndarray");
     int_from_number<int>();
     int_from_number<uint8_t>();
     float_from_number<float>();

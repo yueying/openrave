@@ -50,7 +50,11 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 
 PyTrajectoryBase::PyTrajectoryBase(TrajectoryBasePtr pTrajectory, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pTrajectory, pyenv),_ptrajectory(pTrajectory) {
 }
@@ -150,9 +154,9 @@ object PyTrajectoryBase::SamplePoints2D(object otimes) const
 
     int numdof = _ptrajectory->GetConfigurationSpecification().GetDOF();
     npy_intp dims[] = { npy_intp(values.size()/numdof), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     if( values.size() > 0 ) {
-        memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
+        memcpy(PyArray_DATA((PyArrayObject*)pypos), &values[0], values.size()*sizeof(values[0]));
     }
     return py::to_array_astype<dReal>(pypos);
 }
@@ -165,9 +169,9 @@ object PyTrajectoryBase::SamplePoints2D(object otimes, PyConfigurationSpecificat
     _ptrajectory->SamplePoints(values, vtimes, spec);
 
     npy_intp dims[] = { npy_intp(values.size()/spec.GetDOF()), npy_intp(spec.GetDOF()) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     if( values.size() > 0 ) {
-        memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
+        memcpy(PyArray_DATA((PyArrayObject*)pypos), &values[0], values.size()*sizeof(values[0]));
     }
     return py::to_array_astype<dReal>(pypos);
 }
@@ -213,9 +217,9 @@ object PyTrajectoryBase::GetWaypoints2D(size_t startindex, size_t endindex) cons
     _ptrajectory->GetWaypoints(startindex,endindex,values);
     int numdof = _ptrajectory->GetConfigurationSpecification().GetDOF();
     npy_intp dims[] = { npy_intp(values.size()/numdof), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     if( values.size() > 0 ) {
-        memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
+        memcpy(PyArray_DATA((PyArrayObject*)pypos), &values[0], values.size()*sizeof(values[0]));
     }
     return py::to_array_astype<dReal>(pypos);
 }
@@ -259,11 +263,11 @@ object PyTrajectoryBase::__getitem__(py::slice indices) const
     _ptrajectory->GetWaypoint(0,values);
     int numdof = _ptrajectory->GetConfigurationSpecification().GetDOF();
     npy_intp dims[] = { npy_intp(vindices.size()), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     int waypointSize = values.size()*sizeof(values[0]);
     for(int i=0; i< (int)vindices.size(); i++) {
         _ptrajectory->GetWaypoint(vindices[i],values);
-        memcpy(PyArray_BYTES(pypos)+(i*waypointSize), &values[0], waypointSize);
+        memcpy(PyArray_BYTES((PyArrayObject*)pypos)+(i*waypointSize), &values[0], waypointSize);
     }
     return py::to_array_astype<dReal>(pypos);
 }
@@ -279,9 +283,9 @@ object PyTrajectoryBase::GetWaypoints2D(size_t startindex, size_t endindex, PyCo
     ConfigurationSpecification spec = openravepy::GetConfigurationSpecification(pyspec);
     _ptrajectory->GetWaypoints(startindex,endindex,values,spec);
     npy_intp dims[] = { npy_intp(values.size()/spec.GetDOF()), npy_intp(spec.GetDOF()) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
     if( values.size() > 0 ) {
-        memcpy(PyArray_DATA(pypos), &values[0], values.size()*sizeof(values[0]));
+        memcpy(PyArray_DATA((PyArrayObject*)pypos), &values[0], values.size()*sizeof(values[0]));
     }
     return py::to_array_astype<dReal>(pypos);
 }

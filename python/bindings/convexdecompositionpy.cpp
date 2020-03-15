@@ -31,7 +31,11 @@
 #include "NvConvexDecomposition.h"
 
 namespace py = openravepy::py;
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
 namespace numeric = py::numeric;
+#else
+namespace numeric = py::numpy;
+#endif
 using py::object;
 using py::extract;
 using py::handle;
@@ -152,13 +156,13 @@ object computeConvexDecomposition(const boost::multi_array<float, 2>& vertices, 
         ic->getConvexHullResult(i,result);
 
         npy_intp dims[] = { result.mVcount,3};
-        PyObject *pyvertices = PyArray_SimpleNew(2,dims, sizeof(result.mVertices[0])==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        std::copy(&result.mVertices[0],&result.mVertices[3*result.mVcount],(NxF32*)PyArray_DATA(pyvertices));
+        PyObject *pyvertices = PyArray_SimpleNew(2,dims, sizeof(result.mVertices[0])==8 ? NPY_DOUBLE : NPY_FLOAT);
+        std::copy(&result.mVertices[0],&result.mVertices[3*result.mVcount],(NxF32*)PyArray_DATA((PyArrayObject*)pyvertices));
 
         dims[0] = result.mTcount;
         dims[1] = 3;
         PyObject *pyindices = PyArray_SimpleNew(2,dims, PyArray_INT);
-        std::copy(&result.mIndices[0],&result.mIndices[3*result.mTcount],(int*)PyArray_DATA(pyindices));
+        std::copy(&result.mIndices[0],&result.mIndices[3*result.mTcount],(int*)PyArray_DATA((PyArrayObject*)pyindices));
         hulls.append(py::make_tuple(py::to_array_astype<NxF32>(pyvertices), py::to_array_astype<int>(pyindices)));
     }
 
@@ -173,7 +177,7 @@ OPENRAVE_PYTHON_MODULE(convexdecompositionpy)
 {
     import_array1();
 #ifndef USE_PYBIND11_PYTHON_BINDINGS
-    numeric::array::set_module_and_type("numpy", "ndarray");
+    //numeric::array::set_module_and_type("numpy", "ndarray");
     int_from_number<int>();
     float_from_number<float>();
     float_from_number<double>();
