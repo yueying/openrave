@@ -989,32 +989,42 @@ namespace OpenRAVE
 			static const KinBody::JointType JointHinge2 RAVE_DEPRECATED = KinBody::JointHinge2;
 			static const KinBody::JointType JointSpherical RAVE_DEPRECATED = KinBody::JointSpherical;
 			static const KinBody::JointType JointTrajectory RAVE_DEPRECATED = KinBody::JointTrajectory;
-
 			Joint(KinBodyPtr parent, KinBody::JointType type = KinBody::JointNone);
 			virtual ~Joint();
 
 			/// \brief The unique name of the joint
-			inline const std::string& GetName() const {
+			inline const std::string& GetName() const 
+			{
 				return info_.name_;
 			}
 
-			inline dReal GetMaxVel(int iaxis = 0) const {
+			inline dReal GetMaxVel(int iaxis = 0) const 
+			{
 				return info_.max_velocity_vector_[iaxis];
 			}
-			inline dReal GetMaxAccel(int iaxis = 0) const {
+
+			inline dReal GetMaxAccel(int iaxis = 0) const 
+			{
 				return info_.max_accelerate_vector_[iaxis];
 			}
-			inline dReal GetMaxJerk(int iaxis = 0) const {
+
+			inline dReal GetMaxJerk(int iaxis = 0) const 
+			{
 				return info_.max_jerk_vector_[iaxis];
 			}
 
-			inline dReal GetHardMaxVel(int iaxis = 0) const {
+			inline dReal GetHardMaxVel(int iaxis = 0) const 
+			{
 				return info_.hard_max_velocity_vector_[iaxis];
 			}
-			inline dReal GetHardMaxAccel(int iaxis = 0) const {
+
+			inline dReal GetHardMaxAccel(int iaxis = 0) const 
+			{
 				return info_.hard_max_accelerate_vector_[iaxis];
 			}
-			inline dReal GetHardMaxJerk(int iaxis = 0) const {
+
+			inline dReal GetHardMaxJerk(int iaxis = 0) const
+			{
 				return info_.hard_max_jerk_vector_[iaxis];
 			}
 
@@ -1035,42 +1045,52 @@ namespace OpenRAVE
 			/// \return min and max of torque limits
 			std::pair<dReal, dReal> GetNominalTorqueLimits(int iaxis = 0) const;
 
-			inline dReal GetMaxInertia(int iaxis = 0) const {
+			inline dReal GetMaxInertia(int iaxis = 0) const 
+			{
 				return info_.max_inertia_vector_[iaxis];
 			}
 
 			/// \brief Get the degree of freedom index in the body's DOF array.
 			///
 			/// This does not index in KinBody::GetJoints() directly! In other words, KinBody::GetDOFValues()[GetDOFIndex()] == GetValues()[0]
-			inline int GetDOFIndex() const {
+			inline int GetDOFIndex() const 
+			{
 				return dofindex;
 			}
 
 			/// \brief Get the joint index into KinBody::GetJoints.
-			inline int GetJointIndex() const {
+			inline int GetJointIndex() const 
+			{
 				return jointindex;
 			}
 
 			/// \brief parent body that joint belongs to.
 			///
 			/// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
-			inline KinBodyPtr GetParent(bool trylock = false) const {
-				if (trylock) {
+			inline KinBodyPtr GetParent(bool trylock = false) const 
+			{
+				if (trylock) 
+				{
 					return _parent.lock();
 				}
-				else {
+				else 
+				{
 					return KinBodyPtr(_parent);
 				}
 			}
 
-			inline LinkPtr GetFirstAttached() const {
-				return _attachedbodies[0];
-			}
-			inline LinkPtr GetSecondAttached() const {
-				return _attachedbodies[1];
+			inline LinkPtr GetFirstAttached() const
+			{
+				return attached_bodies_array_[0];
 			}
 
-			inline KinBody::JointType GetType() const {
+			inline LinkPtr GetSecondAttached() const 
+			{
+				return attached_bodies_array_[1];
+			}
+
+			inline KinBody::JointType GetType() const 
+			{
 				return info_.type_;
 			}
 
@@ -1416,7 +1436,7 @@ namespace OpenRAVE
 		protected:
 			JointInfo info_;
 
-			std::array< MimicPtr, 3> _vmimic;          //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
+			std::array< MimicPtr, 3> _vmimic;   //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
 			/** \brief computes the partial velocities with respect to all dependent DOFs specified by Mimic::_vmimicdofs.
 
@@ -1431,7 +1451,7 @@ namespace OpenRAVE
 
 				Called after the joint protected parameters {vAxes, vanchor, and offsets_vector_}  have been initialized. vAxes and vanchor should be in the frame of plink0.
 				Compute the left and right multiplications of the joint transformation and cleans up the attached bodies.
-				After function completes, the following parameters are initialized: _tRight, _tLeft, _tinvRight, _tinvLeft, _attachedbodies. _attachedbodies does not necessarily contain the links in the same order as they were input.
+				After function completes, the following parameters are initialized: _tRight, _tLeft, _tinvRight, _tinvLeft, attached_bodies_array_. attached_bodies_array_ does not necessarily contain the links in the same order as they were input.
 				\param plink0 the first attaching link, all axes and anchors are defined in its coordinate system
 				\param plink1 the second attaching link
 				\param vanchor the anchor of the rotation axes
@@ -1461,17 +1481,17 @@ namespace OpenRAVE
 			/// Sensitive variables that should not be modified.
 			/// @name Private Joint Variables
 			//@{
-			int dofindex;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::_vecjoints!
-			int jointindex;                 //!< the joint index into KinBody::_vecjoints
+			int dofindex;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::joints_vector_!
+			int jointindex;                 //!< the joint index into KinBody::joints_vector_
 			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         //!< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
 
 			KinBodyWeakPtr _parent;               //!< body that joint belong to
-			std::array<LinkPtr, 2> _attachedbodies;         //!< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
+			std::array<LinkPtr, 2> attached_bodies_array_;         //!< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
 			std::array<Vector, 3> _vaxes;                //!< normalized axes, this can be different from info_.axes_vector_ and reflects how _tRight and _tLeft are computed
 			Transform _tRight, _tLeft;         //!< transforms used to get body[1]'s transformation with respect to body[0]'s: Tbody1 = Tbody0 * tLeft * JointOffsetLeft * JointRotation * JointOffsetRight * tRight
 			Transform _tRightNoOffset, _tLeftNoOffset;         //!< same as _tLeft and _tRight except it doesn't not include the offset
 			Transform _tinvRight, _tinvLeft;         //!< the inverse transformations of tRight and tLeft
-			bool _bInitialized;
+			bool is_initialized_;
 			//@}
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
@@ -1763,7 +1783,7 @@ namespace OpenRAVE
 
 		/// \brief Number controllable degrees of freedom of the body.
 		///
-		/// Only uses _vecjoints and last joint for computation, so can work before _ComputeInternalInformation is called.
+		/// Only uses joints_vector_ and last joint for computation, so can work before _ComputeInternalInformation is called.
 		virtual int GetDOF() const;
 
 		/// \brief Returns all the joint values as organized by the DOF indices.
@@ -1874,7 +1894,7 @@ namespace OpenRAVE
 
 		/// \brief Returns the joints making up the controllable degrees of freedom of the body.
 		const std::vector<JointPtr>& GetJoints() const {
-			return _vecjoints;
+			return joints_vector_;
 		}
 
 		/** \brief Returns the passive joints, order does not matter.
@@ -2382,7 +2402,7 @@ namespace OpenRAVE
 		/// that needs to keep track of any changes of the KinBody as it moves.
 		/// Currently stamps monotonically increment for every transformation/joint angle change.
 		virtual int GetUpdateStamp() const {
-			return _nUpdateStampId;
+			return update_stamp_id_;
 		}
 
 		virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions);
@@ -2615,22 +2635,22 @@ namespace OpenRAVE
 
 	protected:
 		std::string name_; //!< name of body
-		std::vector<JointPtr> _vecjoints; //!< \see GetJoints
-		std::vector<JointPtr> _vTopologicallySortedJoints; //!< \see GetDependencyOrderedJoints
-		std::vector<JointPtr> _vTopologicallySortedJointsAll; //!< Similar to _vDependencyOrderedJoints except includes _vecjoints and _vPassiveJoints
-		std::vector<int> _vTopologicallySortedJointIndicesAll; //!< the joint indices of the joints in _vTopologicallySortedJointsAll. Passive joint indices have _vecjoints.size() added to them.
-		std::vector<JointPtr> _vDOFOrderedJoints; //!< all joints of the body ordered on how they are arranged within the degrees of freedom
+		std::vector<JointPtr> joints_vector_; //!< \see GetJoints
+		std::vector<JointPtr> topologically_sorted_joints_vector_; //!< \see GetDependencyOrderedJoints
+		std::vector<JointPtr> topologically_sorted_joints_all_vector_; //!< Similar to _vDependencyOrderedJoints except includes joints_vector_ and _vPassiveJoints
+		std::vector<int> topologically_sorted_joint_indices_all_vector_; //!< the joint indices of the joints in topologically_sorted_joints_all_vector_. Passive joint indices have joints_vector_.size() added to them.
+		std::vector<JointPtr> dof_ordered_joints_vector_; //!< all joints of the body ordered on how they are arranged within the degrees of freedom
 		std::vector<LinkPtr> links_vector_; //!< \see GetLinks
-		std::vector<int> _vDOFIndices; //!< cached start joint indices, indexed by dof indices
-		std::vector<std::pair<int16_t, int16_t> > _vAllPairsShortestPaths; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into _vecjoints or _vPassiveJoints. If the second value is greater or equal to  _vecjoints.size() then it indexes into _vPassiveJoints.
+		std::vector<int> dof_indices_vector_; //!< cached start joint indices, indexed by dof indices
+		std::vector<std::pair<int16_t, int16_t> > all_pairs_shortest_paths_vector_; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into joints_vector_ or _vPassiveJoints. If the second value is greater or equal to  joints_vector_.size() then it indexes into _vPassiveJoints.
 		std::vector<int8_t> joints_affecting_links_vector_; //!< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
-		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > _vClosedLoops; //!< \see GetClosedLoops
-		std::vector< std::vector< std::pair<int16_t, int16_t> > > _vClosedLoopIndices; //!< \see GetClosedLoops
+		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > closed_loops_vector_; //!< \see GetClosedLoops
+		std::vector< std::vector< std::pair<int16_t, int16_t> > > closed_loop_indices_vector_; //!< \see GetClosedLoops
 		std::vector<JointPtr> _vPassiveJoints; //!< \see GetPassiveJoints()
 		std::set<int> _setAdjacentLinks; //!< a set of which links are connected to which if link i and j are connected then
 										 //!< i|(j<<16) will be in the set where i<j.
 		std::vector< std::pair<std::string, std::string> > _vForcedAdjacentLinks; //!< internally stores forced adjacent links
-		std::list<KinBodyWeakPtr> _listAttachedBodies; //!< list of bodies that are directly attached to this body (can have duplicates)
+		std::list<KinBodyWeakPtr> attached_bodies_list_; //!< list of bodies that are directly attached to this body (can have duplicates)
 
 		std::vector<UserDataPtr> _vGrabbedBodies; //!< vector of grabbed bodies
 
@@ -2645,16 +2665,17 @@ namespace OpenRAVE
 		CollisionCheckerBasePtr self_collision_checker_; //!< optional checker to use for self-collisions
 
 
-		mutable int _nUpdateStampId; //!< \see GetUpdateStamp
-		uint32_t _nParametersChanged; //!< set of parameters that changed and need callbacks
+		mutable int update_stamp_id_; //!< \see GetUpdateStamp
+		uint32_t parameters_changed_; //!< set of parameters that changed and need callbacks
 		ManageDataPtr _pManageData;
-		uint32_t _nHierarchyComputed; //!< 2 if the joint heirarchy and other cached information is computed. 1 if the hierarchy information is computing
+		uint32_t hierarchy_computed_; //!< 2 if the joint heirarchy and other cached information is computed. 1 if the hierarchy information is computing
 		bool _bMakeJoinedLinksAdjacent; //!< if true, then automatically add adjacent links to the adjacency list so that their self-collisions are ignored.
-		bool _bAreAllJoints1DOFAndNonCircular; //!< if true, then all controllable joints  of the robot are guaranteed to be either revolute or prismatic and non-circular. This allows certain functions that do operations on the joint values (like SubtractActiveDOFValues) to be optimized without calling Joint functions.
+		bool is_all_joints_1dof_and_no_circular_; //!< if true, then all controllable joints  of the robot are guaranteed to be either revolute or prismatic and non-circular. This allows certain functions that do operations on the joint values (like SubtractActiveDOFValues) to be optimized without calling Joint functions.
 	private:
 		mutable std::string __hashkinematics;
 		mutable std::vector<dReal> _vTempJoints;
-		virtual const char* GetHash() const {
+		virtual const char* GetHash() const 
+		{
 			return OPENRAVE_KINBODY_HASH;
 		}
 

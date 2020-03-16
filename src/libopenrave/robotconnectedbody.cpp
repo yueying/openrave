@@ -39,7 +39,7 @@ void RobotBase::ConnectedBodyInfo::InitInfoFromBody(RobotBase& robot)
         _vLinkInfos.push_back(std::make_shared<KinBody::LinkInfo>((*itlink)->UpdateAndGetInfo()));
     }
 
-    FOREACH(itjoint, robot._vecjoints) {
+    FOREACH(itjoint, robot.joints_vector_) {
         _vJointInfos.push_back(std::make_shared<KinBody::JointInfo>((*itjoint)->UpdateAndGetInfo()));
     }
     FOREACH(itjoint, robot._vPassiveJoints) {
@@ -212,7 +212,7 @@ bool RobotBase::ConnectedBody::SetActive(bool active)
 
     RobotBasePtr pattachedrobot = _pattachedrobot.lock();
     if( !!pattachedrobot ) {
-        if( pattachedrobot->_nHierarchyComputed != 0 ) {
+        if( pattachedrobot->hierarchy_computed_ != 0 ) {
             throw OPENRAVE_EXCEPTION_FORMAT("Cannot set ConnectedBody %s active to %s since robot %s is still in the environment", info_.name_%active%pattachedrobot->GetName(), ORE_InvalidState);
         }
     }
@@ -328,7 +328,7 @@ void RobotBase::ConnectedBody::GetResolvedAttachedSensors(std::vector<RobotBase:
 
 RobotBase::ConnectedBodyPtr RobotBase::AddConnectedBody(const RobotBase::ConnectedBodyInfo& connectedBodyInfo, bool removeduplicate)
 {
-    if( _nHierarchyComputed != 0 ) {
+    if( hierarchy_computed_ != 0 ) {
         throw OPENRAVE_EXCEPTION_FORMAT("Cannot add connected body while robot %s is added to the environment", GetName(), ORE_InvalidState);
     }
 
@@ -346,7 +346,7 @@ RobotBase::ConnectedBodyPtr RobotBase::AddConnectedBody(const RobotBase::Connect
         }
     }
     ConnectedBodyPtr newConnectedBody(new ConnectedBody(shared_robot(),connectedBodyInfo));
-//    if( _nHierarchyComputed ) {
+//    if( hierarchy_computed_ ) {
 //        newConnectedBody->_ComputeInternalInformation();
 //    }
     if( iremoveindex >= 0 ) {
@@ -393,7 +393,7 @@ void RobotBase::_ComputeConnectedBodiesInformation()
 
     // should have already done adding the necessary link etc
     // during cloning, we should not add links and joints again
-    if (_nHierarchyComputed != 0) {
+    if (hierarchy_computed_ != 0) {
         return;
     }
 
@@ -612,7 +612,7 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
     }
 
     std::vector<uint8_t> vConnectedLinks; vConnectedLinks.resize(links_vector_.size(),0);
-    std::vector<uint8_t> vConnectedJoints; vConnectedJoints.resize(_vecjoints.size(),0);
+    std::vector<uint8_t> vConnectedJoints; vConnectedJoints.resize(joints_vector_.size(),0);
     std::vector<uint8_t> vConnectedPassiveJoints; vConnectedPassiveJoints.resize(_vPassiveJoints.size(),0);
 
     // have to remove any of the added links
@@ -629,8 +629,8 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
         }
 
         for(int iresolvedjoint = 0; iresolvedjoint < (int)connectedBody._vResolvedJointNames.size(); ++iresolvedjoint) {
-            for(int ijointindex = 0; ijointindex < (int)_vecjoints.size(); ++ijointindex) {
-                if( _vecjoints[ijointindex]->GetName() == connectedBody._vResolvedJointNames[iresolvedjoint].first ) {
+            for(int ijointindex = 0; ijointindex < (int)joints_vector_.size(); ++ijointindex) {
+                if( joints_vector_[ijointindex]->GetName() == connectedBody._vResolvedJointNames[iresolvedjoint].first ) {
                     vConnectedJoints[ijointindex] = 1;
                 }
             }
@@ -679,10 +679,10 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
     for(int ireadjoint = 0; ireadjoint < (int)vConnectedJoints.size(); ++ireadjoint) {
         if( !vConnectedJoints[ireadjoint] ) {
             // preserve as original
-            _vecjoints[iwritejoint++] = _vecjoints[ireadjoint];
+            joints_vector_[iwritejoint++] = joints_vector_[ireadjoint];
         }
     }
-    _vecjoints.resize(iwritejoint);
+    joints_vector_.resize(iwritejoint);
 
     int iwritepassiveJoint = 0;
     for(int ireadpassiveJoint = 0; ireadpassiveJoint < (int)vConnectedPassiveJoints.size(); ++ireadpassiveJoint) {

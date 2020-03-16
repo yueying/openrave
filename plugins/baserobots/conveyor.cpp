@@ -242,7 +242,7 @@ protected:
                 *mimic = *cmdata->_mimic;
                 mimic->_equations[0] += str(boost::format(" +%.15e")%curtime); // have to add the offset inside the equations
                 std::shared_ptr<ConveyorJoint> pchildjoint(new ConveyorJoint(pchildlink->GetName(), cmdata->_trajfollow, mimic, cmdata->_bIsCircular, shared_kinbody()));
-                _vecjoints.push_back(pchildjoint);
+                joints_vector_.push_back(pchildjoint);
                 pchildjoint->_ComputeInternalInformation(cmdata->_linkParent, pchildlink, curtime);
             }
             cmdata->_bCreated = true;

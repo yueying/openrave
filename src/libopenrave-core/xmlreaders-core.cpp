@@ -2204,8 +2204,8 @@ public:
                     _pjoint->dofindex = _pchain->GetDOF();
                     std::shared_ptr<JointXMLReader> pjointreader = std::dynamic_pointer_cast<JointXMLReader>(_pcurreader);
                     if( _pjoint->info_.is_active_ ) {
-                        _pjoint->jointindex = (int)_pchain->_vecjoints.size();
-                        _pchain->_vecjoints.push_back(_pjoint);
+                        _pjoint->jointindex = (int)_pchain->joints_vector_.size();
+                        _pchain->joints_vector_.push_back(_pjoint);
                     }
                     else {
                         _pjoint->jointindex = -1;
@@ -2325,8 +2325,8 @@ public:
                 for(vector<KinBody::LinkPtr>::iterator itlink = _pchain->links_vector_.begin()+rootoffset; itlink != _pchain->links_vector_.end(); ++itlink) {
                     (*itlink)->info_.name_ = _prefix + (*itlink)->info_.name_;
                 }
-                BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_pchain->_vecjoints.size());
-                for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->_vecjoints.begin()+rootjoffset; itjoint != _pchain->_vecjoints.end(); ++itjoint) {
+                BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_pchain->joints_vector_.size());
+                for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->joints_vector_.begin()+rootjoffset; itjoint != _pchain->joints_vector_.end(); ++itjoint) {
                     (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                 }
                 BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_pchain->_vPassiveJoints.size());
@@ -3033,11 +3033,11 @@ public:
                     ++itlink;
                 }
                 std::vector< std::pair<std::string, std::string> > jointnamepairs;
-                jointnamepairs.reserve(_probot->_vecjoints.size());
-                BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_probot->_vecjoints.size());
-                vector<KinBody::JointPtr>::iterator itjoint = _probot->_vecjoints.begin()+rootjoffset;
+                jointnamepairs.reserve(_probot->joints_vector_.size());
+                BOOST_ASSERT(rootjoffset >= 0 && rootjoffset<=(int)_probot->joints_vector_.size());
+                vector<KinBody::JointPtr>::iterator itjoint = _probot->joints_vector_.begin()+rootjoffset;
                 list<KinBody::JointPtr> listjoints;
-                while(itjoint != _probot->_vecjoints.end()) {
+                while(itjoint != _probot->joints_vector_.end()) {
                     jointnamepairs.emplace_back((*itjoint)->info_.name_,  _prefix +(*itjoint)->info_.name_);
                     (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                     listjoints.push_back(*itjoint);

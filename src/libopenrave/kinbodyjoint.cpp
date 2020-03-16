@@ -72,8 +72,10 @@ KinBody::JointInfo::JointInfo(const JointInfo& other)
 
 int KinBody::JointInfo::GetDOF() const
 {
-    if(type_ & KinBody::JointSpecialBit) {
-        switch(type_) {
+    if(type_ & KinBody::JointSpecialBit)
+	{
+        switch(type_) 
+		{
         case KinBody::JointHinge2:
         case KinBody::JointUniversal: return 2;
         case KinBody::JointSpherical: return 3;
@@ -85,11 +87,13 @@ int KinBody::JointInfo::GetDOF() const
     return int(type_ & 0xf);
 }
 
-void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
+void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value,
+	rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     int dof = GetDOF();
 
-    switch (type_) {
+    switch (type_) 
+	{
     case JointRevolute:
         openravejson::SetJsonValueByKey(value, "type", "revolute", allocator);
         break;
@@ -125,7 +129,8 @@ void KinBody::JointInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Docum
     std::array<dReal, 3> newvmaxaccel = max_accelerate_vector_;
     std::array<dReal, 3> newvlowerlimit = lower_limit_vector_;
     std::array<dReal, 3> newvupperlimit = upper_limit_vector_;
-    for(size_t i = 0; i < 3; i++) {
+    for(size_t i = 0; i < 3; i++) 
+	{
         newvmaxvel[i] *= fjointmult;
         newvmaxaccel[i] *= fjointmult;
         newvlowerlimit[i] *= fjointmult;
@@ -421,7 +426,8 @@ OpenRAVEFunctionParserRealPtr CreateJointFunctionParser()
 KinBody::Joint::Joint(KinBodyPtr parent, KinBody::JointType type)
 {
     _parent = parent;
-    FOREACH(it,_doflastsetvalues) {
+    FOREACH(it,_doflastsetvalues)
+	{
         *it = 0;
     }
     for(size_t i = 0; i < _vaxes.size(); ++i) {
@@ -429,7 +435,7 @@ KinBody::Joint::Joint(KinBodyPtr parent, KinBody::JointType type)
     }
     jointindex=-1;
     dofindex = -1; // invalid index
-    _bInitialized = false;
+    is_initialized_ = false;
     info_.type_ = type;
     info_.control_mode_ = JCM_None;
 }
@@ -455,7 +461,8 @@ bool KinBody::Joint::IsCircular(int iaxis) const
 
 bool KinBody::Joint::IsRevolute(int iaxis) const
 {
-    if( info_.type_ & KinBody::JointSpecialBit ) {
+    if( info_.type_ & KinBody::JointSpecialBit ) 
+	{
         return info_.type_ == KinBody::JointHinge2 || info_.type_ == KinBody::JointUniversal;
     }
     return !(info_.type_&(1<<(4+iaxis)));
@@ -463,7 +470,8 @@ bool KinBody::Joint::IsRevolute(int iaxis) const
 
 bool KinBody::Joint::IsPrismatic(int iaxis) const
 {
-    if( info_.type_ & KinBody::JointSpecialBit ) {
+    if( info_.type_ & KinBody::JointSpecialBit ) 
+	{
         return false;
     }
     return !!(info_.type_&(1<<(4+iaxis)));
@@ -471,23 +479,24 @@ bool KinBody::Joint::IsPrismatic(int iaxis) const
 
 bool KinBody::Joint::IsStatic() const
 {
-    if( IsMimic() ) {
-        bool bstatic = true;
+    if( IsMimic() ) 
+	{
+        bool is_static = true;
         KinBodyConstPtr parent(_parent);
         for(int i = 0; i < GetDOF(); ++i) {
             if( !!_vmimic.at(i) ) {
                 FOREACHC(it, _vmimic.at(i)->_vmimicdofs) {
                     if( !parent->GetJointFromDOFIndex(it->dofindex)->IsStatic() ) {
-                        bstatic = false;
+                        is_static = false;
                         break;
                     }
                 }
-                if( !bstatic ) {
+                if( !is_static ) {
                     break;
                 }
             }
         }
-        if( bstatic ) {
+        if( is_static ) {
             return true;
         }
     }
@@ -504,7 +513,7 @@ bool KinBody::Joint::IsStatic() const
 
 void KinBody::Joint::GetValues(vector<dReal>& pValues, bool bAppend) const
 {
-    OPENRAVE_ASSERT_FORMAT0(_bInitialized, "joint not initialized",ORE_NotInitialized);
+    OPENRAVE_ASSERT_FORMAT0(is_initialized_, "joint not initialized",ORE_NotInitialized);
     if( !bAppend ) {
         pValues.resize(0);
     }
@@ -513,7 +522,7 @@ void KinBody::Joint::GetValues(vector<dReal>& pValues, bool bAppend) const
         return;
     }
     dReal f;
-    Transform tjoint = _tinvLeft * _attachedbodies[0]->GetTransform().inverse() * _attachedbodies[1]->GetTransform() * _tinvRight;
+    Transform tjoint = _tinvLeft * attached_bodies_array_[0]->GetTransform().inverse() * attached_bodies_array_[1]->GetTransform() * _tinvRight;
     if( info_.type_ & KinBody::JointSpecialBit ) {
         switch(info_.type_) {
         case KinBody::JointHinge2: {
@@ -596,9 +605,9 @@ void KinBody::Joint::GetValues(vector<dReal>& pValues, bool bAppend) const
 
 dReal KinBody::Joint::GetValue(int iaxis) const
 {
-    OPENRAVE_ASSERT_FORMAT0(_bInitialized, "joint not initialized",ORE_NotInitialized);
+    OPENRAVE_ASSERT_FORMAT0(is_initialized_, "joint not initialized",ORE_NotInitialized);
     dReal f;
-    Transform tjoint = _tinvLeft * _attachedbodies[0]->GetTransform().inverse() * _attachedbodies[1]->GetTransform() * _tinvRight;
+    Transform tjoint = _tinvLeft * attached_bodies_array_[0]->GetTransform().inverse() * attached_bodies_array_[1]->GetTransform() * _tinvRight;
     if( info_.type_ & KinBody::JointSpecialBit ) {
         switch(info_.type_) {
         case KinBody::JointHinge2: {
@@ -752,7 +761,7 @@ dReal KinBody::Joint::GetValue(int iaxis) const
 
 void KinBody::Joint::GetVelocities(std::vector<dReal>& pVelocities, bool bAppend) const
 {
-    OPENRAVE_ASSERT_FORMAT0(_bInitialized, "joint not initialized",ORE_NotInitialized);
+    OPENRAVE_ASSERT_FORMAT0(is_initialized_, "joint not initialized",ORE_NotInitialized);
     if( !bAppend ) {
         pVelocities.resize(0);
     }
@@ -760,13 +769,13 @@ void KinBody::Joint::GetVelocities(std::vector<dReal>& pVelocities, bool bAppend
         pVelocities.push_back(GetVelocity(0));
         return;
     }
-    _GetVelocities(pVelocities,bAppend,_attachedbodies[0]->GetVelocity(), _attachedbodies[1]->GetVelocity());
+    _GetVelocities(pVelocities,bAppend,attached_bodies_array_[0]->GetVelocity(), attached_bodies_array_[1]->GetVelocity());
 };
 
 dReal KinBody::Joint::GetVelocity(int axis) const
 {
-    OPENRAVE_ASSERT_FORMAT0(_bInitialized, "joint not initialized",ORE_NotInitialized);
-    return _GetVelocity(axis,_attachedbodies[0]->GetVelocity(), _attachedbodies[1]->GetVelocity());
+    OPENRAVE_ASSERT_FORMAT0(is_initialized_, "joint not initialized",ORE_NotInitialized);
+    return _GetVelocity(axis,attached_bodies_array_[0]->GetVelocity(), attached_bodies_array_[1]->GetVelocity());
 }
 
 void KinBody::Joint::_GetVelocities(std::vector<dReal>& pVelocities, bool bAppend, const std::pair<Vector,Vector>& linkparentvelocity, const std::pair<Vector,Vector>& linkchildvelocity) const
@@ -778,8 +787,8 @@ void KinBody::Joint::_GetVelocities(std::vector<dReal>& pVelocities, bool bAppen
         pVelocities.push_back(GetVelocity(0));
         return;
     }
-    const Transform& linkparenttransform = _attachedbodies[0]->info_.transform_;
-    const Transform& linkchildtransform = _attachedbodies[1]->info_.transform_;
+    const Transform& linkparenttransform = attached_bodies_array_[0]->info_.transform_;
+    const Transform& linkchildtransform = attached_bodies_array_[1]->info_.transform_;
     Vector quatdelta = quatMultiply(linkparenttransform.rot,_tLeft.rot);
     Vector quatdeltainv = quatInverse(quatdelta);
     if( info_.type_ & KinBody::JointSpecialBit ) {
@@ -813,8 +822,8 @@ void KinBody::Joint::_GetVelocities(std::vector<dReal>& pVelocities, bool bAppen
 
 dReal KinBody::Joint::_GetVelocity(int axis, const std::pair<Vector,Vector>&linkparentvelocity, const std::pair<Vector,Vector>&linkchildvelocity) const
 {
-    const Transform& linkparenttransform = _attachedbodies[0]->info_.transform_;
-    const Transform& linkchildtransform = _attachedbodies[1]->info_.transform_;
+    const Transform& linkparenttransform = attached_bodies_array_[0]->info_.transform_;
+    const Transform& linkchildtransform = attached_bodies_array_[1]->info_.transform_;
     Vector quatdelta = quatMultiply(linkparenttransform.rot,_tLeft.rot);
     Vector quatdeltainv = quatInverse(quatdelta);
     if( info_.type_ & KinBody::JointSpecialBit ) {
@@ -860,17 +869,17 @@ dReal KinBody::Joint::_GetVelocity(int axis, const std::pair<Vector,Vector>&link
 
 Vector KinBody::Joint::GetAnchor() const
 {
-    return _attachedbodies[0]->GetTransform() * _tLeft.trans;
+    return attached_bodies_array_[0]->GetTransform() * _tLeft.trans;
 }
 
 Vector KinBody::Joint::GetAxis(int iaxis) const
 {
-    return _attachedbodies[0]->GetTransform().rotate(_tLeft.rotate(_vaxes.at(iaxis)));
+    return attached_bodies_array_[0]->GetTransform().rotate(_tLeft.rotate(_vaxes.at(iaxis)));
 }
 
 void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1, const Vector& vanchorraw, const std::vector<Vector>& vaxes, const std::vector<dReal>& vcurrentvalues)
 {
-    OPENRAVE_ASSERT_OP_FORMAT(!!plink0,&&,!!plink1, "one or more attached _attachedbodies are invalid for joint %s", GetName(),ORE_InvalidArguments);
+    OPENRAVE_ASSERT_OP_FORMAT(!!plink0,&&,!!plink1, "one or more attached attached_bodies_array_ are invalid for joint %s", GetName(),ORE_InvalidArguments);
     for(int i = 0; i < GetDOF(); ++i) {
         OPENRAVE_ASSERT_OP_FORMAT(info_.max_velocity_vector_[i], >=, 0, "joint %s[%d] max velocity is invalid",info_.name_%i, ORE_InvalidArguments);
         OPENRAVE_ASSERT_OP_FORMAT(info_.max_accelerate_vector_[i], >=, 0, "joint %s[%d] max acceleration is invalid",info_.name_%i, ORE_InvalidArguments);
@@ -880,23 +889,23 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
     }
 
     KinBodyPtr parent(_parent);
-    _bInitialized = false;
-    _attachedbodies[0] = plink0;
-    _attachedbodies[1] = plink1;
+    is_initialized_ = false;
+    attached_bodies_array_[0] = plink0;
+    attached_bodies_array_[1] = plink1;
     Transform trel, tbody0, tbody1;
     Vector vanchor=vanchorraw;
     for(size_t i = 0; i < vaxes.size(); ++i) {
         _vaxes[i] = vaxes[i];
     }
     // make sure first body is always closer to the root, unless the second body is static and the first body is not the root link
-    if( _attachedbodies[1]->IsStatic() && _attachedbodies[0]->GetIndex() > 0) {
-        if( !_attachedbodies[0]->IsStatic() ) {
+    if( attached_bodies_array_[1]->IsStatic() && attached_bodies_array_[0]->GetIndex() > 0) {
+        if( !attached_bodies_array_[0]->IsStatic() ) {
             Transform tswap = plink1->GetTransform().inverse() * plink0->GetTransform();
             for(int i = 0; i < GetDOF(); ++i) {
                 _vaxes[i] = -tswap.rotate(_vaxes[i]);
             }
             vanchor = tswap*vanchor;
-            swap(_attachedbodies[0],_attachedbodies[1]);
+            swap(attached_bodies_array_[0],attached_bodies_array_[1]);
         }
     }
 
@@ -906,8 +915,8 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
     }
     info_._vanchor = vanchor;
 
-    tbody0 = _attachedbodies[0]->GetTransform();
-    tbody1 = _attachedbodies[1]->GetTransform();
+    tbody0 = attached_bodies_array_[0]->GetTransform();
+    tbody1 = attached_bodies_array_[1]->GetTransform();
     trel = tbody0.inverse() * tbody1;
     _tLeft = Transform();
     _tLeftNoOffset = Transform();
@@ -1030,35 +1039,35 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
         }
     }
 
-    if( !!_attachedbodies[0] ) {
-        info_._linkname0 = _attachedbodies[0]->GetName();
+    if( !!attached_bodies_array_[0] ) {
+        info_._linkname0 = attached_bodies_array_[0]->GetName();
     }
     else {
         info_._linkname0.clear();
     }
-    if( !!_attachedbodies[1] ) {
-        info_._linkname1 = _attachedbodies[1]->GetName();
+    if( !!attached_bodies_array_[1] ) {
+        info_._linkname1 = attached_bodies_array_[1]->GetName();
     }
     else {
         info_._linkname1.clear();
     }
     info_._vcurrentvalues = vcurrentvalues;
 
-    _bInitialized = true;
+    is_initialized_ = true;
 
-    if( _attachedbodies[1]->IsStatic() && !IsStatic() ) {
+    if( attached_bodies_array_[1]->IsStatic() && !IsStatic() ) {
         RAVELOG_WARN(str(boost::format("joint %s: all attached links are static, but joint is not!\n")%GetName()));
     }
 }
 
 KinBody::LinkPtr KinBody::Joint::GetHierarchyParentLink() const
 {
-    return _attachedbodies[0];
+    return attached_bodies_array_[0];
 }
 
 KinBody::LinkPtr KinBody::Joint::GetHierarchyChildLink() const
 {
-    return _attachedbodies[1];
+    return attached_bodies_array_[1];
 }
 
 const Vector& KinBody::Joint::GetInternalHierarchyAxis(int iaxis) const
@@ -1068,13 +1077,13 @@ const Vector& KinBody::Joint::GetInternalHierarchyAxis(int iaxis) const
 
 const Transform& KinBody::Joint::GetInternalHierarchyLeftTransform() const
 {
-    OPENRAVE_ASSERT_FORMAT0(_bInitialized, "joint not initialized",ORE_NotInitialized);
+    OPENRAVE_ASSERT_FORMAT0(is_initialized_, "joint not initialized",ORE_NotInitialized);
     return _tLeftNoOffset;
 }
 
 const Transform& KinBody::Joint::GetInternalHierarchyRightTransform() const
 {
-    OPENRAVE_ASSERT_FORMAT0(_bInitialized, "joint not initialized",ORE_NotInitialized);
+    OPENRAVE_ASSERT_FORMAT0(is_initialized_, "joint not initialized",ORE_NotInitialized);
     return _tRightNoOffset;
 }
 
@@ -1618,10 +1627,12 @@ const std::vector<dReal> KinBody::Joint::GetMimicCoeffs() const
 
 bool KinBody::Joint::IsMimic(int iaxis) const
 {
-    if( iaxis >= 0 ) {
+    if( iaxis >= 0 )
+	{
         return !!_vmimic.at(iaxis);
     }
-    for(int i = 0; i < GetDOF(); ++i) {
+    for(int i = 0; i < GetDOF(); ++i) 
+	{
         if( !!_vmimic.at(i) ) {
             return true;
         }
@@ -2011,7 +2022,7 @@ void KinBody::Joint::serialize(std::ostream& o, int options) const
                 }
             }
         }
-        o << (!_attachedbodies[0] ? -1 : _attachedbodies[0]->GetIndex()) << " " << (_attachedbodies[1]->GetIndex()) << " ";
+        o << (!attached_bodies_array_[0] ? -1 : attached_bodies_array_[0]->GetIndex()) << " " << (attached_bodies_array_[1]->GetIndex()) << " ";
     }
     // in the past was including saving limits as part of SO_Dynamics, but given that limits change a lot when planning, should *not* include them as part of dynamics.
     if( options & SO_JointLimits ) {

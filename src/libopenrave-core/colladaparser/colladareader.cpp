@@ -819,7 +819,7 @@ namespace OpenRAVE
 				FOREACH(itlink, probot->links_vector_) {
 					_setInitialLinks.insert(*itlink);
 				}
-				FOREACH(itjoint, probot->_vecjoints) {
+				FOREACH(itjoint, probot->joints_vector_) {
 					_setInitialJoints.insert(*itjoint);
 				}
 				FOREACH(itjoint, probot->_vPassiveJoints) {
@@ -924,7 +924,7 @@ namespace OpenRAVE
 				FOREACH(itlink, pbody->links_vector_) {
 					_setInitialLinks.insert(*itlink);
 				}
-				FOREACH(itjoint, pbody->_vecjoints) {
+				FOREACH(itjoint, pbody->joints_vector_) {
 					_setInitialJoints.insert(*itjoint);
 				}
 			}
@@ -1007,7 +1007,7 @@ namespace OpenRAVE
 			}
 			std::list<KinBody::JointPtr> listprocessjoints;
 			std::vector< std::pair<std::string, std::string> > jointnamepairs; jointnamepairs.reserve(listprocessjoints.size());
-			FOREACH(itjoint, pbody->_vecjoints) {
+			FOREACH(itjoint, pbody->joints_vector_) {
 				if (_setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
 					jointnamepairs.emplace_back((*itjoint)->info_.name_, prefix + (*itjoint)->info_.name_);
 					(*itjoint)->info_.name_ = prefix + (*itjoint)->info_.name_;
@@ -2047,7 +2047,7 @@ namespace OpenRAVE
 					pjoint->info_.type_ = (KinBody::JointType)jointtype;
 					_mapJointUnits[pjoint] = vaxisunits;
 					if (pjoint->info_.is_active_) {
-						pjoint->jointindex = (int)pkinbody->_vecjoints.size();
+						pjoint->jointindex = (int)pkinbody->joints_vector_.size();
 						pjoint->dofindex = pkinbody->GetDOF();
 					}
 					if (!!pdomjoint->getName()) {
@@ -2058,7 +2058,7 @@ namespace OpenRAVE
 					}
 
 					if (pjoint->info_.is_active_) {
-						pkinbody->_vecjoints.push_back(pjoint);
+						pkinbody->joints_vector_.push_back(pjoint);
 					}
 					else {
 						RAVELOG_VERBOSE(str(boost::format("joint %s is passive\n") % pjoint->info_.name_));
@@ -3496,11 +3496,11 @@ namespace OpenRAVE
 
 			// for all robot joints after _setInitialJoints, first put listJoints in that order
 			vector<KinBody::JointPtr> vjoints, vlastjoints;
-			vjoints.reserve(probot->_vecjoints.size());
-			if (probot->_vecjoints.size() > listOrderedJoints.size()) {
-				vlastjoints.reserve(probot->_vecjoints.size() - listOrderedJoints.size());
+			vjoints.reserve(probot->joints_vector_.size());
+			if (probot->joints_vector_.size() > listOrderedJoints.size()) {
+				vlastjoints.reserve(probot->joints_vector_.size() - listOrderedJoints.size());
 			}
-			FOREACH(itjoint, probot->_vecjoints) {
+			FOREACH(itjoint, probot->joints_vector_) {
 				if (_setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
 					if (find(listOrderedJoints.begin(), listOrderedJoints.end(), *itjoint) == listOrderedJoints.end()) {
 						vlastjoints.push_back(*itjoint);
@@ -3510,13 +3510,13 @@ namespace OpenRAVE
 					vjoints.push_back(*itjoint);
 				}
 			}
-			probot->_vecjoints = vjoints;
-			probot->_vecjoints.insert(probot->_vecjoints.end(), listOrderedJoints.begin(), listOrderedJoints.end());
-			probot->_vecjoints.insert(probot->_vecjoints.end(), vlastjoints.begin(), vlastjoints.end());
+			probot->joints_vector_ = vjoints;
+			probot->joints_vector_.insert(probot->joints_vector_.end(), listOrderedJoints.begin(), listOrderedJoints.end());
+			probot->joints_vector_.insert(probot->joints_vector_.end(), vlastjoints.begin(), vlastjoints.end());
 			// have to reset the joint indices and dof indices
 			int jointindex = 0;
 			int dofindex = 0;
-			FOREACH(itjoint, probot->_vecjoints) {
+			FOREACH(itjoint, probot->joints_vector_) {
 				(*itjoint)->jointindex = jointindex++;
 				(*itjoint)->dofindex = dofindex;
 				dofindex += (*itjoint)->GetDOF();

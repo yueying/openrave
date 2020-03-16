@@ -16,9 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ravep.h"
 
-namespace OpenRAVE {
+namespace OpenRAVE
+{
 
-class GenericCollisionChecker : public CollisionCheckerBase {
+class GenericCollisionChecker : public CollisionCheckerBase
+{
 public:
     GenericCollisionChecker(EnvironmentBasePtr penv, std::istream& sinput)
         : CollisionCheckerBase(penv)
@@ -31,7 +33,7 @@ public:
     {
         CollisionCheckerBase::Clone(preference, cloningoptions);
         std::shared_ptr<GenericCollisionChecker const> r = std::dynamic_pointer_cast<GenericCollisionChecker const>(preference);
-        _geometrygroup = r->_geometrygroup;
+        geometry_group_ = r->geometry_group_;
     }
 
     virtual bool InitEnvironment() { return true; }
@@ -121,6 +123,7 @@ public:
     {
         return false;
     }
+
     virtual bool CheckStandaloneSelfCollision(KinBody::LinkConstPtr pbody,
         CollisionReportPtr)
     {
@@ -131,10 +134,10 @@ public:
 
     virtual void SetGeometryGroup(const std::string& groupname)
     {
-        _geometrygroup = groupname;
+        geometry_group_ = groupname;
     }
 
-    virtual const std::string& GetGeometryGroup() const { return _geometrygroup; }
+    virtual const std::string& GetGeometryGroup() const { return geometry_group_; }
 
     virtual bool SetBodyGeometryGroup(KinBodyConstPtr pbody,
         const std::string& groupname)
@@ -144,10 +147,10 @@ public:
 
     virtual const std::string& GetBodyGeometryGroup(KinBodyConstPtr pbody) const
     {
-        return _geometrygroup;
+        return geometry_group_;
     }
 
-    std::string _geometrygroup;
+    std::string geometry_group_;
 };
 
 CollisionCheckerBasePtr CreateGenericCollisionChecker(EnvironmentBasePtr penv,

@@ -165,8 +165,8 @@ protected:
             _Read(pbody, parent, scene->mRootNode, t, 0);
             // remove any NULL joints or mimic properties from the main joints...?
             int ijoint = 0;
-            vector<KinBody::JointPtr> vecjoints; vecjoints.reserve(pbody->_vecjoints.size());
-            vecjoints.swap(pbody->_vecjoints);
+            vector<KinBody::JointPtr> vecjoints; vecjoints.reserve(pbody->joints_vector_.size());
+            vecjoints.swap(pbody->joints_vector_);
             FOREACH(itjoint,vecjoints) {
                 if( !!*itjoint ) {
                     if( !!(*itjoint)->_vmimic[0] ) {
@@ -175,7 +175,7 @@ protected:
                     }
                     std::vector<int> v(1); v[0] = ijoint;
                     (*itjoint)->info_._mapIntParameters["xfile_originalindex"] = v;
-                    pbody->_vecjoints.push_back(*itjoint);
+                    pbody->joints_vector_.push_back(*itjoint);
                 }
                 ++ijoint;
             }
@@ -278,15 +278,15 @@ protected:
                 }
                 std::vector<dReal> vcurrentvalues;
                 pjoint->_ComputeInternalInformation(plink,pchildlink, (t*tlocalpivot).trans,vaxes,vcurrentvalues);
-                if( node->mFramePivot->mJointIndex > pbody->_vecjoints.size() ) {
-                    pbody->_vecjoints.resize(node->mFramePivot->mJointIndex);
+                if( node->mFramePivot->mJointIndex > pbody->joints_vector_.size() ) {
+                    pbody->joints_vector_.resize(node->mFramePivot->mJointIndex);
                 }
 
                 string orgjointname = str(boost::format("%sj%d")%_prefix%node->mFramePivot->mJointIndex);
-                // prioritize joints with orgjointname when putting into _vecjoints. The only reason to do this is to maintain consistency between expected joint values.
+                // prioritize joints with orgjointname when putting into joints_vector_. The only reason to do this is to maintain consistency between expected joint values.
 
                 if( orgjointname != pjoint->info_.name_ ) {
-                    //KinBody::JointPtr porgjoint = pbody->_vecjoints.at(node->mFramePivot->mJointIndex-1);
+                    //KinBody::JointPtr porgjoint = pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1);
                     // joint already exists, so must be mimic?
                     dReal fmult = RaveSqrt(vmotiondirection.lengthsqr3());
                     pjoint->_vmimic[0].reset(new KinBody::Mimic());
@@ -310,14 +310,14 @@ protected:
 //                        pbody->_vPassiveJoints.push_back(pjoint);
 //                    }
 //                }
-                if( node->mFramePivot->mJointIndex >= 1 && !pbody->_vecjoints.at(node->mFramePivot->mJointIndex-1) ) {
-                    pbody->_vecjoints.at(node->mFramePivot->mJointIndex-1) = pjoint;
+                if( node->mFramePivot->mJointIndex >= 1 && !pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1) ) {
+                    pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1) = pjoint;
                 }
                 else {
                     pbody->_vPassiveJoints.push_back(pjoint);
                     if( orgjointname == pjoint->info_.name_ ) {
                         // swap with official joint (can come later in the hierarchy)
-                        swap(pbody->_vecjoints.at(node->mFramePivot->mJointIndex-1), pbody->_vPassiveJoints.back());
+                        swap(pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1), pbody->_vPassiveJoints.back());
                     }
                 }
             }

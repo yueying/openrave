@@ -17,7 +17,7 @@
 #include "libopenrave.h"
 #include <openrave/openravejson.h>
 
-#define CHECK_INTERNAL_COMPUTATION OPENRAVE_ASSERT_FORMAT(_nHierarchyComputed == 2, "robot %s internal structures need to be computed, current value is %d. Are you sure Environment::AddRobot/AddKinBody was called?", GetName()%_nHierarchyComputed, ORE_NotInitialized);
+#define CHECK_INTERNAL_COMPUTATION OPENRAVE_ASSERT_FORMAT(hierarchy_computed_ == 2, "robot %s internal structures need to be computed, current value is %d. Are you sure Environment::AddRobot/AddKinBody was called?", GetName()%hierarchy_computed_, ORE_NotInitialized);
 
 namespace OpenRAVE {
 
@@ -1174,7 +1174,7 @@ void RobotBase::SubtractActiveDOFValues(std::vector<dReal>& q1, const std::vecto
     OPENRAVE_ASSERT_OP(q1.size(),==,q2.size());
     OPENRAVE_ASSERT_OP(q1.size(), >=, _vActiveDOFIndices.size());
     size_t index = 0;
-    if (_bAreAllJoints1DOFAndNonCircular) {
+    if (is_all_joints_1dof_and_no_circular_) {
         for (size_t i = 0; i < _vActiveDOFIndices.size(); ++i) {
             q1[i] -= q2[i];
         }
@@ -1759,7 +1759,7 @@ RobotBase::AttachedSensorPtr RobotBase::AddAttachedSensor(const RobotBase::Attac
         }
     }
     AttachedSensorPtr newattachedsensor(new AttachedSensor(shared_robot(),attachedsensorinfo));
-//    if( _nHierarchyComputed ) {
+//    if( hierarchy_computed_ ) {
 //        newattachedsensor->_ComputeInternalInformation();
 //    }
     if( iremoveindex >= 0 ) {

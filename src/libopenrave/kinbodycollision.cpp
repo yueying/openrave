@@ -41,15 +41,17 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
         }
     }
 
-    bool bAllLinkCollisions = !!(collisionchecker->GetCollisionOptions() & CO_AllLinkCollisions);
+    bool is_all_link_collisions = !!(collisionchecker->GetCollisionOptions() & CO_AllLinkCollisions);
     CollisionReportKeepSaver reportsaver(report);
-    if (!!report && bAllLinkCollisions && report->nKeepPrevious == 0) {
+    if (!!report && is_all_link_collisions && report->nKeepPrevious == 0) 
+	{
         report->Reset();
         report->nKeepPrevious = 1; // have to keep the previous since aggregating results
     }
 
-    bool bCollision = false;
-    if (collisionchecker->CheckStandaloneSelfCollision(shared_kinbody_const(), report)) {
+    bool is_collision = false;
+    if (collisionchecker->CheckStandaloneSelfCollision(shared_kinbody_const(), report)) 
+	{
         if (!!report) {
             if (IS_DEBUGLEVEL(Level_Verbose)) {
                 std::vector<OpenRAVE::dReal> v;
@@ -68,11 +70,11 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
                 RAVELOG_VERBOSE(ss.str());
             }
         }
-        if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+        if (!is_all_link_collisions) { // if checking all collisions, have to continue
             return true;
         }
 
-        bCollision = true;
+        is_collision = true;
     }
 
     // if collision checker is set to distance checking, have to compare reports for the minimum distance
@@ -105,8 +107,8 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
             FOREACHC(itbodylink, pbody->GetLinks())
             {
                 if (collisionchecker->CheckCollision(robotlink, KinBody::LinkConstPtr(*itbodylink), pusereport)) {
-                    bCollision = true;
-                    if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+                    is_collision = true;
+                    if (!is_all_link_collisions) { // if checking all collisions, have to continue
                         break;
                     }
                 }
@@ -114,21 +116,21 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
                     *report = *pusereport;
                 }
             }
-            if (bCollision) {
-                if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+            if (is_collision) {
+                if (!is_all_link_collisions) { // if checking all collisions, have to continue
                     break;
                 }
             }
         }
-        if (bCollision) {
-            if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+        if (is_collision) {
+            if (!is_all_link_collisions) { // if checking all collisions, have to continue
                 break;
             }
         }
 
         if (pbody->CheckSelfCollision(pusereport, collisionchecker)) {
-            bCollision = true;
-            if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+            is_collision = true;
+            if (!is_all_link_collisions) { // if checking all collisions, have to continue
                 break;
             }
         }
@@ -158,8 +160,8 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
                         {
                             if (find(pgrabbed2->_listNonCollidingLinks.begin(), pgrabbed2->_listNonCollidingLinks.end(), *itlink) != pgrabbed2->_listNonCollidingLinks.end()) {
                                 if (collisionchecker->CheckCollision(KinBody::LinkConstPtr(*itlink), KinBody::LinkConstPtr(*itlink2), pusereport)) {
-                                    bCollision = true;
-                                    if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+                                    is_collision = true;
+                                    if (!is_all_link_collisions) { // if checking all collisions, have to continue
                                         break;
                                     }
                                 }
@@ -167,34 +169,34 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
                                     *report = *pusereport;
                                 }
                             }
-                            if (bCollision) {
-                                if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+                            if (is_collision) {
+                                if (!is_all_link_collisions) { // if checking all collisions, have to continue
                                     break;
                                 }
                             }
                         }
-                        if (bCollision) {
-                            if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+                        if (is_collision) {
+                            if (!is_all_link_collisions) { // if checking all collisions, have to continue
                                 break;
                             }
                         }
                     }
                 }
-                if (bCollision) {
-                    if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+                if (is_collision) {
+                    if (!is_all_link_collisions) { // if checking all collisions, have to continue
                         break;
                     }
                 }
             }
-            if (bCollision) {
-                if (!bAllLinkCollisions) { // if checking all collisions, have to continue
+            if (is_collision) {
+                if (!is_all_link_collisions) { // if checking all collisions, have to continue
                     break;
                 }
             }
         }
     }
 
-    if (bCollision && !!report) {
+    if (is_collision && !!report) {
         if (report != pusereport) {
             *report = *pusereport;
         }
@@ -216,7 +218,7 @@ bool KinBody::CheckSelfCollision(CollisionReportPtr report, CollisionCheckerBase
         }
     }
 
-    return bCollision;
+    return is_collision;
 }
 
 bool KinBody::CheckLinkCollision(int ilinkindex, const Transform& tlinktrans, CollisionReportPtr report)

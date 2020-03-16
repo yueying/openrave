@@ -311,8 +311,11 @@ public:
         return internal_checker_->CheckCollision(trimesh, pbody, report);
     }
 
-    /// \brief collisionchecker checks if there is a configuration in _selfcache within the threshold, and if so, uses that information, if not, runs standard collisioncheck and stores the result.
-    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()) {
+    /// \brief collisionchecker checks if there is a configuration in _selfcache within the threshold,
+	///        and if so, uses that information, if not, runs standard collisioncheck and stores the result.
+    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody,
+		CollisionReportPtr report = CollisionReportPtr()) 
+	{
 
         RobotBasePtr probot = GetRobot();
         if( !_selfcache || pbody != probot ) {

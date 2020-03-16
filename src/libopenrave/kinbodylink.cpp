@@ -401,7 +401,7 @@ void KinBody::Link::SetStatic(bool is_static)
 void KinBody::Link::SetTransform(const Transform& t)
 {
     info_.transform_ = t;
-    GetParent()->_nUpdateStampId++;
+    GetParent()->update_stamp_id_++;
 }
 
 void KinBody::Link::SetForce(const Vector& force, const Vector& pos, bool bAdd)

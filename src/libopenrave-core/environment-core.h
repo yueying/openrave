@@ -2003,7 +2003,7 @@ public:
 
         std::vector<dReal> vdoflastsetvalues;
         FOREACH(itbody, bodies_vector_) {
-            if( (*itbody)->_nHierarchyComputed != 2 ) {
+            if( (*itbody)->hierarchy_computed_ != 2 ) {
                 // skip
                 continue;
             }
