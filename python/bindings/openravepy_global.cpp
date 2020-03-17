@@ -19,7 +19,7 @@
 #include <openravepy/openravepy_kinbody.h>
 #include <openravepy/openravepy_environmentbase.h>
 #include <openravepy/openravepy_configurationspecification.h>
-#include <openrave/xmlreaders.h>
+#include <openrave/xml_readers.h>
 #include <openrave/utils.h>
 
 namespace openravepy {

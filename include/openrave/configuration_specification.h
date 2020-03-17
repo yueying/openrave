@@ -110,7 +110,7 @@ namespace OpenRAVE
 			virtual void characters(const std::string& ch);
 		protected:
 			ConfigurationSpecification& _spec;
-			std::stringstream _ss;
+			std::stringstream string_stream_;
 			BaseXMLReaderPtr _preader;
 		};
 

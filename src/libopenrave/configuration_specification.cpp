@@ -1863,7 +1863,7 @@ namespace OpenRAVE
 				return PE_Support;
 			return PE_Ignore;
 		}
-		_ss.str(""); // have to clear the string
+		string_stream_.str(""); // have to clear the string
 		if (name == "group") {
 			_spec.groups_vector_.resize(_spec.groups_vector_.size() + 1);
 			ConfigurationSpecification::Group& g = _spec.groups_vector_.back();
@@ -1907,8 +1907,8 @@ namespace OpenRAVE
 	void ConfigurationSpecification::Reader::characters(const std::string& ch)
 	{
 		if (!_preader) {
-			_ss.clear();
-			_ss << ch;
+			string_stream_.clear();
+			string_stream_ << ch;
 		}
 		else {
 			_preader->characters(ch);

@@ -31,7 +31,7 @@ namespace OpenRAVE
 		void ApplyTransform(const Transform& t);
 		void ApplyTransform(const TransformMatrix& t);
 
-		/// append another TRIMESH to this tri mesh
+		/// append another TriMesh to this tri mesh
 		void Append(const TriMesh& mesh);
 		void Append(const TriMesh& mesh, const Transform& trans);
 

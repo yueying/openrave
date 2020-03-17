@@ -17,7 +17,7 @@
 #include "ravep.h"
 #include <boost/lambda/lambda.hpp>
 #include <boost/lexical_cast.hpp>
-#include <openrave/xmlreaders.h>
+#include <openrave/xml_readers.h>
 
 namespace OpenRAVE {
 

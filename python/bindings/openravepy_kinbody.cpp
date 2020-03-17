@@ -110,12 +110,12 @@ void PyGeometryInfo::Init(const KinBody::GeometryInfo& info) {
     }
 
     _vDiffuseColor = toPyVector3(info.diffuse_color_vec_);
-    _vAmbientColor = toPyVector3(info._vAmbientColor);
+    _vAmbientColor = toPyVector3(info.ambient_color_vec_);
     _meshcollision = toPyTriMesh(info.mesh_collision_);
     _type = info.type_;
     _name = ConvertStringToUnicode(info.name_);
     _filenamerender = ConvertStringToUnicode(info.render_file_name_);
-    _filenamecollision = ConvertStringToUnicode(info._filenamecollision);
+    _filenamecollision = ConvertStringToUnicode(info.collision_file_name_);
     _vRenderScale = toPyVector3(info.render_scale_vec_);
     _vCollisionScale = toPyVector3(info.collision_scale_vec_);
     _fTransparency = info.transparency_;
@@ -173,7 +173,7 @@ KinBody::GeometryInfoPtr PyGeometryInfo::GetGeometryInfo() {
     }
 
     info.diffuse_color_vec_ = ExtractVector34<dReal>(_vDiffuseColor,0);
-    info._vAmbientColor = ExtractVector34<dReal>(_vAmbientColor,0);
+    info.ambient_color_vec_ = ExtractVector34<dReal>(_vAmbientColor,0);
     if( !IS_PYTHONOBJECT_NONE(_meshcollision) ) {
         ExtractTriMesh(_meshcollision,info.mesh_collision_);
     }
@@ -185,7 +185,7 @@ KinBody::GeometryInfoPtr PyGeometryInfo::GetGeometryInfo() {
         info.render_file_name_ = py::extract<std::string>(_filenamerender);
     }
     if( !IS_PYTHONOBJECT_NONE(_filenamecollision) ) {
-        info._filenamecollision = py::extract<std::string>(_filenamecollision);
+        info.collision_file_name_ = py::extract<std::string>(_filenamecollision);
     }
     info.render_scale_vec_ = ExtractVector3(_vRenderScale);
     info.collision_scale_vec_ = ExtractVector3(_vCollisionScale);
@@ -4920,8 +4920,8 @@ void init_openravepy_kinbody()
                           .def("__ne__",&PyLink::__ne__)
                           .def("__hash__",&PyLink::__hash__)
             ;
-            // \deprecated (12/10/18)
-            link.attr("GeomType") = geometrytype;
+
+            link.attr("GeometryType") = geometrytype;
             link.attr("GeometryInfo") = geometryinfo;
             {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS

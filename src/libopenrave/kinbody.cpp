@@ -140,7 +140,7 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
         info.is_visible_ = visible;
         info.gemo_outer_extents_data_ = itab->extents;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
-        info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
+        info.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
         geom->info_.InitCollisionMesh();
         numvertices += geom->GetCollisionMesh().vertices.size();
@@ -182,7 +182,7 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         info.is_visible_ = visible;
         info.gemo_outer_extents_data_ = itobb->extents;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
-        info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
+        info.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
         geom->info_.InitCollisionMesh();
         numvertices += geom->GetCollisionMesh().vertices.size();
@@ -219,7 +219,7 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
         info.is_visible_ = visible;
         info.gemo_outer_extents_data_.x = itv->w;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
-        info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
+        info.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
         geom->info_.InitCollisionMesh();
         plink->geometries_vector_.push_back(geom);
@@ -245,7 +245,7 @@ bool KinBody::InitFromTrimesh(const TriMesh& trimesh, bool visible, const std::s
     info.type_ = GT_TriMesh;
     info.is_visible_ = visible;
     info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
-    info._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
+    info.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
     info.mesh_collision_ = trimesh;
     Link::GeometryPtr geom(new Link::Geometry(plink,info));
     plink->geometries_vector_.push_back(geom);

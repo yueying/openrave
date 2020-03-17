@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ravep.h"
 
-#include <openrave/xmlreaders.h>
+#include <openrave/xml_readers.h>
 
 #include <libxml/xmlstring.h>
 #define LIBXML_SAX1_ENABLED
@@ -284,7 +284,7 @@ static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Ve
             aiGetMaterialColor(mtrl,AI_MATKEY_COLOR_DIFFUSE,&color);
             g.diffuse_color_vec_ = Vector(color.r,color.g,color.b,color.a);
             aiGetMaterialColor(mtrl,AI_MATKEY_COLOR_AMBIENT,&color);
-            g._vAmbientColor = Vector(color.r,color.g,color.b,color.a);
+            g.ambient_color_vec_ = Vector(color.r,color.g,color.b,color.a);
         }
     }
 
@@ -807,9 +807,9 @@ public:
         KinBody::GeometryInfo& g = listGeometries.back();
         g.type_ = GT_TriMesh;
         g.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
-        g._vAmbientColor=Vector(0.1,0.0f,0.0f,0);
+        g.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
         g.render_scale_vec_ = vscale;
-        if( !CreateTriMeshFromFile(penv,filename,vscale,g.mesh_collision_,g.diffuse_color_vec_,g._vAmbientColor,g.transparency_) ) {
+        if( !CreateTriMeshFromFile(penv,filename,vscale,g.mesh_collision_,g.diffuse_color_vec_,g.ambient_color_vec_,g.transparency_) ) {
             return false;
         }
         return true;
@@ -990,21 +990,21 @@ public:
                     Vector geomspacescale(RaveSqrt(tmres.m[0]*tmres.m[0]+tmres.m[4]*tmres.m[4]+tmres.m[8]*tmres.m[8]),RaveSqrt(tmres.m[1]*tmres.m[1]+tmres.m[5]*tmres.m[5]+tmres.m[9]*tmres.m[9]),RaveSqrt(tmres.m[2]*tmres.m[2]+tmres.m[6]*tmres.m[6]+tmres.m[10]*tmres.m[10]));
 
                     if( !!_fnGetModelsDir ) {
-                        bool bsame = info->render_file_name_ == info->_filenamecollision;
+                        bool bsame = info->render_file_name_ == info->collision_file_name_;
                         info->render_file_name_ = _fnGetModelsDir(info->render_file_name_);
                         if( bsame ) {
-                            info->_filenamecollision = info->render_file_name_;
+                            info->collision_file_name_ = info->render_file_name_;
                         }
                         else {
-                            info->_filenamecollision = _fnGetModelsDir(info->_filenamecollision);
+                            info->collision_file_name_ = _fnGetModelsDir(info->collision_file_name_);
                         }
                     }
                     std::list<KinBody::GeometryInfo> listGeometries;
                     if( info->type_ == GT_TriMesh ) {
                         bool bSuccess = false;
-                        if( info->_filenamecollision.size() > 0 ) {
-                            if( !CreateGeometries(parent_->GetEnv(),info->_filenamecollision, info->collision_scale_vec_, listGeometries) ) {
-                                RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->_filenamecollision));
+                        if( info->collision_file_name_.size() > 0 ) {
+                            if( !CreateGeometries(parent_->GetEnv(),info->collision_file_name_, info->collision_scale_vec_, listGeometries) ) {
+                                RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->collision_file_name_));
                             }
                             else {
                                 bSuccess = true;
@@ -1039,7 +1039,7 @@ public:
                                     itnewgeom->diffuse_color_vec_ = info->diffuse_color_vec_;
                                 }
                                 if( geomreader->IsOverwriteAmbient() ) {
-                                    itnewgeom->_vAmbientColor = info->_vAmbientColor;
+                                    itnewgeom->ambient_color_vec_ = info->ambient_color_vec_;
                                 }
                                 if( geomreader->IsOverwriteTransparency() ) {
                                     itnewgeom->transparency_ = info->transparency_;
@@ -1050,7 +1050,7 @@ public:
                             listGeometries.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
                             listGeometries.front().render_file_name_ = info->render_file_name_;
                             listGeometries.front().collision_scale_vec_ = info->collision_scale_vec_*geomspacescale;
-                            listGeometries.front()._filenamecollision = info->_filenamecollision;
+                            listGeometries.front().collision_file_name_ = info->collision_file_name_;
                             listGeometries.front().is_visible_ = info->is_visible_;
                             FOREACH(itinfo, listGeometries) {
                                 link_->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*itinfo)));
@@ -2347,7 +2347,7 @@ public:
                 // overwrite the color
                 FOREACH(itlink, _pchain->links_vector_) {
                     FOREACH(itgeom, (*itlink)->geometries_vector_) {
-                        (*itgeom)->info_._vAmbientColor = _ambientcol;
+                        (*itgeom)->info_.ambient_color_vec_ = _ambientcol;
                     }
                 }
             }

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -96,28 +96,28 @@ public:
     virtual void characters(const std::string& ch);
 
     inline KinBody::GeometryInfoPtr GetGeometryInfo() const {
-        return _pgeom;
+        return geometry_info_;
     }
 
     inline bool IsOverwriteDiffuse() const {
-        return _bOverwriteDiffuse;
+        return is_overwrite_diffuse_;
     }
     inline bool IsOverwriteAmbient() const {
-        return _bOverwriteAmbient;
+        return is_overwrite_ambient_;
     }
     inline bool IsOverwriteTransparency() const {
-        return _bOverwriteTransparency;
+        return is_overwrite_transparency_;
     }
 
     inline const std::string &GetGroupName() const {
         return _sGroupName;
     }
 protected:
-    KinBody::GeometryInfoPtr _pgeom;
-    std::stringstream _ss;
-    BaseXMLReaderPtr _pcurreader;
+    KinBody::GeometryInfoPtr geometry_info_;
+    std::stringstream string_stream_;
+    BaseXMLReaderPtr cur_reader_;
 
-    bool _bOverwriteDiffuse, _bOverwriteAmbient, _bOverwriteTransparency;
+    bool is_overwrite_diffuse_, is_overwrite_ambient_, is_overwrite_transparency_;
     std::string _sGroupName;
 };
 

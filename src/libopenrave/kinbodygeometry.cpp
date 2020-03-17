@@ -415,7 +415,7 @@ namespace OpenRAVE
 		openravejson::SetJsonValueByKey(value, "transparency", transparency_, allocator);
 		openravejson::SetJsonValueByKey(value, "visible", is_visible_, allocator);
 		openravejson::SetJsonValueByKey(value, "diffuseColor", diffuse_color_vec_, allocator);
-		openravejson::SetJsonValueByKey(value, "ambientColor", _vAmbientColor, allocator);
+		openravejson::SetJsonValueByKey(value, "ambientColor", ambient_color_vec_, allocator);
 		openravejson::SetJsonValueByKey(value, "modifiable", is_modifiable_, allocator);
 	}
 
@@ -496,7 +496,7 @@ namespace OpenRAVE
 		openravejson::LoadJsonValueByKey(value, "transparency", transparency_);
 		openravejson::LoadJsonValueByKey(value, "visible", is_visible_);
 		openravejson::LoadJsonValueByKey(value, "diffuseColor", diffuse_color_vec_);
-		openravejson::LoadJsonValueByKey(value, "ambientColor", _vAmbientColor);
+		openravejson::LoadJsonValueByKey(value, "ambientColor", ambient_color_vec_);
 		openravejson::LoadJsonValueByKey(value, "modifiable", is_modifiable_);
 	}
 
@@ -796,7 +796,7 @@ namespace OpenRAVE
 	void KinBody::Link::Geometry::SetAmbientColor(const RaveVector<float>& color)
 	{
 		LinkPtr parent(parent_);
-		info_._vAmbientColor = color;
+		info_.ambient_color_vec_ = color;
 		parent->GetParent()->_PostprocessChangedParameters(Prop_LinkDraw);
 	}
 

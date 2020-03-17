@@ -13,7 +13,7 @@ kinbodygeometry.cpp kinbodygrab.cpp kinbodyjoint.cpp kinbodylink.cpp
 kinbodystatesaver.cpp libopenrave.cpp libopenrave.h openravemathextra.cpp 
 planner.cpp plannerparameters.cpp planningutils.cpp 
 robot_base.cpp robotconnectedbody.cpp robotmanipulator.cpp sensor_system_base.cpp 
-trajectory_base.cpp utils.cpp xmlreaders.cpp openrave_exception.cpp
+trajectory_base.cpp utils.cpp xml_readers.cpp openrave_exception.cpp
 electric_motor_actuator_info.cpp grabbed.cpp tri_mesh.cpp rave_global.cpp
 environment_base.cpp sensor_base.cpp numerical.cpp collision_report.cpp
 multi_controller_base.cpp dummy_xml_reader.cpp custom_sampler_callback_data.cpp

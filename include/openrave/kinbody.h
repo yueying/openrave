@@ -196,7 +196,7 @@ namespace OpenRAVE
 			//!< for sphere it is radius
 			//!< for cylinder, first 2 values are radius and height
 			//!< for trimesh, none
-			RaveVector<float> diffuse_color_vec_, _vAmbientColor; //!< hints for how to color the meshes
+			RaveVector<float> diffuse_color_vec_, ambient_color_vec_; //!< hints for how to color the meshes
 
 			/// \brief trimesh representation of the collision data of this object in this local coordinate system
 			///
@@ -218,11 +218,11 @@ namespace OpenRAVE
 			/// \brief filename for collision data (optional)
 			///
 			/// This is for record keeping only and geometry does not get automatically loaded to mesh_collision_.
-			/// The user should call mesh_collision_ = *env->ReadTrimeshURI(_filenamecollision) by themselves.
-			std::string _filenamecollision;
+			/// The user should call mesh_collision_ = *env->ReadTrimeshURI(collision_file_name_) by themselves.
+			std::string collision_file_name_;
 
 			Vector render_scale_vec_; //!< render scale of the object (x,y,z) from render_file_name_
-			Vector collision_scale_vec_; //!< render scale of the object (x,y,z) from _filenamecollision
+			Vector collision_scale_vec_; //!< render scale of the object (x,y,z) from collision_file_name_
 			float transparency_; //!< value from 0-1 for the transparency of the rendered object, 0 is opaque
 			bool is_visible_; //!< if true, geometry is visible as part of the 3d model (default is true)
 			bool is_modifiable_; //!< if true, object geometry can be dynamically modified (default is true)
@@ -285,12 +285,6 @@ namespace OpenRAVE
 		public:
 			Link(KinBodyPtr parent);         //!< pass in a ODE world
 			virtual ~Link();
-
-			/// \deprecated (12/10/18)
-			typedef KinBody::GeometryInfo GeometryInfo RAVE_DEPRECATED;
-			typedef std::shared_ptr<KinBody::GeometryInfo> GeometryInfoPtr RAVE_DEPRECATED;
-			typedef TriMesh TRIMESH RAVE_DEPRECATED;
-			typedef GeometryType GeomType RAVE_DEPRECATED;
 
 			/// \brief geometry object holding a link parent and wrapping access to a protected geometry info
 			class OPENRAVE_API Geometry
@@ -371,7 +365,7 @@ namespace OpenRAVE
 				}
 				inline const RaveVector<float>& GetAmbientColor() const
 				{
-					return info_._vAmbientColor;
+					return info_.ambient_color_vec_;
 				}
 				inline const std::string& GetName() const 
 				{

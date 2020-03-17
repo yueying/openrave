@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "colladacommon.h"
 #include <boost/algorithm/string.hpp>
-#include <openrave/xmlreaders.h>
+#include <openrave/xml_readers.h>
 #include <libxml/xmlversion.h>
 #include <openrave/openrave_macros.h>
 
@@ -2459,12 +2459,12 @@ namespace OpenRAVE
 					domProfile_common::domTechnique::domPhongRef pphong = daeSafeCast<domProfile_common::domTechnique::domPhong>(peffect->getDescendant(daeElement::matchType(domProfile_common::domTechnique::domPhong::ID())));
 					if (!!pphong) {
 						if (!!pphong->getAmbient() && !!pphong->getAmbient()->getColor()) {
-							geom._vAmbientColor = getVector4(pphong->getAmbient()->getColor()->getValue());
+							geom.ambient_color_vec_ = getVector4(pphong->getAmbient()->getColor()->getValue());
 							if (pphong->getAmbient()->getColor()->getValue().getCount() >= 4) {
 								// colors of the phong element in collada have the 4th value set to alpha.
-								geom.transparency_ = 1 - geom._vAmbientColor.w;
+								geom.transparency_ = 1 - geom.ambient_color_vec_.w;
 							}
-							geom._vAmbientColor.w = 0; // not used in openrave
+							geom.ambient_color_vec_.w = 0; // not used in openrave
 						}
 						if (!!pphong->getDiffuse() && !!pphong->getDiffuse()->getColor()) {
 							geom.diffuse_color_vec_ = getVector4(pphong->getDiffuse()->getColor()->getValue());

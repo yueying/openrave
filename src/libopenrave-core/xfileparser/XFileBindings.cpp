@@ -393,7 +393,7 @@ protected:
         if( matindex < pmesh->mMaterials.size() ) {
             const Assimp::XFile::Material& mtrl = pmesh->mMaterials.at(matindex);
             g.diffuse_color_vec_ = Vector(mtrl.mDiffuse.r, mtrl.mDiffuse.g, mtrl.mDiffuse.b, mtrl.mDiffuse.a);
-            g._vAmbientColor = Vector(mtrl.mEmissive.r, mtrl.mEmissive.g, mtrl.mEmissive.b, 1);
+            g.ambient_color_vec_ = Vector(mtrl.mEmissive.r, mtrl.mEmissive.g, mtrl.mEmissive.b, 1);
         }
     }
 

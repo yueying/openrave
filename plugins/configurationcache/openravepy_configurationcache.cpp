@@ -15,7 +15,7 @@
 #include "configurationcachetree.h"
 #include <pyconfig.h>
 #include <numpy/arrayobject.h>
-#include <openrave/xmlreaders.h>
+#include <openrave/xml_readers.h>
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
 #ifdef _

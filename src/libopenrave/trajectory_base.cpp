@@ -17,7 +17,7 @@
 #include "libopenrave.h"
 #include <boost/lexical_cast.hpp>
 #include <openrave/planningutils.h>
-#include <openrave/xmlreaders.h>
+#include <openrave/xml_readers.h>
 
 namespace OpenRAVE {
 
