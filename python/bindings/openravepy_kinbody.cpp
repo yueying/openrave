@@ -3678,8 +3678,15 @@ public:
         if( num > 11 ) {
             r._mapStringParameters = dict(state[11]);
         }
-
-        r._mapExtraGeometries = dict(state[12]);
+        else {
+            r._mapStringParameters.clear();
+        }
+        if( num > 12 ) {
+            r._mapExtraGeometries = dict(state[12]);
+        }
+        else {
+            r._mapExtraGeometries.clear();
+        }
     }
 };
 
