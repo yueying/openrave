@@ -342,7 +342,7 @@ IvJointDragger::IvJointDragger(QtCoinViewerPtr viewer, ItemPtr pItem,
     _jointtype = pjoint->GetType();
     _dofindex = pjoint->GetDOFIndex();
     _jointname = pjoint->GetName();
-    _jointoffset = 0; //pjoint->GetOffset();
+    _jointoffset = 0; //pjoint->GetWrapOffset();
     pjoint->GetLimits(_vlower,_vupper);
 
     _pLinkNode = pbody->GetIvLink(iSelectedLink);

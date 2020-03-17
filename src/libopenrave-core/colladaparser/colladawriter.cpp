@@ -1064,8 +1064,8 @@ private:
             daeElementRef bind_actuator = ptec->add("bind_actuator");
             bind_actuator->setAttribute("joint",str(boost::format("%sjoint%d")%kmodelid%(*itjoint)->GetJointIndex()).c_str());
 
-            if( !!(*itjoint)->GetInfo()._infoElectricMotor ) {
-                ElectricMotorActuatorInfoPtr infoElectricMotor = (*itjoint)->GetInfo()._infoElectricMotor;
+            if( !!(*itjoint)->GetInfo().electric_motor_info_ ) {
+                ElectricMotorActuatorInfoPtr infoElectricMotor = (*itjoint)->GetInfo().electric_motor_info_;
                 daeElementRef instance_actuator = ptec->add("instance_actuator");
 
                 std::string stractuator = str(boost::format("body%d_actuator%d")%_mapBodyIds[pbody->GetEnvironmentId()]%(*itjoint)->GetJointIndex());

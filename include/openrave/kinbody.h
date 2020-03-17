@@ -883,15 +883,17 @@ namespace OpenRAVE
 
 			virtual int GetDOF() const;
 
-			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
+			virtual void SerializeJSON(rapidjson::Value& value,
+				rapidjson::Document::AllocatorType& allocator, 
+				dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 
 			JointType type_; /// The joint type
 			std::string name_;         //!< the unique joint name
-			std::string _linkname0, _linkname1; //!< attaching links, all axes and anchors are defined in the link pointed to by _linkname0 coordinate system. _linkname0 is usually the parent link.
-			Vector _vanchor; //!< the anchor of the rotation axes defined in _linkname0's coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
-			std::array<Vector, 3> axes_vector_;                //!< axes in _linkname0's or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
-			std::vector<dReal> _vcurrentvalues; //!< joint values at initialization. passed into Joint::_ComputeInternalInformation
+			std::string link_name0_, link_name1_; //!< attaching links, all axes and anchors are defined in the link pointed to by link_name0_ coordinate system. link_name0_ is usually the parent link.
+			Vector anchor_; //!< the anchor of the rotation axes defined in link_name0_'s coordinate system. this is only used to construct the internal left/right matrices. passed into Joint::_ComputeInternalInformation
+			std::array<Vector, 3> axes_vector_;                //!< axes in link_name0_'s or environment coordinate system used to define joint movement. passed into Joint::_ComputeInternalInformation
+			std::vector<dReal> current_values_vector_; //!< joint values at initialization. passed into Joint::_ComputeInternalInformation
 
 			std::array<dReal, 3> resolution_vector_;              //!< interpolation resolution
 			std::array<dReal, 3> max_velocity_vector_;                  //!< the soft maximum velocity (rad/s) to move the joint when planning
@@ -915,11 +917,11 @@ namespace OpenRAVE
 
 			std::array<MimicInfoPtr, 3> _vmimic;          //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
-			std::map<std::string, std::vector<dReal> > _mapFloatParameters; //!< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::vector<int> > _mapIntParameters; //!< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::string > _mapStringParameters; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<dReal> > float_parameters_map_; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<int> > int_parameters_map_; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::string > string_parameters_map_; //!< custom key-value pairs that could not be fit in the current model
 
-			ElectricMotorActuatorInfoPtr _infoElectricMotor;
+			ElectricMotorActuatorInfoPtr electric_motor_info_;
 
 			/// true if joint axis has an identification at some of its lower and upper limits.
 			///
@@ -974,21 +976,7 @@ namespace OpenRAVE
 		public:
 			/// \deprecated 12/10/19
 			typedef Mimic MIMIC RAVE_DEPRECATED;
-			typedef KinBody::JointType JointType RAVE_DEPRECATED;
-			static const KinBody::JointType JointNone RAVE_DEPRECATED = KinBody::JointNone;
-			static const KinBody::JointType JointHinge RAVE_DEPRECATED = KinBody::JointHinge;
-			static const KinBody::JointType JointRevolute RAVE_DEPRECATED = KinBody::JointRevolute;
-			static const KinBody::JointType JointSlider RAVE_DEPRECATED = KinBody::JointSlider;
-			static const KinBody::JointType JointPrismatic RAVE_DEPRECATED = KinBody::JointPrismatic;
-			static const KinBody::JointType JointRR RAVE_DEPRECATED = KinBody::JointRR;
-			static const KinBody::JointType JointRP RAVE_DEPRECATED = KinBody::JointRP;
-			static const KinBody::JointType JointPR RAVE_DEPRECATED = KinBody::JointPR;
-			static const KinBody::JointType JointPP RAVE_DEPRECATED = KinBody::JointPP;
-			static const KinBody::JointType JointSpecialBit RAVE_DEPRECATED = KinBody::JointSpecialBit;
-			static const KinBody::JointType JointUniversal RAVE_DEPRECATED = KinBody::JointUniversal;
-			static const KinBody::JointType JointHinge2 RAVE_DEPRECATED = KinBody::JointHinge2;
-			static const KinBody::JointType JointSpherical RAVE_DEPRECATED = KinBody::JointSpherical;
-			static const KinBody::JointType JointTrajectory RAVE_DEPRECATED = KinBody::JointTrajectory;
+
 			Joint(KinBodyPtr parent, KinBody::JointType type = KinBody::JointNone);
 			virtual ~Joint();
 
@@ -1030,18 +1018,18 @@ namespace OpenRAVE
 
 			//!< \brief gets the max instantaneous torque of the joint
 			///
-			/// If _infoElectricMotor is filled, the will compute the max instantaneous torque depending on the current speed of the joint.
+			/// If electric_motor_info_ is filled, the will compute the max instantaneous torque depending on the current speed of the joint.
 			dReal GetMaxTorque(int iaxis = 0) const;
 
 			//!< \brief gets the max instantaneous torque limits of the joint
 			///
-			/// If _infoElectricMotor is filled, the will compute the nominal torque limits depending on the current speed of the joint.
+			/// If electric_motor_info_ is filled, the will compute the nominal torque limits depending on the current speed of the joint.
 			/// \return min and max of torque limits
 			std::pair<dReal, dReal> GetInstantaneousTorqueLimits(int iaxis = 0) const;
 
 			//!< \brief gets the nominal torque limits of the joint
 			///
-			/// If _infoElectricMotor is filled, the will compute the nominal torque limits depending on the current speed of the joint.
+			/// If electric_motor_info_ is filled, the will compute the nominal torque limits depending on the current speed of the joint.
 			/// \return min and max of torque limits
 			std::pair<dReal, dReal> GetNominalTorqueLimits(int iaxis = 0) const;
 
@@ -1096,8 +1084,8 @@ namespace OpenRAVE
 
 			/// \brief gets all resolutions for the joint axes
 			///
-			/// \param[in] bAppend if true will append to the end of the vector instead of erasing it
-			virtual void GetResolutions(std::vector<dReal>& resolutions, bool bAppend = false) const;
+			/// \param[in] is_append if true will append to the end of the vector instead of erasing it
+			virtual void GetResolutions(std::vector<dReal>& resolutions, bool is_append = false) const;
 
 			/// \brief The discretization of the joint used when line-collision checking.
 			///
@@ -1135,18 +1123,18 @@ namespace OpenRAVE
 
 			/// \brief Return all the joint values with the correct offsets applied
 			///
-			/// \param bAppend if true will append to the end of the vector instead of erasing it
+			/// \param is_append if true will append to the end of the vector instead of erasing it
 			/// \return degrees of freedom of the joint (even if pValues is NULL)
-			virtual void GetValues(std::vector<dReal>& values, bool bAppend = false) const;
+			virtual void GetValues(std::vector<dReal>& values, bool is_append = false) const;
 
 			/// \brief Return the value of the specified joint axis only.
 			virtual dReal GetValue(int axis) const;
 
 			/// \brief Gets the joint velocities
 			///
-			/// \param bAppend if true will append to the end of the vector instead of erasing it
+			/// \param is_append if true will append to the end of the vector instead of erasing it
 			/// \return the degrees of freedom of the joint (even if pValues is NULL)
-			virtual void GetVelocities(std::vector<dReal>& values, bool bAppend = false) const;
+			virtual void GetVelocities(std::vector<dReal>& values, bool is_append = false) const;
 
 			/// \brief Return the velocity of the specified joint axis only.
 			virtual dReal GetVelocity(int axis) const;
@@ -1166,9 +1154,9 @@ namespace OpenRAVE
 
 				\param[out] vLowerLimit the lower limits
 				\param[out] vUpperLimit the upper limits
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetLimits(std::vector<dReal>& vLowerLimit, std::vector<dReal>& vUpperLimit, bool bAppend = false) const;
+			virtual void GetLimits(std::vector<dReal>& vLowerLimit, std::vector<dReal>& vUpperLimit, bool is_append = false) const;
 
 			/// \brief returns the lower and upper limit of one axis of the joint
 			virtual std::pair<dReal, dReal> GetLimit(int iaxis = 0) const;
@@ -1179,11 +1167,11 @@ namespace OpenRAVE
 			/** \brief Returns the max velocities of the joint
 
 				\param[out] the max velocity
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetVelocityLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetVelocityLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
-			virtual void GetVelocityLimits(std::vector<dReal>& vlower, std::vector<dReal>& vupper, bool bAppend = false) const;
+			virtual void GetVelocityLimits(std::vector<dReal>& vlower, std::vector<dReal>& vupper, bool is_append = false) const;
 
 			/// \brief returns the lower and upper velocity limit of one axis of the joint
 			virtual std::pair<dReal, dReal> GetVelocityLimit(int iaxis = 0) const;
@@ -1194,9 +1182,9 @@ namespace OpenRAVE
 			/** \brief Returns the max accelerations of the joint
 
 				\param[out] the max acceleration
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetAccelerationLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetAccelerationLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			virtual dReal GetAccelerationLimit(int iaxis = 0) const;
 
@@ -1206,9 +1194,9 @@ namespace OpenRAVE
 			/** \brief Returns the max jerks of the joint
 
 				\param[out] the max jerk
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetJerkLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetJerkLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			virtual dReal GetJerkLimit(int iaxis = 0) const;
 
@@ -1218,9 +1206,9 @@ namespace OpenRAVE
 			/** \brief Returns the hard max velocities of the joint
 
 				\param[out] the max vel
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetHardVelocityLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetHardVelocityLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			virtual dReal GetHardVelocityLimit(int iaxis = 0) const;
 
@@ -1230,9 +1218,9 @@ namespace OpenRAVE
 			/** \brief Returns the hard max accelerations of the joint
 
 				\param[out] the max accel
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetHardAccelerationLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetHardAccelerationLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			virtual dReal GetHardAccelerationLimit(int iaxis = 0) const;
 
@@ -1242,9 +1230,9 @@ namespace OpenRAVE
 			/** \brief Returns the hard max jerks of the joint
 
 				\param[out] the max jerk
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetHardJerkLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetHardJerkLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			virtual dReal GetHardJerkLimit(int iaxis = 0) const;
 
@@ -1254,9 +1242,9 @@ namespace OpenRAVE
 			/** \brief Returns the max torques of the joint
 
 				\param[out] the max torque
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetTorqueLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetTorqueLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			/// \brief \see GetTorqueLimits
 			virtual void SetTorqueLimits(const std::vector<dReal>& vmax);
@@ -1264,17 +1252,17 @@ namespace OpenRAVE
 			/** \brief Returns the max inertias of the joint
 
 				\param[out] the max inertia
-				\param[in] bAppend if true will append to the end of the vector instead of erasing it
+				\param[in] is_append if true will append to the end of the vector instead of erasing it
 			 */
-			virtual void GetInertiaLimits(std::vector<dReal>& vmax, bool bAppend = false) const;
+			virtual void GetInertiaLimits(std::vector<dReal>& vmax, bool is_append = false) const;
 
 			/// \brief \see GetInertiaLimits
 			virtual void SetInertiaLimits(const std::vector<dReal>& vmax);
 
 			/// \brief gets all weights for the joint axes
 			///
-			/// \param[in] bAppend if true will append to the end of the vector instead of erasing it
-			virtual void GetWeights(std::vector<dReal>& weights, bool bAppend = false) const;
+			/// \param[in] is_append if true will append to the end of the vector instead of erasing it
+			virtual void GetWeights(std::vector<dReal>& weights, bool is_append = false) const;
 
 			/// \brief The weight associated with a joint's axis for computing a distance in the robot configuration space.
 			virtual dReal GetWeight(int axis = 0) const;
@@ -1302,10 +1290,6 @@ namespace OpenRAVE
 				return info_.offsets_vector_.at(iaxis);
 			}
 
-			inline dReal GetOffset(int iaxis = 0) const RAVE_DEPRECATED {
-				return GetWrapOffset(iaxis);
-			}
-
 			/// \brief \see GetWrapOffset
 			virtual void SetWrapOffset(dReal offset, int iaxis = 0);
 
@@ -1329,11 +1313,6 @@ namespace OpenRAVE
 			/// A user does not have control of the the mimic joint values, even if they appear in the DOF list.
 			/// @name Mimic Joint Properties
 			//@{
-
-			/// \deprecated (11/1/1)
-			virtual int GetMimicJointIndex() const RAVE_DEPRECATED;
-			/// \deprecated (11/1/1)
-			virtual const std::vector<dReal> GetMimicCoeffs() const RAVE_DEPRECATED;
 
 			/// \brief Returns true if a particular axis of the joint is mimiced.
 			///
@@ -1383,8 +1362,9 @@ namespace OpenRAVE
 			//@}
 
 			/// \brief return a map of custom float parameters
-			inline const std::map<std::string, std::vector<dReal> >& GetFloatParameters() const {
-				return info_._mapFloatParameters;
+			inline const std::map<std::string, std::vector<dReal> >& GetFloatParameters() const
+			{
+				return info_.float_parameters_map_;
 			}
 
 			/// \brief set custom float parameters
@@ -1393,8 +1373,9 @@ namespace OpenRAVE
 			virtual void SetFloatParameters(const std::string& key, const std::vector<dReal>& parameters);
 
 			/// \brief return a map of custom integer parameters
-			inline const std::map<std::string, std::vector<int> >& GetIntParameters() const {
-				return info_._mapIntParameters;
+			inline const std::map<std::string, std::vector<int> >& GetIntParameters() const 
+			{
+				return info_.int_parameters_map_;
 			}
 
 			/// \brief set custom int parameters
@@ -1403,8 +1384,9 @@ namespace OpenRAVE
 			virtual void SetIntParameters(const std::string& key, const std::vector<int>& parameters);
 
 			/// \brief return a map of custom string parameters
-			inline const std::map<std::string, std::string >& GetStringParameters() const {
-				return info_._mapStringParameters;
+			inline const std::map<std::string, std::string >& GetStringParameters() const 
+			{
+				return info_.string_parameters_map_;
 			}
 
 			/// \brief set custom string parameters
@@ -1413,7 +1395,8 @@ namespace OpenRAVE
 			virtual void SetStringParameters(const std::string& key, const std::string& value);
 
 			/// \brief return controlMode for this joint
-			inline JointControlMode GetControlMode() const {
+			inline JointControlMode GetControlMode() const 
+			{
 				return info_.control_mode_;
 			}
 
@@ -1422,13 +1405,15 @@ namespace OpenRAVE
 
 			/// \brief returns the JointInfo structure containing all information.
 			///
-			/// Some values in this structure like _vcurrentvalues need to be updated, so make sure to call \ref UpdateInfo() right before this function is called.
-			inline const KinBody::JointInfo& GetInfo() const {
+			/// Some values in this structure like current_values_vector_ need to be updated, so make sure to call \ref UpdateInfo() right before this function is called.
+			inline const KinBody::JointInfo& GetInfo() const 
+			{
 				return info_;
 			}
 
 			/// \brief Calls \ref UpdateInfo and returns the joint structure
-			inline const KinBody::JointInfo& UpdateAndGetInfo() {
+			inline const KinBody::JointInfo& UpdateAndGetInfo()
+			{
 				UpdateInfo();
 				return info_;
 			}
@@ -1445,7 +1430,8 @@ namespace OpenRAVE
 				\param[in] iaxis the axis
 				\param[in,out] vcachedpartials set of cached partials for each degree of freedom
 			 */
-			virtual void _ComputePartialVelocities(std::vector<std::pair<int, dReal> >& vpartials, int iaxis, std::map< std::pair<Mimic::DOFFormat, int>, dReal >& mapcachedpartials) const;
+			virtual void _ComputePartialVelocities(std::vector<std::pair<int, dReal> >& vpartials,
+				int iaxis, std::map< std::pair<Mimic::DOFFormat, int>, dReal >& mapcachedpartials) const;
 
 			/** \brief Compute internal transformations and specify the attached links of the joint.
 
@@ -1458,7 +1444,8 @@ namespace OpenRAVE
 				\param vaxes the axes in plink0's coordinate system of the joints
 				\param vinitialvalues the current values of the robot used to set the 0 offset of the robot
 			 */
-			virtual void _ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1, const Vector& vanchor, const std::vector<Vector>& vaxes, const std::vector<dReal>& vcurrentvalues);
+			virtual void _ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1, 
+				const Vector& vanchor, const std::vector<Vector>& vaxes, const std::vector<dReal>& vcurrentvalues);
 
 			/// \brief evaluates the mimic joint equation using vdependentvalues
 			///
@@ -1470,10 +1457,12 @@ namespace OpenRAVE
 			virtual int _Eval(int axis, uint32_t timederiv, const std::vector<dReal>& vdependentvalues, std::vector<dReal>& voutput);
 
 			/// \brief compute joint velocities given the parent and child link transformations/velocities
-			virtual void _GetVelocities(std::vector<dReal>& values, bool bAppend, const std::pair<Vector, Vector>& linkparentvelocity, const std::pair<Vector, Vector>& linkchildvelocity) const;
+			virtual void _GetVelocities(std::vector<dReal>& values, bool is_append, 
+				const std::pair<Vector, Vector>& linkparentvelocity, const std::pair<Vector, Vector>& linkchildvelocity) const;
 
 			/// \brief Return the velocity of the specified joint axis only.
-			virtual dReal _GetVelocity(int axis, const std::pair<Vector, Vector>&linkparentvelocity, const std::pair<Vector, Vector>&linkchildvelocity) const;
+			virtual dReal _GetVelocity(int axis, const std::pair<Vector, Vector>&linkparentvelocity, 
+				const std::pair<Vector, Vector>&linkchildvelocity) const;
 
 			std::array<dReal, 3> _doflastsetvalues; //!< the last set value by the kinbody (offsets_vector_ not applied). For revolute joints that have a range greater than 2*pi, it is only possible to recover the joint value from the link positions mod 2*pi. In order to recover the branch, multiplies of 2*pi are added/subtracted to this value that is closest to _doflastsetvalues. For circular joints, the last set value can be ignored since they always return a value from [-pi,pi)
 
@@ -1519,9 +1508,11 @@ namespace OpenRAVE
 		class BodyState
 		{
 		public:
-			BodyState() : updatestamp(0), environmentid(0) {
+			BodyState() : updatestamp(0), environmentid(0)
+			{
 			}
-			virtual ~BodyState() {
+			virtual ~BodyState() 
+			{
 			}
 			KinBodyPtr pbody; //!< pointer to the body. if using this, make sure the environment is locked.
 			std::vector<Transform> vectrans; //!< \see KinBody::GetLinkTransformations
@@ -1704,7 +1695,8 @@ namespace OpenRAVE
 		virtual ~KinBody();
 
 		/// return the static interface type this class points to (used for safe casting)
-		static inline InterfaceType GetInterfaceTypeStatic() {
+		static inline InterfaceType GetInterfaceTypeStatic() 
+		{
 			return PT_KinBody;
 		}
 
@@ -1740,18 +1732,22 @@ namespace OpenRAVE
 
 		/// \brief Create a kinbody with one link composed of a list of geometries
 		///
-		/// \param geometries a list of geometry infos to be initialized into new geometry objects, note that the geometry info data is copied
+		/// \param geometries a list of geometry infos to be initialized into new geometry objects, 
+		///        note that the geometry info data is copied
 		/// \param visible if true, will be rendered in the scene
 		/// \param uri the new URI to set for the interface
-		virtual bool InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr>& geometries, const std::string& uri = std::string());
-		virtual bool InitFromGeometries(const std::list<KinBody::GeometryInfo>& geometries, const std::string& uri = std::string());
+		virtual bool InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr>& geometries, 
+			const std::string& uri = std::string());
+		virtual bool InitFromGeometries(const std::list<KinBody::GeometryInfo>& geometries, 
+			const std::string& uri = std::string());
 
 		/// \brief initializes an complex kinematics body with links and joints
 		///
 		/// \param linkinfos information for all the links. Links will be created in this order
 		/// \param jointinfos information for all the joints. Joints might be rearranged depending on their mimic properties
 		/// \param uri the new URI to set for the interface
-		virtual bool Init(const std::vector<LinkInfoConstPtr>& linkinfos, const std::vector<JointInfoConstPtr>& jointinfos, const std::string& uri = std::string());
+		virtual bool Init(const std::vector<LinkInfoConstPtr>& linkinfos,
+			const std::vector<JointInfoConstPtr>& jointinfos, const std::string& uri = std::string());
 
 		/// \brief Sets new geometries for all the links depending on the stored extra geometries each link has.
 		///
@@ -1767,10 +1763,12 @@ namespace OpenRAVE
 		/// \param linkgeometries a vector containing a collection of geometry infos ptr for each links
 		/// Note that the pointers are copied and not the data, so be careful not to modify the geometries afterwards
 		/// This method is faster than Link::SetGeometriesFromGroup since it makes only one change callback.
-		virtual void SetLinkGroupGeometries(const std::string& name, const std::vector< std::vector<KinBody::GeometryInfoPtr> >& linkgeometries);
+		virtual void SetLinkGroupGeometries(const std::string& name, 
+			const std::vector< std::vector<KinBody::GeometryInfoPtr> >& linkgeometries);
 
 		/// \brief Unique name of the body.
-		virtual const std::string& GetName() const {
+		virtual const std::string& GetName() const 
+		{
 			return name_;
 		}
 
@@ -1839,13 +1837,6 @@ namespace OpenRAVE
 		/// \brief Returns the max torque for each DOF
 		virtual void GetDOFTorqueLimits(std::vector<dReal>& maxaccelerations) const;
 
-		/// \deprecated (11/05/26)
-		virtual void GetDOFMaxVel(std::vector<dReal>& v) const RAVE_DEPRECATED {
-			GetDOFVelocityLimits(v);
-		}
-		virtual void GetDOFMaxAccel(std::vector<dReal>& v) const RAVE_DEPRECATED {
-			GetDOFAccelerationLimits(v);
-		}
 		virtual void GetDOFMaxTorque(std::vector<dReal>& v) const;
 
 		/// \brief get the dof resolutions
@@ -1893,7 +1884,8 @@ namespace OpenRAVE
 		virtual void SetDOFLimits(const std::vector<dReal>& lower, const std::vector<dReal>& upper, const std::vector<int>& dofindices = std::vector<int>());
 
 		/// \brief Returns the joints making up the controllable degrees of freedom of the body.
-		const std::vector<JointPtr>& GetJoints() const {
+		const std::vector<JointPtr>& GetJoints() const
+		{
 			return joints_vector_;
 		}
 
@@ -1903,8 +1895,9 @@ namespace OpenRAVE
 			joint index and no dof index. Passive joints allows mimic joints to be hidden from the users.
 			However, there are cases when passive joints are not mimic; for example, suspension mechanism on vehicles.
 		 */
-		const std::vector<JointPtr>& GetPassiveJoints() const {
-			return _vPassiveJoints;
+		const std::vector<JointPtr>& GetPassiveJoints() const
+		{
+			return passive_joints_vector_;
 		}
 
 		/// \brief Returns the joints in hierarchical order starting at the base link.
@@ -2637,16 +2630,16 @@ namespace OpenRAVE
 		std::string name_; //!< name of body
 		std::vector<JointPtr> joints_vector_; //!< \see GetJoints
 		std::vector<JointPtr> topologically_sorted_joints_vector_; //!< \see GetDependencyOrderedJoints
-		std::vector<JointPtr> topologically_sorted_joints_all_vector_; //!< Similar to _vDependencyOrderedJoints except includes joints_vector_ and _vPassiveJoints
+		std::vector<JointPtr> topologically_sorted_joints_all_vector_; //!< Similar to _vDependencyOrderedJoints except includes joints_vector_ and passive_joints_vector_
 		std::vector<int> topologically_sorted_joint_indices_all_vector_; //!< the joint indices of the joints in topologically_sorted_joints_all_vector_. Passive joint indices have joints_vector_.size() added to them.
 		std::vector<JointPtr> dof_ordered_joints_vector_; //!< all joints of the body ordered on how they are arranged within the degrees of freedom
 		std::vector<LinkPtr> links_vector_; //!< \see GetLinks
 		std::vector<int> dof_indices_vector_; //!< cached start joint indices, indexed by dof indices
-		std::vector<std::pair<int16_t, int16_t> > all_pairs_shortest_paths_vector_; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into joints_vector_ or _vPassiveJoints. If the second value is greater or equal to  joints_vector_.size() then it indexes into _vPassiveJoints.
+		std::vector<std::pair<int16_t, int16_t> > all_pairs_shortest_paths_vector_; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into joints_vector_ or passive_joints_vector_. If the second value is greater or equal to  joints_vector_.size() then it indexes into passive_joints_vector_.
 		std::vector<int8_t> joints_affecting_links_vector_; //!< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
 		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > closed_loops_vector_; //!< \see GetClosedLoops
 		std::vector< std::vector< std::pair<int16_t, int16_t> > > closed_loop_indices_vector_; //!< \see GetClosedLoops
-		std::vector<JointPtr> _vPassiveJoints; //!< \see GetPassiveJoints()
+		std::vector<JointPtr> passive_joints_vector_; //!< \see GetPassiveJoints()
 		std::set<int> _setAdjacentLinks; //!< a set of which links are connected to which if link i and j are connected then
 										 //!< i|(j<<16) will be in the set where i<j.
 		std::vector< std::pair<std::string, std::string> > _vForcedAdjacentLinks; //!< internally stores forced adjacent links

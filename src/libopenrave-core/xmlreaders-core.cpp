@@ -1481,7 +1481,7 @@ public:
             if( _pcurreader->endElement(xmlname) ) {
                 xmlreaders::ElectricMotorActuatorInfoReaderPtr actuatorreader = std::dynamic_pointer_cast<xmlreaders::ElectricMotorActuatorInfoReader>(_pcurreader);
                 if( !!actuatorreader ) {
-                    _pjoint->info_._infoElectricMotor = actuatorreader->GetActuatorInfo();
+                    _pjoint->info_.electric_motor_info_ = actuatorreader->GetActuatorInfo();
                 }
                 _pcurreader.reset();
             }
@@ -2210,7 +2210,7 @@ public:
                     else {
                         _pjoint->jointindex = -1;
                         _pjoint->dofindex = -1;
-                        _pchain->_vPassiveJoints.push_back(_pjoint);
+                        _pchain->passive_joints_vector_.push_back(_pjoint);
                     }
                     BOOST_ASSERT( _pjoint->dofindex < _pchain->GetDOF());
                     _pjoint.reset();
@@ -2329,8 +2329,8 @@ public:
                 for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->joints_vector_.begin()+rootjoffset; itjoint != _pchain->joints_vector_.end(); ++itjoint) {
                     (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                 }
-                BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_pchain->_vPassiveJoints.size());
-                for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->_vPassiveJoints.begin()+rootjpoffset; itjoint != _pchain->_vPassiveJoints.end(); ++itjoint) {
+                BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_pchain->passive_joints_vector_.size());
+                for(vector<KinBody::JointPtr>::iterator itjoint = _pchain->passive_joints_vector_.begin()+rootjpoffset; itjoint != _pchain->passive_joints_vector_.end(); ++itjoint) {
                     (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                 }
             }
@@ -3043,9 +3043,9 @@ public:
                     listjoints.push_back(*itjoint);
                     ++itjoint;
                 }
-                BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_probot->_vPassiveJoints.size());
-                itjoint = _probot->_vPassiveJoints.begin()+rootjpoffset;
-                while(itjoint != _probot->_vPassiveJoints.end()) {
+                BOOST_ASSERT(rootjpoffset >= 0 && rootjpoffset<=(int)_probot->passive_joints_vector_.size());
+                itjoint = _probot->passive_joints_vector_.begin()+rootjpoffset;
+                while(itjoint != _probot->passive_joints_vector_.end()) {
                     jointnamepairs.emplace_back((*itjoint)->info_.name_,  _prefix +(*itjoint)->info_.name_);
                     (*itjoint)->info_.name_ = _prefix +(*itjoint)->info_.name_;
                     listjoints.push_back(*itjoint);

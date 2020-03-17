@@ -42,7 +42,7 @@ void RobotBase::ConnectedBodyInfo::InitInfoFromBody(RobotBase& robot)
     FOREACH(itjoint, robot.joints_vector_) {
         _vJointInfos.push_back(std::make_shared<KinBody::JointInfo>((*itjoint)->UpdateAndGetInfo()));
     }
-    FOREACH(itjoint, robot._vPassiveJoints) {
+    FOREACH(itjoint, robot.passive_joints_vector_) {
         _vJointInfos.push_back(std::make_shared<KinBody::JointInfo>((*itjoint)->UpdateAndGetInfo()));
     }
 
@@ -468,24 +468,24 @@ void RobotBase::_ComputeConnectedBodiesInformation()
             pjoint->info_ = *connectedBodyInfo._vJointInfos[ijoint]; // copy
             pjoint->info_.name_ = connectedBody._nameprefix + pjoint->info_.name_;
 
-            // search for the correct resolved _linkname0 and _linkname1
+            // search for the correct resolved link_name0_ and link_name1_
             bool bfoundlink0 = false, bfoundlink1 = false;
             for(size_t ilink = 0; ilink < connectedBodyInfo._vLinkInfos.size(); ++ilink) {
-                if( pjoint->info_._linkname0 == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
-                    pjoint->info_._linkname0 = connectedBody._vResolvedLinkNames.at(ilink).first;
+                if( pjoint->info_.link_name0_ == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
+                    pjoint->info_.link_name0_ = connectedBody._vResolvedLinkNames.at(ilink).first;
                     bfoundlink0 = true;
                 }
-                if( pjoint->info_._linkname1 == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
-                    pjoint->info_._linkname1 = connectedBody._vResolvedLinkNames.at(ilink).first;
+                if( pjoint->info_.link_name1_ == connectedBodyInfo._vLinkInfos[ilink]->name_ ) {
+                    pjoint->info_.link_name1_ = connectedBody._vResolvedLinkNames.at(ilink).first;
                     bfoundlink1 = true;
                 }
             }
 
             if( !bfoundlink0 ) {
-                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname0 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->info_.name_%pjoint->info_._linkname0, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname0 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->info_.name_%pjoint->info_.link_name0_, ORE_InvalidArguments);
             }
             if( !bfoundlink1 ) {
-                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname1 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->info_.name_%pjoint->info_._linkname1, ORE_InvalidArguments);
+                throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, for joint %s, could not find linkname1 %s in connected body link infos!", connectedBody.GetName()%GetName()%pjoint->info_.name_%pjoint->info_.link_name1_, ORE_InvalidArguments);
             }
             jointNamePairs.emplace_back(connectedBodyInfo._vJointInfos[ijoint]->name_,  pjoint->info_.name_);
             vNewJointsToAdd.push_back(pjoint);
@@ -599,8 +599,8 @@ void RobotBase::_ComputeConnectedBodiesInformation()
         dummyJointInfo.max_velocity_vector_[0] = 0.0;
         dummyJointInfo.upper_limit_vector_[0] = 0;
 
-        dummyJointInfo._linkname0 = connectedBodyInfo._linkname;
-        dummyJointInfo._linkname1 = connectedBody._vResolvedLinkNames.at(0).first;
+        dummyJointInfo.link_name0_ = connectedBodyInfo._linkname;
+        dummyJointInfo.link_name1_ = connectedBody._vResolvedLinkNames.at(0).first;
         _InitAndAddJoint(connectedBody._pDummyJointCache);
     }
 }
@@ -613,7 +613,7 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
 
     std::vector<uint8_t> vConnectedLinks; vConnectedLinks.resize(links_vector_.size(),0);
     std::vector<uint8_t> vConnectedJoints; vConnectedJoints.resize(joints_vector_.size(),0);
-    std::vector<uint8_t> vConnectedPassiveJoints; vConnectedPassiveJoints.resize(_vPassiveJoints.size(),0);
+    std::vector<uint8_t> vConnectedPassiveJoints; vConnectedPassiveJoints.resize(passive_joints_vector_.size(),0);
 
     // have to remove any of the added links
     FOREACH(itconnectedBody, _vecConnectedBodies) {
@@ -634,8 +634,8 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
                     vConnectedJoints[ijointindex] = 1;
                 }
             }
-            for(int ijointindex = 0; ijointindex < (int)_vPassiveJoints.size(); ++ijointindex) {
-                if( _vPassiveJoints[ijointindex]->GetName() == connectedBody._vResolvedJointNames[iresolvedjoint].first ) {
+            for(int ijointindex = 0; ijointindex < (int)passive_joints_vector_.size(); ++ijointindex) {
+                if( passive_joints_vector_[ijointindex]->GetName() == connectedBody._vResolvedJointNames[iresolvedjoint].first ) {
                     vConnectedPassiveJoints[ijointindex] = 1;
                 }
             }
@@ -658,8 +658,8 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
             connectedBody._vResolvedAttachedSensorNames[iresolvedattachedSensor].first.clear();
         }
 
-        for(int ijointindex = 0; ijointindex < (int)_vPassiveJoints.size(); ++ijointindex) {
-            if( _vPassiveJoints[ijointindex]->GetName() == connectedBody._dummyPassiveJointName ) {
+        for(int ijointindex = 0; ijointindex < (int)passive_joints_vector_.size(); ++ijointindex) {
+            if( passive_joints_vector_[ijointindex]->GetName() == connectedBody._dummyPassiveJointName ) {
                 vConnectedPassiveJoints[ijointindex] = 1;
             }
         }
@@ -688,10 +688,10 @@ void RobotBase::_DeinitializeConnectedBodiesInformation()
     for(int ireadpassiveJoint = 0; ireadpassiveJoint < (int)vConnectedPassiveJoints.size(); ++ireadpassiveJoint) {
         if( !vConnectedPassiveJoints[ireadpassiveJoint] ) {
             // preserve as original
-            _vPassiveJoints[iwritepassiveJoint++] = _vPassiveJoints[ireadpassiveJoint];
+            passive_joints_vector_[iwritepassiveJoint++] = passive_joints_vector_[ireadpassiveJoint];
         }
     }
-    _vPassiveJoints.resize(iwritepassiveJoint);
+    passive_joints_vector_.resize(iwritepassiveJoint);
 }
 
 void RobotBase::GetConnectedBodyActiveStates(std::vector<uint8_t>& activestates) const

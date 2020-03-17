@@ -822,7 +822,7 @@ namespace OpenRAVE
 				FOREACH(itjoint, probot->joints_vector_) {
 					_setInitialJoints.insert(*itjoint);
 				}
-				FOREACH(itjoint, probot->_vPassiveJoints) {
+				FOREACH(itjoint, probot->passive_joints_vector_) {
 					_setInitialJoints.insert(*itjoint);
 				}
 				FOREACH(itmanip, probot->_vecManipulators) {
@@ -1014,7 +1014,7 @@ namespace OpenRAVE
 					listprocessjoints.push_back(*itjoint);
 				}
 			}
-			FOREACH(itjoint, pbody->_vPassiveJoints) {
+			FOREACH(itjoint, pbody->passive_joints_vector_) {
 				if (_setInitialJoints.find(*itjoint) == _setInitialJoints.end()) {
 					jointnamepairs.emplace_back((*itjoint)->info_.name_, prefix + (*itjoint)->info_.name_);
 					(*itjoint)->info_.name_ = prefix + (*itjoint)->info_.name_;
@@ -1672,14 +1672,14 @@ namespace OpenRAVE
 										std::string name = pelt->getAttribute("name");
 										if (bFloatArray) {
 											ss.clear(); ss.str(pelt->getCharData());
-											pjoint->info_._mapFloatParameters[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
+											pjoint->info_.float_parameters_map_[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
 										}
 										else if (bIntArray) {
 											ss.clear(); ss.str(pelt->getCharData());
-											pjoint->info_._mapIntParameters[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
+											pjoint->info_.int_parameters_map_[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
 										}
 										else if (bStringValue) {
-											pjoint->info_._mapStringParameters[name] = pelt->getCharData();
+											pjoint->info_.string_parameters_map_[name] = pelt->getCharData();
 										}
 									}
 									bool bControlMode = pelt->getElementName() == std::string("controlMode");
@@ -2062,7 +2062,7 @@ namespace OpenRAVE
 					}
 					else {
 						RAVELOG_VERBOSE(str(boost::format("joint %s is passive\n") % pjoint->info_.name_));
-						pkinbody->_vPassiveJoints.push_back(pjoint);
+						pkinbody->passive_joints_vector_.push_back(pjoint);
 					}
 
 					if (_mapJointSids.find(jointsidref) != _mapJointSids.end()) {
@@ -3469,7 +3469,7 @@ namespace OpenRAVE
 								pjoint = result.first;
 								pdomjoint = result.second;
 								if (!!pjoint && !!pdomjoint) {
-									if (find(probot->_vPassiveJoints.begin(), probot->_vPassiveJoints.end(), pjoint) == probot->_vPassiveJoints.end()) { // don't allow passive joints!
+									if (find(probot->passive_joints_vector_.begin(), probot->passive_joints_vector_.end(), pjoint) == probot->passive_joints_vector_.end()) { // don't allow passive joints!
 										listOrderedJoints.push_back(pjoint);
 									}
 								}
@@ -3483,7 +3483,7 @@ namespace OpenRAVE
 							for (size_t ic = 0; ic < tec->getContents().getCount(); ++ic) {
 								daeElementRef pchild = tec->getContents()[ic];
 								if (pchild->getElementName() == string("instance_actuator")) {
-									pjoint->info_._infoElectricMotor = _ExtractElectricMotorActuatorInfo(pchild);
+									pjoint->info_.electric_motor_info_ = _ExtractElectricMotorActuatorInfo(pchild);
 								}
 							}
 						}

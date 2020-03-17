@@ -659,15 +659,15 @@ PyJointInfo::PyJointInfo(const KinBody::JointInfo& info) {
 void PyJointInfo::_Update(const KinBody::JointInfo& info) {
     _type = info.type_;
     _name = ConvertStringToUnicode(info.name_);
-    _linkname0 = ConvertStringToUnicode(info._linkname0);
-    _linkname1 = ConvertStringToUnicode(info._linkname1);
-    _vanchor = toPyVector3(info._vanchor);
+    _linkname0 = ConvertStringToUnicode(info.link_name0_);
+    _linkname1 = ConvertStringToUnicode(info.link_name1_);
+    _vanchor = toPyVector3(info.anchor_);
     py::list vaxes;
     for(size_t i = 0; i < info.axes_vector_.size(); ++i) {
         vaxes.append(toPyVector3(info.axes_vector_[i]));
     }
     _vaxes = vaxes;
-    _vcurrentvalues = toPyArray(info._vcurrentvalues);
+    _vcurrentvalues = toPyArray(info.current_values_vector_);
     _vresolution = toPyArray<dReal,3>(info.resolution_vector_);
     _vmaxvel = toPyArray<dReal,3>(info.max_velocity_vector_);
     _vhardmaxvel = toPyArray<dReal,3>(info.hard_max_velocity_vector_);
@@ -695,13 +695,13 @@ void PyJointInfo::_Update(const KinBody::JointInfo& info) {
             _vmimic.append(oequations);
         }
     }
-    FOREACHC(it, info._mapFloatParameters) {
+    FOREACHC(it, info.float_parameters_map_) {
         _mapFloatParameters[it->first] = toPyArray(it->second);
     }
-    FOREACHC(it, info._mapIntParameters) {
+    FOREACHC(it, info.int_parameters_map_) {
         _mapIntParameters[it->first] = toPyArray(it->second);
     }
-    FOREACHC(it, info._mapStringParameters) {
+    FOREACHC(it, info.string_parameters_map_) {
         _mapStringParameters[it->first] = ConvertStringToUnicode(it->second);
     }
     py::list bIsCircular;
@@ -710,8 +710,8 @@ void PyJointInfo::_Update(const KinBody::JointInfo& info) {
     }
     _bIsCircular = bIsCircular;
     _bIsActive = info.is_active_;
-    if( !!info._infoElectricMotor ) {
-        _infoElectricMotor = PyElectricMotorActuatorInfoPtr(new PyElectricMotorActuatorInfo(*info._infoElectricMotor));
+    if( !!info.electric_motor_info_ ) {
+        _infoElectricMotor = PyElectricMotorActuatorInfoPtr(new PyElectricMotorActuatorInfo(*info.electric_motor_info_));
     }
 
     // joint control
@@ -750,12 +750,12 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
         info.name_ = py::extract<std::string>(_name);
     }
     if( !IS_PYTHONOBJECT_NONE(_linkname0) ) {
-        info._linkname0 = py::extract<std::string>(_linkname0);
+        info.link_name0_ = py::extract<std::string>(_linkname0);
     }
     if( !IS_PYTHONOBJECT_NONE(_linkname1) ) {
-        info._linkname1 = py::extract<std::string>(_linkname1);
+        info.link_name1_ = py::extract<std::string>(_linkname1);
     }
-    info._vanchor = ExtractVector3(_vanchor);
+    info.anchor_ = ExtractVector3(_vanchor);
 
     // We might be able to replace these exceptions with static_assert in C++11
     size_t num = len(_vaxes);
@@ -765,7 +765,7 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
     }
 
     if( !IS_PYTHONOBJECT_NONE(_vcurrentvalues) ) {
-        info._vcurrentvalues = ExtractArray<dReal>(_vcurrentvalues);
+        info.current_values_vector_ = ExtractArray<dReal>(_vcurrentvalues);
     }
 
     num = len(_vresolution);
@@ -863,26 +863,26 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
         }
     }
     num = len(_mapFloatParameters);
-    info._mapFloatParameters.clear();
+    info.float_parameters_map_.clear();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapFloatParameters) {
         std::string name = extract<std::string>(item.first);
-        info._mapFloatParameters[name] = ExtractArray<dReal>(extract<py::object>(item.second));
+        info.float_parameters_map_[name] = ExtractArray<dReal>(extract<py::object>(item.second));
     }
 #else
     object okeyvalueiter = _mapFloatParameters.iteritems();
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapFloatParameters[name] = ExtractArray<dReal>(okeyvalue[1]);
+        info.float_parameters_map_[name] = ExtractArray<dReal>(okeyvalue[1]);
     }
 #endif
 
-    info._mapIntParameters.clear();
+    info.int_parameters_map_.clear();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapIntParameters) {
         std::string name = extract<std::string>(item.first);
-        info._mapIntParameters[name] = ExtractArray<int>(extract<py::object>(item.second));
+        info.int_parameters_map_[name] = ExtractArray<int>(extract<py::object>(item.second));
     }
 #else
     okeyvalueiter = _mapIntParameters.iteritems();
@@ -890,15 +890,15 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapIntParameters[name] = ExtractArray<int>(okeyvalue[1]);
+        info.int_parameters_map_[name] = ExtractArray<int>(okeyvalue[1]);
     }
 #endif
 
-    info._mapStringParameters.clear();
+    info.string_parameters_map_.clear();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapStringParameters) {
         std::string name = extract<std::string>(item.first);
-        info._mapStringParameters[name] = extract<std::string>(item.second);
+        info.string_parameters_map_[name] = extract<std::string>(item.second);
     }
 #else
     okeyvalueiter = _mapStringParameters.iteritems();
@@ -906,7 +906,7 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapStringParameters[name] = (std::string)extract<std::string>(okeyvalue[1]);
+        info.string_parameters_map_[name] = (std::string)extract<std::string>(okeyvalue[1]);
     }
 #endif
 
@@ -916,9 +916,9 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
     }
     info.is_active_ = _bIsActive;
     if( !!_infoElectricMotor ) {
-        //PyElectricMotorActuatorInfoPtr pinfo = py::extract<PyElectricMotorActuatorInfoPtr>(_infoElectricMotor);
+        //PyElectricMotorActuatorInfoPtr pinfo = py::extract<PyElectricMotorActuatorInfoPtr>(electric_motor_info_);
         //if( !!pinfo ) {
-        info._infoElectricMotor = _infoElectricMotor->GetElectricMotorActuatorInfo();
+        info.electric_motor_info_ = _infoElectricMotor->GetElectricMotorActuatorInfo();
         //}
     }
 
@@ -2399,24 +2399,10 @@ object PyKinBody::GetDOFTorqueLimits(object oindices) const
     return toPyArray(vmax);
 }
 
-object PyKinBody::GetDOFMaxVel() const
-{
-    RAVELOG_WARN("KinBody.GetDOFMaxVel() is deprecated, use GetDOFVelocityLimits\n");
-    std::vector<dReal> values;
-    _pbody->GetDOFVelocityLimits(values);
-    return toPyArray(values);
-}
 object PyKinBody::GetDOFMaxTorque() const
 {
     std::vector<dReal> values;
     _pbody->GetDOFMaxTorque(values);
-    return toPyArray(values);
-}
-object PyKinBody::GetDOFMaxAccel() const
-{
-    RAVELOG_WARN("KinBody.GetDOFMaxAccel() is deprecated, use GetDOFAccelerationLimits\n");
-    std::vector<dReal> values;
-    _pbody->GetDOFAccelerationLimits(values);
     return toPyArray(values);
 }
 
@@ -4521,9 +4507,7 @@ void init_openravepy_kinbody()
                          .def("GetDOFHardJerkLimits",getdofhardjerklimits2, PY_ARGS("indices") DOXY_FN(KinBody,GetDOFHardJerkLimits2))
                          .def("GetDOFTorqueLimits",getdoftorquelimits1, DOXY_FN(KinBody,GetDOFTorqueLimits))
                          .def("GetDOFTorqueLimits",getdoftorquelimits2, PY_ARGS("indices") DOXY_FN(KinBody,GetDOFTorqueLimits))
-                         .def("GetDOFMaxVel",&PyKinBody::GetDOFMaxVel, DOXY_FN(KinBody,GetDOFMaxVel))
                          .def("GetDOFMaxTorque",&PyKinBody::GetDOFMaxTorque, DOXY_FN(KinBody,GetDOFMaxTorque))
-                         .def("GetDOFMaxAccel",&PyKinBody::GetDOFMaxAccel, DOXY_FN(KinBody,GetDOFMaxAccel))
                          .def("GetDOFWeights",getdofweights1, DOXY_FN(KinBody,GetDOFWeights))
                          .def("GetDOFWeights",getdofweights2, DOXY_FN(KinBody,GetDOFWeights))
                          .def("SetDOFWeights",&PyKinBody::SetDOFWeights, PY_ARGS("weights") DOXY_FN(KinBody,SetDOFWeights))

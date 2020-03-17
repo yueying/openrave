@@ -169,9 +169,7 @@ public:
     py::object GetDOFHardAccelerationLimits(py::object oindices) const;
     py::object GetDOFHardJerkLimits(py::object oindices) const;
     py::object GetDOFTorqueLimits(py::object oindices) const;
-    py::object GetDOFMaxVel() const;
     py::object GetDOFMaxTorque() const;
-    py::object GetDOFMaxAccel() const;
     py::object GetDOFWeights() const;
     py::object GetDOFWeights(py::object oindices) const;
     py::object GetDOFResolutions() const;

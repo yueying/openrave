@@ -174,7 +174,7 @@ protected:
                         (*itjoint)->_vmimic[0].reset();
                     }
                     std::vector<int> v(1); v[0] = ijoint;
-                    (*itjoint)->info_._mapIntParameters["xfile_originalindex"] = v;
+                    (*itjoint)->info_.int_parameters_map_["xfile_originalindex"] = v;
                     pbody->joints_vector_.push_back(*itjoint);
                 }
                 ++ijoint;
@@ -307,17 +307,17 @@ protected:
 //                        pjoint->info_._bIsActive = false;
 //                        pjoint->info_.lower_limit_vector_[0] = pjoint->info_.upper_limit_vector_[0] = 0;
 //                        pjoint->_vmimic[0].reset(); // remove any mimic
-//                        pbody->_vPassiveJoints.push_back(pjoint);
+//                        pbody->passive_joints_vector_.push_back(pjoint);
 //                    }
 //                }
                 if( node->mFramePivot->mJointIndex >= 1 && !pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1) ) {
                     pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1) = pjoint;
                 }
                 else {
-                    pbody->_vPassiveJoints.push_back(pjoint);
+                    pbody->passive_joints_vector_.push_back(pjoint);
                     if( orgjointname == pjoint->info_.name_ ) {
                         // swap with official joint (can come later in the hierarchy)
-                        swap(pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1), pbody->_vPassiveJoints.back());
+                        swap(pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1), pbody->passive_joints_vector_.back());
                     }
                 }
             }
