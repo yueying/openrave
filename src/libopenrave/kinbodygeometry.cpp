@@ -505,7 +505,8 @@ namespace OpenRAVE
 		AABB ab;
 		TransformMatrix tglobal = geometry_world * transform_;
 
-		switch (type_) {
+		switch (type_) 
+		{
 		case GT_None:
 			ab.extents.x = 0;
 			ab.extents.y = 0;

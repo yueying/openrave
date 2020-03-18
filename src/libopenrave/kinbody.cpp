@@ -148,13 +148,13 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
         plink->geometries_vector_.push_back(geom);
     }
 
-    plink->_collision.vertices.reserve(numvertices);
-    plink->_collision.indices.reserve(numindices);
+    plink->collision_.vertices.reserve(numvertices);
+    plink->collision_.indices.reserve(numindices);
     TriMesh trimesh;
     FOREACH(itgeom,plink->geometries_vector_) {
         trimesh = (*itgeom)->GetCollisionMesh();
         trimesh.ApplyTransform((*itgeom)->GetTransform());
-        plink->_collision.Append(trimesh);
+        plink->collision_.Append(trimesh);
     }
     links_vector_.push_back(plink);
     str_uri_ = uri;
@@ -190,13 +190,13 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
         plink->geometries_vector_.push_back(geom);
     }
 
-    plink->_collision.vertices.reserve(numvertices);
-    plink->_collision.indices.reserve(numindices);
+    plink->collision_.vertices.reserve(numvertices);
+    plink->collision_.indices.reserve(numindices);
     TriMesh trimesh;
     FOREACH(itgeom,plink->geometries_vector_) {
         trimesh = (*itgeom)->GetCollisionMesh();
         trimesh.ApplyTransform((*itgeom)->GetTransform());
-        plink->_collision.Append(trimesh);
+        plink->collision_.Append(trimesh);
     }
     links_vector_.push_back(plink);
     str_uri_ = uri;
@@ -225,7 +225,7 @@ bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible,
         plink->geometries_vector_.push_back(geom);
         trimesh = geom->GetCollisionMesh();
         trimesh.ApplyTransform(geom->GetTransform());
-        plink->_collision.Append(trimesh);
+        plink->collision_.Append(trimesh);
     }
     links_vector_.push_back(plink);
     str_uri_ = uri;
@@ -240,7 +240,7 @@ bool KinBody::InitFromTrimesh(const TriMesh& trimesh, bool visible, const std::s
     plink->index_ = 0;
     plink->info_.name_ = "base";
     plink->info_.is_static_ = true;
-    plink->_collision = trimesh;
+    plink->collision_ = trimesh;
     GeometryInfo info;
     info.type_ = GT_TriMesh;
     info.is_visible_ = visible;
@@ -276,7 +276,7 @@ bool KinBody::InitFromGeometries(const std::vector<KinBody::GeometryInfoConstPtr
         Link::GeometryPtr geom(new Link::Geometry(plink,**itinfo));
         geom->info_.InitCollisionMesh();
         plink->geometries_vector_.push_back(geom);
-        plink->_collision.Append(geom->GetCollisionMesh(),geom->GetTransform());
+        plink->collision_.Append(geom->GetCollisionMesh(),geom->GetTransform());
     }
     links_vector_.push_back(plink);
     str_uri_ = uri;
@@ -290,11 +290,11 @@ void KinBody::SetLinkGeometriesFromGroup(const std::string& geomname)
     FOREACHC(itlink, links_vector_) {
         std::vector<KinBody::GeometryInfoPtr>* pvinfos = NULL;
         if( geomname.size() == 0 ) {
-            pvinfos = &(*itlink)->info_._vgeometryinfos;
+            pvinfos = &(*itlink)->info_.geometry_infos_vector_;
         }
         else {
-            std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = (*itlink)->info_._mapExtraGeometries.find(geomname);
-            if( it == (*itlink)->info_._mapExtraGeometries.end() ) {
+            std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = (*itlink)->info_.extra_geometries_map_.find(geomname);
+            if( it == (*itlink)->info_.extra_geometries_map_.end() ) {
                 throw OPENRAVE_EXCEPTION_FORMAT(_tr("could not find geometries %s for link %s"),geomname%GetName(),ORE_InvalidArguments);
             }
             pvinfos = &it->second;
@@ -318,7 +318,7 @@ void KinBody::SetLinkGroupGeometries(const std::string& geomname, const std::vec
     OPENRAVE_ASSERT_OP( linkgeometries.size(), ==, links_vector_.size() );
     FOREACH(itlink, links_vector_) {
         Link& link = **itlink;
-        std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = link.info_._mapExtraGeometries.insert(make_pair(geomname,std::vector<KinBody::GeometryInfoPtr>())).first;
+        std::map< std::string, std::vector<KinBody::GeometryInfoPtr> >::iterator it = link.info_.extra_geometries_map_.insert(make_pair(geomname,std::vector<KinBody::GeometryInfoPtr>())).first;
         const std::vector<KinBody::GeometryInfoPtr>& geometries = linkgeometries.at(link.GetIndex());
         it->second.resize(geometries.size());
         std::copy(geometries.begin(),geometries.end(),it->second.begin());
@@ -4170,12 +4170,12 @@ void KinBody::_ComputeInternalInformation()
     // set the "self" extra geometry group
     std::string selfgroup("self");
     FOREACH(itlink, links_vector_) {
-        if( (*itlink)->info_._mapExtraGeometries.find(selfgroup) == (*itlink)->info_._mapExtraGeometries.end() ) {
+        if( (*itlink)->info_.extra_geometries_map_.find(selfgroup) == (*itlink)->info_.extra_geometries_map_.end() ) {
             std::vector<GeometryInfoPtr> vgeoms;
             FOREACH(itgeom, (*itlink)->geometries_vector_) {
                 vgeoms.push_back(GeometryInfoPtr(new GeometryInfo((*itgeom)->GetInfo())));
             }
-            (*itlink)->info_._mapExtraGeometries.insert(make_pair(selfgroup, vgeoms));
+            (*itlink)->info_.extra_geometries_map_.insert(make_pair(selfgroup, vgeoms));
         }
     }
 
@@ -4880,17 +4880,17 @@ void KinBody::_InitAndAddLink(LinkPtr plink)
 
     plink->index_ = static_cast<int>(links_vector_.size());
     plink->geometries_vector_.clear();
-    plink->_collision.vertices.clear();
-    plink->_collision.indices.clear();
-    FOREACHC(itgeominfo,info._vgeometryinfos) {
+    plink->collision_.vertices.clear();
+    plink->collision_.indices.clear();
+    FOREACHC(itgeominfo,info.geometry_infos_vector_) {
         Link::GeometryPtr geom(new Link::Geometry(plink,**itgeominfo));
         if( geom->info_.mesh_collision_.vertices.size() == 0 ) { // try to avoid recomputing
             geom->info_.InitCollisionMesh();
         }
         plink->geometries_vector_.push_back(geom);
-        plink->_collision.Append(geom->GetCollisionMesh(),geom->GetTransform());
+        plink->collision_.Append(geom->GetCollisionMesh(),geom->GetTransform());
     }
-    FOREACHC(itadjacentname, info._vForcedAdjacentLinks) {
+    FOREACHC(itadjacentname, info.forced_adjacent_links_vector_) {
         // make sure the same pair isn't added more than once
         std::pair<std::string, std::string> adjpair = std::make_pair(info.name_, *itadjacentname);
         if( find(_vForcedAdjacentLinks.begin(), _vForcedAdjacentLinks.end(), adjpair) == _vForcedAdjacentLinks.end() ) {

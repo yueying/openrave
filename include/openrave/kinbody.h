@@ -246,10 +246,10 @@ namespace OpenRAVE
 				dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value &value, dReal unit_scale = 1.0);
 
-			std::vector<GeometryInfoPtr> _vgeometryinfos;
+			std::vector<GeometryInfoPtr> geometry_infos_vector_;
 			/// extra-purpose geometries like
 			/// self -  self-collision specific geometry. By default, this type of geometry will be always set
-			std::map< std::string, std::vector<GeometryInfoPtr> > _mapExtraGeometries;
+			std::map< std::string, std::vector<GeometryInfoPtr> > extra_geometries_map_;
 
 			/// \brief unique link name
 			std::string name_;
@@ -260,12 +260,12 @@ namespace OpenRAVE
 			/// mass of link
 			dReal mass_;
 			/// inertia along the axes of mass_frame_transform_
-			Vector _vinertiamoments;
-			std::map<std::string, std::vector<dReal> > _mapFloatParameters; //!< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::vector<int> > _mapIntParameters; //!< custom key-value pairs that could not be fit in the current model
-			std::map<std::string, std::string > _mapStringParameters; //!< custom key-value pairs that could not be fit in the current model
+			Vector inertia_moments_vector_;
+			std::map<std::string, std::vector<dReal> > float_parameters_map_; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::vector<int> > int_parameters_map_; //!< custom key-value pairs that could not be fit in the current model
+			std::map<std::string, std::string > string_parameters_map_; //!< custom key-value pairs that could not be fit in the current model
 			/// force the following links to be treated as adjacent to this link
-			std::vector<std::string> _vForcedAdjacentLinks;
+			std::vector<std::string> forced_adjacent_links_vector_;
 			/// \brief Indicates a static body that does not move with respect to the root link.
 			///
 			//// Static should be used when an object has infinite mass and
@@ -396,7 +396,7 @@ namespace OpenRAVE
 				virtual bool ComputeInnerEmptyVolume(Transform& inner_empty_volume, Vector& inner_empty_extents) const;
 				//@}
 
-				virtual bool InitCollisionMesh(float fTessellation = 1);
+				virtual bool InitCollisionMesh(float tessellation = 1);
 
 				/// \brief returns an axis aligned bounding box given that the geometry is transformed by trans
 				virtual AABB ComputeAABB(const Transform& trans) const;
@@ -412,10 +412,6 @@ namespace OpenRAVE
 				/// \return true if changed
 				virtual bool SetVisible(bool visible);
 
-				/// \deprecated (12/1/12)
-				inline void SetDraw(bool bDraw) RAVE_DEPRECATED {
-					SetVisible(bDraw);
-				}
 				/// \brief set transparency level (0 is opaque)
 				virtual void SetTransparency(float f);
 				/// \brief override diffuse color of geometry material
@@ -460,7 +456,8 @@ namespace OpenRAVE
 			typedef std::shared_ptr<Geometry const> GeometryConstPtr;
 			typedef Geometry GEOMPROPERTIES RAVE_DEPRECATED;
 
-			inline const std::string& GetName() const {
+			inline const std::string& GetName() const 
+			{
 				return info_.name_;
 			}
 
@@ -468,7 +465,8 @@ namespace OpenRAVE
 			///
 			//// Static should be used when an object has infinite mass and
 			//!< shouldn't be affected by physics (including gravity). Collision still works.
-			inline bool IsStatic() const {
+			inline bool IsStatic() const 
+			{
 				return info_.is_static_;
 			}
 
@@ -489,21 +487,27 @@ namespace OpenRAVE
 			/// \brief parent body that link belongs to.
 			///
 			/// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
-			inline KinBodyPtr GetParent(bool trylock = false) const {
-				if (trylock) {
+			inline KinBodyPtr GetParent(bool trylock = false) const 
+			{
+				if (trylock) 
+				{
 					return parent_.lock();
 				}
-				else {
+				else 
+				{
 					return KinBodyPtr(parent_);
 				}
 			}
 
 			/// \brief unique index into parent KinBody::GetLinks vector
-			inline int GetIndex() const {
+			inline int GetIndex() const 
+			{
 				return index_;
 			}
-			inline const TriMesh& GetCollisionData() const {
-				return _collision;
+
+			inline const TriMesh& GetCollisionData() const 
+			{
+				return collision_;
 			}
 
 			/// \brief Compute the aabb of all the geometries of the link in the link coordinate system
@@ -519,7 +523,8 @@ namespace OpenRAVE
 			virtual AABB ComputeAABBFromTransform(const Transform& tLink) const;
 
 			/// \brief Return the current transformation of the link in the world coordinate system.
-			inline Transform GetTransform() const {
+			inline Transform GetTransform() const 
+			{
 				return info_.transform_;
 			}
 
@@ -528,28 +533,33 @@ namespace OpenRAVE
 			/// A parent link is is immediately connected to this link by a joint and has a path to the root joint so that it is possible
 			/// to compute this link's transformation from its parent.
 			/// \param[out] filled with the parent links
-			virtual void GetParentLinks(std::vector< std::shared_ptr<Link> >& vParentLinks) const;
+			virtual void GetParentLinks(std::vector< std::shared_ptr<Link> >& parent_links_vector) const;
 
 			/// \brief Tests if a link is a direct parent.
 			///
 			/// \see GetParentLinks
 			/// \param link The link to test if it is one of the parents of this link.
-			bool IsParentLink(std::shared_ptr<Link const> plink) const RAVE_DEPRECATED {
+			bool IsParentLink(std::shared_ptr<Link const> plink) const 
+			{
 				return IsParentLink(*plink);
 			}
+
 			virtual bool IsParentLink(const Link &link) const;
 
 			/// \brief return center of mass offset in the link's local coordinate frame
-			inline Vector GetLocalCOM() const {
+			inline Vector GetLocalCOM() const 
+			{
 				return info_.mass_frame_transform_.trans;
 			}
 
 			/// \brief return center of mass of the link in the global coordinate system
-			inline Vector GetGlobalCOM() const {
+			inline Vector GetGlobalCOM() const 
+			{
 				return info_.transform_*info_.mass_frame_transform_.trans;
 			}
 
-			inline Vector GetCOMOffset() const {
+			inline Vector GetCOMOffset() const 
+			{
 				return info_.mass_frame_transform_.trans;
 			}
 
@@ -569,20 +579,25 @@ namespace OpenRAVE
 			virtual void SetMass(dReal mass);
 
 			/// \brief return the mass frame in the link's local coordinate system that holds the center of mass and principal axes for inertia.
-			inline const Transform& GetLocalMassFrame() const {
+			inline const Transform& GetLocalMassFrame() const
+			{
 				return info_.mass_frame_transform_;
 			}
 
 			/// \brief return the mass frame in the global coordinate system that holds the center of mass and principal axes for inertia.
-			inline Transform GetGlobalMassFrame() const {
+			inline Transform GetGlobalMassFrame() const 
+			{
 				return info_.transform_*info_.mass_frame_transform_;
 			}
 
 			/// \brief return the principal moments of inertia inside the mass frame
-			inline const Vector& GetPrincipalMomentsOfInertia() const {
-				return info_._vinertiamoments;
+			inline const Vector& GetPrincipalMomentsOfInertia() const 
+			{
+				return info_.inertia_moments_vector_;
 			}
-			inline dReal GetMass() const {
+
+			inline dReal GetMass() const 
+			{
 				return info_.mass_;
 			}
 
@@ -620,7 +635,8 @@ namespace OpenRAVE
 			virtual std::pair<Vector, Vector> GetVelocity() const;
 
 			/// \brief returns a list of all the geometry objects.
-			inline const std::vector<GeometryPtr>& GetGeometries() const {
+			inline const std::vector<GeometryPtr>& GetGeometries() const
+			{
 				return geometries_vector_;
 			}
 			virtual GeometryPtr GetGeometry(int index);
@@ -629,9 +645,11 @@ namespace OpenRAVE
 			///
 			/// This gives a user control for dynamically changing the object geometry. Note that the kinbody/robot hash could change.
 			/// \param geometries a list of geometry infos to be initialized into new geometry objects, note that the geometry info data is copied
-			/// \param bForceRecomputeMeshCollision if true, then recompute mesh collision for all non-tri meshes
-			virtual void InitGeometries(std::vector<KinBody::GeometryInfoConstPtr>& geometries, bool bForceRecomputeMeshCollision = true);
-			virtual void InitGeometries(std::list<KinBody::GeometryInfo>& geometries, bool bForceRecomputeMeshCollision = true);
+			/// \param is_force_recompute_mesh_collision if true, then recompute mesh collision for all non-tri meshes
+			virtual void InitGeometries(std::vector<KinBody::GeometryInfoConstPtr>& geometries,
+				bool is_force_recompute_mesh_collision = true);
+			virtual void InitGeometries(std::list<KinBody::GeometryInfo>& geometries, 
+				bool is_force_recompute_mesh_collision = true);
 
 			/// \brief adds geometry info to all the current geometries and possibly stored extra group geometries
 			///
@@ -647,7 +665,7 @@ namespace OpenRAVE
 			/// \brief initializes the link with geometries from the extra geomeries in LinkInfo
 			///
 			/// \param name The name of the geometry group. If name is empty, will initialize the default geometries.
-			/// \throw If name does not exist in GetInfo()._mapExtraGeometries, then throw an exception.
+			/// \throw If name does not exist in GetInfo().extra_geometries_map_, then throw an exception.
 			virtual void SetGeometriesFromGroup(const std::string& name);
 
 			/// \brief returns a const reference to the vector of geometries for a particular group
@@ -658,13 +676,13 @@ namespace OpenRAVE
 
 			/// \brief stores geometries for later retrieval
 			///
-			/// the list is stored inside _GetInfo()._mapExtraGeometries. Note that the pointers are copied and not the data, so
+			/// the list is stored inside _GetInfo().extra_geometries_map_. Note that the pointers are copied and not the data, so
 			/// any be careful not to modify the geometries afterwards
 			virtual void SetGroupGeometries(const std::string& name, const std::vector<KinBody::GeometryInfoPtr>& geometries);
 
 			/// \brief returns the number of geometries stored from a particular key
 			///
-			/// \return if -1, then the geometries are not in _mapExtraGeometries, otherwise the number
+			/// \return if -1, then the geometries are not in extra_geometries_map_, otherwise the number
 			virtual int GetGroupNumGeometries(const std::string& name) const;
 
 			/// \brief swaps the geometries with the link
@@ -677,7 +695,8 @@ namespace OpenRAVE
 			virtual bool ValidateContactNormal(const Vector& position, Vector& normal) const;
 
 			/// \brief returns true if plink is rigidily attahced to this link.
-			bool IsRigidlyAttached(std::shared_ptr<Link const> plink) const RAVE_DEPRECATED {
+			bool IsRigidlyAttached(std::shared_ptr<Link const> plink) const RAVE_DEPRECATED 
+			{
 				return IsRigidlyAttached(*plink);
 			}
 			virtual bool IsRigidlyAttached(const Link &link) const;
@@ -690,8 +709,9 @@ namespace OpenRAVE
 			virtual void serialize(std::ostream& o, int options) const;
 
 			/// \brief return a map of custom float parameters
-			inline const std::map<std::string, std::vector<dReal> >& GetFloatParameters() const {
-				return info_._mapFloatParameters;
+			inline const std::map<std::string, std::vector<dReal> >& GetFloatParameters() const 
+			{
+				return info_.float_parameters_map_;
 			}
 
 			/// \brief set custom float parameters
@@ -700,8 +720,9 @@ namespace OpenRAVE
 			virtual void SetFloatParameters(const std::string& key, const std::vector<dReal>& parameters);
 
 			/// \brief return a map of custom integer parameters
-			inline const std::map<std::string, std::vector<int> >& GetIntParameters() const {
-				return info_._mapIntParameters;
+			inline const std::map<std::string, std::vector<int> >& GetIntParameters() const
+			{
+				return info_.int_parameters_map_;
 			}
 
 			/// \brief set custom int parameters
@@ -710,8 +731,9 @@ namespace OpenRAVE
 			virtual void SetIntParameters(const std::string& key, const std::vector<int>& parameters);
 
 			/// \brief return a map of custom float parameters
-			inline const std::map<std::string, std::string >& GetStringParameters() const {
-				return info_._mapStringParameters;
+			inline const std::map<std::string, std::string >& GetStringParameters() const
+			{
+				return info_.string_parameters_map_;
 			}
 
 			/// \brief set custom string parameters
@@ -724,14 +746,16 @@ namespace OpenRAVE
 
 			/// \brief returns the current info structure of the link.
 			///
-			/// The LinkInfo::_vgeometryinfos do not reflect geometry changes that happened since the robot was created. User
+			/// The LinkInfo::geometry_infos_vector_ do not reflect geometry changes that happened since the robot was created. User
 			/// will need to call Geometry::GetInfo on each individual geometry.
-			inline const KinBody::LinkInfo& GetInfo() const {
+			inline const KinBody::LinkInfo& GetInfo() const 
+			{
 				return info_;
 			}
 
 			/// \brief Calls \ref UpdateInfo and returns the link structure
-			inline const KinBody::LinkInfo& UpdateAndGetInfo() {
+			inline const KinBody::LinkInfo& UpdateAndGetInfo() 
+			{
 				UpdateInfo();
 				return info_;
 			}
@@ -754,7 +778,7 @@ namespace OpenRAVE
 			KinBodyWeakPtr parent_;         //!< \see GetParent
 			std::vector<int> parent_links_vector_;         //!< \see GetParentLinks, IsParentLink
 			std::vector<int> _vRigidlyAttachedLinks;         //!< \see IsRigidlyAttached, GetRigidlyAttachedLinks
-			TriMesh _collision; //!< triangles for collision checking, triangles are always the triangulation
+			TriMesh collision_; //!< triangles for collision checking, triangles are always the triangulation
 								//!< of the body when it is at the identity transformation
 			//@}
 #ifdef RAVE_PRIVATE

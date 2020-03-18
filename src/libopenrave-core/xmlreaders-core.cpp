@@ -964,7 +964,7 @@ public:
                     FOREACH(itgeom, link_->geometries_vector_) {
                         (*itgeom)->info_.transform_ = tnew * (*itgeom)->info_.transform_;
                     }
-                    link_->_collision.ApplyTransform(tnew);
+                    link_->collision_.ApplyTransform(tnew);
                     link_->SetTransform(tOrigTrans);
                 }
 
@@ -975,7 +975,7 @@ public:
                     // geometry is not in the default group, so we add it to the LinkInfo without instantiating it
                     string groupname = geomreader->GetGroupName();
                     if( groupname != "self" ) {
-                        link_->info_._mapExtraGeometries[groupname].push_back(info);
+                        link_->info_.extra_geometries_map_[groupname].push_back(info);
                         _pcurreader.reset();
                         return false;
                     }
@@ -1045,7 +1045,7 @@ public:
                                     itnewgeom->transparency_ = info->transparency_;
                                 }
                                 itnewgeom->transform_.trans *= _vScaleGeometry;
-                                link_->_collision.Append(itnewgeom->mesh_collision_, itnewgeom->transform_);
+                                link_->collision_.Append(itnewgeom->mesh_collision_, itnewgeom->transform_);
                             }
                             listGeometries.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
                             listGeometries.front().render_file_name_ = info->render_file_name_;
@@ -1062,7 +1062,7 @@ public:
                                 *it = tmres * *it;
                             }
                             info->transform_.trans *= _vScaleGeometry;
-                            link_->_collision.Append(info->mesh_collision_, info->transform_);
+                            link_->collision_.Append(info->mesh_collision_, info->transform_);
                             link_->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*info)));
                         }
                     }
@@ -1084,7 +1084,7 @@ public:
                         }
                         info->transform_.trans *= _vScaleGeometry;
                         info->gemo_outer_extents_data_ *= geomspacescale;
-                        link_->_collision.Append(geom->GetCollisionMesh(), info->transform_);
+                        link_->collision_.Append(geom->GetCollisionMesh(), info->transform_);
                         link_->geometries_vector_.push_back(geom);
                     }
                 }
@@ -1225,7 +1225,7 @@ public:
                 totalmass = MASS::GetSphericalMass(_vMassExtents.x, Vector(), _fTotalMass);
             }
 
-            totalmass.GetMassFrame(link_->info_.mass_frame_transform_, link_->info_._vinertiamoments);
+            totalmass.GetMassFrame(link_->info_.mass_frame_transform_, link_->info_.inertia_moments_vector_);
             link_->info_.mass_ =totalmass.fTotalMass;
             tOrigTrans = link_->GetTransform();
 

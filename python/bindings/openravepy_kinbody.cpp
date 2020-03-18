@@ -203,28 +203,28 @@ PyLinkInfo::PyLinkInfo(const KinBody::LinkInfo& info) {
 }
 
 void PyLinkInfo::_Update(const KinBody::LinkInfo& info) {
-    FOREACHC(itgeominfo, info._vgeometryinfos) {
+    FOREACHC(itgeominfo, info.geometry_infos_vector_) {
         _vgeometryinfos.append(PyGeometryInfoPtr(new PyGeometryInfo(**itgeominfo)));
     }
     _name = ConvertStringToUnicode(info.name_);
     _t = ReturnTransform(info.transform_);
     _tMassFrame = ReturnTransform(info.mass_frame_transform_);
     _mass = info.mass_;
-    _vinertiamoments = toPyVector3(info._vinertiamoments);
-    FOREACHC(it, info._mapFloatParameters) {
+    _vinertiamoments = toPyVector3(info.inertia_moments_vector_);
+    FOREACHC(it, info.float_parameters_map_) {
         _mapFloatParameters[it->first] = toPyArray(it->second);
     }
-    FOREACHC(it, info._mapIntParameters) {
+    FOREACHC(it, info.int_parameters_map_) {
         _mapIntParameters[it->first] = toPyArray(it->second);
     }
-    FOREACHC(it, info._mapStringParameters) {
+    FOREACHC(it, info.string_parameters_map_) {
         _mapStringParameters[it->first] = ConvertStringToUnicode(it->second);
     }
     py::list vForcedAdjacentLinks;
-    FOREACHC(it, info._vForcedAdjacentLinks) {
+    FOREACHC(it, info.forced_adjacent_links_vector_) {
         vForcedAdjacentLinks.append(ConvertStringToUnicode(*it));
     }
-    FOREACHC(it, info._mapExtraGeometries) {
+    FOREACHC(it, info.extra_geometries_map_) {
         _mapExtraGeometries[it->first] = toPyArray(it->second);
     }
     _vForcedAdjacentLinks = vForcedAdjacentLinks;
@@ -253,10 +253,10 @@ void PyLinkInfo::DeserializeJSON(object obj, dReal unit_scale)
 KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
     KinBody::LinkInfoPtr pinfo(new KinBody::LinkInfo());
     KinBody::LinkInfo& info = *pinfo;
-    info._vgeometryinfos.resize(len(_vgeometryinfos));
-    for(size_t i = 0; i < info._vgeometryinfos.size(); ++i) {
+    info.geometry_infos_vector_.resize(len(_vgeometryinfos));
+    for(size_t i = 0; i < info.geometry_infos_vector_.size(); ++i) {
         PyGeometryInfoPtr pygeom = py::extract<PyGeometryInfoPtr>(_vgeometryinfos[i]);
-        info._vgeometryinfos[i] = pygeom->GetGeometryInfo();
+        info.geometry_infos_vector_[i] = pygeom->GetGeometryInfo();
     }
     if( !IS_PYTHONOBJECT_NONE(_name) ) {
         info.name_ = py::extract<std::string>(_name);
@@ -264,12 +264,12 @@ KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
     info.transform_ = ExtractTransform(_t);
     info.mass_frame_transform_ = ExtractTransform(_tMassFrame);
     info.mass_ = _mass;
-    info._vinertiamoments = ExtractVector3(_vinertiamoments);
-    info._mapFloatParameters.clear();
+    info.inertia_moments_vector_ = ExtractVector3(_vinertiamoments);
+    info.float_parameters_map_.clear();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapFloatParameters) {
         std::string name = extract<std::string>(item.first);
-        info._mapFloatParameters[name] = ExtractArray<dReal>(extract<py::object>(item.second));
+        info.float_parameters_map_[name] = ExtractArray<dReal>(extract<py::object>(item.second));
     }
 #else
     size_t num = len(_mapFloatParameters);
@@ -277,15 +277,15 @@ KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapFloatParameters[name] = ExtractArray<dReal>(okeyvalue[1]);
+        info.float_parameters_map_[name] = ExtractArray<dReal>(okeyvalue[1]);
     }
 #endif
 
-    info._mapIntParameters.clear();
+    info.int_parameters_map_.clear();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapIntParameters) {
         std::string name = extract<std::string>(item.first);
-        info._mapIntParameters[name] = ExtractArray<int>(extract<py::object>(item.second));
+        info.int_parameters_map_[name] = ExtractArray<int>(extract<py::object>(item.second));
     }
 #else
     num = len(_mapIntParameters);
@@ -293,15 +293,15 @@ KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapIntParameters[name] = ExtractArray<int>(okeyvalue[1]);
+        info.int_parameters_map_[name] = ExtractArray<int>(okeyvalue[1]);
     }
 #endif
 
-    info._mapStringParameters.clear();
+    info.string_parameters_map_.clear();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapStringParameters) {
         std::string name = extract<std::string>(item.first);
-        info._mapStringParameters[name] = extract<std::string>(item.second);
+        info.string_parameters_map_[name] = extract<std::string>(item.second);
     }
 #else
     num = len(_mapStringParameters);
@@ -309,17 +309,17 @@ KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapStringParameters[name] = (std::string)extract<std::string>(okeyvalue[1]);
+        info.string_parameters_map_[name] = (std::string)extract<std::string>(okeyvalue[1]);
     }
 #endif
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     for(const std::pair<py::handle, py::handle>& item : _mapExtraGeometries) {
         std::string name = extract<std::string>(item.first);
-        info._mapExtraGeometries[name] = std::vector<KinBody::GeometryInfoPtr>(); info._mapExtraGeometries[name].reserve(len(item.second));
+        info.extra_geometries_map_[name] = std::vector<KinBody::GeometryInfoPtr>(); info.extra_geometries_map_[name].reserve(len(item.second));
         for(size_t j = 0; j < len(item.second); j++){
             PyGeometryInfoPtr pygeom = py::extract<PyGeometryInfoPtr>(item.second[j]);
-            info._mapExtraGeometries[name].push_back(pygeom->GetGeometryInfo());
+            info.extra_geometries_map_[name].push_back(pygeom->GetGeometryInfo());
         }
     }
 #else
@@ -328,15 +328,15 @@ KinBody::LinkInfoPtr PyLinkInfo::GetLinkInfo() {
     for(size_t i = 0; i < num; ++i) {
         object okeyvalue = okeyvalueiter.attr("next") ();
         std::string name = extract<std::string>(okeyvalue[0]);
-        info._mapExtraGeometries[name] = std::vector<KinBody::GeometryInfoPtr>(); info._mapExtraGeometries[name].reserve(len(okeyvalue[1]));
+        info.extra_geometries_map_[name] = std::vector<KinBody::GeometryInfoPtr>(); info.extra_geometries_map_[name].reserve(len(okeyvalue[1]));
         for(size_t j = 0; j < (size_t)len(okeyvalue[1]); j++){
             PyGeometryInfoPtr pygeom = py::extract<PyGeometryInfoPtr>(okeyvalue[1][j]);
-            info._mapExtraGeometries[name].push_back(pygeom->GetGeometryInfo());
+            info.extra_geometries_map_[name].push_back(pygeom->GetGeometryInfo());
         }
     }
 #endif
 
-    info._vForcedAdjacentLinks = ExtractArray<std::string>(_vForcedAdjacentLinks);
+    info.forced_adjacent_links_vector_ = ExtractArray<std::string>(_vForcedAdjacentLinks);
     info.is_static_ = _bStatic;
     info.is_enabled_ = _bIsEnabled;
     return pinfo;
@@ -985,9 +985,7 @@ object PyLink::PyGeometry::GetCollisionMesh() {
 object PyLink::PyGeometry::ComputeAABB(object otransform) const {
     return toPyAABB(_pgeometry->ComputeAABB(ExtractTransform(otransform)));
 }
-void PyLink::PyGeometry::SetDraw(bool bDraw) {
-    _pgeometry->SetVisible(bDraw);
-}
+
 bool PyLink::PyGeometry::SetVisible(bool visible) {
     return _pgeometry->SetVisible(visible);
 }
@@ -1133,10 +1131,10 @@ object PyLink::GetParent() const
 
 object PyLink::GetParentLinks() const
 {
-    std::vector<KinBody::LinkPtr> vParentLinks;
-    _plink->GetParentLinks(vParentLinks);
+    std::vector<KinBody::LinkPtr> parent_links_vector;
+    _plink->GetParentLinks(parent_links_vector);
     py::list links;
-    FOREACHC(itlink, vParentLinks) {
+    FOREACHC(itlink, parent_links_vector) {
         links.append(PyLinkPtr(new PyLink(*itlink, _pyenv)));
     }
     return links;
@@ -4942,7 +4940,7 @@ void init_openravepy_kinbody()
 #endif
                                   .def("ComputeAABB",&PyLink::PyGeometry::ComputeAABB, PY_ARGS("transform") DOXY_FN(KinBody::Link::Geometry,ComputeAABB))
                                   .def("GetSideWallExists",&PyLink::PyGeometry::GetSideWallExists, DOXY_FN(KinBody::Link::Geometry,GetSideWallExists))
-                                  .def("SetDraw",&PyLink::PyGeometry::SetDraw,PY_ARGS("draw") DOXY_FN(KinBody::Link::Geometry,SetDraw))
+                                  .def("SetVisible",&PyLink::PyGeometry::SetVisible,PY_ARGS("draw") DOXY_FN(KinBody::Link::Geometry,SetVisible))
                                   .def("SetTransparency",&PyLink::PyGeometry::SetTransparency,PY_ARGS("transparency") DOXY_FN(KinBody::Link::Geometry,SetTransparency))
                                   .def("SetDiffuseColor",&PyLink::PyGeometry::SetDiffuseColor,PY_ARGS("color") DOXY_FN(KinBody::Link::Geometry,SetDiffuseColor))
                                   .def("SetAmbientColor",&PyLink::PyGeometry::SetAmbientColor,PY_ARGS("color") DOXY_FN(KinBody::Link::Geometry,SetAmbientColor))

@@ -2413,7 +2413,7 @@ private:
         }
         if( IsForceWrite("bind_instance_geometry") ) {
             FOREACHC(itlink, pbody->GetLinks()) {
-                FOREACHC(itgeomgroup, (*itlink)->GetInfo()._mapExtraGeometries) {
+                FOREACHC(itgeomgroup, (*itlink)->GetInfo().extra_geometries_map_) {
                     int igeom = 0;
                     FOREACHC(itgeominfo, itgeomgroup->second) {
                         daeElementRef bind_instance_geometry = ptec->add("bind_instance_geometry");

@@ -26,7 +26,7 @@ public:
         ConveyorLink(const std::string& name, Transform tinernal, KinBodyPtr parent) : Link(parent) {
             info_.transform_ = tinernal;
             info_.mass_ = 0.01; // just an estimate
-            info_._vinertiamoments = Vector(1,1,1);
+            info_.inertia_moments_vector_ = Vector(1,1,1);
             info_.name_ = name;
             info_.is_static_ = false;
             info_.is_enabled_ = true;
@@ -102,7 +102,7 @@ public:
                 return PE_Support;
             }
             else if( name == "geometry" ) {
-                _pcurreader.reset(new xmlreaders::GeometryInfoReader(Link::GeometryInfoPtr(),atts));
+                _pcurreader.reset(new xmlreaders::GeometryInfoReader(KinBody::GeometryInfoPtr(),atts));
                 return PE_Support;
             }
 

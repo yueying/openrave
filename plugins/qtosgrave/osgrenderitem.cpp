@@ -267,11 +267,11 @@ void KinBodyItem::Load()
 
         posglinkroot->addChild(posglinktrans);
 
-//        std::vector< std::shared_ptr<KinBody::Link> > vParentLinks;
-//        porlink->GetParentLinks(vParentLinks);
-//        if( vParentLinks.size() > 0 ) {
+//        std::vector< std::shared_ptr<KinBody::Link> > parent_links_vector;
+//        porlink->GetParentLinks(parent_links_vector);
+//        if( parent_links_vector.size() > 0 ) {
 //            // need to set transform with respect to parent since osg transforms
-//            SetMatrixTransform(*posglink, vParentLinks[0]->GetTransform().inverse() * porlink->GetTransform());
+//            SetMatrixTransform(*posglink, parent_links_vector[0]->GetTransform().inverse() * porlink->GetTransform());
 //        }
 //        else {
 //            // no parent, so use the root link's transform

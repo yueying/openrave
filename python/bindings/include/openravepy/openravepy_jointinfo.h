@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -234,7 +234,6 @@ public:
 
         object GetCollisionMesh();
         object ComputeAABB(object otransform) const;
-        void SetDraw(bool bDraw);
         bool SetVisible(bool visible);
         void SetTransparency(float f);
         void SetAmbientColor(object ocolor);

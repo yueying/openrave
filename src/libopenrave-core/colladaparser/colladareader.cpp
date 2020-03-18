@@ -1642,14 +1642,14 @@ namespace OpenRAVE
 									std::string name = pelt->getAttribute("name");
 									if (bFloatArray) {
 										ss.clear(); ss.str(pelt->getCharData());
-										plink->info_._mapFloatParameters[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
+										plink->info_.float_parameters_map_[name] = std::vector<dReal>((istream_iterator<dReal>(ss)), istream_iterator<dReal>());
 									}
 									else if (bIntArray) {
 										ss.clear(); ss.str(pelt->getCharData());
-										plink->info_._mapIntParameters[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
+										plink->info_.int_parameters_map_[name] = std::vector<int>((istream_iterator<int>(ss)), istream_iterator<int>());
 									}
 									else if (bStringValue) {
-										plink->info_._mapStringParameters[name] = pelt->getCharData();
+										plink->info_.string_parameters_map_[name] = pelt->getCharData();
 									}
 								}
 							}
@@ -1827,7 +1827,7 @@ namespace OpenRAVE
 				plink.reset(new KinBody::Link(pkinbody));
 				plink->info_.name_ = linkname;
 				plink->info_.mass_ = 1e-10;
-				plink->info_._vinertiamoments = Vector(1e-7, 1e-7, 1e-7);
+				plink->info_.inertia_moments_vector_ = Vector(1e-7, 1e-7, 1e-7);
 				plink->info_.is_static_ = false;
 				plink->index_ = (int)pkinbody->links_vector_.size();
 				pkinbody->links_vector_.push_back(plink);
@@ -1897,9 +1897,9 @@ namespace OpenRAVE
 					tmassframe *= _ExtractFullTransform(rigiddata->getMass_frame());
 				}
 				if (!!rigiddata->getInertia()) {
-					plink->info_._vinertiamoments[0] = rigiddata->getInertia()->getValue()[0];
-					plink->info_._vinertiamoments[1] = rigiddata->getInertia()->getValue()[1];
-					plink->info_._vinertiamoments[2] = rigiddata->getInertia()->getValue()[2];
+					plink->info_.inertia_moments_vector_[0] = rigiddata->getInertia()->getValue()[0];
+					plink->info_.inertia_moments_vector_[1] = rigiddata->getInertia()->getValue()[1];
+					plink->info_.inertia_moments_vector_[2] = rigiddata->getInertia()->getValue()[2];
 				}
 				plink->info_.mass_frame_transform_ = plink->info_.transform_.inverse() * tmassframe;
 				if (!!rigiddata->getDynamic()) {
@@ -2442,7 +2442,7 @@ namespace OpenRAVE
 				//  Append the collision mesh
 				TriMesh trimesh = pgeom->GetCollisionMesh();
 				trimesh.ApplyTransform(pgeom->info_.transform_);
-				plink->_collision.Append(trimesh);
+				plink->collision_.Append(trimesh);
 			}
 
 			return bhasgeometry || listGeometryInfos.size() > 0;
