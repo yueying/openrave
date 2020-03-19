@@ -19,52 +19,52 @@
 
 namespace OpenRAVE {
 
-KinBody::KinBodyStateSaver::KinBodyStateSaver(KinBodyPtr pbody, int options) : _pbody(pbody), _options(options), _bRestoreOnDestructor(true)
+KinBody::KinBodyStateSaver::KinBodyStateSaver(KinBodyPtr pbody, int options) : kinbody_(pbody), options_(options), _bRestoreOnDestructor(true)
 {
-    if( _options & Save_LinkTransformation ) {
-        _pbody->GetLinkTransformations(_vLinkTransforms, _vdoflastsetvalues);
+    if( options_ & Save_LinkTransformation ) {
+        kinbody_->GetLinkTransformations(link_transforms_vector_, _vdoflastsetvalues);
     }
-    if( _options & Save_LinkEnable ) {
-        _vEnabledLinks.resize(_pbody->GetLinks().size());
+    if( options_ & Save_LinkEnable ) {
+        _vEnabledLinks.resize(kinbody_->GetLinks().size());
         for(size_t i = 0; i < _vEnabledLinks.size(); ++i) {
-            _vEnabledLinks[i] = _pbody->GetLinks().at(i)->IsEnabled();
+            _vEnabledLinks[i] = kinbody_->GetLinks().at(i)->IsEnabled();
         }
     }
-    if( _options & Save_LinkVelocities ) {
-        _pbody->GetLinkVelocities(_vLinkVelocities);
+    if( options_ & Save_LinkVelocities ) {
+        kinbody_->GetLinkVelocities(_vLinkVelocities);
     }
-    if( _options & Save_JointMaxVelocityAndAcceleration ) {
-        _pbody->GetDOFVelocityLimits(_vMaxVelocities);
-        _pbody->GetDOFAccelerationLimits(_vMaxAccelerations);
-        _pbody->GetDOFJerkLimits(_vMaxJerks);
+    if( options_ & Save_JointMaxVelocityAndAcceleration ) {
+        kinbody_->GetDOFVelocityLimits(_vMaxVelocities);
+        kinbody_->GetDOFAccelerationLimits(_vMaxAccelerations);
+        kinbody_->GetDOFJerkLimits(_vMaxJerks);
     }
-    if( _options & Save_JointWeights ) {
-        _pbody->GetDOFWeights(_vDOFWeights);
+    if( options_ & Save_JointWeights ) {
+        kinbody_->GetDOFWeights(_vDOFWeights);
     }
-    if( _options & Save_JointLimits ) {
-        _pbody->GetDOFLimits(_vDOFLimits[0], _vDOFLimits[1]);
+    if( options_ & Save_JointLimits ) {
+        kinbody_->GetDOFLimits(_vDOFLimits[0], _vDOFLimits[1]);
     }
-    if( _options & Save_GrabbedBodies ) {
-        _vGrabbedBodies = _pbody->_vGrabbedBodies;
+    if( options_ & Save_GrabbedBodies ) {
+        _vGrabbedBodies = kinbody_->_vGrabbedBodies;
     }
 
 }
 
 KinBody::KinBodyStateSaver::~KinBodyStateSaver()
 {
-    if( _bRestoreOnDestructor && !!_pbody && _pbody->GetEnvironmentId() != 0 ) {
-        _RestoreKinBody(_pbody);
+    if( _bRestoreOnDestructor && !!kinbody_ && kinbody_->GetEnvironmentId() != 0 ) {
+        _RestoreKinBody(kinbody_);
     }
 }
 
 void KinBody::KinBodyStateSaver::Restore(std::shared_ptr<KinBody> body)
 {
-    _RestoreKinBody(!body ? _pbody : body);
+    _RestoreKinBody(!body ? kinbody_ : body);
 }
 
 void KinBody::KinBodyStateSaver::Release()
 {
-    _pbody.reset();
+    kinbody_.reset();
 }
 
 void KinBody::KinBodyStateSaver::SetRestoreOnDestructor(bool restore)
@@ -81,11 +81,11 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
         RAVELOG_WARN_FORMAT("env=%d, body %s not added to environment, skipping restore", pbody->GetEnv()->GetId()%pbody->GetName());
         return;
     }
-    if( _options & Save_JointLimits ) {
+    if( options_ & Save_JointLimits ) {
         pbody->SetDOFLimits(_vDOFLimits[0], _vDOFLimits[1]);
     }
     // restoring grabbed bodies has to happen first before link transforms can be restored since _UpdateGrabbedBodies can be called with the old grabbed bodies.
-    if( _options & Save_GrabbedBodies ) {
+    if( options_ & Save_GrabbedBodies ) {
         // have to release all grabbed first
         pbody->ReleaseAllGrabbed();
         OPENRAVE_ASSERT_OP(pbody->_vGrabbedBodies.size(),==,0);
@@ -93,7 +93,7 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
             GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
             KinBodyPtr pbodygrab = pgrabbed->_pgrabbedbody.lock();
             if( !!pbodygrab ) {
-                if( pbody->GetEnv() == _pbody->GetEnv() ) {
+                if( pbody->GetEnv() == kinbody_->GetEnv() ) {
                     pbody->_AttachBody(pbodygrab);
                     pbody->_vGrabbedBodies.push_back(*itgrabbed);
                 }
@@ -118,12 +118,12 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
         }
 
         // if not calling SetLinkTransformations, then manually call _UpdateGrabbedBodies
-        if( !(_options & Save_LinkTransformation ) ) {
+        if( !(options_ & Save_LinkTransformation ) ) {
             pbody->_UpdateGrabbedBodies();
         }
     }
-    if( _options & Save_LinkTransformation ) {
-        pbody->SetLinkTransformations(_vLinkTransforms, _vdoflastsetvalues);
+    if( options_ & Save_LinkTransformation ) {
+        pbody->SetLinkTransformations(link_transforms_vector_, _vdoflastsetvalues);
 //        if( IS_DEBUGLEVEL(Level_Warn) ) {
 //            stringstream ss; ss << std::setprecision(std::numeric_limits<dReal>::digits10+1);
 //            ss << "restoring kinbody " << pbody->GetName() << " to values=[";
@@ -136,7 +136,7 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
 //            RAVELOG_WARN(ss.str());
 //        }
     }
-    if( _options & Save_LinkEnable ) {
+    if( options_ & Save_LinkEnable ) {
         // should first enable before calling the parameter callbacks
         bool bchanged = false;
         for(size_t i = 0; i < _vEnabledLinks.size(); ++i) {
@@ -150,15 +150,15 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
             pbody->_PostprocessChangedParameters(Prop_LinkEnable);
         }
     }
-    if( _options & Save_JointMaxVelocityAndAcceleration ) {
+    if( options_ & Save_JointMaxVelocityAndAcceleration ) {
         pbody->SetDOFVelocityLimits(_vMaxVelocities);
         pbody->SetDOFAccelerationLimits(_vMaxAccelerations);
         pbody->SetDOFJerkLimits(_vMaxJerks);
     }
-    if( _options & Save_LinkVelocities ) {
+    if( options_ & Save_LinkVelocities ) {
         pbody->SetLinkVelocities(_vLinkVelocities);
     }
-    if( _options & Save_JointWeights ) {
+    if( options_ & Save_JointWeights ) {
         pbody->SetDOFWeights(_vDOFWeights);
     }
 }

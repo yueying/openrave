@@ -1839,7 +1839,7 @@ void KinBody::Joint::_ComputePartialVelocities(std::vector<std::pair<int,dReal> 
     }
     OPENRAVE_ASSERT_FORMAT(!!_vmimic.at(iaxis), "cannot compute partial velocities of joint %s", info_.name_, ORE_Failed);
     KinBodyConstPtr parent(_parent);
-    MIMIC::DOFFormat thisdofformat;
+	Mimic::DOFFormat thisdofformat;
     thisdofformat.dofindex = -1; // always -1 since it is mimiced
     thisdofformat.axis = iaxis;
     thisdofformat.jointindex = jointindex;
@@ -1931,23 +1931,23 @@ int KinBody::Joint::_Eval(int axis, uint32_t timederiv, const std::vector<dReal>
     return 0;
 }
 
-bool KinBody::Joint::MIMIC::DOFFormat::operator <(const KinBody::Joint::MIMIC::DOFFormat& r) const
+bool KinBody::Mimic::DOFFormat::operator <(const KinBody::Mimic::DOFFormat& r) const
 {
     return jointindex < r.jointindex || (jointindex == r.jointindex && (dofindex < r.dofindex || (dofindex == r.dofindex && axis < r.axis)));
 }
 
-bool KinBody::Joint::MIMIC::DOFFormat::operator ==(const KinBody::Joint::MIMIC::DOFFormat& r) const
+bool KinBody::Mimic::DOFFormat::operator ==(const KinBody::Mimic::DOFFormat& r) const
 {
     return jointindex == r.jointindex && dofindex == r.dofindex && axis == r.axis;
 }
 
-KinBody::JointPtr KinBody::Joint::MIMIC::DOFFormat::GetJoint(KinBody &parent) const
+KinBody::JointPtr KinBody::Mimic::DOFFormat::GetJoint(KinBody &parent) const
 {
     int numjoints = (int)parent.GetJoints().size();
     return jointindex < numjoints ? parent.GetJoints().at(jointindex) : parent.GetPassiveJoints().at(jointindex-numjoints);
 }
 
-KinBody::JointConstPtr KinBody::Joint::MIMIC::DOFFormat::GetJoint(const KinBody &parent) const
+KinBody::JointConstPtr KinBody::Mimic::DOFFormat::GetJoint(const KinBody &parent) const
 {
     int numjoints = (int)parent.GetJoints().size();
     return jointindex < numjoints ? parent.GetJoints().at(jointindex) : parent.GetPassiveJoints().at(jointindex-numjoints);

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -374,11 +374,11 @@ protected:
                 RobotBase::ConnectedBodyInfoPtr connectedbodyinfo(new RobotBase::ConnectedBodyInfo());
                 connectedbodyinfo->DeserializeJSON(*itr, unit_scale);
 
-                rapidjson::Value::ValueIterator connectedBodyObject = _ResolveObject(connectedbodyinfo->_uri);
-                _ExtractLinks(*connectedBodyObject, connectedbodyinfo->_vLinkInfos, unit_scale);
-                _ExtractJoints(*connectedBodyObject, connectedbodyinfo->_vJointInfos, unit_scale);
-                _ExtractManipulators(*connectedBodyObject, connectedbodyinfo->_vManipulatorInfos, unit_scale);
-                _ExtractAttachedSensors(*connectedBodyObject, connectedbodyinfo->_vAttachedSensorInfos, unit_scale);
+                rapidjson::Value::ValueIterator connectedBodyObject = _ResolveObject(connectedbodyinfo->uri_);
+                _ExtractLinks(*connectedBodyObject, connectedbodyinfo->link_infos_vector_, unit_scale);
+                _ExtractJoints(*connectedBodyObject, connectedbodyinfo->joint_infos_vector_, unit_scale);
+                _ExtractManipulators(*connectedBodyObject, connectedbodyinfo->manipulator_infos_vector_, unit_scale);
+                _ExtractAttachedSensors(*connectedBodyObject, connectedbodyinfo->attached_sensor_infos_vector_, unit_scale);
                 connectedbodyinfos.push_back(connectedbodyinfo);
             }
         }

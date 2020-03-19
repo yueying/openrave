@@ -2308,7 +2308,7 @@ protected:
                         // don't clone grabbed bodies!
                         RobotBase::RobotStateSaver saver(poldrobot, 0xffffffff&~KinBody::Save_GrabbedBodies);
                         saver.Restore(pnewrobot);
-                        pnewrobot->__hashrobotstructure = poldrobot->__hashrobotstructure;
+                        pnewrobot->hash_robot_structure_ = poldrobot->hash_robot_structure_;
                     }
                     else {
                         KinBody::KinBodyStateSaver saver(*itbody, 0xffffffff&~KinBody::Save_GrabbedBodies);
@@ -2338,7 +2338,7 @@ protected:
                 if( pnewbody->IsRobot() ) {
                     RobotBasePtr poldrobot = RaveInterfaceCast<RobotBase>(*itbody);
                     RobotBasePtr pnewrobot = RaveInterfaceCast<RobotBase>(pnewbody);
-                    pnewrobot->__hashrobotstructure = poldrobot->__hashrobotstructure;
+                    pnewrobot->hash_robot_structure_ = poldrobot->hash_robot_structure_;
                 }
             }
             // update the state after every body is initialized!

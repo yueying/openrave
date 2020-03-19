@@ -319,13 +319,13 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
         // sometimes bodies can be removed before they are Released, this is ok and can happen during exceptions and stack unwinding
         if( !!pgrabbedbody ) {
             KinBody::GrabbedInfoPtr poutputinfo(new GrabbedInfo());
-            poutputinfo->_grabbedname = pgrabbedbody->GetName();
-            poutputinfo->_robotlinkname = pgrabbed->_plinkrobot->GetName();
-            poutputinfo->_trelative = pgrabbed->_troot;
-            poutputinfo->_setRobotLinksToIgnore = pgrabbed->_setRobotLinksToIgnore;
+            poutputinfo->grabbed_name_ = pgrabbedbody->GetName();
+            poutputinfo->robot_link_name_ = pgrabbed->_plinkrobot->GetName();
+            poutputinfo->relative_transform_ = pgrabbed->_troot;
+            poutputinfo->robot_links_to_ignore_set_ = pgrabbed->_setRobotLinksToIgnore;
             FOREACHC(itlink, links_vector_) {
                 if( find(pgrabbed->_listNonCollidingLinks.begin(), pgrabbed->_listNonCollidingLinks.end(), *itlink) == pgrabbed->_listNonCollidingLinks.end() ) {
-                    poutputinfo->_setRobotLinksToIgnore.insert((*itlink)->GetIndex());
+                    poutputinfo->robot_links_to_ignore_set_.insert((*itlink)->GetIndex());
                 }
             }
             vgrabbedinfo.push_back(poutputinfo);
@@ -335,18 +335,18 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
 
 void KinBody::GrabbedInfo::SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
-    openravejson::SetJsonValueByKey(value, "grabbedName", _grabbedname, allocator);
-    openravejson::SetJsonValueByKey(value, "robotLinkName", _robotlinkname, allocator);
-    openravejson::SetJsonValueByKey(value, "transform", _trelative, allocator);
-    openravejson::SetJsonValueByKey(value, "robotLinksToIgnoreSet", _setRobotLinksToIgnore, allocator);
+    openravejson::SetJsonValueByKey(value, "grabbedName", grabbed_name_, allocator);
+    openravejson::SetJsonValueByKey(value, "robotLinkName", robot_link_name_, allocator);
+    openravejson::SetJsonValueByKey(value, "transform", relative_transform_, allocator);
+    openravejson::SetJsonValueByKey(value, "robotLinksToIgnoreSet", robot_links_to_ignore_set_, allocator);
 }
 
 void KinBody::GrabbedInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
-    openravejson::LoadJsonValueByKey(value, "grabbedName", _grabbedname);
-    openravejson::LoadJsonValueByKey(value, "robotLinkName", _robotlinkname);
-    openravejson::LoadJsonValueByKey(value, "transform", _trelative);
-    openravejson::LoadJsonValueByKey(value, "robotLinksToIgnoreSet", _setRobotLinksToIgnore);
+    openravejson::LoadJsonValueByKey(value, "grabbedName", grabbed_name_);
+    openravejson::LoadJsonValueByKey(value, "robotLinkName", robot_link_name_);
+    openravejson::LoadJsonValueByKey(value, "transform", relative_transform_);
+    openravejson::LoadJsonValueByKey(value, "robotLinksToIgnoreSet", robot_links_to_ignore_set_);
 }
 
 void KinBody::ResetGrabbed(const std::vector<KinBody::GrabbedInfoConstPtr>& vgrabbedinfo)
@@ -357,8 +357,8 @@ void KinBody::ResetGrabbed(const std::vector<KinBody::GrabbedInfoConstPtr>& vgra
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         FOREACHC(itgrabbedinfo, vgrabbedinfo) {
             GrabbedInfoConstPtr pgrabbedinfo = *itgrabbedinfo;
-            KinBodyPtr pbody = GetEnv()->GetKinBody(pgrabbedinfo->_grabbedname);
-            KinBody::LinkPtr pBodyLinkToGrabWith = GetLink(pgrabbedinfo->_robotlinkname);
+            KinBodyPtr pbody = GetEnv()->GetKinBody(pgrabbedinfo->grabbed_name_);
+            KinBody::LinkPtr pBodyLinkToGrabWith = GetLink(pgrabbedinfo->robot_link_name_);
             OPENRAVE_ASSERT_FORMAT(!!pbody && !!pBodyLinkToGrabWith, "body %s invalid grab arguments",GetName(), ORE_InvalidArguments);
             OPENRAVE_ASSERT_FORMAT(pbody.get() != this, "body %s cannot grab itself",pbody->GetName(), ORE_InvalidArguments);
             if( IsGrabbing(*pbody) ) {
@@ -367,12 +367,12 @@ void KinBody::ResetGrabbed(const std::vector<KinBody::GrabbedInfoConstPtr>& vgra
             }
 
             GrabbedPtr pgrabbed(new Grabbed(pbody,pBodyLinkToGrabWith));
-            pgrabbed->_troot = pgrabbedinfo->_trelative;
+            pgrabbed->_troot = pgrabbedinfo->relative_transform_;
             if( !!self_collision_checker_ && self_collision_checker_ != GetEnv()->GetCollisionChecker() ) {
                 // collision checking will not be automatically updated with environment calls, so need to do this manually
                 self_collision_checker_->InitKinBody(pbody);
             }
-            pgrabbed->ProcessCollidingLinks(pgrabbedinfo->_setRobotLinksToIgnore);
+            pgrabbed->ProcessCollidingLinks(pgrabbedinfo->robot_links_to_ignore_set_);
             Transform tlink = pBodyLinkToGrabWith->GetTransform();
             Transform tbody = tlink * pgrabbed->_troot;
             pbody->SetTransform(tbody);

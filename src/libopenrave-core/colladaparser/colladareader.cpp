@@ -825,10 +825,10 @@ namespace OpenRAVE
 				FOREACH(itjoint, probot->passive_joints_vector_) {
 					_setInitialJoints.insert(*itjoint);
 				}
-				FOREACH(itmanip, probot->_vecManipulators) {
+				FOREACH(itmanip, probot->manipulators_vector_) {
 					_setInitialManipulators.insert(*itmanip);
 				}
-				FOREACH(itsensor, probot->_vecAttachedSensors) {
+				FOREACH(itsensor, probot->attached_sensors_vector_) {
 					_setInitialSensors.insert(*itsensor);
 				}
 			}
@@ -887,17 +887,17 @@ namespace OpenRAVE
 			if (bSuccess) {
 				if (prefix_.size() > 0) {
 					_AddPrefixForKinBody(probot, prefix_);
-					FOREACH(itmanip, probot->_vecManipulators) {
+					FOREACH(itmanip, probot->manipulators_vector_) {
 						if (_setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
 							(*itmanip)->info_.name_ = prefix_ + (*itmanip)->info_.name_;
-							(*itmanip)->info_._sBaseLinkName = prefix_ + (*itmanip)->info_._sBaseLinkName;
-							(*itmanip)->info_._sEffectorLinkName = prefix_ + (*itmanip)->info_._sEffectorLinkName;
-							FOREACH(itgrippername, (*itmanip)->info_._vGripperJointNames) {
+							(*itmanip)->info_.base_link_name_ = prefix_ + (*itmanip)->info_.base_link_name_;
+							(*itmanip)->info_.effector_link_name_ = prefix_ + (*itmanip)->info_.effector_link_name_;
+							FOREACH(itgrippername, (*itmanip)->info_.gripper_joint_names_vector_) {
 								*itgrippername = prefix_ + *itgrippername;
 							}
 						}
 					}
-					FOREACH(itsensor, probot->_vecAttachedSensors) {
+					FOREACH(itsensor, probot->attached_sensors_vector_) {
 						if (_setInitialSensors.find(*itsensor) == _setInitialSensors.end()) {
 							(*itsensor)->info_.name_ = prefix_ + (*itsensor)->info_.name_;
 						}
@@ -3258,15 +3258,15 @@ namespace OpenRAVE
 						if (!!pframe_origin) {
 							domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
 							if (!!pdomlink) {
-								manipinfo._sBaseLinkName = _ExtractLinkName(pdomlink);
+								manipinfo.base_link_name_ = _ExtractLinkName(pdomlink);
 							}
 							else {
 								KinBody::LinkPtr plink = _ResolveLinkBinding(bindings.listInstanceLinkBindings, pframe_origin->getAttribute("link"), probot);
 								if (!!plink) {
-									manipinfo._sBaseLinkName = plink->GetName();
+									manipinfo.base_link_name_ = plink->GetName();
 								}
 							}
-							if (!probot->GetLink(manipinfo._sBaseLinkName)) {
+							if (!probot->GetLink(manipinfo.base_link_name_)) {
 								RAVELOG_WARN(str(boost::format("failed to find manipulator %s frame origin %s\n") % name%pframe_origin->getAttribute("link")));
 								continue;
 							}
@@ -3274,31 +3274,31 @@ namespace OpenRAVE
 						if (!!pframe_tip) {
 							domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_tip->getAttribute("link"), as).resolve().elt);
 							if (!!pdomlink) {
-								manipinfo._sEffectorLinkName = _ExtractLinkName(pdomlink);
+								manipinfo.effector_link_name_ = _ExtractLinkName(pdomlink);
 							}
 							else {
 								KinBody::LinkPtr plink = _ResolveLinkBinding(bindings.listInstanceLinkBindings, pframe_tip->getAttribute("link"), probot);
 								if (!!plink) {
-									manipinfo._sEffectorLinkName = plink->GetName();
+									manipinfo.effector_link_name_ = plink->GetName();
 								}
 							}
-							if (!probot->GetLink(manipinfo._sEffectorLinkName)) {
+							if (!probot->GetLink(manipinfo.effector_link_name_)) {
 								RAVELOG_WARN(str(boost::format("failed to find manipulator %s frame tip %s\n") % name%pframe_tip->getAttribute("link")));
 								continue;
 							}
-							manipinfo._tLocalTool = _ExtractFullTransformFromChildren(pframe_tip);
+							manipinfo.local_tool_transform_ = _ExtractFullTransformFromChildren(pframe_tip);
 							daeElementRef pdirection = pframe_tip->getChild("direction");
 							if (!!pdirection) {
 								stringstream ss(pdirection->getCharData());
-								ss >> manipinfo._vdirection.x >> manipinfo._vdirection.y >> manipinfo._vdirection.z;
+								ss >> manipinfo.direction_.x >> manipinfo.direction_.y >> manipinfo.direction_.z;
 								// have to normalize direction!
-								dReal dirlen2 = manipinfo._vdirection.lengthsqr3();
+								dReal dirlen2 = manipinfo.direction_.lengthsqr3();
 								if (dirlen2 > g_fEpsilon) {
-									manipinfo._vdirection /= RaveSqrt(dirlen2);
+									manipinfo.direction_ /= RaveSqrt(dirlen2);
 								}
 								else {
 									RAVELOG_WARN_FORMAT("invalid direction specified for manip %s, using [0,0,1]", manipinfo.name_);
-									manipinfo._vdirection = Vector(0, 0, 1);
+									manipinfo.direction_ = Vector(0, 0, 1);
 								}
 
 								if (!ss) {
@@ -3314,7 +3314,7 @@ namespace OpenRAVE
 								KinBody::JointPtr pjoint = result.first;
 								domJointRef pdomjoint = result.second;
 								if (!!pjoint && !!pdomjoint) {
-									manipinfo._vGripperJointNames.push_back(pjoint->GetName());
+									manipinfo.gripper_joint_names_vector_.push_back(pjoint->GetName());
 									daeTArray<daeElementRef> children;
 									pmanipchild->getChildren(children);
 									for (size_t i = 0; i < children.getCount(); i++) {
@@ -3329,7 +3329,7 @@ namespace OpenRAVE
 													RAVELOG_WARN(str(boost::format("gripper joint %s axis %s cannot extract chucking_direction\n") % children[i]->getAttribute("axis") % pmanipchild->getAttribute("joint")));
 												}
 											}
-											manipinfo._vChuckingDirection.push_back((dReal)chucking_direction);
+											manipinfo.chucking_direction_vector_.push_back((dReal)chucking_direction);
 										}
 									}
 									continue;
@@ -3340,7 +3340,7 @@ namespace OpenRAVE
 								InterfaceTypePtr pinterfacetype = _ExtractInterfaceType(pmanipchild);
 								if (!!pinterfacetype) {
 									if (pinterfacetype->type.size() == 0 || pinterfacetype->type == "iksolver") {
-										manipinfo._sIkSolverXMLId = pinterfacetype->name;
+										manipinfo.ik_solver_xml_id_ = pinterfacetype->name;
 									}
 									else {
 										RAVELOG_WARN("invalid interface_type\n");
@@ -3354,7 +3354,7 @@ namespace OpenRAVE
 
 						// check if a previous manipulator exists with the same name
 						RobotBase::ManipulatorPtr pnewmanip(new RobotBase::Manipulator(probot, manipinfo));
-						FOREACH(itmanip, probot->_vecManipulators) {
+						FOREACH(itmanip, probot->manipulators_vector_) {
 							if ((*itmanip)->GetName() == manipinfo.name_) {
 								*itmanip = pnewmanip;
 								pnewmanip.reset();
@@ -3363,7 +3363,7 @@ namespace OpenRAVE
 						}
 						if (!!pnewmanip) {
 							// not found so append
-							probot->_vecManipulators.push_back(pnewmanip);
+							probot->manipulators_vector_.push_back(pnewmanip);
 						}
 					}
 					else {
@@ -3403,21 +3403,21 @@ namespace OpenRAVE
 								RAVELOG_WARN(str(boost::format("failed to find manipulator %s frame origin %s\n") % name%pframe_origin->getAttribute("link")));
 								continue;
 							}
-							pattachedsensor->info_._trelative = _ExtractFullTransformFromChildren(pframe_origin);
+							pattachedsensor->info_.relative_transform_ = _ExtractFullTransformFromChildren(pframe_origin);
 						}
 						daeElementRef instance_sensor = tec->getChild("instance_sensor");
 						if (!!instance_sensor) {
 							std::pair<SensorBasePtr, daeElementRef> result = _ExtractCreateSensor(instance_sensor);
-							pattachedsensor->_psensor = result.first;
-							if (!!pattachedsensor->_psensor) {
-								pattachedsensor->_psensor->SetName(str(boost::format("%s:%s") % probot->GetName() % name));
+							pattachedsensor->sensor_ = result.first;
+							if (!!pattachedsensor->sensor_) {
+								pattachedsensor->sensor_->SetName(str(boost::format("%s:%s") % probot->GetName() % name));
 								std::string instance_url = instance_sensor->getAttribute("url");
-								mapSensorURLsToNames[instance_url] = pattachedsensor->_psensor->GetName();
+								mapSensorURLsToNames[instance_url] = pattachedsensor->sensor_->GetName();
 							}
 							listSensorsToExtract.emplace_back(pattachedsensor, result.second);
 						}
 
-						probot->_vecAttachedSensors.push_back(pattachedsensor);
+						probot->attached_sensors_vector_.push_back(pattachedsensor);
 					}
 					else {
 						RAVELOG_WARN(str(boost::format("cannot create robot %s attached sensor %s\n") % probot->GetName() % name));
@@ -3427,12 +3427,12 @@ namespace OpenRAVE
 
 			FOREACH(itextract, listSensorsToExtract) {
 				RobotBase::AttachedSensorPtr pattachedsensor = itextract->first;
-				if (!pattachedsensor->_psensor) {
+				if (!pattachedsensor->sensor_) {
 					continue;
 				}
 
 				// Create the custom XML reader to read in the data (determined by users)
-				BaseXMLReaderPtr pcurreader = RaveCallXMLReader(PT_Sensor, pattachedsensor->_psensor->GetXMLId(), pattachedsensor->_psensor, AttributesList());
+				BaseXMLReaderPtr pcurreader = RaveCallXMLReader(PT_Sensor, pattachedsensor->sensor_->GetXMLId(), pattachedsensor->sensor_, AttributesList());
 				if (!pcurreader) {
 					pattachedsensor->pdata = pattachedsensor->GetSensor()->CreateSensorData();
 					continue;
@@ -3440,7 +3440,7 @@ namespace OpenRAVE
 
 				if (_ProcessXMLReader(pcurreader, itextract->second, mapSensorURLsToNames)) {
 					if (!!pcurreader->GetReadable()) {
-						pattachedsensor->_psensor->SetReadableInterface(pattachedsensor->_psensor->GetXMLId(), pcurreader->GetReadable());
+						pattachedsensor->sensor_->SetReadableInterface(pattachedsensor->sensor_->GetXMLId(), pcurreader->GetReadable());
 					}
 				}
 				pattachedsensor->UpdateInfo(); // need to update the info_ struct with the latest values
@@ -3544,21 +3544,21 @@ namespace OpenRAVE
 				}
 
 				RobotBase::ConnectedBodyInfo connectedBodyInfo;
-				connectedBodyInfo._bIsActive = false;  // defaults to non-active
+				connectedBodyInfo.is_active_ = false;  // defaults to non-active
 				daeElementRef pactive = tec->getChild("active");
 				if (!!pactive) {
-					resolveCommon_bool_or_param(pactive, tec, connectedBodyInfo._bIsActive);
+					resolveCommon_bool_or_param(pactive, tec, connectedBodyInfo.is_active_);
 				}
 
 				connectedBodyInfo.name_ = _ConvertToOpenRAVEName(name);
 
 				daeElementRef pframe_origin = tec->getChild("frame_origin");
 				if (!!pframe_origin) {
-					connectedBodyInfo._trelative = _ExtractFullTransformFromChildren(pframe_origin);
+					connectedBodyInfo.relative_transform_ = _ExtractFullTransformFromChildren(pframe_origin);
 
 					domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
 					if (!!pdomlink) {
-						connectedBodyInfo._linkname = _ExtractLinkName(pdomlink);
+						connectedBodyInfo.link_name_ = _ExtractLinkName(pdomlink);
 					}
 				}
 
@@ -3596,10 +3596,10 @@ namespace OpenRAVE
 
 					if (!!pbody) {
 						RAVELOG_DEBUG_FORMAT("Loaded body from %s", uri);
-						connectedBodyInfo._uri = uri;
+						connectedBodyInfo.uri_ = uri;
 						connectedBodyInfo.InitInfoFromBody(*pbody);
 						RobotBase::ConnectedBodyPtr pConnectedBody(new RobotBase::ConnectedBody(probot, connectedBodyInfo));
-						probot->_vecConnectedBodies.push_back(pConnectedBody);
+						probot->connected_bodies_vector_.push_back(pConnectedBody);
 					}
 				}
 			}
@@ -3633,7 +3633,7 @@ namespace OpenRAVE
 				}
 				daeElementRef pactive = tec->getChild("active");
 				if (!!pactive) {
-					resolveCommon_bool_or_param(pactive, tec, connectedBody->info_._bIsActive);
+					resolveCommon_bool_or_param(pactive, tec, connectedBody->info_.is_active_);
 				}
 			}
 		}

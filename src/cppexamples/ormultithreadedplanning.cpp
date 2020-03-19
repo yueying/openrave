@@ -1,4 +1,4 @@
-/** \example ormultithreadedplanning.cpp
+﻿/** \example ormultithreadedplanning.cpp
     \author Rosen Diankov
 
     Shows how to execute different planners simultaneously on different threads using environment cloning.
@@ -16,12 +16,14 @@
 using namespace OpenRAVE;
 using namespace std;
 
-namespace cppexamples {
+namespace cppexamples 
+{
 
 class MultithreadedPlanningExample : public OpenRAVEExample
 {
 public:
-    MultithreadedPlanningExample() : OpenRAVEExample("") {
+    MultithreadedPlanningExample() : OpenRAVEExample("") 
+	{
     }
 
     void _PlanningThread(const std::string& robotname)

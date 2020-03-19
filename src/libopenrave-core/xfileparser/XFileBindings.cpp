@@ -106,11 +106,11 @@ public:
         FOREACH(itmanip,_listendeffectors) {
             RobotBase::ManipulatorInfo manipinfo;
             manipinfo.name_ = itmanip->first->info_.name_;
-            manipinfo._sEffectorLinkName = itmanip->first->GetName();
-            manipinfo._sBaseLinkName = probot->GetLinks().at(0)->GetName();
-            manipinfo._tLocalTool = itmanip->second;
-            manipinfo._vdirection=Vector(1,0,0);
-            probot->_vecManipulators.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(probot,manipinfo)));
+            manipinfo.effector_link_name_ = itmanip->first->GetName();
+            manipinfo.base_link_name_ = probot->GetLinks().at(0)->GetName();
+            manipinfo.local_tool_transform_ = itmanip->second;
+            manipinfo.direction_=Vector(1,0,0);
+            probot->manipulators_vector_.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(probot,manipinfo)));
         }
     }
 

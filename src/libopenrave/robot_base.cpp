@@ -25,14 +25,14 @@ void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value,
 	rapidjson::Document::AllocatorType& allocator, dReal unit_scale, int options) const
 {
     openravejson::SetJsonValueByKey(value, "name", name_, allocator);
-	openravejson::SetJsonValueByKey(value, "linkName", _linkname, allocator);
-	openravejson::SetJsonValueByKey(value, "transform", _trelative, allocator);
-	openravejson::SetJsonValueByKey(value, "type", _sensorname, allocator);
+	openravejson::SetJsonValueByKey(value, "linkName", link_name_, allocator);
+	openravejson::SetJsonValueByKey(value, "transform", relative_transform_, allocator);
+	openravejson::SetJsonValueByKey(value, "type", sensor_name_, allocator);
 
-    if(!!_sensorgeometry)
+    if(!!sensor_geometry_)
     {
         rapidjson::Value sensorGeometryValue;
-        _sensorgeometry->SerializeJSON(sensorGeometryValue, allocator, unit_scale, options);
+        sensor_geometry_->SerializeJSON(sensorGeometryValue, allocator, unit_scale, options);
 		openravejson::SetJsonValueByKey(value, "sensorGeometry", sensorGeometryValue, allocator);
     }
 }
@@ -40,20 +40,20 @@ void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value,
 void RobotBase::AttachedSensorInfo::DeserializeJSON(const rapidjson::Value& value, dReal unit_scale)
 {
 	openravejson::LoadJsonValueByKey(value, "name", name_);
-	openravejson::LoadJsonValueByKey(value, "linkName", _linkname);
-	openravejson::LoadJsonValueByKey(value, "transform", _trelative);
-	openravejson::LoadJsonValueByKey(value, "type", _sensorname);
+	openravejson::LoadJsonValueByKey(value, "linkName", link_name_);
+	openravejson::LoadJsonValueByKey(value, "transform", relative_transform_);
+	openravejson::LoadJsonValueByKey(value, "type", sensor_name_);
 
     if (value.HasMember("sensorGeometry")) {
-        BaseJSONReaderPtr pReader = RaveCallJSONReader(PT_Sensor, _sensorname, InterfaceBasePtr(), AttributesList());
+        BaseJSONReaderPtr pReader = RaveCallJSONReader(PT_Sensor, sensor_name_, InterfaceBasePtr(), AttributesList());
         if (!!pReader) {
             pReader->DeserializeJSON(value["sensorGeometry"], unit_scale);
             JSONReadablePtr pReadable = pReader->GetReadable();
             if (!!pReadable) {
-                _sensorgeometry = std::dynamic_pointer_cast<SensorBase::SensorGeometry>(pReadable);
+                sensor_geometry_ = std::dynamic_pointer_cast<SensorBase::SensorGeometry>(pReadable);
             }
         } else {
-            RAVELOG_WARN_FORMAT("failed to get json reader for sensor type \"%s\"", _sensorname);
+            RAVELOG_WARN_FORMAT("failed to get json reader for sensor type \"%s\"", sensor_name_);
         }
     }
 }
@@ -66,16 +66,16 @@ RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot, const AttachedSen
 {
     *this = sensor;
     _probot = probot;
-    _psensor.reset();
+    sensor_.reset();
     pdata.reset();
     pattachedlink.reset();
-    if( (cloningoptions&Clone_Sensors) && !!sensor._psensor ) {
-        _psensor = RaveCreateSensor(probot->GetEnv(), sensor._psensor->GetXMLId());
-        if( !!_psensor ) {
-            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%info_.name_)); // need a unique targettable name
-            _psensor->Clone(sensor._psensor,cloningoptions);
-            if( !!_psensor ) {
-                pdata = _psensor->CreateSensorData();
+    if( (cloningoptions&Clone_Sensors) && !!sensor.sensor_ ) {
+        sensor_ = RaveCreateSensor(probot->GetEnv(), sensor.sensor_->GetXMLId());
+        if( !!sensor_ ) {
+            sensor_->SetName(str(boost::format("%s:%s")%probot->GetName()%info_.name_)); // need a unique targettable name
+            sensor_->Clone(sensor.sensor_,cloningoptions);
+            if( !!sensor_ ) {
+                pdata = sensor_->CreateSensorData();
             }
         }
     }
@@ -89,15 +89,15 @@ RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot, const RobotBase::
 {
     info_ = info;
     _probot = probot;
-    pattachedlink = probot->GetLink(info_._linkname);
+    pattachedlink = probot->GetLink(info_.link_name_);
     if( !!probot ) {
-        _psensor = RaveCreateSensor(probot->GetEnv(), info_._sensorname);
-        if( !!_psensor ) {
-            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%info_.name_)); // need a unique targettable name
-            if(!!info_._sensorgeometry) {
-                _psensor->SetSensorGeometry(info_._sensorgeometry);
+        sensor_ = RaveCreateSensor(probot->GetEnv(), info_.sensor_name_);
+        if( !!sensor_ ) {
+            sensor_->SetName(str(boost::format("%s:%s")%probot->GetName()%info_.name_)); // need a unique targettable name
+            if(!!info_.sensor_geometry_) {
+                sensor_->SetSensorGeometry(info_.sensor_geometry_);
             }
-            pdata = _psensor->CreateSensorData();
+            pdata = sensor_->CreateSensorData();
         }
     }
 }
@@ -111,23 +111,23 @@ RobotBase::AttachedSensor::~AttachedSensor()
 //void RobotBase::AttachedSensor::_ComputeInternalInformation()
 //{
 //    RobotBasePtr probot = _probot.lock();
-//    _psensor.reset();
+//    sensor_.reset();
 //    pdata.reset();
 //    if( !!probot ) {
-//        _psensor = RaveCreateSensor(probot->GetEnv(), info_._sensorname);
-//        if( !!_psensor ) {
-//            _psensor->SetName(str(boost::format("%s:%s")%probot->GetName()%info_.name_)); // need a unique targettable name
-//            if(!!info_._sensorgeometry) {
-//                _psensor->SetSensorGeometry(info_._sensorgeometry);
+//        sensor_ = RaveCreateSensor(probot->GetEnv(), info_.sensor_name_);
+//        if( !!sensor_ ) {
+//            sensor_->SetName(str(boost::format("%s:%s")%probot->GetName()%info_.name_)); // need a unique targettable name
+//            if(!!info_.sensor_geometry_) {
+//                sensor_->SetSensorGeometry(info_.sensor_geometry_);
 //            }
-//            pdata = _psensor->CreateSensorData();
+//            pdata = sensor_->CreateSensorData();
 //        }
 //    }
 //}
 
 SensorBase::SensorDataPtr RobotBase::AttachedSensor::GetData() const
 {
-    if( !!_psensor && _psensor->GetSensorData(pdata) ) {
+    if( !!sensor_ && sensor_->GetSensorData(pdata) ) {
         return pdata;
     }
     return SensorBase::SensorDataPtr();
@@ -135,32 +135,32 @@ SensorBase::SensorDataPtr RobotBase::AttachedSensor::GetData() const
 
 void RobotBase::AttachedSensor::SetRelativeTransform(const Transform& t)
 {
-    info_._trelative = t;
+    info_.relative_transform_ = t;
     GetRobot()->_PostprocessChangedParameters(Prop_SensorPlacement);
 }
 
 void RobotBase::AttachedSensor::UpdateInfo(SensorBase::SensorType type)
 {
-    if( !!_psensor ) {
-        info_._sensorname = _psensor->GetXMLId();
+    if( !!sensor_ ) {
+        info_.sensor_name_ = sensor_->GetXMLId();
         // TODO try to get the sensor geometry...?
-        info_._sensorgeometry = std::const_pointer_cast<SensorBase::SensorGeometry>(_psensor->GetSensorGeometry(type));
-        //info_._sensorgeometry
+        info_.sensor_geometry_ = std::const_pointer_cast<SensorBase::SensorGeometry>(sensor_->GetSensorGeometry(type));
+        //info_.sensor_geometry_
     }
     LinkPtr prealattachedlink = pattachedlink.lock();
     if( !!prealattachedlink ) {
-        info_._linkname = prealattachedlink->GetName();
+        info_.link_name_ = prealattachedlink->GetName();
     }
 }
 
 void RobotBase::AttachedSensor::serialize(std::ostream& o, int options) const
 {
     o << (pattachedlink.expired() ? -1 : LinkPtr(pattachedlink)->GetIndex()) << " ";
-    SerializeRound(o,info_._trelative);
+    SerializeRound(o,info_.relative_transform_);
     o << (!pdata ? -1 : pdata->GetType()) << " ";
     // it is also important to serialize some of the geom parameters for the sensor (in case models are cached to it)
-    if( !!_psensor ) {
-        SensorBase::SensorGeometryConstPtr prawgeom = _psensor->GetSensorGeometry();
+    if( !!sensor_ ) {
+        SensorBase::SensorGeometryConstPtr prawgeom = sensor_->GetSensorGeometry();
         if( !!prawgeom ) {
             switch(prawgeom->GetType()) {
             case SensorBase::ST_Laser: {
@@ -183,26 +183,26 @@ void RobotBase::AttachedSensor::serialize(std::ostream& o, int options) const
 
 const std::string& RobotBase::AttachedSensor::GetStructureHash() const
 {
-    if( __hashstructure.size() == 0 ) {
+    if( hash_structure_.size() == 0 ) {
         ostringstream ss;
         ss << std::fixed << std::setprecision(SERIALIZATION_PRECISION);
         serialize(ss,SO_RobotSensors);
-        __hashstructure = utils::GetMD5HashString(ss.str());
+        hash_structure_ = utils::GetMD5HashString(ss.str());
     }
-    return __hashstructure;
+    return hash_structure_;
 }
 
 RobotBase::RobotStateSaver::RobotStateSaver(RobotBasePtr probot, int options) : KinBodyStateSaver(probot, options), _probot(probot)
 {
-    if( _options & Save_ActiveDOF ) {
+    if( options_ & Save_ActiveDOF ) {
         vactivedofs = _probot->GetActiveDOFIndices();
         affinedofs = _probot->GetAffineDOF();
         rotationaxis = _probot->GetAffineRotationAxis();
     }
-    if( _options & Save_ActiveManipulator ) {
+    if( options_ & Save_ActiveManipulator ) {
         _pManipActive = _probot->GetActiveManipulator();
     }
-    if( _options & Save_ActiveManipulatorToolTransform ) {
+    if( options_ & Save_ActiveManipulatorToolTransform ) {
         _pManipActive = _probot->GetActiveManipulator();
         if( !!_pManipActive ) {
             _tActiveManipLocalTool = _pManipActive->GetLocalToolTransform();
@@ -210,7 +210,7 @@ RobotBase::RobotStateSaver::RobotStateSaver(RobotBasePtr probot, int options) : 
             _pActiveManipIkSolver = _pManipActive->GetIkSolver();
         }
     }
-    if( _options & Save_ManipulatorsToolTransform ) {
+    if( options_ & Save_ManipulatorsToolTransform ) {
         std::vector<RobotBase::ManipulatorPtr> vmanips = probot->GetManipulators();
         _vtManipsLocalTool.resize(vmanips.size());
         _vvManipsLocalDirection.resize(vmanips.size());
@@ -281,10 +281,10 @@ void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot
         return;
     }
 
-    if( _vConnectedBodyActiveStates.size() == probot->_vecConnectedBodies.size() ) {
+    if( _vConnectedBodyActiveStates.size() == probot->connected_bodies_vector_.size() ) {
         bool bchanged = false;
-        for(size_t iconnectedbody = 0; iconnectedbody < probot->_vecConnectedBodies.size(); ++iconnectedbody) {
-            if( probot->_vecConnectedBodies[iconnectedbody]->IsActive() != (!!_vConnectedBodyActiveStates[iconnectedbody]) ) {
+        for(size_t iconnectedbody = 0; iconnectedbody < probot->connected_bodies_vector_.size(); ++iconnectedbody) {
+            if( probot->connected_bodies_vector_[iconnectedbody]->IsActive() != (!!_vConnectedBodyActiveStates[iconnectedbody]) ) {
                 bchanged = true;
                 break;
             }
@@ -298,10 +298,10 @@ void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot
         }
     }
 
-    if( _options & Save_ActiveDOF ) {
+    if( options_ & Save_ActiveDOF ) {
         probot->SetActiveDOFs(vactivedofs, affinedofs, rotationaxis);
     }
-    if( _options & Save_ActiveManipulator ) {
+    if( options_ & Save_ActiveManipulator ) {
         if( probot == _probot ) {
             probot->SetActiveManipulator(_pManipActive);
         }
@@ -314,7 +314,7 @@ void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot
             }
         }
     }
-    if( _options & Save_ActiveManipulatorToolTransform ) {
+    if( options_ & Save_ActiveManipulatorToolTransform ) {
         if( !!_pManipActive ) {
             if( probot == _probot ) {
                 RobotBase::ManipulatorPtr pmanip = probot->GetManipulator(_pManipActive->GetName()); // manipulator pointers might have changed, it is always safer to re-request the current manip
@@ -344,7 +344,7 @@ void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot
             }
         }
     }
-    if( _options & Save_ManipulatorsToolTransform ) {
+    if( options_ & Save_ManipulatorsToolTransform ) {
         if( probot == _probot ) {
             std::vector<RobotBase::ManipulatorPtr> vmanips = probot->GetManipulators();
             if(vmanips.size() == _vtManipsLocalTool.size()) {
@@ -405,13 +405,13 @@ RobotBase::~RobotBase()
 
 void RobotBase::Destroy()
 {
-    _pManipActive.reset();
-    _vecManipulators.clear();
-    _vecAttachedSensors.clear();
-    _vecConnectedBodies.clear();
+    manipulator_active_.reset();
+    manipulators_vector_.clear();
+    attached_sensors_vector_.clear();
+    connected_bodies_vector_.clear();
     _nActiveDOF = 0;
-    _vActiveDOFIndices.resize(0);
-    _vAllDOFIndices.resize(0);
+    active_dof_indices_vector_.resize(0);
+    all_dof_indices_vector_.resize(0);
     SetController(ControllerBasePtr(),std::vector<int>(),0);
 
     KinBody::Destroy();
@@ -422,23 +422,23 @@ bool RobotBase::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, co
     if( !KinBody::Init(linkinfos, jointinfos, uri) ) {
         return false;
     }
-    _vecManipulators.resize(0);
+    manipulators_vector_.resize(0);
     FOREACHC(itmanipinfo, manipinfos) {
         ManipulatorPtr newmanip(new Manipulator(shared_robot(),**itmanipinfo));
-        _vecManipulators.push_back(newmanip);
-        __hashrobotstructure.resize(0);
+        manipulators_vector_.push_back(newmanip);
+        hash_robot_structure_.resize(0);
     }
-    _vecAttachedSensors.clear();
+    attached_sensors_vector_.clear();
     FOREACHC(itattachedsensorinfo, attachedsensorinfos) {
         AttachedSensorPtr newattachedsensor(new AttachedSensor(shared_robot(),**itattachedsensorinfo));
-        _vecAttachedSensors.push_back(newattachedsensor);
+        attached_sensors_vector_.push_back(newattachedsensor);
         newattachedsensor->UpdateInfo(); // just in case
-        __hashrobotstructure.resize(0);
+        hash_robot_structure_.resize(0);
     }
-    _vecConnectedBodies.clear();
+    connected_bodies_vector_.clear();
     FOREACHC(itconnectedbodyinfo, connectedbodyinfos) {
         ConnectedBodyPtr newconnectedbody(new ConnectedBody(shared_robot(),**itconnectedbodyinfo));
-        _vecConnectedBodies.push_back(newconnectedbody);
+        connected_bodies_vector_.push_back(newconnectedbody);
     }
     return true;
 }
@@ -453,7 +453,7 @@ void RobotBase::SetName(const std::string& newname)
 {
     if( name_ != newname ) {
         // have to replace the 2nd word of all the groups with the robot name
-        FOREACH(itgroup, _activespec.groups_vector_) {
+        FOREACH(itgroup, active_spec_.groups_vector_) {
             stringstream ss(itgroup->name);
             string grouptype, oldname;
             ss >> grouptype >> oldname;
@@ -463,10 +463,10 @@ void RobotBase::SetName(const std::string& newname)
         }
 
         // have to rename any attached sensors with robotname:attachedname!!
-        FOREACH(itattached, _vecAttachedSensors) {
+        FOREACH(itattached, attached_sensors_vector_) {
             AttachedSensorPtr pattached = *itattached;
-            if( !!pattached->_psensor ) {
-                pattached->_psensor->SetName(str(boost::format("%s:%s")%newname%pattached->info_.name_)); // need a unique targettable name
+            if( !!pattached->sensor_ ) {
+                pattached->sensor_->SetName(str(boost::format("%s:%s")%newname%pattached->info_.name_)); // need a unique targettable name
             }
             else {
 
@@ -527,7 +527,7 @@ void RobotBase::SetDOFVelocities(const std::vector<dReal>& dofvelocities, uint32
 
 void RobotBase::_UpdateAttachedSensors()
 {
-    FOREACH(itsensor, _vecAttachedSensors) {
+    FOREACH(itsensor, attached_sensors_vector_) {
         if( !!(*itsensor)->GetSensor() && !(*itsensor)->pattachedlink.expired() ) {
             (*itsensor)->GetSensor()->SetTransform(LinkPtr((*itsensor)->pattachedlink)->GetTransform()*(*itsensor)->GetRelativeTransform());
         }
@@ -653,12 +653,12 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
         OPENRAVE_ASSERT_FORMAT(*itj>=0 && *itj<GetDOF(), "bad index %d (dof=%d)",*itj%GetDOF(),ORE_InvalidArguments);
     }
     // only reset the cache if the dof values are different
-    if( _vActiveDOFIndices.size() != vJointIndices.size() ) {
+    if( active_dof_indices_vector_.size() != vJointIndices.size() ) {
         non_adjacent_link_cache_ &= ~AO_ActiveDOFs;
     }
     else {
         for(size_t i = 0; i < vJointIndices.size(); ++i) {
-            if( _vActiveDOFIndices[i] != vJointIndices[i] ) {
+            if( active_dof_indices_vector_[i] != vJointIndices[i] ) {
                 non_adjacent_link_cache_ &= ~AO_ActiveDOFs;
                 break;
             }
@@ -666,20 +666,20 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
     }
 
     bool bactivedofchanged = false;
-    if( _vActiveDOFIndices.size() != vJointIndices.size() ) {
+    if( active_dof_indices_vector_.size() != vJointIndices.size() ) {
         bactivedofchanged = true;
     }
     else {
         // same size, check to see if the values and order is the same
-        for(size_t i = 0; i < _vActiveDOFIndices.size(); ++i) {
-            if( _vActiveDOFIndices[i] != vJointIndices[i] ) {
+        for(size_t i = 0; i < active_dof_indices_vector_.size(); ++i) {
+            if( active_dof_indices_vector_[i] != vJointIndices[i] ) {
                 bactivedofchanged = true;
                 break;
             }
         }
     }
     if( bactivedofchanged ) {
-        _vActiveDOFIndices = vJointIndices;
+        active_dof_indices_vector_ = vJointIndices;
     }
 
     if( _nAffineDOFs != nAffineDOFBitmask ) {
@@ -692,7 +692,7 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
     if( bactivedofchanged ) {
         // do not initialize interpolation, since it implies a motion sampling strategy
         int offset = 0;
-        _activespec.groups_vector_.resize(0);
+        active_spec_.groups_vector_.resize(0);
         if( GetActiveDOFIndices().size() > 0 ) {
             ConfigurationSpecification::Group group;
             stringstream ss;
@@ -704,14 +704,14 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
             group.dof = (int)GetActiveDOFIndices().size();
             group.offset = offset;
             offset += group.dof;
-            _activespec.groups_vector_.push_back(group);
+            active_spec_.groups_vector_.push_back(group);
         }
         if( GetAffineDOF() > 0 ) {
             ConfigurationSpecification::Group group;
             group.name = str(boost::format("affine_transform %s %d")%GetName()%GetAffineDOF());
             group.offset = offset;
             group.dof = RaveGetAffineDOF(GetAffineDOF());
-            _activespec.groups_vector_.push_back(group);
+            active_spec_.groups_vector_.push_back(group);
         }
 
         _PostprocessChangedParameters(Prop_RobotActiveDOFs);
@@ -727,23 +727,23 @@ void RobotBase::SetActiveDOFValues(const std::vector<dReal>& values, uint32_t bC
     OPENRAVE_ASSERT_OP_FORMAT((int)values.size(),>=,GetActiveDOF(), "not enough values %d<%d",values.size()%GetActiveDOF(),ORE_InvalidArguments);
 
     Transform t;
-    if( (int)_vActiveDOFIndices.size() < _nActiveDOF ) {
+    if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
         t = GetTransform();
-        RaveGetTransformFromAffineDOFValues(t, values.begin()+_vActiveDOFIndices.size(),_nAffineDOFs,vActvAffineRotationAxis);
+        RaveGetTransformFromAffineDOFValues(t, values.begin()+active_dof_indices_vector_.size(),_nAffineDOFs,vActvAffineRotationAxis);
         if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
             t.rot = quatMultiply(_vRotationQuatLimitStart, t.rot);
         }
-        if( _vActiveDOFIndices.size() == 0 ) {
+        if( active_dof_indices_vector_.size() == 0 ) {
             SetTransform(t);
         }
     }
 
-    if( _vActiveDOFIndices.size() > 0 ) {
+    if( active_dof_indices_vector_.size() > 0 ) {
         GetDOFValues(_vTempRobotJoints);
-        for(size_t i = 0; i < _vActiveDOFIndices.size(); ++i) {
-            _vTempRobotJoints[_vActiveDOFIndices[i]] = values[i];
+        for(size_t i = 0; i < active_dof_indices_vector_.size(); ++i) {
+            _vTempRobotJoints[active_dof_indices_vector_[i]] = values[i];
         }
-        if( (int)_vActiveDOFIndices.size() < _nActiveDOF ) {
+        if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
             SetDOFValues(_vTempRobotJoints, t, bCheckLimits);
         }
         else {
@@ -764,9 +764,9 @@ void RobotBase::GetActiveDOFValues(std::vector<dReal>& values) const
         return;
     }
     vector<dReal>::iterator itvalues = values.begin();
-    if( _vActiveDOFIndices.size() != 0 ) {
+    if( active_dof_indices_vector_.size() != 0 ) {
         GetDOFValues(_vTempRobotJoints);
-        FOREACHC(it, _vActiveDOFIndices) {
+        FOREACHC(it, active_dof_indices_vector_) {
             *itvalues++ = _vTempRobotJoints[*it];
         }
     }
@@ -790,9 +790,9 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
     OPENRAVE_ASSERT_OP_FORMAT((int)velocities.size(),>=,GetActiveDOF(), "not enough values %d<%d",velocities.size()%GetActiveDOF(),ORE_InvalidArguments);
 
     Vector linearvel, angularvel;
-    if( (int)_vActiveDOFIndices.size() < _nActiveDOF ) {
+    if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
         // first set the affine transformation of the first link before setting joints
-        const dReal* pAffineValues = &velocities[_vActiveDOFIndices.size()];
+        const dReal* pAffineValues = &velocities[active_dof_indices_vector_.size()];
 
         links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
@@ -811,18 +811,18 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
             throw OPENRAVE_EXCEPTION_FORMAT0(_tr("quaternions not supported"),ORE_InvalidArguments);
         }
 
-        if( _vActiveDOFIndices.size() == 0 ) {
+        if( active_dof_indices_vector_.size() == 0 ) {
             SetVelocity(linearvel, angularvel);
         }
     }
 
-    if( _vActiveDOFIndices.size() > 0 ) {
+    if( active_dof_indices_vector_.size() > 0 ) {
         GetDOFVelocities(_vTempRobotJoints);
         std::vector<dReal>::const_iterator itvel = velocities.begin();
-        FOREACHC(it, _vActiveDOFIndices) {
+        FOREACHC(it, active_dof_indices_vector_) {
             _vTempRobotJoints[*it] = *itvel++;
         }
-        if( (int)_vActiveDOFIndices.size() < _nActiveDOF ) {
+        if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
             SetDOFVelocities(_vTempRobotJoints,linearvel,angularvel,bCheckLimits);
         }
         else {
@@ -842,9 +842,9 @@ void RobotBase::GetActiveDOFVelocities(std::vector<dReal>& velocities) const
     if( velocities.size() == 0 )
         return;
     dReal* pVelocities = &velocities[0];
-    if( _vActiveDOFIndices.size() != 0 ) {
+    if( active_dof_indices_vector_.size() != 0 ) {
         GetDOFVelocities(_vTempRobotJoints);
-        FOREACHC(it, _vActiveDOFIndices) {
+        FOREACHC(it, active_dof_indices_vector_) {
             *pVelocities++ = _vTempRobotJoints[*it];
         }
     }
@@ -890,16 +890,16 @@ void RobotBase::GetActiveDOFLimits(std::vector<dReal>& lower, std::vector<dReal>
         }
         else {
             GetDOFLimits(alllower,allupper);
-            FOREACHC(it, _vActiveDOFIndices) {
+            FOREACHC(it, active_dof_indices_vector_) {
                 *pLowerLimit++ = alllower.at(*it);
                 *pUpperLimit++ = allupper.at(*it);
             }
         }
     }
     else {
-        if( _vActiveDOFIndices.size() > 0 ) {
+        if( active_dof_indices_vector_.size() > 0 ) {
             GetDOFLimits(alllower,allupper);
-            FOREACHC(it, _vActiveDOFIndices) {
+            FOREACHC(it, active_dof_indices_vector_) {
                 *pLowerLimit++ = alllower.at(*it);
                 *pUpperLimit++ = allupper.at(*it);
             }
@@ -959,7 +959,7 @@ void RobotBase::GetActiveDOFResolutions(std::vector<dReal>& resolution) const
     dReal* pResolution = &resolution[0];
 
     GetDOFResolutions(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pResolution++ = _vTempRobotJoints[*it];
     }
     // set some default limits
@@ -1001,7 +1001,7 @@ void RobotBase::GetActiveDOFWeights(std::vector<dReal>& weights) const
     dReal* pweight = &weights[0];
 
     GetDOFWeights(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pweight++ = _vTempRobotJoints[*it];
     }
     // set some default limits
@@ -1037,7 +1037,7 @@ void RobotBase::GetActiveDOFVelocityLimits(std::vector<dReal>& maxvel) const
     dReal* pMaxVel = &maxvel[0];
 
     GetDOFVelocityLimits(dummy,_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pMaxVel++ = _vTempRobotJoints[*it];
     }
     if( _nAffineDOFs & OpenRAVE::DOF_X ) { *pMaxVel++ = _vTranslationMaxVels.x; }
@@ -1071,7 +1071,7 @@ void RobotBase::GetActiveDOFAccelerationLimits(std::vector<dReal>& maxaccel) con
     dReal* pMaxAccel = &maxaccel[0];
 
     GetDOFAccelerationLimits(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pMaxAccel++ = _vTempRobotJoints[*it];
     }
     if( _nAffineDOFs & OpenRAVE::DOF_X ) { *pMaxAccel++ = _vTranslationMaxVels.x; } // wrong
@@ -1105,7 +1105,7 @@ void RobotBase::GetActiveDOFJerkLimits(std::vector<dReal>& maxjerk) const
     dReal* pMaxJerk = &maxjerk[0];
 
     GetDOFJerkLimits(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pMaxJerk++ = _vTempRobotJoints[*it];
     }
 }
@@ -1123,7 +1123,7 @@ void RobotBase::GetActiveDOFHardVelocityLimits(std::vector<dReal>& maxvel) const
     dReal* pMaxVel = &maxvel[0];
 
     GetDOFHardVelocityLimits(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pMaxVel++ = _vTempRobotJoints[*it];
     }
 }
@@ -1141,7 +1141,7 @@ void RobotBase::GetActiveDOFHardAccelerationLimits(std::vector<dReal>& maxaccel)
     dReal* pMaxAccel = &maxaccel[0];
 
     GetDOFHardAccelerationLimits(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pMaxAccel++ = _vTempRobotJoints[*it];
     }
 }
@@ -1159,7 +1159,7 @@ void RobotBase::GetActiveDOFHardJerkLimits(std::vector<dReal>& maxjerk) const
     dReal* pMaxJerk = &maxjerk[0];
 
     GetDOFHardJerkLimits(_vTempRobotJoints);
-    FOREACHC(it, _vActiveDOFIndices) {
+    FOREACHC(it, active_dof_indices_vector_) {
         *pMaxJerk++ = _vTempRobotJoints[*it];
     }
 }
@@ -1172,20 +1172,20 @@ void RobotBase::SubtractActiveDOFValues(std::vector<dReal>& q1, const std::vecto
     }
 
     OPENRAVE_ASSERT_OP(q1.size(),==,q2.size());
-    OPENRAVE_ASSERT_OP(q1.size(), >=, _vActiveDOFIndices.size());
+    OPENRAVE_ASSERT_OP(q1.size(), >=, active_dof_indices_vector_.size());
     size_t index = 0;
     if (is_all_joints_1dof_and_no_circular_) {
-        for (size_t i = 0; i < _vActiveDOFIndices.size(); ++i) {
+        for (size_t i = 0; i < active_dof_indices_vector_.size(); ++i) {
             q1[i] -= q2[i];
         }
-        index = _vActiveDOFIndices.size();
+        index = active_dof_indices_vector_.size();
     }
     else {
         // go through all active joints
-        for(; index < _vActiveDOFIndices.size(); ++index) {
+        for(; index < active_dof_indices_vector_.size(); ++index) {
             // We already did range check above
-            JointConstPtr pjoint = GetJointFromDOFIndex(_vActiveDOFIndices[index]);
-            q1[index] = pjoint->SubtractValue(q1[index],q2[index],_vActiveDOFIndices[index]-pjoint->GetDOFIndex());
+            JointConstPtr pjoint = GetJointFromDOFIndex(active_dof_indices_vector_[index]);
+            q1[index] = pjoint->SubtractValue(q1[index],q2[index],active_dof_indices_vector_[index]-pjoint->GetDOFIndex());
         }
     }
 
@@ -1226,15 +1226,15 @@ void RobotBase::SubtractActiveDOFValues(std::vector<dReal>& q1, const std::vecto
 
 const std::vector<int>& RobotBase::GetActiveDOFIndices() const
 {
-    return _nActiveDOF < 0 ? _vAllDOFIndices : _vActiveDOFIndices;
+    return _nActiveDOF < 0 ? all_dof_indices_vector_ : active_dof_indices_vector_;
 }
 
 ConfigurationSpecification RobotBase::GetActiveConfigurationSpecification(const std::string& interpolation) const
 {
     if( interpolation.size() == 0 ) {
-        return _activespec;
+        return active_spec_;
     }
-    ConfigurationSpecification spec = _activespec;
+    ConfigurationSpecification spec = active_spec_;
     FOREACH(itgroup,spec.groups_vector_) {
         itgroup->interpolation=interpolation;
     }
@@ -1250,23 +1250,23 @@ void RobotBase::CalculateActiveJacobian(int index, const Vector& offset, vector<
 
     int dofstride = GetActiveDOF();
     vjacobian.resize(3*dofstride);
-    if( _vActiveDOFIndices.size() != 0 ) {
+    if( active_dof_indices_vector_.size() != 0 ) {
         if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
-            ComputeJacobianTranslation(index, offset, vjacobian, _vActiveDOFIndices);
+            ComputeJacobianTranslation(index, offset, vjacobian, active_dof_indices_vector_);
             return;
         }
         // have to copy
         std::vector<dReal> vjacobianjoints;
-        ComputeJacobianTranslation(index, offset, vjacobianjoints, _vActiveDOFIndices);
+        ComputeJacobianTranslation(index, offset, vjacobianjoints, active_dof_indices_vector_);
         for(size_t i = 0; i < 3; ++i) {
-            std::copy(vjacobianjoints.begin()+i*_vActiveDOFIndices.size(),vjacobianjoints.begin()+(i+1)*_vActiveDOFIndices.size(),vjacobian.begin()+i*dofstride);
+            std::copy(vjacobianjoints.begin()+i*active_dof_indices_vector_.size(),vjacobianjoints.begin()+(i+1)*active_dof_indices_vector_.size(),vjacobian.begin()+i*dofstride);
         }
     }
 
     if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
         return;
     }
-    size_t ind = _vActiveDOFIndices.size();
+    size_t ind = active_dof_indices_vector_.size();
     if( _nAffineDOFs & OpenRAVE::DOF_X ) {
         vjacobian[ind] = 1;
         vjacobian[dofstride+ind] = 0;
@@ -1385,14 +1385,14 @@ void RobotBase::CalculateActiveRotationJacobian(int index, const Vector& q, std:
     }
     int dofstride = GetActiveDOF();
     vjacobian.resize(4*dofstride);
-    if( _vActiveDOFIndices.size() != 0 ) {
+    if( active_dof_indices_vector_.size() != 0 ) {
         std::vector<dReal> vjacobianjoints;
         CalculateRotationJacobian(index, q, vjacobianjoints);
-        for(size_t i = 0; i < _vActiveDOFIndices.size(); ++i) {
-            vjacobian[i] = vjacobianjoints[_vActiveDOFIndices[i]];
-            vjacobian[dofstride+i] = vjacobianjoints[GetDOF()+_vActiveDOFIndices[i]];
-            vjacobian[2*dofstride+i] = vjacobianjoints[2*GetDOF()+_vActiveDOFIndices[i]];
-            vjacobian[3*dofstride+i] = vjacobianjoints[3*GetDOF()+_vActiveDOFIndices[i]];
+        for(size_t i = 0; i < active_dof_indices_vector_.size(); ++i) {
+            vjacobian[i] = vjacobianjoints[active_dof_indices_vector_[i]];
+            vjacobian[dofstride+i] = vjacobianjoints[GetDOF()+active_dof_indices_vector_[i]];
+            vjacobian[2*dofstride+i] = vjacobianjoints[2*GetDOF()+active_dof_indices_vector_[i]];
+            vjacobian[3*dofstride+i] = vjacobianjoints[3*GetDOF()+active_dof_indices_vector_[i]];
         }
     }
 
@@ -1400,7 +1400,7 @@ void RobotBase::CalculateActiveRotationJacobian(int index, const Vector& q, std:
         return;
     }
 
-    size_t ind = _vActiveDOFIndices.size();
+    size_t ind = active_dof_indices_vector_.size();
     if( _nAffineDOFs & OpenRAVE::DOF_X ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
@@ -1466,23 +1466,23 @@ void RobotBase::CalculateActiveAngularVelocityJacobian(int index, std::vector<dR
 
     int dofstride = GetActiveDOF();
     vjacobian.resize(3*dofstride);
-    if( _vActiveDOFIndices.size() != 0 ) {
+    if( active_dof_indices_vector_.size() != 0 ) {
         if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
-            ComputeJacobianAxisAngle(index, vjacobian, _vActiveDOFIndices);
+            ComputeJacobianAxisAngle(index, vjacobian, active_dof_indices_vector_);
             return;
         }
         // have to copy
         std::vector<dReal> vjacobianjoints;
-        ComputeJacobianAxisAngle(index, vjacobianjoints, _vActiveDOFIndices);
+        ComputeJacobianAxisAngle(index, vjacobianjoints, active_dof_indices_vector_);
         for(size_t i = 0; i < 3; ++i) {
-            std::copy(vjacobianjoints.begin()+i*_vActiveDOFIndices.size(),vjacobianjoints.begin()+(i+1)*_vActiveDOFIndices.size(),vjacobian.begin()+i*dofstride);
+            std::copy(vjacobianjoints.begin()+i*active_dof_indices_vector_.size(),vjacobianjoints.begin()+(i+1)*active_dof_indices_vector_.size(),vjacobian.begin()+i*dofstride);
         }
     }
 
     if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
         return;
     }
-    size_t ind = _vActiveDOFIndices.size();
+    size_t ind = active_dof_indices_vector_.size();
     if( _nAffineDOFs & OpenRAVE::DOF_X ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
@@ -1653,24 +1653,24 @@ bool RobotBase::Grab(KinBodyPtr body, LinkPtr pRobotLinkToGrabWith, const std::s
 void RobotBase::SetActiveManipulator(ManipulatorConstPtr pmanip)
 {
     if( !pmanip ) {
-        _pManipActive.reset();
+        manipulator_active_.reset();
     }
     else {
-        FOREACH(itmanip,_vecManipulators) {
+        FOREACH(itmanip,manipulators_vector_) {
             if( *itmanip == pmanip ) {
-                _pManipActive = *itmanip;
+                manipulator_active_ = *itmanip;
                 return;
             }
         }
         // manipulator might have been recoreded, search for the same name
-        FOREACH(itmanip,_vecManipulators) {
+        FOREACH(itmanip,manipulators_vector_) {
             if( (*itmanip)->GetName() == pmanip->GetName() ) {
-                _pManipActive = *itmanip;
+                manipulator_active_ = *itmanip;
                 return;
             }
         }
 
-        _pManipActive.reset();
+        manipulator_active_.reset();
         RAVELOG_WARN_FORMAT("failed to find manipulator with name %s, most likely removed", pmanip->GetName());
     }
 }
@@ -1678,34 +1678,34 @@ void RobotBase::SetActiveManipulator(ManipulatorConstPtr pmanip)
 RobotBase::ManipulatorPtr RobotBase::SetActiveManipulator(const std::string& manipname)
 {
     if( manipname.size() > 0 ) {
-        FOREACH(itmanip,_vecManipulators) {
+        FOREACH(itmanip,manipulators_vector_) {
             if( (*itmanip)->GetName() == manipname ) {
-                _pManipActive = *itmanip;
-                return _pManipActive;
+                manipulator_active_ = *itmanip;
+                return manipulator_active_;
             }
         }
         throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to find manipulator with name: %s"), manipname, ORE_InvalidArguments);
     }
-    _pManipActive.reset();
-    return _pManipActive;
+    manipulator_active_.reset();
+    return manipulator_active_;
 }
 
 RobotBase::ManipulatorPtr RobotBase::GetActiveManipulator()
 {
-    return _pManipActive;
+    return manipulator_active_;
 }
 
 RobotBase::ManipulatorConstPtr RobotBase::GetActiveManipulator() const
 {
-    return _pManipActive;
+    return manipulator_active_;
 }
 
 RobotBase::ManipulatorPtr RobotBase::AddManipulator(const RobotBase::ManipulatorInfo& manipinfo, bool removeduplicate)
 {
     OPENRAVE_ASSERT_OP(manipinfo.name_.size(),>,0);
     int iremoveindex = -1;
-    for(int imanip = 0; imanip < (int)_vecManipulators.size(); ++imanip) {
-        if( _vecManipulators[imanip]->GetName() == manipinfo.name_ ) {
+    for(int imanip = 0; imanip < (int)manipulators_vector_.size(); ++imanip) {
+        if( manipulators_vector_[imanip]->GetName() == manipinfo.name_ ) {
             if( removeduplicate ) {
                 iremoveindex = imanip;
                 break;
@@ -1719,24 +1719,24 @@ RobotBase::ManipulatorPtr RobotBase::AddManipulator(const RobotBase::Manipulator
     newmanip->_ComputeInternalInformation();
     if( iremoveindex >= 0 ) {
         // replace the old one
-        _vecManipulators[iremoveindex] = newmanip;
+        manipulators_vector_[iremoveindex] = newmanip;
     }
     else {
-        _vecManipulators.push_back(newmanip);
+        manipulators_vector_.push_back(newmanip);
     }
-    __hashrobotstructure.resize(0);
+    hash_robot_structure_.resize(0);
     return newmanip;
 }
 
 bool RobotBase::RemoveManipulator(ManipulatorPtr manip)
 {
-    if( _pManipActive == manip ) {
-        _pManipActive.reset();
+    if( manipulator_active_ == manip ) {
+        manipulator_active_.reset();
     }
-    FOREACH(itmanip,_vecManipulators) {
+    FOREACH(itmanip,manipulators_vector_) {
         if( *itmanip == manip ) {
-            _vecManipulators.erase(itmanip);
-            __hashrobotstructure.resize(0);
+            manipulators_vector_.erase(itmanip);
+            hash_robot_structure_.resize(0);
             return true;
         }
     }
@@ -1747,8 +1747,8 @@ RobotBase::AttachedSensorPtr RobotBase::AddAttachedSensor(const RobotBase::Attac
 {
     OPENRAVE_ASSERT_OP(attachedsensorinfo.name_.size(),>,0);
     int iremoveindex = -1;
-    for(int iasensor = 0; iasensor < (int)_vecAttachedSensors.size(); ++iasensor) {
-        if( _vecAttachedSensors[iasensor]->GetName() == attachedsensorinfo.name_ ) {
+    for(int iasensor = 0; iasensor < (int)attached_sensors_vector_.size(); ++iasensor) {
+        if( attached_sensors_vector_[iasensor]->GetName() == attachedsensorinfo.name_ ) {
             if( removeduplicate ) {
                 iremoveindex = iasensor;
                 break;
@@ -1764,19 +1764,19 @@ RobotBase::AttachedSensorPtr RobotBase::AddAttachedSensor(const RobotBase::Attac
 //    }
     if( iremoveindex >= 0 ) {
         // replace the old one
-        _vecAttachedSensors[iremoveindex] = newattachedsensor;
+        attached_sensors_vector_[iremoveindex] = newattachedsensor;
     }
     else {
-        _vecAttachedSensors.push_back(newattachedsensor);
+        attached_sensors_vector_.push_back(newattachedsensor);
     }
     newattachedsensor->UpdateInfo(); // just in case
-    __hashrobotstructure.resize(0);
+    hash_robot_structure_.resize(0);
     return newattachedsensor;
 }
 
 RobotBase::AttachedSensorPtr RobotBase::GetAttachedSensor(const std::string& name) const
 {
-    FOREACHC(itsensor, _vecAttachedSensors) {
+    FOREACHC(itsensor, attached_sensors_vector_) {
         if( (*itsensor)->GetName() == name ) {
             return *itsensor;
         }
@@ -1786,10 +1786,10 @@ RobotBase::AttachedSensorPtr RobotBase::GetAttachedSensor(const std::string& nam
 
 bool RobotBase::RemoveAttachedSensor(RobotBase::AttachedSensor &attsensor)
 {
-    FOREACH(itattsensor,_vecAttachedSensors) {
+    FOREACH(itattsensor,attached_sensors_vector_) {
         if( itattsensor->get() == &attsensor ) {
-            _vecAttachedSensors.erase(itattsensor);
-            __hashrobotstructure.resize(0);
+            attached_sensors_vector_.erase(itattsensor);
+            hash_robot_structure_.resize(0);
             return true;
         }
     }
@@ -1807,38 +1807,38 @@ void RobotBase::_ComputeInternalInformation()
     _ComputeConnectedBodiesInformation(); // should process the connected bodies in order to get the real resolved links, joints, etc
 
     KinBody::_ComputeInternalInformation();
-    _vAllDOFIndices.resize(GetDOF());
+    all_dof_indices_vector_.resize(GetDOF());
     for(int i = 0; i < GetDOF(); ++i) {
-        _vAllDOFIndices[i] = i;
+        all_dof_indices_vector_[i] = i;
     }
 
-    _activespec.groups_vector_.reserve(2);
-    _activespec.groups_vector_.resize(0);
-    if( _vAllDOFIndices.size() > 0 ) {
+    active_spec_.groups_vector_.reserve(2);
+    active_spec_.groups_vector_.resize(0);
+    if( all_dof_indices_vector_.size() > 0 ) {
         ConfigurationSpecification::Group group;
         stringstream ss;
         ss << "joint_values " << GetName();
         if( _nActiveDOF >= 0 ) {
-            // use _vActiveDOFIndices
-            FOREACHC(it,_vActiveDOFIndices) {
+            // use active_dof_indices_vector_
+            FOREACHC(it,active_dof_indices_vector_) {
                 ss << " " << *it;
             }
-            group.dof = (int)_vActiveDOFIndices.size();
+            group.dof = (int)active_dof_indices_vector_.size();
         }
         else {
-            FOREACHC(it,_vAllDOFIndices) {
+            FOREACHC(it,all_dof_indices_vector_) {
                 ss << " " << *it;
             }
-            group.dof = (int)_vAllDOFIndices.size();
+            group.dof = (int)all_dof_indices_vector_.size();
         }
         group.name = ss.str();
         group.offset = 0;
         // do not initialize interpolation, since it implies a motion sampling strategy
-        _activespec.groups_vector_.push_back(group);
+        active_spec_.groups_vector_.push_back(group);
     }
 
     int manipindex=0;
-    FOREACH(itmanip,_vecManipulators) {
+    FOREACH(itmanip,manipulators_vector_) {
         if( (*itmanip)->info_.name_.size() == 0 ) {
             stringstream ss;
             ss << "manip" << manipindex;
@@ -1847,7 +1847,7 @@ void RobotBase::_ComputeInternalInformation()
         }
         (*itmanip)->_ComputeInternalInformation();
         vector<ManipulatorPtr>::iterator itmanip2 = itmanip; ++itmanip2;
-        for(; itmanip2 != _vecManipulators.end(); ++itmanip2) {
+        for(; itmanip2 != manipulators_vector_.end(); ++itmanip2) {
             if( (*itmanip)->GetName() == (*itmanip2)->GetName() ) {
                 RAVELOG_WARN(str(boost::format("robot %s has two manipulators with the same name: %s!\n")%GetName()%(*itmanip)->GetName()));
             }
@@ -1855,30 +1855,30 @@ void RobotBase::_ComputeInternalInformation()
         manipindex++;
     }
     // set active manipulator to first manipulator
-    if( _vecManipulators.size() > 0 ) {
+    if( manipulators_vector_.size() > 0 ) {
         // preserve active manip when robot is removed and added back to the env
-        if (!!_pManipActive) {
+        if (!!manipulator_active_) {
             bool bmanipfound = false;
-            FOREACHC(itmanip, _vecManipulators) {
-                if (*itmanip == _pManipActive) {
+            FOREACHC(itmanip, manipulators_vector_) {
+                if (*itmanip == manipulator_active_) {
                     bmanipfound = true;
                     break;
                 }
             }
             if (!bmanipfound) {
-                _pManipActive.reset();
+                manipulator_active_.reset();
             }
         }
-        if (!_pManipActive) {
-            _pManipActive = _vecManipulators.at(0);
+        if (!manipulator_active_) {
+            manipulator_active_ = manipulators_vector_.at(0);
         }
     }
     else {
-        _pManipActive.reset();
+        manipulator_active_.reset();
     }
 
     int sensorindex=0;
-    FOREACH(itsensor,_vecAttachedSensors) {
+    FOREACH(itsensor,attached_sensors_vector_) {
         if( (*itsensor)->GetName().size() == 0 ) {
             stringstream ss;
             ss << "sensor" << sensorindex;
@@ -1893,9 +1893,9 @@ void RobotBase::_ComputeInternalInformation()
     }
 
     {
-        __hashrobotstructure.resize(0);
-        FOREACH(itsensor,_vecAttachedSensors) {
-            (*itsensor)->__hashstructure.resize(0);
+        hash_robot_structure_.resize(0);
+        FOREACH(itsensor,attached_sensors_vector_) {
+            (*itsensor)->hash_structure_.resize(0);
         }
     }
 
@@ -1913,7 +1913,7 @@ void RobotBase::_ComputeInternalInformation()
     }
 
     // reset the power on the sensors
-    FOREACH(itsensor,_vecAttachedSensors) {
+    FOREACH(itsensor,attached_sensors_vector_) {
         SensorBasePtr psensor = (*itsensor)->GetSensor();
         if( !!psensor ) {
             int ispower = psensor->Configure(SensorBase::CC_PowerCheck);
@@ -1931,14 +1931,14 @@ void RobotBase::_DeinitializeInternalInformation()
 void RobotBase::_PostprocessChangedParameters(uint32_t parameters)
 {
     if( parameters & (Prop_Sensors|Prop_SensorPlacement) ) {
-        FOREACH(itsensor,_vecAttachedSensors) {
-            (*itsensor)->__hashstructure.resize(0);
+        FOREACH(itsensor,attached_sensors_vector_) {
+            (*itsensor)->hash_structure_.resize(0);
         }
     }
     if( parameters & Prop_RobotManipulatorTool ) {
-        FOREACH(itmanip,_vecManipulators) {
-            (*itmanip)->__hashstructure.resize(0);
-            (*itmanip)->__hashkinematicsstructure.resize(0);
+        FOREACH(itmanip,manipulators_vector_) {
+            (*itmanip)->hash_structure_.resize(0);
+            (*itmanip)->hash_kinematics_structure_.resize(0);
         }
     }
     KinBody::_PostprocessChangedParameters(parameters);
@@ -1946,12 +1946,12 @@ void RobotBase::_PostprocessChangedParameters(uint32_t parameters)
 
 const std::vector<RobotBase::ManipulatorPtr>& RobotBase::GetManipulators() const
 {
-    return _vecManipulators;
+    return manipulators_vector_;
 }
 
 RobotBase::ManipulatorPtr RobotBase::GetManipulator(const std::string& name) const
 {
-    FOREACHC(itmanip, _vecManipulators) {
+    FOREACHC(itmanip, manipulators_vector_) {
         if( (*itmanip)->GetName() == name ) {
             return *itmanip;
         }
@@ -1967,32 +1967,32 @@ void RobotBase::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     if( !!r->self_collision_checker_ ) {
         // TODO clone the self collision checker?
     }
-    __hashrobotstructure = r->__hashrobotstructure;
-    _vecManipulators.clear();
-    _pManipActive.reset();
-    FOREACHC(itmanip, r->_vecManipulators) {
+    hash_robot_structure_ = r->hash_robot_structure_;
+    manipulators_vector_.clear();
+    manipulator_active_.reset();
+    FOREACHC(itmanip, r->manipulators_vector_) {
         ManipulatorPtr pmanip(new Manipulator(shared_robot(),*itmanip));
-        _vecManipulators.push_back(pmanip);
+        manipulators_vector_.push_back(pmanip);
         if( !!r->GetActiveManipulator() && r->GetActiveManipulator()->GetName() == (*itmanip)->GetName() ) {
-            _pManipActive = pmanip;
+            manipulator_active_ = pmanip;
         }
     }
 
-    _vecConnectedBodies.clear();
-    FOREACHC(itConnectedBody, r->_vecConnectedBodies) {
+    connected_bodies_vector_.clear();
+    FOREACHC(itConnectedBody, r->connected_bodies_vector_) {
         ConnectedBodyPtr pConnectedBody(new ConnectedBody(shared_robot(),**itConnectedBody,cloningoptions));
-        _vecConnectedBodies.push_back(pConnectedBody);
+        connected_bodies_vector_.push_back(pConnectedBody);
     }
 
-    _vecAttachedSensors.clear();
-    FOREACHC(itsensor, r->_vecAttachedSensors) {
-        _vecAttachedSensors.push_back(AttachedSensorPtr(new AttachedSensor(shared_robot(),**itsensor,cloningoptions)));
+    attached_sensors_vector_.clear();
+    FOREACHC(itsensor, r->attached_sensors_vector_) {
+        attached_sensors_vector_.push_back(AttachedSensorPtr(new AttachedSensor(shared_robot(),**itsensor,cloningoptions)));
     }
     _UpdateAttachedSensors();
 
-    _vActiveDOFIndices = r->_vActiveDOFIndices;
-    _activespec = r->_activespec;
-    _vAllDOFIndices = r->_vAllDOFIndices;
+    active_dof_indices_vector_ = r->active_dof_indices_vector_;
+    active_spec_ = r->active_spec_;
+    all_dof_indices_vector_ = r->all_dof_indices_vector_;
     vActvAffineRotationAxis = r->vActvAffineRotationAxis;
     _nActiveDOF = r->_nActiveDOF;
     _nAffineDOFs = r->_nAffineDOFs;
@@ -2037,12 +2037,12 @@ void RobotBase::serialize(std::ostream& o, int options) const
 {
     KinBody::serialize(o,options);
     if( options & SO_RobotManipulators ) {
-        FOREACHC(itmanip,_vecManipulators) {
+        FOREACHC(itmanip,manipulators_vector_) {
             (*itmanip)->serialize(o,options);
         }
     }
     if( options & SO_RobotSensors ) {
-        FOREACHC(itsensor,_vecAttachedSensors) {
+        FOREACHC(itsensor,attached_sensors_vector_) {
             (*itsensor)->serialize(o,options);
         }
     }
@@ -2051,13 +2051,13 @@ void RobotBase::serialize(std::ostream& o, int options) const
 const std::string& RobotBase::GetRobotStructureHash() const
 {
     CHECK_INTERNAL_COMPUTATION;
-    if( __hashrobotstructure.size() == 0 ) {
+    if( hash_robot_structure_.size() == 0 ) {
         ostringstream ss;
         ss << std::fixed << std::setprecision(SERIALIZATION_PRECISION);
         serialize(ss,SO_Kinematics|SO_Geometry|SO_RobotManipulators|SO_RobotSensors);
-        __hashrobotstructure = utils::GetMD5HashString(ss.str());
+        hash_robot_structure_ = utils::GetMD5HashString(ss.str());
     }
-    return __hashrobotstructure;
+    return hash_robot_structure_;
 }
 
 } // end namespace OpenRAVE

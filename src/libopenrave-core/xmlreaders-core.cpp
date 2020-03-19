@@ -2529,25 +2529,25 @@ public:
         }
 
         if( xmlname == "manipulator" ) {
-            _probot->_vecManipulators.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(_probot,_manipinfo)));
+            _probot->manipulators_vector_.push_back(RobotBase::ManipulatorPtr(new RobotBase::Manipulator(_probot,_manipinfo)));
             return true;
         }
         else if( xmlname == "effector" ) {
-            _ss >> _manipinfo._sEffectorLinkName;
-            if( !!_probot && !_probot->GetLink(_manipinfo._sEffectorLinkName) ) {
-                RAVELOG_WARN(str(boost::format("Failed to find manipulator end effector %s")%_manipinfo._sEffectorLinkName));
+            _ss >> _manipinfo.effector_link_name_;
+            if( !!_probot && !_probot->GetLink(_manipinfo.effector_link_name_) ) {
+                RAVELOG_WARN(str(boost::format("Failed to find manipulator end effector %s")%_manipinfo.effector_link_name_));
                 GetXMLErrorCount()++;
             }
         }
         else if( xmlname == "base" ) {
-            _ss >> _manipinfo._sBaseLinkName;
-            if( !!_probot && !_probot->GetLink(_manipinfo._sBaseLinkName) ) {
-                RAVELOG_WARN(str(boost::format("Failed to find manipulator base %s")%_manipinfo._sBaseLinkName));
+            _ss >> _manipinfo.base_link_name_;
+            if( !!_probot && !_probot->GetLink(_manipinfo.base_link_name_) ) {
+                RAVELOG_WARN(str(boost::format("Failed to find manipulator base %s")%_manipinfo.base_link_name_));
                 GetXMLErrorCount()++;
             }
         }
         else if((xmlname == "joints")||(xmlname == "gripperjoints")) {
-            _manipinfo._vGripperJointNames = vector<string>((istream_iterator<string>(_ss)), istream_iterator<string>());
+            _manipinfo.gripper_joint_names_vector_ = vector<string>((istream_iterator<string>(_ss)), istream_iterator<string>());
         }
         else if( xmlname == "armjoints" ) {
             RAVELOG_WARN("<armjoints> for <manipulator> tag is not used anymore\n");
@@ -2556,14 +2556,14 @@ public:
             if( xmlname == "palmdirection" ) {
                 RAVELOG_WARN("<palmdirection> tag in Manipulator changed to <direction>\n");
             }
-            _ss >> _manipinfo._vdirection.x >> _manipinfo._vdirection.y >> _manipinfo._vdirection.z;
-            dReal flen = _manipinfo._vdirection.lengthsqr3();
+            _ss >> _manipinfo.direction_.x >> _manipinfo.direction_.y >> _manipinfo.direction_.z;
+            dReal flen = _manipinfo.direction_.lengthsqr3();
             if( flen == 0 ) {
                 RAVELOG_WARN("palm direction is 0, setting to default value\n");
-                _manipinfo._vdirection = Vector(0,0,1);
+                _manipinfo.direction_ = Vector(0,0,1);
             }
             else {
-                _manipinfo._vdirection /= RaveSqrt(flen);
+                _manipinfo.direction_ /= RaveSqrt(flen);
             }
         }
         else if( xmlname == "iksolver" ) {
@@ -2632,15 +2632,15 @@ public:
                 RAVELOG_WARN(str(boost::format("failed to create iksolver %s")%iklibraryname));
             }
             else {
-                _manipinfo._sIkSolverXMLId = piksolver->GetXMLId();
+                _manipinfo.ik_solver_xml_id_ = piksolver->GetXMLId();
             }
             if( !!piksolver ) {
-                _manipinfo._sIkSolverXMLId = piksolver->GetXMLId();
+                _manipinfo.ik_solver_xml_id_ = piksolver->GetXMLId();
             }
         }
         else if( xmlname == "closingdirection" || xmlname == "closingdir" || xmlname == "chuckingdirection" ) {
-            _manipinfo._vChuckingDirection = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
-            FOREACH(it, _manipinfo._vChuckingDirection) {
+            _manipinfo.chucking_direction_vector_ = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            FOREACH(it, _manipinfo.chucking_direction_vector_) {
                 if( *it > 0 ) {
                     *it = 1;
                 }
@@ -2652,24 +2652,24 @@ public:
         else if( xmlname == "translation" ) {
             Vector v;
             _ss >> v.x >> v.y >> v.z;
-            _manipinfo._tLocalTool.trans += v*_vScaleGeometry;
+            _manipinfo.local_tool_transform_.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
             _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
-            _manipinfo._tLocalTool.rot = (tnew*_manipinfo._tLocalTool).rot;
+            _manipinfo.local_tool_transform_.rot = (tnew*_manipinfo.local_tool_transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
             _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-            _manipinfo._tLocalTool.rot = (tnew*_manipinfo._tLocalTool).rot;
+            _manipinfo.local_tool_transform_.rot = (tnew*_manipinfo.local_tool_transform_).rot;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
             _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-            _manipinfo._tLocalTool.rot = (Transform(tnew)*_manipinfo._tLocalTool).rot;
+            _manipinfo.local_tool_transform_.rot = (Transform(tnew)*_manipinfo.local_tool_transform_).rot;
         }
 
         if( xmlname !=_processingtag ) {
@@ -2721,7 +2721,7 @@ public:
 
             if( !_psensor ) {
                 _psensor.reset(new RobotBase::AttachedSensor(probot));
-                probot->_vecAttachedSensors.push_back(_psensor);
+                probot->attached_sensors_vector_.push_back(_psensor);
             }
         }
 
@@ -2758,16 +2758,16 @@ public:
         if( !!_pcurreader ) {
             if( _pcurreader->endElement(xmlname) ) {
                 _pcurreader.reset();
-                _psensor->_psensor = RaveInterfaceCast<SensorBase>(_psensorinterface);
+                _psensor->sensor_ = RaveInterfaceCast<SensorBase>(_psensorinterface);
             }
             return false;
         }
         else if( xmlname == "attachedsensor" ) {
-            if( !_psensor->_psensor ) {
+            if( !_psensor->sensor_ ) {
                 RAVELOG_VERBOSE("Attached robot sensor %s points to no real sensor!\n",_psensor->GetName().c_str());
             }
             else {
-                _psensor->pdata = _psensor->_psensor->CreateSensorData();
+                _psensor->pdata = _psensor->sensor_->CreateSensorData();
                 if( _psensor->pattachedlink.expired() ) {
                     RAVELOG_INFOA("no attached link, setting to base of robot\n");
                     if( _probot->GetLinks().size() == 0 ) {
@@ -2794,24 +2794,24 @@ public:
         else if( xmlname == "translation" ) {
             Vector v;
             _ss >> v.x >> v.y >> v.z;
-            _psensor->info_._trelative.trans += v*_vScaleGeometry;
+            _psensor->info_.relative_transform_.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
             _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
-            _psensor->info_._trelative.rot = (tnew*_psensor->info_._trelative).rot;
+            _psensor->info_.relative_transform_.rot = (tnew*_psensor->info_.relative_transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
             _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
-            _psensor->info_._trelative.rot = (tnew*_psensor->info_._trelative).rot;
+            _psensor->info_.relative_transform_.rot = (tnew*_psensor->info_.relative_transform_).rot;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
             _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
-            _psensor->info_._trelative.rot = (Transform(tnew)*_psensor->info_._trelative).rot;
+            _psensor->info_.relative_transform_.rot = (Transform(tnew)*_psensor->info_.relative_transform_).rot;
         }
 
         if( xmlname !=_processingtag )
@@ -3009,7 +3009,7 @@ public:
                         vtemp.push_back(*itsensor);
                     }
                 }
-                _probot->_vecAttachedSensors.swap(vtemp);
+                _probot->attached_sensors_vector_.swap(vtemp);
             }
             if( _setInitialManipulators.size() > 0 ) {
                 std::vector<RobotBase::ManipulatorPtr> vtemp; vtemp.reserve(_probot->GetManipulators().size());
@@ -3021,7 +3021,7 @@ public:
                         vtemp.push_back(*itmanip);
                     }
                 }
-                _probot->_vecManipulators.swap(vtemp);
+                _probot->manipulators_vector_.swap(vtemp);
             }
 
             // add prefix
@@ -3071,9 +3071,9 @@ public:
                 FOREACH(itmanip,_probot->GetManipulators()) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
                         (*itmanip)->info_.name_ = _prefix + (*itmanip)->info_.name_;
-                        (*itmanip)->info_._sBaseLinkName = _prefix + (*itmanip)->info_._sBaseLinkName;
-                        (*itmanip)->info_._sEffectorLinkName = _prefix + (*itmanip)->info_._sEffectorLinkName;
-                        FOREACH(itgrippername,(*itmanip)->info_._vGripperJointNames) {
+                        (*itmanip)->info_.base_link_name_ = _prefix + (*itmanip)->info_.base_link_name_;
+                        (*itmanip)->info_.effector_link_name_ = _prefix + (*itmanip)->info_.effector_link_name_;
+                        FOREACH(itgrippername,(*itmanip)->info_.gripper_joint_names_vector_) {
                             *itgrippername = _prefix + *itgrippername;
                         }
                     }

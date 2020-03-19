@@ -26,7 +26,8 @@
 #include <openrave/numerical.h>
 #include <openrave/sensor_base.h>
 
-namespace OpenRAVE {
+namespace OpenRAVE
+{
 
 /** \brief <b>[interface]</b> 
     A robot is a kinematic body that has attached manipulators, sensors, and controllers. 
@@ -34,37 +35,41 @@ namespace OpenRAVE {
 	See \ref arch_robot.
     \ingroup interfaces
  */
-class OPENRAVE_API RobotBase : public KinBody {
+class OPENRAVE_API RobotBase : public KinBody 
+{
 public:
     /// \brief holds all user-set manipulator information used to initialize the Manipulator class.
     ///
     /// This is serializable and independent of environment.
-    class OPENRAVE_API ManipulatorInfo {
+    class OPENRAVE_API ManipulatorInfo 
+	{
     public:
         ManipulatorInfo()
-            : _vdirection(0, 0, 1)
+            : direction_(0, 0, 1)
         {
         }
         virtual ~ManipulatorInfo()
         {
         }
 
-        virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
+        virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
+			dReal unit_scale = 1.0, int options = 0) const;
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 
         std::string name_;
-        std::string _sBaseLinkName, _sEffectorLinkName; //!< name of the base and effector links of the robot used to determine the chain
-        Transform _tLocalTool;
-        std::vector<dReal> _vChuckingDirection; //!< the normal direction to move joints for the hand to grasp something
-        Vector _vdirection;
-        std::string _sIkSolverXMLId; //!< xml id of the IkSolver interface to attach
-        std::vector<std::string> _vGripperJointNames; //!< names of the gripper joints
+        std::string base_link_name_, effector_link_name_; //!< name of the base and effector links of the robot used to determine the chain
+        Transform local_tool_transform_;
+        std::vector<dReal> chucking_direction_vector_; //!< the normal direction to move joints for the hand to grasp something
+        Vector direction_;
+        std::string ik_solver_xml_id_; //!< xml id of the IkSolver interface to attach
+        std::vector<std::string> gripper_joint_names_vector_; //!< names of the gripper joints
     };
     typedef std::shared_ptr<ManipulatorInfo> ManipulatorInfoPtr;
     typedef std::shared_ptr<ManipulatorInfo const> ManipulatorInfoConstPtr;
 
     /// \brief Defines a chain of joints for an arm and set of joints for a gripper. Simplifies operating with them.
-    class OPENRAVE_API Manipulator : public std::enable_shared_from_this<Manipulator> {
+    class OPENRAVE_API Manipulator : public std::enable_shared_from_this<Manipulator> 
+	{
         Manipulator(RobotBasePtr probot, const ManipulatorInfo& info);
         Manipulator(const Manipulator& r);
 
@@ -104,17 +109,19 @@ public:
         /// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
         inline RobotBasePtr GetRobot(bool trylock = false) const
         {
-            if (trylock) {
-                return __probot.lock();
-            } else {
-                return RobotBasePtr(__probot);
+            if (trylock) 
+			{
+                return robot_.lock();
+            } else 
+			{
+                return RobotBasePtr(robot_);
             }
         }
 
         /// \brief Sets the ik solver and initializes it with the current manipulator.
         ///
         /// Due to complications with translation,rotation,direction,and ray ik,
-        /// the ik solver should take into account the grasp transform (info_._tLocalTool) internally.
+        /// the ik solver should take into account the grasp transform (info_.local_tool_transform_) internally.
         /// The actual ik primitives are transformed into the base frame only.
         virtual bool SetIkSolver(IkSolverBasePtr iksolver);
 
@@ -124,26 +131,26 @@ public:
         /// \brief the base used for the iksolver
         virtual LinkPtr GetBase() const
         {
-            return __pBase;
+            return base_link_;
         }
 
         /// \brief the end effector link (used to define workspace distance)
         virtual LinkPtr GetEndEffector() const
         {
-            return __pEffector;
+            return effector_link_;
         }
 
         /// \brief Release all bodies grabbed by the end effector of this manipualtor
         virtual void ReleaseAllGrabbed()
         {
-            RobotBasePtr probot(__probot);
-            probot->ReleaseAllGrabbedWithLink(*__pEffector);
+            RobotBasePtr probot(robot_);
+            probot->ReleaseAllGrabbedWithLink(*effector_link_);
         }
 
         /// \brief Return transform with respect to end effector defining the grasp coordinate system
         virtual const Transform& GetLocalToolTransform() const
         {
-            return info_._tLocalTool;
+            return info_.local_tool_transform_;
         }
 
         /// \brief Sets the local tool transform with respect to the end effector link.
@@ -159,7 +166,7 @@ public:
         /// \brief Gripper indices of the joints that the  manipulator controls.
         virtual const std::vector<int>& GetGripperIndices() const
         {
-            return __vgripperdofindices;
+            return gripper_dof_indices_;
         }
 
         /// \brief Return the indices of the DOFs of the manipulator, which are used for inverse kinematics.
@@ -167,7 +174,7 @@ public:
         /// Usually the DOF indices of the chain from pBase to pEndEffector
         virtual const std::vector<int>& GetArmIndices() const
         {
-            return __varmdofindices;
+            return arm_dof_indices_;
         }
 
         /// \brief returns the number of DOF for the arm indices. Equivalent to GetArmIndices().size()
@@ -178,7 +185,7 @@ public:
 
         virtual const std::vector<dReal>& GetChuckingDirection() const
         {
-            return info_._vChuckingDirection;
+            return info_.chucking_direction_vector_;
         }
 
         /// \brief sets the normal gripper direction to move joints to close/chuck the hand
@@ -192,7 +199,7 @@ public:
         /// \brief direction of palm/head/manipulator used for approaching. defined inside the manipulator/grasp coordinate system
         virtual const Vector& GetLocalToolDirection() const
         {
-            return info_._vdirection;
+            return info_.direction_;
         }
 
         /// \brief returns the current values of the manipulator arm.
@@ -412,13 +419,13 @@ public:
 
         ManipulatorInfo info_; //!< user-set information
     private:
-        RobotBaseWeakPtr __probot;
-        LinkPtr __pBase, __pEffector; //!< contains weak links to robot
-        std::vector<int> __vgripperdofindices, __varmdofindices;
-        ConfigurationSpecification __armspec; //!< reflects __varmdofindices
-        mutable IkSolverBasePtr __pIkSolver;
-        mutable std::string __hashstructure, __hashkinematicsstructure;
-        mutable std::map<IkParameterizationType, std::string> __maphashikstructure;
+        RobotBaseWeakPtr robot_;
+        LinkPtr base_link_, effector_link_; //!< contains weak links to robot
+        std::vector<int> gripper_dof_indices_, arm_dof_indices_;
+        ConfigurationSpecification arm_spec_; //!< reflects arm_dof_indices_
+        mutable IkSolverBasePtr ik_solver_;
+        mutable std::string hash_structure_, hash_kinematics_structure_;
+        mutable std::map<IkParameterizationType, std::string> hash_ik_structure_map_;
 
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
@@ -441,7 +448,8 @@ public:
     /// \brief holds all user-set attached sensor information used to initialize the AttachedSensor class.
     ///
     /// This is serializable and independent of environment.
-    class OPENRAVE_API AttachedSensorInfo {
+    class OPENRAVE_API AttachedSensorInfo 
+	{
     public:
         AttachedSensorInfo()
         {
@@ -451,18 +459,21 @@ public:
         }
 
         std::string name_;
-        std::string _linkname; //!< the robot link that the sensor is attached to
-        Transform _trelative; //!< relative transform of the sensor with respect to the attached link
-        std::string _sensorname; //!< name of the sensor interface to create, in other words the sensor type
-        SensorBase::SensorGeometryPtr _sensorgeometry; //!< the sensor geometry to initialize the sensor with
-        virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
+        std::string link_name_; //!< the robot link that the sensor is attached to
+        Transform relative_transform_; //!< relative transform of the sensor with respect to the attached link
+        std::string sensor_name_; //!< name of the sensor interface to create, in other words the sensor type
+        SensorBase::SensorGeometryPtr sensor_geometry_; //!< the sensor geometry to initialize the sensor with
+        virtual void SerializeJSON(rapidjson::Value& value,
+			rapidjson::Document::AllocatorType& allocator,
+			dReal unit_scale = 1.0, int options = 0) const;
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
     };
     typedef std::shared_ptr<AttachedSensorInfo> AttachedSensorInfoPtr;
     typedef std::shared_ptr<AttachedSensorInfo const> AttachedSensorInfoConstPtr;
 
     /// \brief Attaches a sensor to a link on the robot.
-    class OPENRAVE_API AttachedSensor : public std::enable_shared_from_this<AttachedSensor> {
+    class OPENRAVE_API AttachedSensor : public std::enable_shared_from_this<AttachedSensor> 
+	{
     public:
         AttachedSensor(RobotBasePtr probot);
         AttachedSensor(RobotBasePtr probot, const AttachedSensor& sensor, int cloningoptions);
@@ -471,19 +482,20 @@ public:
 
         virtual SensorBasePtr GetSensor() const
         {
-            return _psensor;
+            return sensor_;
         }
+
         virtual LinkPtr GetAttachingLink() const
         {
             return LinkPtr(pattachedlink);
         }
         virtual const Transform& GetRelativeTransform() const
         {
-            return info_._trelative;
+            return info_.relative_transform_;
         }
         virtual Transform GetTransform() const
         {
-            return LinkPtr(pattachedlink)->GetTransform() * info_._trelative;
+            return LinkPtr(pattachedlink)->GetTransform() * info_.relative_transform_;
         }
 
         /// \brief get robot that manipulator belongs to.
@@ -539,10 +551,10 @@ public:
         AttachedSensorInfo info_; //!< user specified data
 
         RobotBaseWeakPtr _probot;
-        SensorBasePtr _psensor; //!< initialized by _ComputeInternalInformation when added to the environment
+        SensorBasePtr sensor_; //!< initialized by _ComputeInternalInformation when added to the environment
         LinkWeakPtr pattachedlink; //!< the robot link that the sensor is attached to
         SensorBase::SensorDataPtr pdata; //!< pointer to a preallocated data using psensor->CreateSensorData()
-        mutable std::string __hashstructure;
+        mutable std::string hash_structure_;
 #ifdef RAVE_PRIVATE
 #ifdef _MSC_VER
         friend class OpenRAVEXMLParser::AttachedSensorXMLReader;
@@ -564,7 +576,8 @@ public:
     /// \brief holds all user-set attached kinbody information used to initialize the AttachedKinBody class.
     ///
     /// This is serializable and independent of environment.
-    class OPENRAVE_API ConnectedBodyInfo {
+    class OPENRAVE_API ConnectedBodyInfo
+	{
     public:
         ConnectedBodyInfo();
         virtual ~ConnectedBodyInfo()
@@ -573,24 +586,26 @@ public:
 
         /// \brief Updates the infos depending on the robot at the identity and zero position.
         virtual void InitInfoFromBody(RobotBase& robot);
-        virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
+        virtual void SerializeJSON(rapidjson::Value& value, 
+			rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
         virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 
         std::string name_; //!< the name of the connected body info
-        std::string _linkname; //!< the robot link that the body is attached to
-        std::string _uri; //< the uri where the connected body came from. this is used when writing back to the filename.
-        Transform _trelative; //!< relative transform of the body with respect to the attached link. The link transforms are multiplied by the transform of _linkname and _trelative to put them on the real robot.
-        std::vector<KinBody::LinkInfoPtr> _vLinkInfos; //!< extracted link infos representing the connected body. The names are the original "desired" names. Should not consider _linkname and _trelative.
-        std::vector<KinBody::JointInfoPtr> _vJointInfos; //!< extracted joint infos (inluding passive) representing the connected body. The names are the original "desired" names.
-        std::vector<RobotBase::ManipulatorInfoPtr> _vManipulatorInfos; //!< extracted manip infos representing the connected body. The names are the original "desired" names.
-        std::vector<RobotBase::AttachedSensorInfoPtr> _vAttachedSensorInfos; //!< extracted sensor infos representing the connected body. The names are the original "desired" names.
-        bool _bIsActive; //!< if true, then add the connected body. Otherwise do not add it.
+        std::string link_name_; //!< the robot link that the body is attached to
+        std::string uri_; //< the uri where the connected body came from. this is used when writing back to the filename.
+        Transform relative_transform_; //!< relative transform of the body with respect to the attached link. The link transforms are multiplied by the transform of link_name_ and relative_transform_ to put them on the real robot.
+        std::vector<KinBody::LinkInfoPtr> link_infos_vector_; //!< extracted link infos representing the connected body. The names are the original "desired" names. Should not consider link_name_ and relative_transform_.
+        std::vector<KinBody::JointInfoPtr> joint_infos_vector_; //!< extracted joint infos (inluding passive) representing the connected body. The names are the original "desired" names.
+        std::vector<RobotBase::ManipulatorInfoPtr> manipulator_infos_vector_; //!< extracted manip infos representing the connected body. The names are the original "desired" names.
+        std::vector<RobotBase::AttachedSensorInfoPtr> attached_sensor_infos_vector_; //!< extracted sensor infos representing the connected body. The names are the original "desired" names.
+        bool is_active_; //!< if true, then add the connected body. Otherwise do not add it.
     };
     typedef std::shared_ptr<ConnectedBodyInfo> ConnectedBodyInfoPtr;
     typedef std::shared_ptr<ConnectedBodyInfo const> ConnectedBodyInfoConstPtr;
 
     /// \brief Attaches a kinbody to a link on the robot.
-    class OPENRAVE_API ConnectedBody : public std::enable_shared_from_this<ConnectedBody> {
+    class OPENRAVE_API ConnectedBody : public std::enable_shared_from_this<ConnectedBody> 
+	{
     public:
         ConnectedBody(RobotBasePtr probot);
         ConnectedBody(RobotBasePtr probot, const ConnectedBody& connectedBody, int cloningoptions);
@@ -613,22 +628,22 @@ public:
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with info_._vLinkInfos
+        /// Has one-to-one correspondence with info_.link_infos_vector_
         virtual void GetResolvedLinks(std::vector<KinBody::LinkPtr>& links);
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with info_._vJointInfos
+        /// Has one-to-one correspondence with info_.joint_infos_vector_
         virtual void GetResolvedJoints(std::vector<KinBody::JointPtr>& joints);
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with info_._vManipulatorInfos
+        /// Has one-to-one correspondence with info_.manipulator_infos_vector_
         virtual void GetResolvedManipulators(std::vector<RobotBase::ManipulatorPtr>& manipulators);
 
         /// \brief gets the resolved links added to the robot.
         ///
-        /// Has one-to-one correspondence with info_._vAttachedSensorInfos
+        /// Has one-to-one correspondence with info_.attached_sensor_infos_vector_
         virtual void GetResolvedAttachedSensors(std::vector<RobotBase::AttachedSensorPtr>& attachedsensors);
 
         virtual LinkPtr GetAttachingLink() const
@@ -637,13 +652,13 @@ public:
         }
         virtual const Transform& GetRelativeTransform() const
         {
-            return info_._trelative;
+            return info_.relative_transform_;
         }
 
         /// \brief return the transform of the base link of the connecting body
         virtual Transform GetTransform() const
         {
-            return LinkPtr(_pattachedlink)->GetTransform() * info_._trelative;
+            return LinkPtr(_pattachedlink)->GetTransform() * info_.relative_transform_;
         }
 
         /// \brief get robot that manipulator belongs to.
@@ -651,10 +666,12 @@ public:
         /// \param trylock if true then will try to get the parent pointer and return empty pointer if parent was already destroyed. Otherwise throws an exception if parent is already destroyed. By default this should be
         inline RobotBasePtr GetRobot(bool trylock = false) const
         {
-            if (trylock) {
-                return _pattachedrobot.lock();
-            } else {
-                return RobotBasePtr(_pattachedrobot);
+            if (trylock) 
+			{
+                return attached_robot_.lock();
+            } else
+			{
+                return RobotBasePtr(attached_robot_);
             }
         }
 
@@ -680,12 +697,12 @@ public:
         std::string _nameprefix; //!< the name prefix to use for all the resolved link names.
         std::string _dummyPassiveJointName; //!< the joint that is used to attach the connected body to the robot link
         KinBody::JointPtr _pDummyJointCache; //!< cached Joint used for _dummyPassiveJointName
-        std::vector<std::pair<std::string, RobotBase::LinkPtr>> _vResolvedLinkNames; //!< for every entry in info_._vLinkInfos, the resolved link names added to the robot. Also serves as cache for pointers
-        std::vector<std::pair<std::string, RobotBase::JointPtr>> _vResolvedJointNames; //!< for every entry in info_._vJointInfos, the resolved link names. Also serves as cache for pointers.
+        std::vector<std::pair<std::string, RobotBase::LinkPtr>> _vResolvedLinkNames; //!< for every entry in info_.link_infos_vector_, the resolved link names added to the robot. Also serves as cache for pointers
+        std::vector<std::pair<std::string, RobotBase::JointPtr>> _vResolvedJointNames; //!< for every entry in info_.joint_infos_vector_, the resolved link names. Also serves as cache for pointers.
         std::vector<std::pair<std::string, RobotBase::ManipulatorPtr>> _vResolvedManipulatorNames; //!< for every entry in info_._vManipInfos. Also serves as cache for pointers
         std::vector<std::pair<std::string, RobotBase::AttachedSensorPtr>> _vResolvedAttachedSensorNames; //!< for every entry in info_._vAttachedSensorResolvedNames. Also serves as cache for pointers
 
-        RobotBaseWeakPtr _pattachedrobot; //!< the robot that the body is attached to
+        RobotBaseWeakPtr attached_robot_; //!< the robot that the body is attached to
         LinkWeakPtr _pattachedlink; //!< the robot link that the body is attached to
         mutable std::string __hashstructure;
 
@@ -698,9 +715,11 @@ public:
     typedef std::weak_ptr<RobotBase::ConnectedBody> ConnectedBodyWeakPtr;
 
     /// \brief Helper class derived from KinBodyStateSaver to additionaly save robot information.
-    class OPENRAVE_API RobotStateSaver : public KinBodyStateSaver {
+    class OPENRAVE_API RobotStateSaver : public KinBodyStateSaver 
+	{
     public:
-        RobotStateSaver(RobotBasePtr probot, int options = Save_LinkTransformation | Save_LinkEnable | Save_ActiveDOF | Save_ActiveManipulator);
+        RobotStateSaver(RobotBasePtr probot, int options = Save_LinkTransformation 
+			| Save_LinkEnable | Save_ActiveDOF | Save_ActiveManipulator);
         virtual ~RobotStateSaver();
 
         /// \brief restore the state
@@ -758,12 +777,12 @@ public:
 
     virtual const std::vector<AttachedSensorPtr>& GetAttachedSensors() const
     {
-        return _vecAttachedSensors;
+        return attached_sensors_vector_;
     }
 
     virtual const std::vector<ConnectedBodyPtr>& GetConnectedBodies() const
     {
-        return _vecConnectedBodies;
+        return connected_bodies_vector_;
     }
 
     // \brief gets the active states of all connected bodies
@@ -774,15 +793,18 @@ public:
 
     virtual void SetName(const std::string& name);
 
-    virtual void SetDOFValues(const std::vector<dReal>& vJointValues, uint32_t checklimits = 1, const std::vector<int>& dofindices = std::vector<int>());
+    virtual void SetDOFValues(const std::vector<dReal>& vJointValues, uint32_t checklimits = 1, 
+		const std::vector<int>& dofindices = std::vector<int>());
     virtual void SetDOFValues(const std::vector<dReal>& vJointValues, const Transform& transbase, uint32_t checklimits = 1);
 
     virtual void SetLinkTransformations(const std::vector<Transform>& transforms);
     virtual void SetLinkTransformations(const std::vector<Transform>& transforms, const std::vector<dReal>& doflastsetvalues);
 
     virtual bool SetVelocity(const Vector& linearvel, const Vector& angularvel);
-    virtual void SetDOFVelocities(const std::vector<dReal>& dofvelocities, const Vector& linearvel, const Vector& angularvel, uint32_t checklimits = 1);
-    virtual void SetDOFVelocities(const std::vector<dReal>& dofvelocities, uint32_t checklimits = 1, const std::vector<int>& dofindices = std::vector<int>());
+    virtual void SetDOFVelocities(const std::vector<dReal>& dofvelocities, const Vector& linearvel,
+		const Vector& angularvel, uint32_t checklimits = 1);
+    virtual void SetDOFVelocities(const std::vector<dReal>& dofvelocities, uint32_t checklimits = 1,
+		const std::vector<int>& dofindices = std::vector<int>());
 
     /// \see SetTransform
     /// Also transforms the robot and updates the attached sensors and grabbed bodies.
@@ -1147,7 +1169,7 @@ protected:
 
     virtual void _DeinitializeInternalInformation();
 
-    /// \brief Proprocess with _vecConnectedBodies and reinitialize robot.
+    /// \brief Proprocess with connected_bodies_vector_ and reinitialize robot.
     virtual void _ComputeConnectedBodiesInformation();
 
     virtual void _DeinitializeConnectedBodiesInformation();
@@ -1158,14 +1180,14 @@ protected:
     virtual void _PostprocessChangedParameters(uint32_t parameters);
 
     virtual void _UpdateAttachedSensors();
-    std::vector<ManipulatorPtr> _vecManipulators; //!< \see GetManipulators
-    ManipulatorPtr _pManipActive;
+    std::vector<ManipulatorPtr> manipulators_vector_; //!< \see GetManipulators
+    ManipulatorPtr manipulator_active_;
 
-    std::vector<AttachedSensorPtr> _vecAttachedSensors; //!< \see GetAttachedSensors
+    std::vector<AttachedSensorPtr> attached_sensors_vector_; //!< \see GetAttachedSensors
 
-    std::vector<ConnectedBodyPtr> _vecConnectedBodies; //!< \see GetConnectedBodies
+    std::vector<ConnectedBodyPtr> connected_bodies_vector_; //!< \see GetConnectedBodies
 
-    std::vector<int> _vActiveDOFIndices, _vAllDOFIndices;
+    std::vector<int> active_dof_indices_vector_, all_dof_indices_vector_;
     Vector vActvAffineRotationAxis;
     int _nActiveDOF; //!< Active degrees of freedom; if -1, use robot dofs
     int _nAffineDOFs; //!< dofs describe what affine transformations are allowed
@@ -1177,7 +1199,7 @@ protected:
     Vector _vRotationQuatLimitStart;
     dReal _fQuatLimitMaxAngle, _fQuatMaxAngleVelocity, _fQuatAngleResolution, _fQuatAngleWeight;
 
-    ConfigurationSpecification _activespec;
+    ConfigurationSpecification active_spec_;
 
 private:
     virtual const char* GetHash() const
@@ -1188,7 +1210,7 @@ private:
     {
         return OPENRAVE_KINBODY_HASH;
     }
-    mutable std::string __hashrobotstructure;
+    mutable std::string hash_robot_structure_;
     mutable std::vector<dReal> _vTempRobotJoints;
 
 #ifdef RAVE_PRIVATE

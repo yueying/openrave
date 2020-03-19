@@ -1911,18 +1911,18 @@ RobotBase::GrabbedInfoPtr PyKinBody::PyGrabbedInfo::GetGrabbedInfo() const
 {
     RobotBase::GrabbedInfoPtr pinfo(new RobotBase::GrabbedInfo());
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    pinfo->_grabbedname = _grabbedname;
-    pinfo->_robotlinkname = _robotlinkname;
-    pinfo->_trelative = ExtractTransform(_trelative);
-    pinfo->_setRobotLinksToIgnore = std::set<int>(begin(_setRobotLinksToIgnore), end(_setRobotLinksToIgnore));
+    pinfo->grabbed_name_ = _grabbedname;
+    pinfo->robot_link_name_ = _robotlinkname;
+    pinfo->relative_transform_ = ExtractTransform(_trelative);
+    pinfo->robot_links_to_ignore_set_ = std::set<int>(begin(_setRobotLinksToIgnore), end(_setRobotLinksToIgnore));
 #else
-    pinfo->_grabbedname = py::extract<std::string>(_grabbedname);
-    pinfo->_robotlinkname = py::extract<std::string>(_robotlinkname);
-    pinfo->_trelative = ExtractTransform(_trelative);
+    pinfo->grabbed_name_ = py::extract<std::string>(_grabbedname);
+    pinfo->robot_link_name_ = py::extract<std::string>(_robotlinkname);
+    pinfo->relative_transform_ = ExtractTransform(_trelative);
     std::vector<int> v = ExtractArray<int>(_setRobotLinksToIgnore);
-    pinfo->_setRobotLinksToIgnore.clear();
+    pinfo->robot_links_to_ignore_set_.clear();
     FOREACHC(it,v) {
-        pinfo->_setRobotLinksToIgnore.insert(*it);
+        pinfo->robot_links_to_ignore_set_.insert(*it);
     }
 #endif
     return pinfo;
@@ -1957,18 +1957,18 @@ std::string PyKinBody::PyGrabbedInfo::__str__() {
 
 void PyKinBody::PyGrabbedInfo::_Update(const RobotBase::GrabbedInfo& info) {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    _grabbedname = info._grabbedname;
-    _robotlinkname = info._robotlinkname;
+    _grabbedname = info.grabbed_name_;
+    _robotlinkname = info.robot_link_name_;
 #else
-    _grabbedname = ConvertStringToUnicode(info._grabbedname);
-    _robotlinkname = ConvertStringToUnicode(info._robotlinkname);
+    _grabbedname = ConvertStringToUnicode(info.grabbed_name_);
+    _robotlinkname = ConvertStringToUnicode(info.robot_link_name_);
 #endif
-    _trelative = ReturnTransform(info._trelative);
+    _trelative = ReturnTransform(info.relative_transform_);
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    _setRobotLinksToIgnore = std::vector<int>(begin(info._setRobotLinksToIgnore), end(info._setRobotLinksToIgnore));
+    _setRobotLinksToIgnore = std::vector<int>(begin(info.robot_links_to_ignore_set_), end(info.robot_links_to_ignore_set_));
 #else
     py::list setRobotLinksToIgnore;
-    FOREACHC(itindex, info._setRobotLinksToIgnore) {
+    FOREACHC(itindex, info.robot_links_to_ignore_set_) {
         setRobotLinksToIgnore.append(*itindex);
     }
     _setRobotLinksToIgnore = setRobotLinksToIgnore;

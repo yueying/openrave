@@ -992,9 +992,6 @@ namespace OpenRAVE
 		class OPENRAVE_API Joint : public std::enable_shared_from_this<Joint>
 		{
 		public:
-			/// \deprecated 12/10/19
-			typedef Mimic MIMIC RAVE_DEPRECATED;
-
 			Joint(KinBodyPtr parent, KinBody::JointType type = KinBody::JointNone);
 			virtual ~Joint();
 
@@ -1551,13 +1548,17 @@ namespace OpenRAVE
 		class OPENRAVE_API ManageData : public std::enable_shared_from_this<ManageData>
 		{
 		public:
-			ManageData(SensorSystemBasePtr psensorsystem) : _psensorsystem(psensorsystem) {
+			ManageData(SensorSystemBasePtr psensorsystem)
+				: sensor_system_(psensorsystem) 
+			{
 			}
-			virtual ~ManageData() {
+			virtual ~ManageData() 
+			{
 			}
 
-			virtual SensorSystemBasePtr GetSystem() {
-				return SensorSystemBasePtr(_psensorsystem);
+			virtual SensorSystemBasePtr GetSystem() 
+			{
+				return SensorSystemBasePtr(sensor_system_);
 			}
 
 			/// returns a pointer to the data used to initialize the BODY with AddKinBody.
@@ -1584,7 +1585,7 @@ namespace OpenRAVE
 		private:
 			/// the system that owns this class, note that it is a weak pointer in order because
 			/// this object is managed by the sensor system and should be deleted when it goes out of scope.
-			SensorSystemBaseWeakPtr _psensorsystem;
+			SensorSystemBaseWeakPtr sensor_system_;
 		};
 
 		typedef std::shared_ptr<KinBody::ManageData> ManageDataPtr;
@@ -1612,10 +1613,10 @@ namespace OpenRAVE
 		class OPENRAVE_API GrabbedInfo
 		{
 		public:
-			std::string _grabbedname; //!< the name of the body to grab
-			std::string _robotlinkname;  //!< the name of the body link that is grabbing the body
-			Transform _trelative; //!< transform of first link of body relative to _robotlinkname's transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
-			std::set<int> _setRobotLinksToIgnore; //!< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
+			std::string grabbed_name_; //!< the name of the body to grab
+			std::string robot_link_name_;  //!< the name of the body link that is grabbing the body
+			Transform relative_transform_; //!< transform of first link of body relative to robot_link_name_'s transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
+			std::set<int> robot_links_to_ignore_set_; //!< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
 		};
@@ -1630,8 +1631,9 @@ namespace OpenRAVE
 		public:
 			KinBodyStateSaver(KinBodyPtr pbody, int options = Save_LinkTransformation | Save_LinkEnable);
 			virtual ~KinBodyStateSaver();
-			inline KinBodyPtr GetBody() const {
-				return _pbody;
+			inline KinBodyPtr GetBody() const
+			{
+				return kinbody_;
 			}
 
 			/// \brief restore the state
@@ -1640,7 +1642,7 @@ namespace OpenRAVE
 			/// \throw OpenRAVEException if the passed in body is not compatible with the saved state, will throw
 			virtual void Restore(std::shared_ptr<KinBody> body = std::shared_ptr<KinBody>());
 
-			/// \brief release the body state. _pbody will not get restored on destruction
+			/// \brief release the body state. kinbody_ will not get restored on destruction
 			///
 			/// After this call, it will still be possible to use \ref Restore.
 			virtual void Release();
@@ -1648,9 +1650,9 @@ namespace OpenRAVE
 			/// \brief sets whether the state saver will restore the state on destruction. by default this is true.
 			virtual void SetRestoreOnDestructor(bool restore);
 		protected:
-			KinBodyPtr _pbody;
-			int _options;         //!< saved options
-			std::vector<Transform> _vLinkTransforms;
+			KinBodyPtr kinbody_;
+			int options_;         //!< saved options
+			std::vector<Transform> link_transforms_vector_;
 			std::vector<uint8_t> _vEnabledLinks;
 			std::vector<std::pair<Vector, Vector> > _vLinkVelocities;
 			std::vector<dReal> _vdoflastsetvalues;
@@ -1672,7 +1674,8 @@ namespace OpenRAVE
 		public:
 			KinBodyStateSaverRef(KinBody& body, int options = Save_LinkTransformation | Save_LinkEnable);
 			virtual ~KinBodyStateSaverRef();
-			inline KinBody& GetBody() const {
+			inline KinBody& GetBody() const 
+			{
 				return _body;
 			}
 
@@ -1685,7 +1688,7 @@ namespace OpenRAVE
 			/// \throw OpenRAVEException if the passed in body is not compatible with the saved state, will throw
 			virtual void Restore(KinBody& newbody);
 
-			/// \brief release the body state. _pbody will not get restored on destruction
+			/// \brief release the body state. kinbody_ will not get restored on destruction
 			///
 			/// After this call, it will still be possible to use \ref Restore.
 			virtual void Release();

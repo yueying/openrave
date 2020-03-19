@@ -69,14 +69,14 @@ PyManipulatorInfo::PyManipulatorInfo(const RobotBase::ManipulatorInfo& info) {
 
 void PyManipulatorInfo::_Update(const RobotBase::ManipulatorInfo& info) {
     name_ = ConvertStringToUnicode(info.name_);
-    _sBaseLinkName = ConvertStringToUnicode(info._sBaseLinkName);
-    _sEffectorLinkName = ConvertStringToUnicode(info._sEffectorLinkName);
-    _tLocalTool = ReturnTransform(info._tLocalTool);
-    _vChuckingDirection = toPyArray(info._vChuckingDirection);
-    _vdirection = toPyVector3(info._vdirection);
-    _sIkSolverXMLId = info._sIkSolverXMLId;
+    _sBaseLinkName = ConvertStringToUnicode(info.base_link_name_);
+    _sEffectorLinkName = ConvertStringToUnicode(info.effector_link_name_);
+    _tLocalTool = ReturnTransform(info.local_tool_transform_);
+    _vChuckingDirection = toPyArray(info.chucking_direction_vector_);
+    _vdirection = toPyVector3(info.direction_);
+    _sIkSolverXMLId = info.ik_solver_xml_id_;
     py::list vGripperJointNames;
-    FOREACHC(itname, info._vGripperJointNames) {
+    FOREACHC(itname, info.gripper_joint_names_vector_) {
         vGripperJointNames.append(ConvertStringToUnicode(*itname));
     }
     _vGripperJointNames = vGripperJointNames;
@@ -86,13 +86,13 @@ RobotBase::ManipulatorInfoPtr PyManipulatorInfo::GetManipulatorInfo() const
 {
     RobotBase::ManipulatorInfoPtr pinfo(new RobotBase::ManipulatorInfo());
     pinfo->name_ = py::extract<std::string>(name_);
-    pinfo->_sBaseLinkName = py::extract<std::string>(_sBaseLinkName);
-    pinfo->_sEffectorLinkName = py::extract<std::string>(_sEffectorLinkName);
-    pinfo->_tLocalTool = ExtractTransform(_tLocalTool);
-    pinfo->_vChuckingDirection = ExtractArray<dReal>(_vChuckingDirection);
-    pinfo->_vdirection = ExtractVector3(_vdirection);
-    pinfo->_sIkSolverXMLId = _sIkSolverXMLId;
-    pinfo->_vGripperJointNames = ExtractArray<std::string>(_vGripperJointNames);
+    pinfo->base_link_name_ = py::extract<std::string>(_sBaseLinkName);
+    pinfo->effector_link_name_ = py::extract<std::string>(_sEffectorLinkName);
+    pinfo->local_tool_transform_ = ExtractTransform(_tLocalTool);
+    pinfo->chucking_direction_vector_ = ExtractArray<dReal>(_vChuckingDirection);
+    pinfo->direction_ = ExtractVector3(_vdirection);
+    pinfo->ik_solver_xml_id_ = _sIkSolverXMLId;
+    pinfo->gripper_joint_names_vector_ = ExtractArray<std::string>(_vGripperJointNames);
     return pinfo;
 }
 
@@ -127,21 +127,21 @@ PyAttachedSensorInfo::PyAttachedSensorInfo(const RobotBase::AttachedSensorInfo& 
 
 void PyAttachedSensorInfo::_Update(const RobotBase::AttachedSensorInfo& info) {
     name_ = ConvertStringToUnicode(info.name_);
-    _linkname = ConvertStringToUnicode(info._linkname);
-    _trelative = ReturnTransform(info._trelative);
-    _sensorname = ConvertStringToUnicode(info._sensorname);
-    _sensorgeometry = toPySensorGeometry(info._sensorgeometry);
+    _linkname = ConvertStringToUnicode(info.link_name_);
+    _trelative = ReturnTransform(info.relative_transform_);
+    _sensorname = ConvertStringToUnicode(info.sensor_name_);
+    _sensorgeometry = toPySensorGeometry(info.sensor_geometry_);
 }
 
 RobotBase::AttachedSensorInfoPtr PyAttachedSensorInfo::GetAttachedSensorInfo() const
 {
     RobotBase::AttachedSensorInfoPtr pinfo(new RobotBase::AttachedSensorInfo());
     pinfo->name_ = py::extract<std::string>(name_);
-    pinfo->_linkname = py::extract<std::string>(_linkname);
-    pinfo->_trelative = ExtractTransform(_trelative);
-    pinfo->_sensorname = py::extract<std::string>(_sensorname);
+    pinfo->link_name_ = py::extract<std::string>(_linkname);
+    pinfo->relative_transform_ = ExtractTransform(_trelative);
+    pinfo->sensor_name_ = py::extract<std::string>(_sensorname);
     if(!!_sensorgeometry){
-        pinfo->_sensorgeometry = _sensorgeometry->GetGeometry();
+        pinfo->sensor_geometry_ = _sensorgeometry->GetGeometry();
     }
     return pinfo;
 }
@@ -178,30 +178,30 @@ PyConnectedBodyInfo::PyConnectedBodyInfo(const RobotBase::ConnectedBodyInfo& inf
 void PyConnectedBodyInfo::_Update(const RobotBase::ConnectedBodyInfo& info)
 {
     name_ = ConvertStringToUnicode(info.name_);
-    _linkname = ConvertStringToUnicode(info._linkname);
-    _trelative = ReturnTransform(info._trelative);
-    _uri = ConvertStringToUnicode(info._uri);
+    _linkname = ConvertStringToUnicode(info.link_name_);
+    _trelative = ReturnTransform(info.relative_transform_);
+    _uri = ConvertStringToUnicode(info.uri_);
 
     py::list linkInfos;
-    FOREACH(itlinkinfo, info._vLinkInfos) {
+    FOREACH(itlinkinfo, info.link_infos_vector_) {
         linkInfos.append(toPyLinkInfo(**itlinkinfo));
     }
     _linkInfos = linkInfos;
 
     py::list jointInfos;
-    FOREACH(itjointinfo, info._vJointInfos) {
+    FOREACH(itjointinfo, info.joint_infos_vector_) {
         jointInfos.append(toPyJointInfo(**itjointinfo));
     }
     _jointInfos = jointInfos;
 
     py::list manipulatorInfos;
-    FOREACH(itmanipulatorinfo, info._vManipulatorInfos) {
+    FOREACH(itmanipulatorinfo, info.manipulator_infos_vector_) {
         manipulatorInfos.append(toPyManipulatorInfo(**itmanipulatorinfo));
     }
     _manipulatorInfos = manipulatorInfos;
 
     py::list attachedSensorInfos;
-    FOREACH(itattachedSensorinfo, info._vAttachedSensorInfos) {
+    FOREACH(itattachedSensorinfo, info.attached_sensor_infos_vector_) {
         attachedSensorInfos.append(toPyAttachedSensorInfo(**itattachedSensorinfo));
     }
     _attachedSensorInfos = attachedSensorInfos;
@@ -211,9 +211,9 @@ RobotBase::ConnectedBodyInfoPtr PyConnectedBodyInfo::GetConnectedBodyInfo() cons
 {
     RobotBase::ConnectedBodyInfoPtr pinfo(new RobotBase::ConnectedBodyInfo());
     pinfo->name_ = py::extract<std::string>(name_);
-    pinfo->_linkname = py::extract<std::string>(_linkname);
-    pinfo->_trelative = ExtractTransform(_trelative);
-    pinfo->_uri = py::extract<std::string>(_uri);
+    pinfo->link_name_ = py::extract<std::string>(_linkname);
+    pinfo->relative_transform_ = ExtractTransform(_trelative);
+    pinfo->uri_ = py::extract<std::string>(_uri);
     // extract all the infos
     return pinfo;
 }
