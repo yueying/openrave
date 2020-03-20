@@ -169,9 +169,9 @@ protected:
             vecjoints.swap(pbody->joints_vector_);
             FOREACH(itjoint,vecjoints) {
                 if( !!*itjoint ) {
-                    if( !!(*itjoint)->_vmimic[0] ) {
+                    if( !!(*itjoint)->mimic_array_[0] ) {
                         RAVELOG_WARN(str(boost::format("joint %s had mimic set!\n")%(*itjoint)->GetName()));
-                        (*itjoint)->_vmimic[0].reset();
+                        (*itjoint)->mimic_array_[0].reset();
                     }
                     std::vector<int> v(1); v[0] = ijoint;
                     (*itjoint)->info_.int_parameters_map_["xfile_originalindex"] = v;
@@ -289,9 +289,9 @@ protected:
                     //KinBody::JointPtr porgjoint = pbody->joints_vector_.at(node->mFramePivot->mJointIndex-1);
                     // joint already exists, so must be mimic?
                     dReal fmult = RaveSqrt(vmotiondirection.lengthsqr3());
-                    pjoint->_vmimic[0].reset(new KinBody::Mimic());
-                    pjoint->_vmimic[0]->_equations[0] = str(boost::format("%s*%f")%orgjointname%fmult);
-                    pjoint->_vmimic[0]->_equations[1] = str(boost::format("|%s %f")%orgjointname%fmult);
+                    pjoint->mimic_array_[0].reset(new KinBody::Mimic());
+                    pjoint->mimic_array_[0]->_equations[0] = str(boost::format("%s*%f")%orgjointname%fmult);
+                    pjoint->mimic_array_[0]->_equations[1] = str(boost::format("|%s %f")%orgjointname%fmult);
                 }
                 else {
                     // add the joint (make sure motion direction is unit)
@@ -306,7 +306,7 @@ protected:
 //                        pjoint->info_.type_ = KinBody::JointHinge;
 //                        pjoint->info_._bIsActive = false;
 //                        pjoint->info_.lower_limit_vector_[0] = pjoint->info_.upper_limit_vector_[0] = 0;
-//                        pjoint->_vmimic[0].reset(); // remove any mimic
+//                        pjoint->mimic_array_[0].reset(); // remove any mimic
 //                        pbody->passive_joints_vector_.push_back(pjoint);
 //                    }
 //                }

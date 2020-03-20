@@ -434,7 +434,7 @@ KinBody::Joint::Joint(KinBodyPtr parent, KinBody::JointType type)
         _vaxes[i] = Vector(0,0,1);
     }
     jointindex=-1;
-    dofindex = -1; // invalid index
+    dof_index_ = -1; // invalid index
     is_initialized_ = false;
     info_.type_ = type;
     info_.control_mode_ = JCM_None;
@@ -484,8 +484,8 @@ bool KinBody::Joint::IsStatic() const
         bool is_static = true;
         KinBodyConstPtr parent(_parent);
         for(int i = 0; i < GetDOF(); ++i) {
-            if( !!_vmimic.at(i) ) {
-                FOREACHC(it, _vmimic.at(i)->_vmimicdofs) {
+            if( !!mimic_array_.at(i) ) {
+                FOREACHC(it, mimic_array_.at(i)->_vmimicdofs) {
                     if( !parent->GetJointFromDOFIndex(it->dofindex)->IsStatic() ) {
                         is_static = false;
                         break;
@@ -1612,11 +1612,11 @@ bool KinBody::Joint::IsMimic(int iaxis) const
 {
     if( iaxis >= 0 )
 	{
-        return !!_vmimic.at(iaxis);
+        return !!mimic_array_.at(iaxis);
     }
     for(int i = 0; i < GetDOF(); ++i) 
 	{
-        if( !!_vmimic.at(i) ) {
+        if( !!mimic_array_.at(i) ) {
             return true;
         }
     }
@@ -1625,18 +1625,18 @@ bool KinBody::Joint::IsMimic(int iaxis) const
 
 std::string KinBody::Joint::GetMimicEquation(int iaxis, int itype, const std::string& format) const
 {
-    if( !_vmimic.at(iaxis) ) {
+    if( !mimic_array_.at(iaxis) ) {
         return "";
     }
     if((format.size() == 0)||(format == "fparser")) {
-        return _vmimic.at(iaxis)->_equations.at(itype);
+        return mimic_array_.at(iaxis)->_equations.at(itype);
     }
     else if( format == "mathml" ) {
         boost::format mathfmt("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n%s</math>\n");
         std::vector<std::string> Vars;
         std::string sout;
         KinBodyConstPtr parent(_parent);
-        FOREACHC(itdofformat, _vmimic.at(iaxis)->_vdofformat) {
+        FOREACHC(itdofformat, mimic_array_.at(iaxis)->_vdofformat) {
             JointConstPtr pjoint = itdofformat->GetJoint(*parent);
             if( pjoint->GetDOF() > 1 ) {
                 Vars.push_back(str(boost::format("<csymbol>%s_%d</csymbol>")%pjoint->GetName()%(int)itdofformat->axis));
@@ -1646,7 +1646,7 @@ std::string KinBody::Joint::GetMimicEquation(int iaxis, int itype, const std::st
             }
         }
         if( itype == 0 ) {
-            _vmimic.at(iaxis)->_posfn->toMathML(sout,Vars);
+            mimic_array_.at(iaxis)->_posfn->toMathML(sout,Vars);
             if((sout.size() > 9)&&(sout.substr(0,9) == "<csymbol>")) {
                 // due to a bug in ROS robot_model, have to return with <apply> (remove this in 2012).
                 sout = boost::str(boost::format("<apply>\n  <plus/><cn type=\"real\">0</cn>\n  %s\n  </apply>")%sout);
@@ -1655,14 +1655,14 @@ std::string KinBody::Joint::GetMimicEquation(int iaxis, int itype, const std::st
         }
         else if( itype == 1 ) {
             std::string stemp;
-            FOREACHC(itfn, _vmimic.at(iaxis)->_velfns) {
+            FOREACHC(itfn, mimic_array_.at(iaxis)->_velfns) {
                 (*itfn)->toMathML(stemp,Vars);
                 sout += str(mathfmt%stemp);
             }
         }
         else if( itype == 2 ) {
             std::string stemp;
-            FOREACHC(itfn, _vmimic.at(iaxis)->_accelfns) {
+            FOREACHC(itfn, mimic_array_.at(iaxis)->_accelfns) {
                 (*itfn)->toMathML(stemp,Vars);
                 sout += str(mathfmt%stemp);
             }
@@ -1674,9 +1674,9 @@ std::string KinBody::Joint::GetMimicEquation(int iaxis, int itype, const std::st
 
 void KinBody::Joint::GetMimicDOFIndices(std::vector<int>& vmimicdofs, int iaxis) const
 {
-    OPENRAVE_ASSERT_FORMAT(!!_vmimic.at(iaxis), "joint %s axis %d is not mimic", GetName()%iaxis,ORE_InvalidArguments);
+    OPENRAVE_ASSERT_FORMAT(!!mimic_array_.at(iaxis), "joint %s axis %d is not mimic", GetName()%iaxis,ORE_InvalidArguments);
     vmimicdofs.resize(0);
-    FOREACHC(it, _vmimic.at(iaxis)->_vmimicdofs) {
+    FOREACHC(it, mimic_array_.at(iaxis)->_vmimicdofs) {
         std::vector<int>::iterator itinsert = std::lower_bound(vmimicdofs.begin(),vmimicdofs.end(), it->dofindex);
         if((itinsert == vmimicdofs.end())||(*itinsert != it->dofindex)) {
             vmimicdofs.insert(itinsert,it->dofindex);
@@ -1687,7 +1687,7 @@ void KinBody::Joint::GetMimicDOFIndices(std::vector<int>& vmimicdofs, int iaxis)
 void KinBody::Joint::SetMimicEquations(int iaxis, const std::string& poseq,
 	const std::string& veleq, const std::string& acceleq)
 {
-    _vmimic.at(iaxis).reset();
+    mimic_array_.at(iaxis).reset();
     if( poseq.size() == 0 ) {
         return;
     }
@@ -1825,7 +1825,7 @@ void KinBody::Joint::SetMimicEquations(int iaxis, const std::string& poseq,
             mimic->_accelfns.swap(vfns);
         }
     }
-    _vmimic.at(iaxis) = mimic;
+    mimic_array_.at(iaxis) = mimic;
     parent->_PostprocessChangedParameters(Prop_JointMimic);
 }
 
@@ -1833,11 +1833,11 @@ void KinBody::Joint::_ComputePartialVelocities(std::vector<std::pair<int,dReal> 
 	int iaxis, std::map< std::pair<Mimic::DOFFormat, int>, dReal >& mapcachedpartials) const
 {
     vpartials.resize(0);
-    if( dofindex >= 0 ) {
-        vpartials.emplace_back(dofindex+iaxis, 1.0);
+    if( dof_index_ >= 0 ) {
+        vpartials.emplace_back(dof_index_+iaxis, 1.0);
         return;
     }
-    OPENRAVE_ASSERT_FORMAT(!!_vmimic.at(iaxis), "cannot compute partial velocities of joint %s", info_.name_, ORE_Failed);
+    OPENRAVE_ASSERT_FORMAT(!!mimic_array_.at(iaxis), "cannot compute partial velocities of joint %s", info_.name_, ORE_Failed);
     KinBodyConstPtr parent(_parent);
 	Mimic::DOFFormat thisdofformat;
     thisdofformat.dofindex = -1; // always -1 since it is mimiced
@@ -1849,18 +1849,18 @@ void KinBody::Joint::_ComputePartialVelocities(std::vector<std::pair<int,dReal> 
     }
     std::vector<std::pair<int,dReal> > vtemppartials;
     vector<dReal> vtempvalues;
-    FOREACHC(itmimicdof, _vmimic[iaxis]->_vmimicdofs) {
+    FOREACHC(itmimicdof, mimic_array_[iaxis]->_vmimicdofs) {
         std::pair<Mimic::DOFFormat, int> key = make_pair(thisdofformat,itmimicdof->dofindex);
         std::map< std::pair<Mimic::DOFFormat, int>, dReal >::iterator it = mapcachedpartials.find(key);
         if( it == mapcachedpartials.end() ) {
             // not in the cache so compute using the chain rule
             if( vtempvalues.empty() ) {
-                FOREACHC(itdofformat, _vmimic[iaxis]->_vdofformat) {
+                FOREACHC(itdofformat, mimic_array_[iaxis]->_vdofformat) {
                     vtempvalues.push_back(itdofformat->GetJoint(*parent)->GetValue(itdofformat->axis));
                 }
             }
-            dReal fvel = _vmimic[iaxis]->_velfns.at(itmimicdof->dofformatindex)->Eval(vtempvalues.empty() ? NULL : &vtempvalues[0]);
-            const Mimic::DOFFormat& dofformat = _vmimic[iaxis]->_vdofformat.at(itmimicdof->dofformatindex);
+            dReal fvel = mimic_array_[iaxis]->_velfns.at(itmimicdof->dofformatindex)->Eval(vtempvalues.empty() ? NULL : &vtempvalues[0]);
+            const Mimic::DOFFormat& dofformat = mimic_array_[iaxis]->_vdofformat.at(itmimicdof->dofformatindex);
             if( dofformat.GetJoint(*parent)->IsMimic(dofformat.axis) ) {
                 dofformat.GetJoint(*parent)->_ComputePartialVelocities(vtemppartials,dofformat.axis,mapcachedpartials);
                 dReal fpartial = 0;
@@ -1902,24 +1902,24 @@ void KinBody::Joint::_ComputePartialVelocities(std::vector<std::pair<int,dReal> 
 int KinBody::Joint::_Eval(int axis, uint32_t timederiv, const std::vector<dReal>& vdependentvalues, std::vector<dReal>& voutput)
 {
     if( timederiv == 0 ) {
-        _vmimic.at(axis)->_posfn->EvalMulti(voutput, vdependentvalues.empty() ? NULL : &vdependentvalues[0]);
-        return _vmimic.at(axis)->_posfn->EvalError();
+        mimic_array_.at(axis)->_posfn->EvalMulti(voutput, vdependentvalues.empty() ? NULL : &vdependentvalues[0]);
+        return mimic_array_.at(axis)->_posfn->EvalError();
     }
     else if( timederiv == 1 ) {
-        voutput.resize(_vmimic.at(axis)->_velfns.size());
+        voutput.resize(mimic_array_.at(axis)->_velfns.size());
         for(size_t i = 0; i < voutput.size(); ++i) {
-            voutput[i] = _vmimic.at(axis)->_velfns.at(i)->Eval(vdependentvalues.empty() ? NULL : &vdependentvalues[0]);
-            int err = _vmimic.at(axis)->_velfns.at(i)->EvalError();
+            voutput[i] = mimic_array_.at(axis)->_velfns.at(i)->Eval(vdependentvalues.empty() ? NULL : &vdependentvalues[0]);
+            int err = mimic_array_.at(axis)->_velfns.at(i)->EvalError();
             if( err ) {
                 return err;
             }
         }
     }
     else if( timederiv == 2 ) {
-        voutput.resize(_vmimic.at(axis)->_accelfns.size());
+        voutput.resize(mimic_array_.at(axis)->_accelfns.size());
         for(size_t i = 0; i < voutput.size(); ++i) {
-            voutput[i] = _vmimic.at(axis)->_accelfns.at(i)->Eval(vdependentvalues.empty() ? NULL : &vdependentvalues[0]);
-            int err = _vmimic.at(axis)->_accelfns.at(i)->EvalError();
+            voutput[i] = mimic_array_.at(axis)->_accelfns.at(i)->Eval(vdependentvalues.empty() ? NULL : &vdependentvalues[0]);
+            int err = mimic_array_.at(axis)->_accelfns.at(i)->EvalError();
             if( err ) {
                 return err;
             }
@@ -2001,13 +2001,13 @@ void KinBody::Joint::UpdateInfo()
 void KinBody::Joint::serialize(std::ostream& o, int options) const
 {
     if( options & SO_Kinematics ) {
-        o << dofindex << " " << jointindex << " " << info_.type_ << " ";
+        o << dof_index_ << " " << jointindex << " " << info_.type_ << " ";
         SerializeRound(o,_tRightNoOffset);
         SerializeRound(o,_tLeftNoOffset);
         for(int i = 0; i < GetDOF(); ++i) {
             SerializeRound3(o,_vaxes[i]);
-            if( !!_vmimic.at(i) ) {
-                FOREACHC(iteq,_vmimic.at(i)->_equations) {
+            if( !!mimic_array_.at(i) ) {
+                FOREACHC(iteq,mimic_array_.at(i)->_equations) {
                     o << *iteq << " ";
                 }
             }

@@ -1058,7 +1058,7 @@ namespace OpenRAVE
 			/// This does not index in KinBody::GetJoints() directly! In other words, KinBody::GetDOFValues()[GetDOFIndex()] == GetValues()[0]
 			inline int GetDOFIndex() const 
 			{
-				return dofindex;
+				return dof_index_;
 			}
 
 			/// \brief Get the joint index into KinBody::GetJoints.
@@ -1436,12 +1436,12 @@ namespace OpenRAVE
 		protected:
 			JointInfo info_;
 
-			std::array< MimicPtr, 3> _vmimic;   //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
+			std::array< MimicPtr, 3> mimic_array_;   //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
 			/** \brief computes the partial velocities with respect to all dependent DOFs specified by Mimic::_vmimicdofs.
 
 				If the joint is not mimic, then just returns its own index
-				\param[out] vpartials A list of dofindex/velocity_partial pairs. The final velocity is computed by taking the dot product. The dofindices do not repeat.
+				\param[out] vpartials A list of dof_index_/velocity_partial pairs. The final velocity is computed by taking the dot product. The dofindices do not repeat.
 				\param[in] iaxis the axis
 				\param[in,out] vcachedpartials set of cached partials for each degree of freedom
 			 */
@@ -1485,7 +1485,7 @@ namespace OpenRAVE
 			/// Sensitive variables that should not be modified.
 			/// @name Private Joint Variables
 			//@{
-			int dofindex;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::joints_vector_!
+			int dof_index_;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::joints_vector_!
 			int jointindex;                 //!< the joint index into KinBody::joints_vector_
 			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         //!< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
 

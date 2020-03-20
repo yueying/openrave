@@ -973,7 +973,7 @@ void KinBody::SetDOFVelocities(const std::vector<dReal>& vDOFVelocities, const V
             for(int i = 0; i < pjoint->GetDOF(); ++i) {
                 if( pjoint->IsMimic(i) ) {
                     vtempvalues.resize(0);
-                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->_vmimic[i]->_vdofformat;
+                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->_vdofformat;
                     FOREACHC(itdof,vdofformat) {
                         JointPtr pj = itdof->jointindex < (int)joints_vector_.size() ? joints_vector_[itdof->jointindex] : passive_joints_vector_.at(itdof->jointindex-joints_vector_.size());
                         vtempvalues.push_back(pj->GetValue(itdof->axis));
@@ -1627,7 +1627,7 @@ void KinBody::SetDOFValues(const std::vector<dReal>& vJointValues, uint32_t chec
             for(int i = 0; i < pjoint->GetDOF(); ++i) {
                 if( pjoint->IsMimic(i) ) {
                     vtempvalues.resize(0);
-                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->_vmimic[i]->_vdofformat;
+                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->_vdofformat;
                     FOREACHC(itdof,vdofformat) {
                         if( itdof->dofindex >= 0 ) {
                             vtempvalues.push_back(pJointValues[itdof->dofindex]);
@@ -1995,7 +1995,7 @@ void KinBody::ComputeJacobianTranslation(int linkindex, const Vector& position, 
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->_vmimic[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -2206,7 +2206,7 @@ void KinBody::ComputeJacobianAxisAngle(int linkindex, std::vector<dReal>& vjacob
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->_vmimic[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -2336,7 +2336,7 @@ void KinBody::ComputeHessianTranslation(int linkindex, const Vector& position, s
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->_vmimic[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -2554,7 +2554,7 @@ void KinBody::ComputeHessianAxisAngle(int linkindex, std::vector<dReal>& hessian
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->_vmimic[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -3143,7 +3143,7 @@ void KinBody::_ComputeLinkAccelerations(const std::vector<dReal>& vDOFVelocities
             for(int i = 0; i < pjoint->GetDOF(); ++i) {
                 if( pjoint->IsMimic(i) ) {
                     vtempvalues.resize(0);
-                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->_vmimic[i]->_vdofformat;
+                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->_vdofformat;
                     FOREACHC(itdof,vdofformat) {
                         JointPtr pj = itdof->jointindex < (int)joints_vector_.size() ? joints_vector_[itdof->jointindex] : passive_joints_vector_.at(itdof->jointindex-joints_vector_.size());
                         vtempvalues.push_back(pj->GetValue(itdof->axis));
@@ -3345,51 +3345,63 @@ void KinBody::_ComputeInternalInformation()
     {
         // move any enabled passive joints to the regular joints list
         std::vector<JointPtr>::iterator itjoint = passive_joints_vector_.begin();
-        while(itjoint != passive_joints_vector_.end()) {
-            bool bmimic = false;
-            for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) {
-                if( !!(*itjoint)->_vmimic[idof] ) {
-                    bmimic = true;
+        while(itjoint != passive_joints_vector_.end()) 
+		{
+            bool is_mimic = false;
+            for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) 
+			{
+                if( !!(*itjoint)->mimic_array_[idof] ) 
+				{
+                    is_mimic = true;
                 }
             }
-            if( !bmimic && (*itjoint)->info_.is_active_ ) {
+            if( !is_mimic && (*itjoint)->info_.is_active_ )
+			{
                 joints_vector_.push_back(*itjoint);
                 itjoint = passive_joints_vector_.erase(itjoint);
             }
-            else {
+            else 
+			{
                 ++itjoint;
             }
         }
         // move any mimic joints to the passive joints
         itjoint = joints_vector_.begin();
-        while(itjoint != joints_vector_.end()) {
-            bool bmimic = false;
-            for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) {
-                if( !!(*itjoint)->_vmimic[idof] ) {
-                    bmimic = true;
+        while(itjoint != joints_vector_.end()) 
+		{
+            bool is_mimic = false;
+            for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) 
+			{
+                if( !!(*itjoint)->mimic_array_[idof] ) 
+				{
+                    is_mimic = true;
                     break;
                 }
             }
-            if( bmimic || !(*itjoint)->info_.is_active_) {
+            if( is_mimic || !(*itjoint)->info_.is_active_) 
+			{
                 passive_joints_vector_.push_back(*itjoint);
                 itjoint = joints_vector_.erase(itjoint);
             }
-            else {
+            else 
+			{
                 ++itjoint;
             }
         }
         int jointindex=0;
         int dofindex=0;
-        FOREACH(itjoint,joints_vector_) {
-            (*itjoint)->jointindex = jointindex++;
-            (*itjoint)->dofindex = dofindex;
-            (*itjoint)->info_.is_active_ = true;
-            dofindex += (*itjoint)->GetDOF();
+        for(auto& itjoint:joints_vector_) 
+		{
+            itjoint->jointindex = jointindex++;
+            itjoint->dof_index_ = dofindex;
+            itjoint->info_.is_active_ = true;
+            dofindex += itjoint->GetDOF();
         }
-        FOREACH(itjoint,passive_joints_vector_) {
-            (*itjoint)->jointindex = -1;
-            (*itjoint)->dofindex = -1;
-            (*itjoint)->info_.is_active_ = false;
+        for(auto& itjoint:passive_joints_vector_) 
+		{
+            itjoint->jointindex = -1;
+            itjoint->dof_index_ = -1;
+            itjoint->info_.is_active_ = false;
         }
     }
 
@@ -3397,7 +3409,7 @@ void KinBody::_ComputeInternalInformation()
     vector<int> vJointIndices(joints_vector_.size());
     dof_indices_vector_.resize(GetDOF());
     for(size_t i = 0; i < joints_vector_.size(); ++i) {
-        vJointIndices[i] = joints_vector_[i]->dofindex;
+        vJointIndices[i] = joints_vector_[i]->dof_index_;
         for(int idof = 0; idof < joints_vector_[i]->GetDOF(); ++idof) {
             dof_indices_vector_.at(vJointIndices[i]+idof) = i;
         }
@@ -3415,8 +3427,8 @@ void KinBody::_ComputeInternalInformation()
             vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
             FOREACH(itjoint,vjoints) {
                 for(int i = 0; i < (*itjoint)->GetDOF(); ++i) {
-                    if( !!(*itjoint)->_vmimic[i] ) {
-                        std::string poseq = (*itjoint)->_vmimic[i]->_equations[0], veleq = (*itjoint)->_vmimic[i]->_equations[1], acceleq = (*itjoint)->_vmimic[i]->_equations[2]; // have to copy since memory can become invalidated
+                    if( !!(*itjoint)->mimic_array_[i] ) {
+                        std::string poseq = (*itjoint)->mimic_array_[i]->_equations[0], veleq = (*itjoint)->mimic_array_[i]->_equations[1], acceleq = (*itjoint)->mimic_array_[i]->_equations[2]; // have to copy since memory can become invalidated
                         (*itjoint)->SetMimicEquations(i,poseq,veleq,acceleq);
                     }
                 }
@@ -3439,12 +3451,12 @@ void KinBody::_ComputeInternalInformation()
                 }
                 for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) {
                     dofformat.axis = idof;
-                    if( !!(*itjoint)->_vmimic[idof] ) {
+                    if( !!(*itjoint)->mimic_array_[idof] ) {
                         // only add if depends on mimic joints
-                        FOREACH(itdofformat,(*itjoint)->_vmimic[idof]->_vdofformat) {
+                        FOREACH(itdofformat,(*itjoint)->mimic_array_[idof]->_vdofformat) {
                             JointPtr pjoint = itdofformat->GetJoint(*this);
                             if( pjoint->IsMimic(itdofformat->axis) ) {
-                                mapmimic[dofformat] = (*itjoint)->_vmimic[idof];
+                                mapmimic[dofformat] = (*itjoint)->mimic_array_[idof];
                                 break;
                             }
                         }
@@ -3488,7 +3500,7 @@ void KinBody::_ComputeInternalInformation()
             vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
             FOREACH(itjoint,vjoints) {
                 for(int i = 0; i < (*itjoint)->GetDOF(); ++i) {
-                    (*itjoint)->_vmimic[i].reset();
+                    (*itjoint)->mimic_array_[i].reset();
                 }
             }
         }
@@ -3690,7 +3702,7 @@ void KinBody::_ComputeInternalInformation()
             if( j0->IsMimic() ) {
                 for(int i = 0; i < j0->GetDOF(); ++i) {
                     if(j0->IsMimic(i)) {
-                        FOREACH(itdofformat, j0->_vmimic[i]->_vdofformat) {
+                        FOREACH(itdofformat, j0->mimic_array_[i]->_vdofformat) {
                             if( itdofformat->dofindex < 0 ) {
                                 vjointadjacency[itdofformat->jointindex*numjoints+ij0] = 1;
                             }
@@ -3914,7 +3926,7 @@ void KinBody::_ComputeInternalInformation()
                     if( pjoint->IsMimic() ) {
                         for(int idof = 0; idof < pjoint->GetDOF(); ++idof) {
                             if( pjoint->IsMimic(idof) ) {
-                                FOREACHC(itmimicdof,pjoint->_vmimic[idof]->_vmimicdofs) {
+                                FOREACHC(itmimicdof,pjoint->mimic_array_[idof]->_vmimicdofs) {
                                     JointPtr pjoint2 = GetJointFromDOFIndex(itmimicdof->dofindex);
                                     joints_affecting_links_vector_[pjoint2->GetJointIndex()*links_vector_.size()+i] = pjoint2->GetHierarchyParentLink()->GetIndex() == i ? -1 : 1;
                                 }
@@ -4924,8 +4936,8 @@ void KinBody::_InitAndAddJoint(JointPtr pjoint)
 
     for(size_t i = 0; i < info._vmimic.size(); ++i) {
         if( !!info._vmimic[i] ) {
-            pjoint->_vmimic[i].reset(new Mimic());
-            pjoint->_vmimic[i]->_equations = info._vmimic[i]->_equations;
+            pjoint->mimic_array_[i].reset(new Mimic());
+            pjoint->mimic_array_[i]->_equations = info._vmimic[i]->_equations;
         }
     }
     LinkPtr plink0, plink1;

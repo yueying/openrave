@@ -1027,8 +1027,8 @@ namespace OpenRAVE
 					if ((*itjoint)->IsMimic(idof)) {
 						for (int ieq = 0; ieq < 3; ++ieq) {
 							string neweq;
-							utils::SearchAndReplace(neweq, (*itjoint)->_vmimic[idof]->_equations[ieq], jointnamepairs);
-							(*itjoint)->_vmimic[idof]->_equations[ieq] = neweq;
+							utils::SearchAndReplace(neweq, (*itjoint)->mimic_array_[idof]->_equations[ieq], jointnamepairs);
+							(*itjoint)->mimic_array_[idof]->_equations[ieq] = neweq;
 						}
 					}
 				}
@@ -1532,7 +1532,7 @@ namespace OpenRAVE
 				}
 
 				int iaxis = 0;
-				pjoint->_vmimic[iaxis].reset(new KinBody::Mimic());
+				pjoint->mimic_array_[iaxis].reset(new KinBody::Mimic());
 				dReal ftargetunit = 1;
 				if (_mapJointUnits.find(pjoint) != _mapJointUnits.end()) {
 					ftargetunit = _mapJointUnits[pjoint].at(iaxis);
@@ -1565,21 +1565,21 @@ namespace OpenRAVE
 									eq = str(boost::format("%f*(%s)") % ftargetunit%eq);
 								}
 								if (equationtype == "position") {
-									pjoint->_vmimic[iaxis]->_equations[0] = eq;
+									pjoint->mimic_array_[iaxis]->_equations[0] = eq;
 								}
 								else if (equationtype == "first_partial") {
 									if (!pjointtarget) {
 										RAVELOG_WARN(str(boost::format("first_partial equation '%s' needs a target attribute! ignoring...\n") % eq));
 										continue;
 									}
-									pjoint->_vmimic[iaxis]->_equations[1] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
+									pjoint->mimic_array_[iaxis]->_equations[1] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
 								}
 								else if (equationtype == "second_partial") {
 									if (!pjointtarget) {
 										RAVELOG_WARN(str(boost::format("second_partial equation '%s' needs a target attribute! ignoring...\n") % eq));
 										continue;
 									}
-									pjoint->_vmimic[iaxis]->_equations[2] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
+									pjoint->mimic_array_[iaxis]->_equations[2] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
 								}
 								else {
 									RAVELOG_WARN(str(boost::format("unknown equation type %s") % equationtype));
@@ -1600,7 +1600,7 @@ namespace OpenRAVE
 								eq = str(boost::format("%f*(%s)") % ftargetunit%eq);
 							}
 							if (eq.size() > 0) {
-								pjoint->_vmimic[iaxis]->_equations[0] = eq;
+								pjoint->mimic_array_[iaxis]->_equations[0] = eq;
 								break;
 							}
 						}
@@ -2048,7 +2048,7 @@ namespace OpenRAVE
 					_mapJointUnits[pjoint] = vaxisunits;
 					if (pjoint->info_.is_active_) {
 						pjoint->jointindex = (int)pkinbody->joints_vector_.size();
-						pjoint->dofindex = pkinbody->GetDOF();
+						pjoint->dof_index_ = pkinbody->GetDOF();
 					}
 					if (!!pdomjoint->getName()) {
 						pjoint->info_.name_ = _ConvertToOpenRAVEName(pdomjoint->getName());
@@ -2074,7 +2074,7 @@ namespace OpenRAVE
 						_mapJointSids[jointsidref.substr(lastJointSidIndex + 1)] = pjoint;
 					}
 
-					RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)") % pjoint->info_.name_%pjoint->jointindex%pjoint->dofindex));
+					RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)") % pjoint->info_.name_%pjoint->jointindex%pjoint->dof_index_));
 
 					KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->info_.transform_ * tatt, vdomjoints, bindings);
 
@@ -2296,7 +2296,7 @@ namespace OpenRAVE
 						//  Rotate axis from the parent offset
 						vAxes[ic] = tatt.rotate(vAxes[ic]);
 					}
-					RAVELOG_DEBUG(str(boost::format("joint dof: %d, links %s->%s\n") % pjoint->dofindex%plink->GetName() % pchildlink->GetName()));
+					RAVELOG_DEBUG(str(boost::format("joint dof: %d, links %s->%s\n") % pjoint->dof_index_%plink->GetName() % pchildlink->GetName()));
 					pjoint->_ComputeInternalInformation(plink, pchildlink, tatt.trans, vAxes, std::vector<dReal>());
 				}
 				if (pdomlink->getAttachment_start_array().getCount() > 0) {
@@ -3518,7 +3518,7 @@ namespace OpenRAVE
 			int dofindex = 0;
 			FOREACH(itjoint, probot->joints_vector_) {
 				(*itjoint)->jointindex = jointindex++;
-				(*itjoint)->dofindex = dofindex;
+				(*itjoint)->dof_index_ = dofindex;
 				dofindex += (*itjoint)->GetDOF();
 			}
 		}

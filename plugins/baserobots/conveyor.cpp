@@ -40,7 +40,7 @@ public:
             info_.name_ = name;
             info_.lower_limit_vector_[0] = 0;
             info_.upper_limit_vector_[0] = trajfollow->GetDuration();
-            _vmimic[0] = mimic;
+            mimic_array_[0] = mimic;
             info_.is_circular_[0] = bIsCircular;
             info_._trajfollow = trajfollow;
         }
