@@ -26,6 +26,7 @@
 #endif
 
 #include <pcrecpp.h>
+#include <regex>
 
 #define CHECK_INTERFACE(pinterface) { \
         if( (pinterface)->GetEnv() != shared_from_this() ) \
@@ -208,86 +209,13 @@ public:
         }
     }
 
-    virtual bool LoadURI(const std::string& uri, const AttributesList& atts)
-    {
-        if ( _IsColladaURI(uri) ) {
-            return RaveParseColladaURI(shared_from_this(), uri, atts);
-        }
-        else if ( _IsJSONURI(uri) ) {
-            return RaveParseJSONURI(shared_from_this(), uri, atts);
-        }
+	virtual bool LoadURI(const std::string& uri, const AttributesList& atts);
 
-        RAVELOG_WARN("load failed on uri %s\n", uri.c_str());
-        return false;
-    }
+	virtual bool Load(const std::string& filename, const AttributesList& atts);
 
-    virtual bool Load(const std::string& filename, const AttributesList& atts)
-    {
-        EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        OpenRAVEXMLParser::GetXMLErrorCount() = 0;
-        if( _IsColladaURI(filename) ) {
-            if( RaveParseColladaURI(shared_from_this(), filename, atts) ) {
-                UpdatePublishedBodies();
-                return true;
-            }
-        }
-        else if( _IsColladaFile(filename) ) {
-            if( RaveParseColladaFile(shared_from_this(), filename, atts) ) {
-                UpdatePublishedBodies();
-                return true;
-            }
-        }
-        else if( _IsJSONFile(filename) ) {
-            if( RaveParseJSONFile(shared_from_this(), filename, atts) ){
-                return true;
-            }
-        }
-        else if( _IsXFile(filename) ) {
-            RobotBasePtr robot;
-            if( RaveParseXFile(shared_from_this(), robot, filename, atts) ) {
-                _AddRobot(robot, true);
-                UpdatePublishedBodies();
-                return true;
-            }
-        }
-        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) {
-            KinBodyPtr pbody = ReadKinBodyURI(KinBodyPtr(),filename,atts);
-            if( !!pbody ) {
-                _AddKinBody(pbody,true);
-                UpdatePublishedBodies();
-                return true;
-            }
-        }
-        else {
-            if( _ParseXMLFile(OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(),atts,true), filename) ) {
-                if( OpenRAVEXMLParser::GetXMLErrorCount() == 0 ) {
-                    UpdatePublishedBodies();
-                    return true;
-                }
-            }
-        }
+	virtual bool LoadData(const std::string& data, const AttributesList& atts);
 
-        RAVELOG_WARN("load failed on file %s\n", filename.c_str());
-        return false;
-    }
-
-    virtual bool LoadData(const std::string& data, const AttributesList& atts)
-    {
-        EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        if( _IsColladaData(data) ) {
-            return RaveParseColladaData(shared_from_this(), data, atts);
-        }
-        if( _IsJSONData(data) ) {
-            return RaveParseJSONData(shared_from_this(), data, atts);
-        }
-        return _ParseXMLData(OpenRAVEXMLParser::CreateEnvironmentReader(shared_from_this(),atts),data);
-    }
-
-    virtual bool LoadJSON(const rapidjson::Document& doc, const AttributesList& atts)
-    {
-        EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        return RaveParseJSON(shared_from_this(), doc, atts);
-    }
+	virtual bool LoadJSON(const rapidjson::Document& doc, const AttributesList& atts);
 
     virtual void Save(const std::string& filename, SelectionOptions options, const AttributesList& atts)
     {
@@ -557,23 +485,28 @@ public:
         _CallBodyCallbacks(pbody, 1);
     }
 
-    virtual void _AddRobot(RobotBasePtr robot, bool bAnonymous)
+    virtual void _AddRobot(RobotBasePtr robot, bool is_anonymous)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         CHECK_INTERFACE(robot);
-        if( !robot->IsRobot() ) {
+        if( !robot->IsRobot() )
+		{
             throw OpenRAVEException(str(boost::format(_tr("kinbody \"%s\" is not a robot"))%robot->GetName()));
         }
-        if( !utils::IsValidName(robot->GetName()) ) {
+        if( !utils::IsValidName(robot->GetName()) ) 
+		{
             throw OpenRAVEException(str(boost::format(_tr("kinbody name: \"%s\" is not valid"))%robot->GetName()));
         }
-        if( !_CheckUniqueName(KinBodyConstPtr(robot),!bAnonymous) ) {
+        if( !_CheckUniqueName(KinBodyConstPtr(robot),!is_anonymous) ) 
+		{
             // continue to add random numbers until a unique name is found
-            string oldname=robot->GetName(),newname;
-            for(int i = 0;; ++i) {
+            std::string oldname=robot->GetName(),newname;
+            for(int i = 0;; ++i)
+			{
                 newname = str(boost::format("%s%d")%oldname%i);
                 robot->SetName(newname);
-                if( utils::IsValidName(newname) && _CheckUniqueName(KinBodyConstPtr(robot),false) ) {
+                if( utils::IsValidName(newname) && _CheckUniqueName(KinBodyConstPtr(robot),false) )
+				{
                     break;
                 }
             }
@@ -587,13 +520,18 @@ public:
         }
         robot->_ComputeInternalInformation(); // have to do this after robots_vector_ is added since SensorBase::SetName can call EnvironmentBase::GetSensor to initialize itself
         current_collision_checker_->InitKinBody(robot);
-        if( !!robot->GetSelfCollisionChecker() && robot->GetSelfCollisionChecker() != current_collision_checker_ ) {
+        if( !!robot->GetSelfCollisionChecker() && robot->GetSelfCollisionChecker() != current_collision_checker_ ) 
+		{
             // also initialize external collision checker if specified for this body
             robot->GetSelfCollisionChecker()->InitKinBody(robot);
         }
         physics_engine_->InitKinBody(robot);
         // send all the changed callbacks of the body since anything could have changed
-        robot->_PostprocessChangedParameters(0xffffffff&~KinBody::Prop_JointMimic&~KinBody::Prop_LinkStatic&~KinBody::Prop_BodyRemoved);
+        robot->_PostprocessChangedParameters(
+			0xffffffff
+			&~KinBody::Prop_JointMimic
+			&~KinBody::Prop_LinkStatic
+			&~KinBody::Prop_BodyRemoved);
         _CallBodyCallbacks(robot, 1);
     }
 
@@ -1145,20 +1083,24 @@ public:
             }
             if( !!robot )
 			{
-                std::list<KinBody::GeometryInfo> listGeometries;
-                std::string fullfilename = _ReadGeometriesFile(listGeometries,filename,atts);
-                if( fullfilename.size() > 0 ) {
-                    string extension;
-                    if( filename.find_last_of('.') != string::npos ) {
+                std::list<KinBody::GeometryInfo> geometries_list;
+                std::string fullfilename = _ReadGeometriesFile(filename,atts, geometries_list);
+                if( fullfilename.size() > 0 ) 
+				{
+                    std::string extension;
+                    if( filename.find_last_of('.') != std::string::npos ) 
+					{
                         extension = filename.substr(filename.find_last_of('.')+1);
                     }
-                    string norender = string("__norenderif__:")+extension;
-                    FOREACH(itinfo,listGeometries) {
-                        itinfo->is_visible_ = true;
-                        itinfo->render_file_name_ = norender;
+					std::string norender = std::string("__norenderif__:")+extension;
+                    for(auto& itinfo:geometries_list) 
+					{
+                        itinfo.is_visible_ = true;
+                        itinfo.render_file_name_ = norender;
                     }
-                    listGeometries.front().render_file_name_ = fullfilename;
-                    if( robot->InitFromGeometries(listGeometries) ) {
+                    geometries_list.front().render_file_name_ = fullfilename;
+                    if( robot->InitFromGeometries(geometries_list) )
+					{
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
                         boost::filesystem::path pfilename(filename);
@@ -1176,16 +1118,20 @@ public:
                 robot.reset();
             }
         }
-        else {
+        else 
+		{
             InterfaceBasePtr pinterface = robot;
-            BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), PT_Robot, pinterface, "robot", atts);
-            if( !preader ) {
+            BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), 
+				PT_Robot, pinterface, "robot", atts);
+            if( !preader ) 
+			{
                 return RobotBasePtr();
             }
-            bool bSuccess = _ParseXMLFile(preader, filename);
+            bool is_success = _ParseXMLFile(preader, filename);
             preader->endElement("robot");     // have to end the tag!
             robot = RaveInterfaceCast<RobotBase>(pinterface);
-            if( !bSuccess || !robot ) {
+            if( !is_success || !robot ) 
+			{
                 return RobotBasePtr();
             }
             robot->str_uri_ = filename;
@@ -1235,10 +1181,10 @@ public:
             if( !preader ) {
                 return RobotBasePtr();
             }
-            bool bSuccess = _ParseXMLData(preader, data);
+            bool is_success = _ParseXMLData(preader, data);
             preader->endElement("robot");     // have to end the tag!
             robot = RaveInterfaceCast<RobotBase>(pinterface);
-            if( !bSuccess || !robot ) {
+            if( !is_success || !robot ) {
                 return RobotBasePtr();
             }
             robot->str_uri_ = preader->file_name_;
@@ -1274,50 +1220,67 @@ public:
             }
         }
 
-        if( _IsColladaURI(filename) ) {
-            if( !RaveParseColladaURI(shared_from_this(), body, filename, atts) ) {
+        if( _IsColladaURI(filename) ) 
+		{
+            if( !RaveParseColladaURI(shared_from_this(), body, filename, atts) )
+			{
                 return KinBodyPtr();
             }
         }
-        else if( _IsJSONURI(filename) ) {
-            if( !RaveParseJSONURI(shared_from_this(), body, filename, atts) ) {
+        else if( _IsJSONURI(filename) )
+		{
+            if( !RaveParseJSONURI(shared_from_this(), body, filename, atts) )
+			{
                 return KinBodyPtr();
             }
         }
-        else if( _IsColladaFile(filename) ) {
-            if( !RaveParseColladaFile(shared_from_this(), body, filename, atts) ) {
+        else if( _IsColladaFile(filename) )
+		{
+            if( !RaveParseColladaFile(shared_from_this(), body, filename, atts) ) 
+			{
                 return KinBodyPtr();
             }
         }
-        else if( _IsJSONFile(filename) ) {
-            if( !RaveParseJSONFile(shared_from_this(), body, filename, atts) ) {
+        else if( _IsJSONFile(filename) ) 
+		{
+            if( !RaveParseJSONFile(shared_from_this(), body, filename, atts) )
+			{
                 return KinBodyPtr();
             }
         }
-        else if( _IsXFile(filename) ) {
-            if( !RaveParseXFile(shared_from_this(), body, filename, atts) ) {
+        else if( _IsXFile(filename) )
+		{
+            if( !RaveParseXFile(shared_from_this(), body, filename, atts) ) 
+			{
                 return KinBodyPtr();
             }
         }
-        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) {
-            if( !body ) {
+        else if( !_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename) ) 
+		{
+            if( !body ) 
+			{
                 body = RaveCreateKinBody(shared_from_this(),"");
             }
-            if( !!body ) {
-                std::list<KinBody::GeometryInfo> listGeometries;
-                std::string fullfilename = _ReadGeometriesFile(listGeometries,filename,atts);
-                if( fullfilename.size() > 0 ) {
-                    string extension;
-                    if( filename.find_last_of('.') != string::npos ) {
+            if( !!body )
+			{
+                std::list<KinBody::GeometryInfo> geometries_list;
+                std::string fullfilename = _ReadGeometriesFile(filename,atts, geometries_list);
+                if( fullfilename.size() > 0 ) 
+				{
+                    std::string extension;
+                    if( filename.find_last_of('.') != std::string::npos ) 
+					{
                         extension = filename.substr(filename.find_last_of('.')+1);
                     }
-                    string norender = string("__norenderif__:")+extension;
-                    FOREACH(itinfo,listGeometries) {
-                        itinfo->is_visible_ = true;
-                        itinfo->render_file_name_ = norender;
+					std::string norender = std::string("__norenderif__:")+extension;
+                    for(auto& itinfo:geometries_list) 
+					{
+                        itinfo.is_visible_ = true;
+                        itinfo.render_file_name_ = norender;
                     }
-                    listGeometries.front().render_file_name_ = fullfilename;
-                    if( body->InitFromGeometries(listGeometries) ) {
+                    geometries_list.front().render_file_name_ = fullfilename;
+                    if( body->InitFromGeometries(geometries_list) ) 
+					{
                         body->str_uri_ = fullfilename;
 #if defined(HAVE_BOOST_FILESYSTEM) && BOOST_VERSION >= 103600 // stem() was introduced in 1.36
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION >= 3
@@ -1336,16 +1299,20 @@ public:
                 body.reset();
             }
         }
-        else {
+        else
+		{
             InterfaceBasePtr pinterface = body;
-            BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), PT_KinBody, pinterface, "kinbody", atts);
-            if( !preader ) {
+            BaseXMLReaderPtr preader = OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(),
+				PT_KinBody, pinterface, "kinbody", atts);
+            if( !preader ) 
+			{
                 return KinBodyPtr();
             }
-            bool bSuccess = _ParseXMLFile(preader, filename);
+            bool is_success = _ParseXMLFile(preader, filename);
             preader->endElement("kinbody");     // have to end the tag!
             body = RaveInterfaceCast<KinBody>(pinterface);
-            if( !bSuccess || !body ) {
+            if( !is_success || !body ) 
+			{
                 return KinBodyPtr();
             }
             body->str_uri_ = filename;
@@ -1395,10 +1362,10 @@ public:
             if( !preader ) {
                 return KinBodyPtr();
             }
-            bool bSuccess = _ParseXMLData(preader, data);
+            bool is_success = _ParseXMLData(preader, data);
             preader->endElement("kinbody");     // have to end the tag!
             body = RaveInterfaceCast<KinBody>(pinterface);
-            if( !bSuccess || !body ) {
+            if( !is_success || !body ) {
                 return KinBodyPtr();
             }
             body->str_uri_ = preader->file_name_;
@@ -1423,9 +1390,9 @@ public:
             if( !preader ) {
                 return InterfaceBasePtr();
             }
-            bool bSuccess = _ParseXMLFile(preader, filename);
+            bool is_success = _ParseXMLFile(preader, filename);
             std::shared_ptr<OpenRAVEXMLParser::InterfaceXMLReadable> preadable = std::dynamic_pointer_cast<OpenRAVEXMLParser::InterfaceXMLReadable>(preader->GetReadable());
-            if( !bSuccess || !preadable || !preadable->_pinterface) {
+            if( !is_success || !preadable || !preadable->_pinterface) {
                 return InterfaceBasePtr();
             }
             preader->endElement(RaveGetInterfaceName(preadable->_pinterface->GetInterfaceType()));     // have to end the tag!
@@ -1558,9 +1525,9 @@ public:
         if( !preader ) {
             return InterfaceBasePtr();
         }
-        bool bSuccess = _ParseXMLData(preader, data);
+        bool is_success = _ParseXMLData(preader, data);
         preader->endElement(RaveGetInterfaceName(pinterface->GetInterfaceType()));     // have to end the tag!
-        if( !bSuccess ) {
+        if( !is_success ) {
             return InterfaceBasePtr();
         }
         pinterface->str_uri_ = preader->file_name_;
@@ -1634,9 +1601,9 @@ public:
 
     /// \brief parses the file into GeometryInfo and returns the full path of the file opened
     ///
-    /// \param[in] listGeometries geometry list to be filled
-    virtual std::string _ReadGeometriesFile(std::list<KinBody::GeometryInfo>& listGeometries,
-		const std::string& filename, const AttributesList& atts)
+    /// \param[in] geometries_list geometry list to be filled
+    virtual std::string _ReadGeometriesFile(const std::string& filename,
+		const AttributesList& atts, std::list<KinBody::GeometryInfo>& geometries_list)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
         std::string filedata = RaveFindLocalFile(filename);
@@ -1654,10 +1621,10 @@ public:
                 }
             }
         }
-        if( OpenRAVEXMLParser::CreateGeometries(shared_from_this(),filedata, vScaleGeometry, listGeometries) && listGeometries.size() > 0 ) {
+        if( OpenRAVEXMLParser::CreateGeometries(shared_from_this(),filedata, vScaleGeometry, geometries_list) && geometries_list.size() > 0 ) {
             return filedata;
         }
-        listGeometries.clear();
+        geometries_list.clear();
         return std::string();
     }
 
@@ -1879,14 +1846,14 @@ public:
     {
         if( timeout == 0 ) {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            vbodies = _vPublishedBodies;
+            vbodies = published_bodies_vector_;
         }
         else {
             boost::timed_mutex::scoped_timed_lock lock(mutex_interfaces_, boost::get_system_time() + boost::posix_time::microseconds(timeout));
             if (!lock.owns_lock()) {
                 throw OPENRAVE_EXCEPTION_FORMAT(_tr("timeout of %f s failed"),(1e-6*static_cast<double>(timeout)),ORE_Timeout);
             }
-            vbodies = _vPublishedBodies;
+            vbodies = published_bodies_vector_;
         }
     }
 
@@ -1894,9 +1861,9 @@ public:
     {
         if( timeout == 0 ) {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            for ( size_t ibody = 0; ibody < _vPublishedBodies.size(); ++ibody) {
-                if ( _vPublishedBodies[ibody].strname == name) {
-                    bodystate = _vPublishedBodies[ibody];
+            for ( size_t ibody = 0; ibody < published_bodies_vector_.size(); ++ibody) {
+                if ( published_bodies_vector_[ibody].strname == name) {
+                    bodystate = published_bodies_vector_[ibody];
                     return true;
                 }
             }
@@ -1906,9 +1873,9 @@ public:
             if (!lock.owns_lock()) {
                 throw OPENRAVE_EXCEPTION_FORMAT(_tr("timeout of %f s failed"),(1e-6*static_cast<double>(timeout)),ORE_Timeout);
             }
-            for ( size_t ibody = 0; ibody < _vPublishedBodies.size(); ++ibody) {
-                if ( _vPublishedBodies[ibody].strname == name) {
-                    bodystate = _vPublishedBodies[ibody];
+            for ( size_t ibody = 0; ibody < published_bodies_vector_.size(); ++ibody) {
+                if ( published_bodies_vector_[ibody].strname == name) {
+                    bodystate = published_bodies_vector_[ibody];
                     return true;
                 }
             }
@@ -1921,9 +1888,9 @@ public:
     {
         if( timeout == 0 ) {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
-            for ( size_t ibody = 0; ibody < _vPublishedBodies.size(); ++ibody) {
-                if ( _vPublishedBodies[ibody].strname == name) {
-                    jointValues = _vPublishedBodies[ibody].jointvalues;
+            for ( size_t ibody = 0; ibody < published_bodies_vector_.size(); ++ibody) {
+                if ( published_bodies_vector_[ibody].strname == name) {
+                    jointValues = published_bodies_vector_[ibody].jointvalues;
                     return true;
                 }
             }
@@ -1933,9 +1900,9 @@ public:
             if (!lock.owns_lock()) {
                 throw OPENRAVE_EXCEPTION_FORMAT(_tr("timeout of %f s failed"),(1e-6*static_cast<double>(timeout)),ORE_Timeout);
             }
-            for ( size_t ibody = 0; ibody < _vPublishedBodies.size(); ++ibody) {
-                if ( _vPublishedBodies[ibody].strname == name) {
-                    jointValues = _vPublishedBodies[ibody].jointvalues;
+            for ( size_t ibody = 0; ibody < published_bodies_vector_.size(); ++ibody) {
+                if ( published_bodies_vector_[ibody].strname == name) {
+                    jointValues = published_bodies_vector_[ibody].jointvalues;
                     return true;
                 }
             }
@@ -1949,12 +1916,12 @@ public:
         if( timeout == 0 ) {
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
             nameTransfPairs.resize(0);
-            if( nameTransfPairs.capacity() < _vPublishedBodies.size() ) {
-                nameTransfPairs.reserve(_vPublishedBodies.size());
+            if( nameTransfPairs.capacity() < published_bodies_vector_.size() ) {
+                nameTransfPairs.reserve(published_bodies_vector_.size());
             }
-            for ( size_t ibody = 0; ibody < _vPublishedBodies.size(); ++ibody) {
-                if ( strncmp(_vPublishedBodies[ibody].strname.c_str(), prefix.c_str(), prefix.size()) == 0 ) {
-                    nameTransfPairs.emplace_back(_vPublishedBodies[ibody].strname,  _vPublishedBodies[ibody].vectrans.at(0));
+            for ( size_t ibody = 0; ibody < published_bodies_vector_.size(); ++ibody) {
+                if ( strncmp(published_bodies_vector_[ibody].strname.c_str(), prefix.c_str(), prefix.size()) == 0 ) {
+                    nameTransfPairs.emplace_back(published_bodies_vector_[ibody].strname,  published_bodies_vector_[ibody].vectrans.at(0));
                 }
             }
         }
@@ -1965,12 +1932,12 @@ public:
             }
 
             nameTransfPairs.resize(0);
-            if( nameTransfPairs.capacity() < _vPublishedBodies.size() ) {
-                nameTransfPairs.reserve(_vPublishedBodies.size());
+            if( nameTransfPairs.capacity() < published_bodies_vector_.size() ) {
+                nameTransfPairs.reserve(published_bodies_vector_.size());
             }
-            for ( size_t ibody = 0; ibody < _vPublishedBodies.size(); ++ibody) {
-                if ( strncmp(_vPublishedBodies[ibody].strname.c_str(), prefix.c_str(), prefix.size()) == 0 ) {
-                    nameTransfPairs.emplace_back(_vPublishedBodies[ibody].strname,  _vPublishedBodies[ibody].vectrans.at(0));
+            for ( size_t ibody = 0; ibody < published_bodies_vector_.size(); ++ibody) {
+                if ( strncmp(published_bodies_vector_[ibody].strname.c_str(), prefix.c_str(), prefix.size()) == 0 ) {
+                    nameTransfPairs.emplace_back(published_bodies_vector_[ibody].strname,  published_bodies_vector_[ibody].vectrans.at(0));
                 }
             }
         }
@@ -1979,13 +1946,16 @@ public:
     virtual void UpdatePublishedBodies(uint64_t timeout=0)
     {
         EnvironmentMutex::scoped_lock lockenv(GetMutex());
-        if( timeout == 0 ) {
+        if( timeout == 0 )
+		{
             boost::timed_mutex::scoped_lock lock(mutex_interfaces_);
             _UpdatePublishedBodies();
         }
-        else {
+        else 
+		{
             boost::timed_mutex::scoped_timed_lock lock(mutex_interfaces_, boost::get_system_time() + boost::posix_time::microseconds(timeout));
-            if (!lock.owns_lock()) {
+            if (!lock.owns_lock()) 
+			{
                 throw OPENRAVE_EXCEPTION_FORMAT(_tr("timeout of %f s failed"),(1e-6*static_cast<double>(timeout)),ORE_Timeout);
             }
             _UpdatePublishedBodies();
@@ -1995,41 +1965,47 @@ public:
     virtual void _UpdatePublishedBodies()
     {
         // updated the published bodies, resize dynamically in case an exception occurs
-        // when creating an item and bad data is left inside _vPublishedBodies
-        _vPublishedBodies.resize(0);
-        if( _vPublishedBodies.capacity() < bodies_vector_.size() ) {
-            _vPublishedBodies.reserve(bodies_vector_.size());
+        // when creating an item and bad data is left inside published_bodies_vector_
+        published_bodies_vector_.resize(0);
+        if( published_bodies_vector_.capacity() < bodies_vector_.size() ) 
+		{
+            published_bodies_vector_.reserve(bodies_vector_.size());
         }
 
         std::vector<dReal> vdoflastsetvalues;
-        FOREACH(itbody, bodies_vector_) {
-            if( (*itbody)->hierarchy_computed_ != 2 ) {
+        for(auto& itbody: bodies_vector_) 
+		{
+            if( itbody->hierarchy_computed_ != 2 )
+			{
                 // skip
                 continue;
             }
 
-            _vPublishedBodies.push_back(KinBody::BodyState());
-            KinBody::BodyState& state = _vPublishedBodies.back();
-            state.pbody = *itbody;
-            (*itbody)->GetLinkTransformations(state.vectrans, vdoflastsetvalues);
-            (*itbody)->GetLinkEnableStates(state.vLinkEnableStates);
-            (*itbody)->GetDOFValues(state.jointvalues);
-            state.strname =(*itbody)->GetName();
-            state.uri = (*itbody)->GetURI();
-            state.updatestamp = (*itbody)->GetUpdateStamp();
-            state.environmentid = (*itbody)->GetEnvironmentId();
-            if( (*itbody)->IsRobot() ) {
-                RobotBasePtr probot = RaveInterfaceCast<RobotBase>(*itbody);
-                if( !!probot ) {
+            published_bodies_vector_.push_back(KinBody::BodyState());
+            KinBody::BodyState& state = published_bodies_vector_.back();
+            state.pbody = itbody;
+            itbody->GetLinkTransformations(state.vectrans, vdoflastsetvalues);
+            itbody->GetLinkEnableStates(state.vLinkEnableStates);
+            itbody->GetDOFValues(state.jointvalues);
+            state.strname =itbody->GetName();
+            state.uri = itbody->GetURI();
+            state.updatestamp = itbody->GetUpdateStamp();
+            state.environmentid = itbody->GetEnvironmentId();
+            if( itbody->IsRobot() ) 
+			{
+                RobotBasePtr probot = RaveInterfaceCast<RobotBase>(itbody);
+                if( !!probot ) 
+				{
                     RobotBase::ManipulatorPtr pmanip = probot->GetActiveManipulator();
-                    if( !!pmanip ) {
+                    if( !!pmanip ) 
+					{
                         state.activeManipulatorName = pmanip->GetName();
                         state.activeManipulatorTransform = pmanip->GetTransform();
                     }
                     probot->GetConnectedBodyActiveStates(state.vConnectedBodyActiveStates);
                 }
             }
-            _vPublishedBodies.push_back(state);
+            published_bodies_vector_.push_back(state);
         }
     }
 
@@ -2143,7 +2119,7 @@ protected:
                     (*itrobot)->Destroy();
                 }
                 robots_vector_.clear();
-                _vPublishedBodies.clear();
+                published_bodies_vector_.clear();
             }
             // a little tricky due to a deadlocking situation
             std::map<int, KinBodyWeakPtr> mapBodies;
@@ -2682,19 +2658,33 @@ protected:
         std::string s1, s3, s6, s8;
         static pcrecpp::RE re("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
         bool bmatch = re.FullMatch(uri, &s1, &scheme, &s3, &authority, &path, &s6, &query, &s8, &fragment);
+		//TODO: test
+		std::match_results<string::const_iterator> result;
+		std::regex pattern("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+		bool matched = std::regex_match(uri, result, pattern);	
+
         return bmatch && scheme.size() > 0 && _IsColladaFile(path); //scheme.size() > 0;
     }
 
     static bool _IsColladaFile(const std::string& filename)
     {
         size_t len = filename.size();
-        if( len < 4 ) {
+        if( len < 4 ) 
+		{
             return false;
         }
-        if( filename[len-4] == '.' && ::tolower(filename[len-3]) == 'd' && ::tolower(filename[len-2]) == 'a' && ::tolower(filename[len-1]) == 'e' ) {
+        if( filename[len-4] == '.' 
+			&& ::tolower(filename[len-3]) == 'd' 
+			&& ::tolower(filename[len-2]) == 'a' 
+			&& ::tolower(filename[len-1]) == 'e' ) 
+		{
             return true;
         }
-        if( filename[len-4] == '.' && ::tolower(filename[len-3]) == 'z' && ::tolower(filename[len-2]) == 'a' && ::tolower(filename[len-1]) == 'e' ) {
+        if( filename[len-4] == '.' 
+			&& ::tolower(filename[len-3]) == 'z' 
+			&& ::tolower(filename[len-2]) == 'a' 
+			&& ::tolower(filename[len-1]) == 'e' )
+		{
             return true;
         }
         return false;
@@ -2707,7 +2697,8 @@ protected:
     static bool _IsXFile(const std::string& filename)
     {
         size_t len = filename.size();
-        if( len < 2 ) {
+        if( len < 2 ) 
+		{
             return false;
         }
         return filename[len-2] == '.' && ::tolower(filename[len-1]) == 'x';
@@ -2720,8 +2711,10 @@ protected:
 
     static bool _IsIVData(const std::string& data)
     {
-        if( data.size() >= 10 ) {
-            if( data.substr(0,10) == string("#Inventor ") ) {
+        if( data.size() >= 10 ) 
+		{
+            if( data.substr(0,10) == std::string("#Inventor ") )
+			{
                 return true;
             }
         }
@@ -2731,29 +2724,42 @@ protected:
     static bool _IsOpenRAVEFile(const std::string& filename)
     {
         size_t len = filename.size();
-        if( len < 4 ) {
+        if( len < 4 ) 
+		{
             return false;
         }
-        if(( filename[len-4] == '.') &&( ::tolower(filename[len-3]) == 'x') &&( ::tolower(filename[len-2]) == 'm') &&( ::tolower(filename[len-1]) == 'l') ) {
+        if(( filename[len-4] == '.') 
+			&&( ::tolower(filename[len-3]) == 'x') 
+			&&( ::tolower(filename[len-2]) == 'm') 
+			&&( ::tolower(filename[len-1]) == 'l') ) 
+		{
             return true;
         }
         return false;
     }
     static bool _IsRigidModelFile(const std::string& filename)
     {
-        static std::array<std::string,21> s_geometryextentsions = { { "iv","vrml","wrl","stl","blend","3ds","ase","obj","ply","dxf","lwo","lxo","ac","ms3d","x","mesh.xml","irrmesh","irr","nff","off","raw"}};
-        FOREACH(it, s_geometryextentsions) {
-            if( filename.size() > it->size()+1 ) {
+        static std::array<std::string,21> s_geometryextentsions = { 
+			{ "iv","vrml","wrl","stl","blend","3ds","ase","obj","ply",
+			"dxf","lwo","lxo","ac","ms3d","x","mesh.xml","irrmesh","irr","nff","off","raw"}};
+        for(auto &it: s_geometryextentsions) 
+		{
+            if( filename.size() > it.size()+1 )
+			{
                 size_t len = filename.size();
-                if( filename.at(len-it->size()-1) == '.' ) {
-                    bool bsuccess = true;
-                    for(size_t i = 0; i < it->size(); ++i) {
-                        if( ::tolower(filename[len-i-1]) != (*it)[it->size()-i-1] ) {
-                            bsuccess = false;
+                if( filename.at(len-it.size()-1) == '.' ) 
+				{
+                    bool is_success = true;
+                    for(size_t i = 0; i < it.size(); ++i) 
+					{
+                        if( ::tolower(filename[len-i-1]) != it[it.size()-i-1] )
+						{
+                            is_success = false;
                             break;
                         }
                     }
-                    if( bsuccess ) {
+                    if( is_success ) 
+					{
                         return true;
                     }
                 }
@@ -2764,20 +2770,32 @@ protected:
 
     static bool _IsJSONURI(const std::string& uri)
     {
-        string scheme, authority, path, query, fragment;
-        string s1, s3, s6, s8;
+        std::string scheme, authority, path, query, fragment;
+		std::string s1, s3, s6, s8;
         static pcrecpp::RE re("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
         bool bmatch = re.FullMatch(uri, &s1, &scheme, &s3, &authority, &path, &s6, &query, &s8, &fragment);
+
+		//TODO: test
+		std::match_results<string::const_iterator> result;
+		std::regex pattern("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+		bool matched = std::regex_match(uri, result, pattern);
+
         return bmatch && scheme.size() > 0 && _IsJSONFile(path); //scheme.size() > 0;
     }
 
     static bool _IsJSONFile(const std::string& filename)
     {
         size_t len = filename.size();
-        if( len < 5 ) {
+        if( len < 5 ) 
+		{
             return false;
         }
-        if( filename[len-5] == '.' && ::tolower(filename[len-4]) == 'j' && ::tolower(filename[len-3]) == 's' && ::tolower(filename[len-2]) == 'o' && ::tolower(filename[len-1]) == 'n' ) {
+        if( filename[len-5] == '.' 
+			&& ::tolower(filename[len-4]) == 'j'
+			&& ::tolower(filename[len-3]) == 's' 
+			&& ::tolower(filename[len-2]) == 'o' 
+			&& ::tolower(filename[len-1]) == 'n' ) 
+		{
             return true;
         }
         return false;
@@ -2813,7 +2831,7 @@ protected:
     mutable boost::timed_mutex mutex_interfaces_;     //!< lock when managing interfaces like _listOwnedInterfaces, modules_list_, _mapBodies
     mutable boost::mutex _mutexInit;     //!< lock for destroying the environment
 
-    std::vector<KinBody::BodyState> _vPublishedBodies;
+    std::vector<KinBody::BodyState> published_bodies_vector_;
     std::string home_directory_;
     std::pair<std::string, dReal> unit_; //!< unit name mm, cm, inches, m and the conversion for meters
 

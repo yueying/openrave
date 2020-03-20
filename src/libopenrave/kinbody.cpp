@@ -1196,15 +1196,17 @@ void KinBody::GetLinkVelocities(std::vector<std::pair<Vector,Vector> >& velociti
     GetEnv()->GetPhysicsEngine()->GetLinkVelocities(shared_kinbody_const(),velocities);
 }
 
-void KinBody::GetLinkTransformations(vector<Transform>& vtrans) const
+void KinBody::GetLinkTransformations(std::vector<Transform>& transform_vector) const
 {
-    if( RaveGetDebugLevel() & Level_VerifyPlans ) {
+    if( RaveGetDebugLevel() & Level_VerifyPlans ) 
+	{
         RAVELOG_VERBOSE("GetLinkTransformations should be called with doflastsetvalues\n");
     }
-    vtrans.resize(links_vector_.size());
-    vector<Transform>::iterator it;
-    vector<LinkPtr>::const_iterator itlink;
-    for(it = vtrans.begin(), itlink = links_vector_.begin(); it != vtrans.end(); ++it, ++itlink) {
+    transform_vector.resize(links_vector_.size());
+    std::vector<Transform>::iterator it;
+	std::vector<LinkPtr>::const_iterator itlink;
+    for(it = transform_vector.begin(), itlink = links_vector_.begin(); it != transform_vector.end(); ++it, ++itlink) 
+	{
         *it = (*itlink)->GetTransform();
     }
 }
@@ -1212,26 +1214,33 @@ void KinBody::GetLinkTransformations(vector<Transform>& vtrans) const
 void KinBody::GetLinkTransformations(std::vector<Transform>& transforms, std::vector<dReal>& doflastsetvalues) const
 {
     transforms.resize(links_vector_.size());
-    vector<Transform>::iterator it;
-    vector<LinkPtr>::const_iterator itlink;
-    for(it = transforms.begin(), itlink = links_vector_.begin(); it != transforms.end(); ++it, ++itlink) {
+    std::vector<Transform>::iterator it;
+	std::vector<LinkPtr>::const_iterator itlink;
+    for(it = transforms.begin(), itlink = links_vector_.begin(); it != transforms.end(); ++it, ++itlink) 
+	{
         *it = (*itlink)->GetTransform();
     }
 
     doflastsetvalues.resize(0);
-    if( (int)doflastsetvalues.capacity() < GetDOF() ) {
+    if( (int)doflastsetvalues.capacity() < GetDOF() )
+	{
         doflastsetvalues.reserve(GetDOF());
     }
-    FOREACHC(it, dof_ordered_joints_vector_) {
-        int toadd = (*it)->GetDOFIndex()-(int)doflastsetvalues.size();
-        if( toadd > 0 ) {
+    for(auto it: dof_ordered_joints_vector_) 
+	{
+        int toadd = it->GetDOFIndex()-(int)doflastsetvalues.size();
+        if( toadd > 0 ) 
+		{
             doflastsetvalues.insert(doflastsetvalues.end(),toadd,0);
         }
-        else if( toadd < 0 ) {
-            throw OPENRAVE_EXCEPTION_FORMAT(_tr("dof indices mismatch joint %s, toadd=%d"), (*it)->GetName()%toadd, ORE_InvalidState);
+        else if( toadd < 0 ) 
+		{
+            throw OPENRAVE_EXCEPTION_FORMAT(_tr("dof indices mismatch joint %s, toadd=%d"),
+				it->GetName()%toadd, ORE_InvalidState);
         }
-        for(int i = 0; i < (*it)->GetDOF(); ++i) {
-            doflastsetvalues.push_back((*it)->_doflastsetvalues[i]);
+        for(int i = 0; i < it->GetDOF(); ++i) 
+		{
+            doflastsetvalues.push_back(it->_doflastsetvalues[i]);
         }
     }
 }
@@ -3322,10 +3331,12 @@ void KinBody::_ComputeInternalInformation()
     hierarchy_computed_ = 1;
 
     int lindex=0;
-    FOREACH(itlink,links_vector_) {
-        (*itlink)->index_ = lindex; // always reset, necessary since index cannot be initialized by custom links
-        (*itlink)->parent_links_vector_.clear();
-        if((links_vector_.size() > 1)&&((*itlink)->GetName().size() == 0)) {
+    for(auto& itlink:links_vector_) 
+	{
+        itlink->index_ = lindex; // always reset, necessary since index cannot be initialized by custom links
+        itlink->parent_links_vector_.clear();
+        if((links_vector_.size() > 1)&&(itlink->GetName().size() == 0)) 
+		{
             RAVELOG_WARN(str(boost::format("%s link index %d has no name")%GetName()%lindex));
         }
         lindex++;
@@ -3333,7 +3344,7 @@ void KinBody::_ComputeInternalInformation()
 
     {
         // move any enabled passive joints to the regular joints list
-        vector<JointPtr>::iterator itjoint = passive_joints_vector_.begin();
+        std::vector<JointPtr>::iterator itjoint = passive_joints_vector_.begin();
         while(itjoint != passive_joints_vector_.end()) {
             bool bmimic = false;
             for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) {

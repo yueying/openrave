@@ -429,14 +429,14 @@ void RobotBase::_ComputeConnectedBodiesInformation()
         }
 
         // check if connectedBodyInfo.link_name_ exists
-        bool bExists = false;
+        bool is_exists = false;
         FOREACH(ittestlink, links_vector_) {
             if( connectedBodyInfo.link_name_ == (*ittestlink)->GetName() ) {
-                bExists = true;
+                is_exists = true;
                 break;
             }
         }
-        if( !bExists ) {
+        if( !is_exists ) {
             throw OPENRAVE_EXCEPTION_FORMAT("When adding ConnectedBody %s for robot %s, the attaching link '%s' on robot does not exist!", connectedBody.GetName()%GetName()%connectedBodyInfo.link_name_, ORE_InvalidArguments);
         }
 

@@ -23,7 +23,7 @@ class PlanningIkExample : public OpenRAVEExample
 {
 public:
     virtual void demothread(int argc, char ** argv) {
-        string scenefilename = "data/pa10grasp2.env.xml";
+        string scenefilename = "data/hanoi_complex2.env.xml";
         penv->Load(scenefilename);
 
         vector<RobotBasePtr> vrobots;

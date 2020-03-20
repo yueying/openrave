@@ -142,7 +142,8 @@
 	void Environment::Destroy()
 	{
 		boost::mutex::scoped_lock lockdestroy(_mutexInit);
-		if (!is_init_) {
+		if (!is_init_) 
+		{
 			RAVELOG_VERBOSE_FORMAT("env=%d is already destroyed", GetId());
 			return;
 		}
@@ -196,7 +197,7 @@
 				vecrobots.swap(robots_vector_);
 				vecbodies.swap(bodies_vector_);
 				listSensors.swap(sensors_list_);
-				_vPublishedBodies.clear();
+				published_bodies_vector_.clear();
 				bodies_modified_stamp_++;
 				modules_list_.clear();
 				viewers_list_.clear();
@@ -271,7 +272,7 @@
 				vcallbackbodies.insert(vcallbackbodies.end(), robots_vector_.begin(), robots_vector_.end());
 			}
 			robots_vector_.clear();
-			_vPublishedBodies.clear();
+			published_bodies_vector_.clear();
 			bodies_modified_stamp_++;
 
 			_mapBodies.clear();
@@ -308,4 +309,106 @@
 			physics_engine_->InitEnvironment();
 		}
 	}
+
+	bool Environment::LoadURI(const std::string& uri, const AttributesList& atts)
+	{
+		if (_IsColladaURI(uri))
+		{
+			return RaveParseColladaURI(shared_from_this(), uri, atts);
+		}
+		else if (_IsJSONURI(uri))
+		{
+			return RaveParseJSONURI(shared_from_this(), uri, atts);
+		}
+
+		RAVELOG_WARN("load failed on uri %s\n", uri.c_str());
+		return false;
+	}
+
+	bool Environment::Load(const std::string& filename, const AttributesList& atts)
+	{
+		EnvironmentMutex::scoped_lock lockenv(GetMutex());
+		OpenRAVEXMLParser::GetXMLErrorCount() = 0;
+		if (_IsColladaURI(filename))
+		{
+			if (RaveParseColladaURI(shared_from_this(), filename, atts))
+			{
+				UpdatePublishedBodies();
+				return true;
+			}
+		}
+		else if (_IsColladaFile(filename))
+		{
+			if (RaveParseColladaFile(shared_from_this(), filename, atts))
+			{
+				UpdatePublishedBodies();
+				return true;
+			}
+		}
+		else if (_IsJSONFile(filename))
+		{
+			if (RaveParseJSONFile(shared_from_this(), filename, atts)) 
+			{
+				return true;
+			}
+		}
+		else if (_IsXFile(filename))
+		{
+			RobotBasePtr robot;
+			if (RaveParseXFile(shared_from_this(), robot, filename, atts)) 
+			{
+				_AddRobot(robot, true);
+				UpdatePublishedBodies();
+				return true;
+			}
+		}
+		else if (!_IsOpenRAVEFile(filename) && _IsRigidModelFile(filename))
+		{
+			KinBodyPtr pbody = ReadKinBodyURI(KinBodyPtr(), filename, atts);
+			if (!!pbody)
+			{
+				_AddKinBody(pbody, true);
+				UpdatePublishedBodies();
+				return true;
+			}
+		}
+		else
+		{
+			if (_ParseXMLFile(OpenRAVEXMLParser::CreateInterfaceReader(shared_from_this(), atts, true), filename)) 
+			{
+				if (OpenRAVEXMLParser::GetXMLErrorCount() == 0) 
+				{
+					UpdatePublishedBodies();
+					return true;
+				}
+			}
+		}
+
+		RAVELOG_WARN("load failed on file %s\n", filename.c_str());
+		return false;
+	}
+
+	bool Environment::LoadData(const std::string& data, const AttributesList& atts)
+	{
+		EnvironmentMutex::scoped_lock lockenv(GetMutex());
+		if (_IsColladaData(data))
+		{
+			return RaveParseColladaData(shared_from_this(), data, atts);
+		}
+		if (_IsJSONData(data)) 
+		{
+			return RaveParseJSONData(shared_from_this(), data, atts);
+		}
+		return _ParseXMLData(OpenRAVEXMLParser::CreateEnvironmentReader(shared_from_this(), atts), data);
+	}
+
+	bool Environment::LoadJSON(const rapidjson::Document& doc, const AttributesList& atts)
+	{
+		EnvironmentMutex::scoped_lock lockenv(GetMutex());
+		return RaveParseJSON(shared_from_this(), doc, atts);
+	}
+
+
+
+
 //}

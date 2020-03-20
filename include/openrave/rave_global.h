@@ -150,7 +150,9 @@ namespace OpenRAVE
 		class XMLReaderFunctionData : public UserData
 		{
 		public:
-			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, const CreateXMLReaderFn& fn, std::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _xmltag(xmltag)
+			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, 
+				const CreateXMLReaderFn& fn, std::shared_ptr<RaveGlobal> global)
+				: _global(global), _type(type), _xmltag(xmltag)
 			{
 				boost::mutex::scoped_lock lock(global->_mutexinternal);
 				_oldfn = global->_mapxmlreaders[_type][_xmltag];
@@ -175,7 +177,8 @@ namespace OpenRAVE
 		{
 		public:
 			JSONReaderFunctionData(InterfaceType type, const std::string& id, 
-				const CreateJSONReaderFn& fn, std::shared_ptr<RaveGlobal> global) : _global(global), _type(type), _id(id)
+				const CreateJSONReaderFn& fn, std::shared_ptr<RaveGlobal> global) 
+				: _global(global), _type(type), _id(id)
 			{
 				boost::mutex::scoped_lock lock(global->_mutexinternal);
 				_oldfn = global->_mapjsonreaders[_type][_id];
@@ -201,7 +204,8 @@ namespace OpenRAVE
 			return UserDataPtr(new JSONReaderFunctionData(type, id, fn, shared_from_this()));
 		}
 
-		const BaseJSONReaderPtr CallJSONReader(InterfaceType type, const std::string& id, InterfaceBasePtr pinterface, const AttributesList& atts)
+		const BaseJSONReaderPtr CallJSONReader(InterfaceType type, const std::string& id,
+			InterfaceBasePtr pinterface, const AttributesList& atts)
 		{
 			JSONREADERSMAP::iterator it = _mapjsonreaders[type].find(id);
 			if (it == _mapjsonreaders[type].end()) {
@@ -226,9 +230,11 @@ namespace OpenRAVE
 			return it->second(pinterface, atts);
 		}
 
-		std::shared_ptr<PluginDatabase> GetDatabase() const {
+		std::shared_ptr<PluginDatabase> GetPluginDatabase() const 
+		{
 			return plugin_database_;
 		}
+
 		const std::map<InterfaceType, std::string>& GetInterfaceNamesMap() const {
 			return interface_names_map_;
 		}
@@ -311,7 +317,7 @@ namespace OpenRAVE
 			{
 				boost::mutex::scoped_lock lock(_mutexinternal);
 				BOOST_ASSERT(environments_map_.size() > 0);
-				default_space_sampler_ = GetDatabase()->CreateSpaceSampler(environments_map_.begin()->second->shared_from_this(), "MT19937");
+				default_space_sampler_ = GetPluginDatabase()->CreateSpaceSampler(environments_map_.begin()->second->shared_from_this(), "MT19937");
 			}
 			return default_space_sampler_;
 		}

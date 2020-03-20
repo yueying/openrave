@@ -417,9 +417,15 @@ void RobotBase::Destroy()
     KinBody::Destroy();
 }
 
-bool RobotBase::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, const std::vector<KinBody::JointInfoConstPtr>& jointinfos, const std::vector<RobotBase::ManipulatorInfoConstPtr>& manipinfos, const std::vector<RobotBase::AttachedSensorInfoConstPtr>& attachedsensorinfos, const std::vector<ConnectedBodyInfoConstPtr>& connectedbodyinfos, const std::string& uri)
+bool RobotBase::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, 
+	const std::vector<KinBody::JointInfoConstPtr>& jointinfos, 
+	const std::vector<RobotBase::ManipulatorInfoConstPtr>& manipinfos, 
+	const std::vector<RobotBase::AttachedSensorInfoConstPtr>& attachedsensorinfos, 
+	const std::vector<ConnectedBodyInfoConstPtr>& connectedbodyinfos,
+	const std::string& uri)
 {
-    if( !KinBody::Init(linkinfos, jointinfos, uri) ) {
+    if( !KinBody::Init(linkinfos, jointinfos, uri) ) 
+	{
         return false;
     }
     manipulators_vector_.resize(0);

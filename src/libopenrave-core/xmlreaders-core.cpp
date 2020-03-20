@@ -229,7 +229,7 @@ static bool _AssimpCreateTriMesh(const aiScene* scene, aiNode* node, const Vecto
     return true;
 }
 
-static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Vector& scale, std::list<KinBody::GeometryInfo>& listGeometries)
+static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Vector& scale, std::list<KinBody::GeometryInfo>& geometries_list)
 {
     if( !node ) {
         return false;
@@ -245,8 +245,8 @@ static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Ve
     }
 
     for (size_t i = 0; i < node->mNumMeshes; i++) {
-        listGeometries.push_back(KinBody::GeometryInfo());
-        KinBody::GeometryInfo& g = listGeometries.back();
+        geometries_list.push_back(KinBody::GeometryInfo());
+        KinBody::GeometryInfo& g = geometries_list.back();
         g.type_ = GT_TriMesh;
         g.render_scale_vec_ = scale;
         aiMesh* input_mesh = scene->mMeshes[node->mMeshes[i]];
@@ -289,12 +289,12 @@ static bool _AssimpCreateGeometries(const aiScene* scene, aiNode* node, const Ve
     }
 
     for (size_t i=0; i < node->mNumChildren; ++i) {
-        _AssimpCreateGeometries(scene, node->mChildren[i], scale, listGeometries);
+        _AssimpCreateGeometries(scene, node->mChildren[i], scale, geometries_list);
     }
     return true;
 }
 
-static bool _ParseSpecialSTLFile(EnvironmentBasePtr penv, const std::string& filename, const Vector& vscale, std::list<KinBody::GeometryInfo>& listGeometries)
+static bool _ParseSpecialSTLFile(EnvironmentBasePtr penv, const std::string& filename, const Vector& vscale, std::list<KinBody::GeometryInfo>& geometries_list)
 {
     // some formats (screen) has # in the beginning until the STL solid definition.
     ifstream f(filename.c_str());
@@ -358,8 +358,8 @@ static bool _ParseSpecialSTLFile(EnvironmentBasePtr penv, const std::string& fil
             }
 
             if( !!scene->_scene && !!scene->_scene->mRootNode && !!scene->_scene->HasMeshes() ) {
-                if( _AssimpCreateGeometries(scene->_scene,scene->_scene->mRootNode, vscale, listGeometries) ) {
-                    FOREACH(itgeom, listGeometries) {
+                if( _AssimpCreateGeometries(scene->_scene,scene->_scene->mRootNode, vscale, geometries_list) ) {
+                    FOREACH(itgeom, geometries_list) {
                         itgeom->diffuse_color_vec_ = vcolor;
                         if( bTransformOffset ) {
                             itgeom->mesh_collision_.ApplyTransform(toffset.inverse());
@@ -427,11 +427,11 @@ bool CreateTriMeshFromFile(EnvironmentBasePtr penv, const std::string& filename,
                 }
 
 #ifdef OPENRAVE_ASSIMP
-                std::list<KinBody::GeometryInfo> listGeometries;
-                if( _ParseSpecialSTLFile(penv, filename, vscale, listGeometries) ) {
+                std::list<KinBody::GeometryInfo> geometries_list;
+                if( _ParseSpecialSTLFile(penv, filename, vscale, geometries_list) ) {
                     trimesh.vertices.clear();
                     trimesh.indices.clear();
-                    FOREACH(itgeom, listGeometries) {
+                    FOREACH(itgeom, geometries_list) {
                         trimesh.Append(itgeom->mesh_collision_, itgeom->transform_);
                     }
                     return true;
@@ -679,10 +679,11 @@ static int raveXmlSAXUserParseMemory(xmlSAXHandlerPtr sax, BaseXMLReaderPtr prea
     return ret;
 }
 
-bool ParseXMLFile(BaseXMLReaderPtr preader, const string& filename)
+bool ParseXMLFile(BaseXMLReaderPtr preader, const std::string& filename)
 {
-    string filedata = RaveFindLocalFile(filename,GetParseDirectory());
-    if( filedata.size() == 0 ) {
+	std::string filedata = RaveFindLocalFile(filename,GetParseDirectory());
+    if( filedata.size() == 0 )
+	{
         return false;
     }
     EnvironmentMutex::scoped_lock lock(*GetXMLMutex());
@@ -693,13 +694,16 @@ bool ParseXMLFile(BaseXMLReaderPtr preader, const string& filename)
     preader->file_name_ = filedata;
 
     int ret=-1;
-    try {
+    try 
+	{
         ret = raveXmlSAXUserParseFile(GetSAXHandler(), preader, filedata.c_str());
-        if( ret != 0 ) {
+        if( ret != 0 ) 
+		{
             RAVELOG_WARN(str(boost::format("xmlSAXUserParseFile: error parsing %s (error %d)\n")%filedata%ret));
         }
     }
-    catch(const std::exception& ex) {
+    catch(const std::exception& ex)
+	{
         RAVELOG_ERROR(str(boost::format("xmlSAXUserParseFile: error parsing %s: %s\n")%filedata%ex.what()));
         ret = -1;
     }
@@ -733,9 +737,10 @@ class StreamXMLReader : public BaseXMLReader
 public:
     virtual ProcessElement startElement(const std::string& xmlname, const AttributesList& atts)
     {
-        _ss.str("");         // have to clear the string
-        if( !!_pcurreader ) {
-            if( _pcurreader->startElement(xmlname,atts) == PE_Support )
+        string_stream_.str("");         // have to clear the string
+        if( !!cur_reader_ ) 
+		{
+            if( cur_reader_->startElement(xmlname,atts) == PE_Support )
                 return PE_Support;
             return PE_Ignore;
         }
@@ -744,58 +749,71 @@ public:
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) )
-                _pcurreader.reset();
+        if( !!cur_reader_ )
+		{
+            if( cur_reader_->endElement(xmlname) )
+                cur_reader_.reset();
         }
         return false;
     }
 
     virtual void characters(const std::string& ch)
     {
-        if( !!_pcurreader ) {
-            _pcurreader->characters(ch);
+        if( !!cur_reader_ ) 
+		{
+            cur_reader_->characters(ch);
         }
-        else {
-            _ss.clear();
-            _ss << ch;
+        else 
+		{
+            string_stream_.clear();
+            string_stream_ << ch;
         }
     }
 protected:
-    stringstream _ss;
-    std::shared_ptr<BaseXMLReader> _pcurreader;
+    std::stringstream string_stream_;
+    std::shared_ptr<BaseXMLReader> cur_reader_;
 };
 
 class LinkXMLReader : public StreamXMLReader
 {
 public:
 
-    static bool CreateGeometries(EnvironmentBasePtr penv, const std::string& filename, const Vector& vscale, std::list<KinBody::GeometryInfo>& listGeometries)
+    static bool CreateGeometries(EnvironmentBasePtr penv, 
+		const std::string& filename, const Vector& vscale, 
+		std::list<KinBody::GeometryInfo>& geometries_list)
     {
-        string extension;
-        if( filename.find_last_of('.') != string::npos ) {
+        std::string extension;
+        if( filename.find_last_of('.') != std::string::npos ) 
+		{
             extension = filename.substr(filename.find_last_of('.')+1);
             std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
         }
 
 #ifdef OPENRAVE_ASSIMP
         // assimp doesn't support vrml/iv, so don't waste time
-        if( extension != "iv" && extension != "wrl" && extension != "vrml" ) {
+        if( extension != "iv" && extension != "wrl" && extension != "vrml" ) 
+		{
             //Assimp::DefaultLogger::get()->setLogSeverity(Assimp::Logger::Debugging);
             {
                 aiSceneManaged scene(filename);
-                if( !!scene._scene && !!scene._scene->mRootNode && !!scene._scene->HasMeshes() ) {
-                    if( _AssimpCreateGeometries(scene._scene,scene._scene->mRootNode, vscale, listGeometries) ) {
+                if( !!scene._scene && !!scene._scene->mRootNode && !!scene._scene->HasMeshes() ) 
+				{
+                    if( _AssimpCreateGeometries(scene._scene,scene._scene->mRootNode, vscale, geometries_list) ) 
+					{
                         return true;
                     }
                 }
             }
-            if( extension == "stl" || extension == "x") {
-                if( extension == "stl" ) {
-                    if( _ParseSpecialSTLFile(penv, filename, vscale, listGeometries) ) {
+            if( extension == "stl" || extension == "x") 
+			{
+                if( extension == "stl" ) 
+				{
+                    if( _ParseSpecialSTLFile(penv, filename, vscale, geometries_list) ) 
+					{
                         return true;
                     }
-                    RAVELOG_WARN_FORMAT("failed to load STL file %s. If it is in binary format, make sure the first 5 characters of the file are not 'solid'!", filename);
+                    RAVELOG_WARN_FORMAT("failed to load STL file %s. If it is in binary format, \
+                     make sure the first 5 characters of the file are not 'solid'!", filename);
                 }
                 return false;
             }
@@ -803,13 +821,18 @@ public:
 #endif
 
         // for other importers, just convert into one big trimesh
-        listGeometries.push_back(KinBody::GeometryInfo());
-        KinBody::GeometryInfo& g = listGeometries.back();
+        geometries_list.push_back(KinBody::GeometryInfo());
+        KinBody::GeometryInfo& g = geometries_list.back();
         g.type_ = GT_TriMesh;
         g.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         g.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
         g.render_scale_vec_ = vscale;
-        if( !CreateTriMeshFromFile(penv,filename,vscale,g.mesh_collision_,g.diffuse_color_vec_,g.ambient_color_vec_,g.transparency_) ) {
+        if( !CreateTriMeshFromFile(penv,filename,vscale,
+			g.mesh_collision_,
+			g.diffuse_color_vec_,
+			g.ambient_color_vec_,
+			g.transparency_) ) 
+		{
             return false;
         }
         return true;
@@ -819,257 +842,340 @@ public:
 		: link_(plink) 
 	{
         parent_ = pparent;
-        _masstype = MT_None;
-        _fMassDensity = 1;
-        _vMassExtents = Vector(1,1,1);
-        _fTotalMass = 1;
-        _massCustom = MASS::GetSphericalMass(1,Vector(0,0,0),1);
-        _bSkipGeometry = false;
-        _vScaleGeometry = Vector(1,1,1);
-        bool bStaticSet = false;
-        bool bStatic = false;
-        bool bIsEnabled = true;
-        string linkname, linkfilename;
+        mass_type_ = MT_None;
+        mass_density_ = 1;
+        mass_extents_ = Vector(1,1,1);
+        total_mass_ = 1;
+        mass_custom_ = MASS::GetSphericalMass(1,Vector(0,0,0),1);
+        is_skip_geometry_ = false;
+        scale_geometry_ = Vector(1,1,1);
 
-        FOREACHC(itatt,atts) {
-            if( itatt->first == "name" ) {
-                linkname = itatt->second;
-                FOREACHC(itcurlink,pparent->GetLinks()) {
-                    if( (*itcurlink)->GetName() == linkname ) {
-                        link_ = *itcurlink;
+        bool is_static_set = false;
+        bool is_static = false;
+        bool is_enabled = true;
+        std::string linkname, linkfilename;
+
+        for(auto itatt:atts) 
+		{
+            if( itatt.first == "name" ) 
+			{
+                linkname = itatt.second;
+                for(auto itcurlink:pparent->GetLinks()) 
+				{
+                    if( itcurlink->GetName() == linkname ) 
+					{
+                        link_ = itcurlink;
                         break;
                     }
                 }
             }
-            else if( itatt->first == "type" ) {
-                bStaticSet = true;
-                if( _stricmp(itatt->second.c_str(), "static") == 0 ) {
-                    bStatic = true;
+            else if( itatt.first == "type" )
+			{
+                is_static_set = true;
+                if( _stricmp(itatt.second.c_str(), "static") == 0 )
+				{
+                    is_static = true;
                 }
             }
-            else if( itatt->first == "file" ) {
-                linkfilename = itatt->second;
+            else if( itatt.first == "file" )
+			{
+                linkfilename = itatt.second;
             }
-            else if( itatt->first == "skipgeometry" ) {
-                _bSkipGeometry = _stricmp(itatt->second.c_str(), "true") == 0 || itatt->second=="1";
+            else if( itatt.first == "skipgeometry" ) 
+			{
+                is_skip_geometry_ = _stricmp(itatt.second.c_str(), "true") == 0 || itatt.second=="1";
             }
-            else if( itatt->first == "scalegeometry" ) {
-                stringstream ss(itatt->second);
+            else if( itatt.first == "scalegeometry" ) 
+			{
+                std::stringstream ss(itatt.second);
                 Vector v(1,1,1);
                 ss >> v.x >> v.y >> v.z;
-                if( !ss ) {
+                if( !ss ) 
+				{
                     v.z = v.y = v.x;
                 }
-                _vScaleGeometry *= v;
+                scale_geometry_ *= v;
             }
-            else if( itatt->first == "enable" ) {
-                bIsEnabled = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
+            else if( itatt.first == "enable" ) 
+			{
+                is_enabled = !(_stricmp(itatt.second.c_str(), "false") == 0 || itatt.second=="0");
             }
         }
 
         // if not appending to a body and plink pointer valid, append to it instead
-        if( !link_ && !!plink &&( plink->GetParent() == pparent) ) {
+        if( !link_ && !!plink &&( plink->GetParent() == pparent) ) 
+		{
             link_ = plink;
         }
-        if( linkfilename.size() > 0 ) {
+        if( linkfilename.size() > 0 ) 
+		{
             ParseXMLFile(BaseXMLReaderPtr(new LinkXMLReader(link_, parent_, AttributesList())), linkfilename);
         }
 
-        if( !link_ ) {
+        if( !link_ )
+		{
             link_.reset(new KinBody::Link(pparent));
         }
-        if( linkname.size() > 0 ) {
+        if( linkname.size() > 0 )
+		{
             link_->info_.name_ = linkname;
         }
-        if( bStaticSet ) {
-            link_->info_.is_static_ = bStatic;
+        if( is_static_set )
+		{
+            link_->info_.is_static_ = is_static;
         }
-        link_->info_.is_enabled_ = bIsEnabled;
+        link_->info_.is_enabled_ = is_enabled;
     }
-    virtual ~LinkXMLReader() {
+    virtual ~LinkXMLReader() 
+	{
     }
 
     virtual ProcessElement startElement(const std::string& xmlname, const AttributesList& atts)
     {
-        switch( StreamXMLReader::startElement(xmlname,atts) ) {
+        switch( StreamXMLReader::startElement(xmlname,atts) ) 
+		{
         case PE_Pass: break;
         case PE_Support: return PE_Support;
         case PE_Ignore: return PE_Ignore;
         }
 
-        if( _processingtag.size() > 0 ) {
-            if( _processingtag == "mass" ) {
-                return (xmlname == "density" || xmlname == "total" || xmlname == "radius" || !(_masstype == MT_Box && xmlname == "extents") || (_masstype == MT_Custom && xmlname == "com") || (_masstype == MT_Custom && xmlname == "inertia")) ? PE_Support : PE_Ignore;
+        if( processing_tag_.size() > 0 ) 
+		{
+            if( processing_tag_ == "mass" ) 
+			{
+                return (xmlname == "density" 
+					|| xmlname == "total" 
+					|| xmlname == "radius" 
+					|| !(mass_type_ == MT_Box && xmlname == "extents") 
+					|| (mass_type_ == MT_Custom && xmlname == "com") 
+					|| (mass_type_ == MT_Custom && xmlname == "inertia")) ? PE_Support : PE_Ignore;
             }
             return PE_Ignore;
         }
 
-        if( xmlname == "body" ) {
-            tOrigTrans = link_->GetTransform();
+        if( xmlname == "body" ) 
+		{
+            orig_transform_ = link_->GetTransform();
             link_->SetTransform(Transform());
-            _processingtag = "";
+            processing_tag_ = "";
             AttributesList newatts = atts;
-            newatts.emplace_back("skipgeometry", _bSkipGeometry ? "1" : "0");
-            newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            _pcurreader.reset(new LinkXMLReader(link_, parent_, newatts));
+            newatts.emplace_back("skipgeometry", is_skip_geometry_ ? "1" : "0");
+            newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%scale_geometry_.x
+				%scale_geometry_.y%scale_geometry_.z));
+            cur_reader_.reset(new LinkXMLReader(link_, parent_, newatts));
             return PE_Support;
         }
 
-        _processingtag = xmlname;
-        if( xmlname == "translation" || xmlname == "rotationmat" || xmlname == "rotationaxis" || xmlname == "quat" || xmlname == "offsetfrom" ) {
+        processing_tag_ = xmlname;
+        if( xmlname == "translation" 
+			|| xmlname == "rotationmat" 
+			|| xmlname == "rotationaxis" 
+			|| xmlname == "quat" 
+			|| xmlname == "offsetfrom" )
+		{
             return PE_Support;
         }
-        else if( xmlname == "mass" ) {
+        else if( xmlname == "mass" ) 
+		{
             // find the type of mass and create
-            _masstype = MT_Sphere;
-            FOREACHC(itatt,atts) {
-                if( itatt->first == "type") {
-                    if( _stricmp(itatt->second.c_str(), "mimicgeom") == 0 ) {
-                        _masstype = MT_MimicGeom;
+            mass_type_ = MT_Sphere;
+            for(auto itatt:atts)
+			{
+                if( itatt.first == "type") 
+				{
+                    if( _stricmp(itatt.second.c_str(), "mimicgeom") == 0 )
+					{
+                        mass_type_ = MT_MimicGeom;
                     }
-                    else if( _stricmp(itatt->second.c_str(), "box") == 0 ) {
-                        _masstype = MT_Box;
+                    else if( _stricmp(itatt.second.c_str(), "box") == 0 ) 
+					{
+                        mass_type_ = MT_Box;
                     }
-                    else if( _stricmp(itatt->second.c_str(), "sphere") == 0 ) {
-                        _masstype = MT_Sphere;
+                    else if( _stricmp(itatt.second.c_str(), "sphere") == 0 ) 
+					{
+                        mass_type_ = MT_Sphere;
                     }
-                    else if( _stricmp(itatt->second.c_str(), "custom") == 0 ) {
-                        _masstype = MT_Custom;
+                    else if( _stricmp(itatt.second.c_str(), "custom") == 0 ) 
+					{
+                        mass_type_ = MT_Custom;
                     }
                     break;
                 }
             }
             return PE_Support;
         }
-        else if( _processingtag == "geometry" || _processingtag == "geom" ) {
-            _processingtag = "";
-            if( _bSkipGeometry ) {
+        else if( processing_tag_ == "geometry" 
+			|| processing_tag_ == "geom" ) 
+		{
+            processing_tag_ = "";
+            if( is_skip_geometry_ ) 
+			{
                 return PE_Ignore;
             }
-            _pcurreader.reset(new xmlreaders::GeometryInfoReader(KinBody::GeometryInfoPtr(),atts));
+            cur_reader_.reset(new xmlreaders::GeometryInfoReader(KinBody::GeometryInfoPtr(),atts));
             return PE_Support;
         }
 
-        _processingtag = "";
+        processing_tag_ = "";
         return PE_Pass;
     }
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
-                if( xmlname == "body" ) {
+        if( !!cur_reader_ ) 
+		{
+            if( cur_reader_->endElement(xmlname) ) 
+			{
+                if( xmlname == "body" )
+				{
                     // directly apply transform to all geomteries
                     Transform tnew = link_->GetTransform();
-                    FOREACH(itgeom, link_->geometries_vector_) {
-                        (*itgeom)->info_.transform_ = tnew * (*itgeom)->info_.transform_;
+                    for(auto& itgeom: link_->geometries_vector_) 
+					{
+                        itgeom->info_.transform_ = tnew * itgeom->info_.transform_;
                     }
                     link_->collision_.ApplyTransform(tnew);
-                    link_->SetTransform(tOrigTrans);
+                    link_->SetTransform(orig_transform_);
                 }
 
-                xmlreaders::GeometryInfoReaderPtr geomreader = std::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(_pcurreader);
-                if( !!geomreader ) {
+                xmlreaders::GeometryInfoReaderPtr geomreader 
+					= std::dynamic_pointer_cast<xmlreaders::GeometryInfoReader>(cur_reader_);
+                if( !!geomreader ) 
+				{
                     KinBody::GeometryInfoPtr info = geomreader->GetGeometryInfo();
 
                     // geometry is not in the default group, so we add it to the LinkInfo without instantiating it
-                    string groupname = geomreader->GetGroupName();
-                    if( groupname != "self" ) {
+                    std::string groupname = geomreader->GetGroupName();
+                    if( groupname != "self" ) 
+					{
                         link_->info_.extra_geometries_map_[groupname].push_back(info);
-                        _pcurreader.reset();
+                        cur_reader_.reset();
                         return false;
                     }
 
                     TransformMatrix tm(info->transform_); tm.trans = Vector();
                     TransformMatrix tminv = tm.inverse();
-                    tm.m[0] *= _vScaleGeometry.x; tm.m[1] *= _vScaleGeometry.x; tm.m[2] *= _vScaleGeometry.x;
-                    tm.m[4] *= _vScaleGeometry.y; tm.m[5] *= _vScaleGeometry.y; tm.m[6] *= _vScaleGeometry.y;
-                    tm.m[8] *= _vScaleGeometry.z; tm.m[9] *= _vScaleGeometry.z; tm.m[10] *= _vScaleGeometry.z;
+                    tm.m[0] *= scale_geometry_.x; tm.m[1] *= scale_geometry_.x; tm.m[2] *= scale_geometry_.x;
+                    tm.m[4] *= scale_geometry_.y; tm.m[5] *= scale_geometry_.y; tm.m[6] *= scale_geometry_.y;
+                    tm.m[8] *= scale_geometry_.z; tm.m[9] *= scale_geometry_.z; tm.m[10] *= scale_geometry_.z;
                     TransformMatrix tmres = tminv * tm;
                     // have to scale in link space, so get scale in geomspace
-                    Vector geomspacescale(RaveSqrt(tmres.m[0]*tmres.m[0]+tmres.m[4]*tmres.m[4]+tmres.m[8]*tmres.m[8]),RaveSqrt(tmres.m[1]*tmres.m[1]+tmres.m[5]*tmres.m[5]+tmres.m[9]*tmres.m[9]),RaveSqrt(tmres.m[2]*tmres.m[2]+tmres.m[6]*tmres.m[6]+tmres.m[10]*tmres.m[10]));
+                    Vector geomspacescale(RaveSqrt(tmres.m[0]*tmres.m[0]+tmres.m[4]*tmres.m[4]+tmres.m[8]*tmres.m[8]),
+						RaveSqrt(tmres.m[1]*tmres.m[1]+tmres.m[5]*tmres.m[5]+tmres.m[9]*tmres.m[9]),
+						RaveSqrt(tmres.m[2]*tmres.m[2]+tmres.m[6]*tmres.m[6]+tmres.m[10]*tmres.m[10]));
 
-                    if( !!_fnGetModelsDir ) {
+                    if( !!fn_GetModelsDir_ ) 
+					{
                         bool bsame = info->render_file_name_ == info->collision_file_name_;
-                        info->render_file_name_ = _fnGetModelsDir(info->render_file_name_);
-                        if( bsame ) {
+                        info->render_file_name_ = fn_GetModelsDir_(info->render_file_name_);
+                        if( bsame ) 
+						{
                             info->collision_file_name_ = info->render_file_name_;
                         }
-                        else {
-                            info->collision_file_name_ = _fnGetModelsDir(info->collision_file_name_);
+                        else 
+						{
+                            info->collision_file_name_ = fn_GetModelsDir_(info->collision_file_name_);
                         }
                     }
-                    std::list<KinBody::GeometryInfo> listGeometries;
-                    if( info->type_ == GT_TriMesh ) {
-                        bool bSuccess = false;
-                        if( info->collision_file_name_.size() > 0 ) {
-                            if( !CreateGeometries(parent_->GetEnv(),info->collision_file_name_, info->collision_scale_vec_, listGeometries) ) {
+                    std::list<KinBody::GeometryInfo> geometries_list;
+                    if( info->type_ == GT_TriMesh ) 
+					{
+                        bool is_success = false;
+                        if( info->collision_file_name_.size() > 0 )
+						{
+                            if( !CreateGeometries(parent_->GetEnv(),
+								info->collision_file_name_,
+								info->collision_scale_vec_, geometries_list) )
+							{
                                 RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->collision_file_name_));
                             }
-                            else {
-                                bSuccess = true;
+                            else 
+							{
+                                is_success = true;
                             }
                         }
-                        if( info->render_file_name_.size() > 0 ) {
-                            if( !bSuccess ) {
-                                if( !CreateGeometries(parent_->GetEnv(), info->render_file_name_, info->render_scale_vec_, listGeometries) ) {
+                        if( info->render_file_name_.size() > 0 ) 
+						{
+                            if( !is_success )
+							{
+                                if( !CreateGeometries(parent_->GetEnv(), 
+									info->render_file_name_, 
+									info->render_scale_vec_, 
+									geometries_list) ) 
+								{
                                     RAVELOG_WARN(str(boost::format("failed to find %s\n")%info->render_file_name_));
                                 }
-                                else {
-                                    bSuccess = true;
+                                else 
+								{
+                                    is_success = true;
                                 }
                             }
                         }
-                        if( listGeometries.size() > 0 ) {
+                        if( geometries_list.size() > 0 )
+						{
                             // append all the geometries to the link. make sure the render filename is specified in only one geometry.
-                            string extension;
-                            if( info->render_file_name_.find_last_of('.') != string::npos ) {
+                            std::string extension;
+                            if( info->render_file_name_.find_last_of('.') != std::string::npos ) 
+							{
                                 extension = info->render_file_name_.substr(info->render_file_name_.find_last_of('.')+1);
                             }
-                            FOREACH(itnewgeom,listGeometries) {
-                                itnewgeom->is_visible_ = info->is_visible_;
-                                itnewgeom->is_modifiable_ = info->is_modifiable_;
-                                itnewgeom->transform_ = info->transform_;
-                                itnewgeom->transparency_ = info->transparency_;
-                                itnewgeom->render_file_name_ = string("__norenderif__:")+extension;
-                                FOREACH(it,itnewgeom->mesh_collision_.vertices) {
-                                    *it = tmres * *it;
+                            for(auto& itnewgeom:geometries_list)
+							{
+                                itnewgeom.is_visible_ = info->is_visible_;
+                                itnewgeom.is_modifiable_ = info->is_modifiable_;
+                                itnewgeom.transform_ = info->transform_;
+                                itnewgeom.transparency_ = info->transparency_;
+                                itnewgeom.render_file_name_ = std::string("__norenderif__:")+extension;
+                                for(auto& it:itnewgeom.mesh_collision_.vertices) 
+								{
+                                    it = tmres * it;
                                 }
-                                if( geomreader->IsOverwriteDiffuse() ) {
-                                    itnewgeom->diffuse_color_vec_ = info->diffuse_color_vec_;
+                                if( geomreader->IsOverwriteDiffuse() ) 
+								{
+                                    itnewgeom.diffuse_color_vec_ = info->diffuse_color_vec_;
                                 }
-                                if( geomreader->IsOverwriteAmbient() ) {
-                                    itnewgeom->ambient_color_vec_ = info->ambient_color_vec_;
+                                if( geomreader->IsOverwriteAmbient() ) 
+								{
+                                    itnewgeom.ambient_color_vec_ = info->ambient_color_vec_;
                                 }
-                                if( geomreader->IsOverwriteTransparency() ) {
-                                    itnewgeom->transparency_ = info->transparency_;
+                                if( geomreader->IsOverwriteTransparency() ) 
+								{
+                                    itnewgeom.transparency_ = info->transparency_;
                                 }
-                                itnewgeom->transform_.trans *= _vScaleGeometry;
-                                link_->collision_.Append(itnewgeom->mesh_collision_, itnewgeom->transform_);
+                                itnewgeom.transform_.trans *= scale_geometry_;
+                                link_->collision_.Append(itnewgeom.mesh_collision_, itnewgeom.transform_);
                             }
-                            listGeometries.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
-                            listGeometries.front().render_file_name_ = info->render_file_name_;
-                            listGeometries.front().collision_scale_vec_ = info->collision_scale_vec_*geomspacescale;
-                            listGeometries.front().collision_file_name_ = info->collision_file_name_;
-                            listGeometries.front().is_visible_ = info->is_visible_;
-                            FOREACH(itinfo, listGeometries) {
-                                link_->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*itinfo)));
+                            geometries_list.front().render_scale_vec_ = info->render_scale_vec_*geomspacescale;
+                            geometries_list.front().render_file_name_ = info->render_file_name_;
+                            geometries_list.front().collision_scale_vec_ = info->collision_scale_vec_*geomspacescale;
+                            geometries_list.front().collision_file_name_ = info->collision_file_name_;
+                            geometries_list.front().is_visible_ = info->is_visible_;
+                            for(auto& itinfo: geometries_list) 
+							{
+                                link_->geometries_vector_.push_back(
+									KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,itinfo)));
                             }
                         }
-                        else {
+                        else 
+						{
                             info->render_scale_vec_ = info->render_scale_vec_*geomspacescale;
-                            FOREACH(it,info->mesh_collision_.vertices) {
-                                *it = tmres * *it;
+                            for(auto& it:info->mesh_collision_.vertices) 
+							{
+                                it = tmres * it;
                             }
-                            info->transform_.trans *= _vScaleGeometry;
+                            info->transform_.trans *= scale_geometry_;
                             link_->collision_.Append(info->mesh_collision_, info->transform_);
-                            link_->geometries_vector_.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*info)));
+                            link_->geometries_vector_.push_back(
+								KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(link_,*info)));
                         }
                     }
-                    else {
+                    else 
+					{
                         info->render_scale_vec_ = info->render_scale_vec_*geomspacescale;
                         info->render_file_name_ = info->render_file_name_;
-                        if( info->type_ == GT_Cylinder ) {         // axis has to point on y
+                        if( info->type_ == GT_Cylinder ) 
+						{   
+							// axis has to point on y
                             // rotate on x axis by pi/2
                             Transform trot;
                             trot.rot = quatFromAxisAngle(Vector(1, 0, 0), PI/2);
@@ -1079,102 +1185,122 @@ public:
                         // call before attaching the geom
                         KinBody::Link::GeometryPtr geom(new KinBody::Link::Geometry(link_,*info));
                         geom->info_.InitCollisionMesh();
-                        FOREACH(it,info->mesh_collision_.vertices) {
-                            *it = tmres * *it;
+                        for(auto& it:info->mesh_collision_.vertices) 
+						{
+                            it = tmres * it;
                         }
-                        info->transform_.trans *= _vScaleGeometry;
+                        info->transform_.trans *= scale_geometry_;
                         info->gemo_outer_extents_data_ *= geomspacescale;
                         link_->collision_.Append(geom->GetCollisionMesh(), info->transform_);
                         link_->geometries_vector_.push_back(geom);
                     }
                 }
 
-                _pcurreader.reset();
+                cur_reader_.reset();
             }
             return false;
         }
-        else if( _processingtag == "mass" ) {
-            if( xmlname == "density" ) {
-                if( _masstype == MT_BoxMass ) {
-                    _masstype = MT_Box;
+        else if( processing_tag_ == "mass" ) 
+{
+            if( xmlname == "density" ) 
+			{
+                if( mass_type_ == MT_BoxMass )
+				{
+                    mass_type_ = MT_Box;
                 }
-                else if( _masstype == MT_SphereMass) {
-                    _masstype = MT_Sphere;
+                else if( mass_type_ == MT_SphereMass) 
+				{
+                    mass_type_ = MT_Sphere;
                 }
-                else if( _masstype == MT_MimicGeomMass) {
-                    _masstype = MT_MimicGeom;
+                else if( mass_type_ == MT_MimicGeomMass) 
+				{
+                    mass_type_ = MT_MimicGeom;
                 }
-                _ss >> _fMassDensity;
+                string_stream_ >> mass_density_;
             }
-            else if( xmlname == "total" ) {
-                if( _masstype == MT_Box ) {
-                    _masstype = MT_BoxMass;
+            else if( xmlname == "total" ) 
+			{
+                if( mass_type_ == MT_Box ) 
+				{
+                    mass_type_ = MT_BoxMass;
                 }
-                else if( _masstype == MT_Sphere) {
-                    _masstype = MT_SphereMass;
+                else if( mass_type_ == MT_Sphere) 
+				{
+                    mass_type_ = MT_SphereMass;
                 }
-                else if( _masstype == MT_MimicGeom) {
-                    _masstype = MT_MimicGeomMass;
+                else if( mass_type_ == MT_MimicGeom) 
+				{
+                    mass_type_ = MT_MimicGeomMass;
                 }
-                _ss >> _fTotalMass;
-                _massCustom.fTotalMass = _fTotalMass;
+                string_stream_ >> total_mass_;
+                mass_custom_.fTotalMass = total_mass_;
             }
-            else if( xmlname == "radius" ) {
-                _ss >> _vMassExtents.x;
-                _vMassExtents.x *= _vScaleGeometry.x;
+            else if( xmlname == "radius" ) 
+			{
+                string_stream_ >> mass_extents_.x;
+                mass_extents_.x *= scale_geometry_.x;
             }
-            else if((_masstype == MT_Box)&&(xmlname == "extents")) {
-                _ss >> _vMassExtents.x >> _vMassExtents.y >> _vMassExtents.z;
-                _vMassExtents *= _vScaleGeometry;
+            else if((mass_type_ == MT_Box)&&(xmlname == "extents"))
+			{
+                string_stream_ >> mass_extents_.x >> mass_extents_.y >> mass_extents_.z;
+                mass_extents_ *= scale_geometry_;
             }
-            else if( xmlname == _processingtag ) {
-                _processingtag = "";
+            else if( xmlname == processing_tag_ ) 
+			{
+                processing_tag_ = "";
             }
-            else if( _masstype == MT_Custom ) {
-                if( xmlname == "com" ) {
-                    _ss >> _massCustom.t.trans.x >> _massCustom.t.trans.y >> _massCustom.t.trans.z;
-                    _massCustom.t.trans = _massCustom.t.trans*_vScaleGeometry;
+            else if( mass_type_ == MT_Custom ) 
+			{
+                if( xmlname == "com" ) 
+				{
+                    string_stream_ >> mass_custom_.t.trans.x >> mass_custom_.t.trans.y >> mass_custom_.t.trans.z;
+                    mass_custom_.t.trans = mass_custom_.t.trans*scale_geometry_;
                 }
-                else if( xmlname == "inertia" ) {
-                    _ss >> _massCustom.t.m[0] >> _massCustom.t.m[1] >> _massCustom.t.m[2] >> _massCustom.t.m[4] >> _massCustom.t.m[5] >> _massCustom.t.m[6] >> _massCustom.t.m[8] >> _massCustom.t.m[9] >> _massCustom.t.m[10];
+                else if( xmlname == "inertia" ) 
+				{
+                    string_stream_ >> mass_custom_.t.m[0] >> mass_custom_.t.m[1] >> mass_custom_.t.m[2] >> mass_custom_.t.m[4] >> mass_custom_.t.m[5] >> mass_custom_.t.m[6] >> mass_custom_.t.m[8] >> mass_custom_.t.m[9] >> mass_custom_.t.m[10];
                 }
             }
             return false;
         }
 
-        if( xmlname == "body" ) {
-            if(( link_->GetGeometries().size() == 0) && !_bSkipGeometry) {
+        if( xmlname == "body" ) 
+		{
+            if(( link_->GetGeometries().size() == 0) && !is_skip_geometry_) 
+			{
                 RAVELOG_VERBOSE(str(boost::format("link %s has no geometry attached!\n")%link_->GetName()));
             }
             // perform final processing stages
             MASS totalmass;
-            if( _masstype == MT_MimicGeom ) {
-                FOREACHC(itgeom, link_->GetGeometries()) {
+            if( mass_type_ == MT_MimicGeom ) 
+			{
+                for(auto itgeom: link_->GetGeometries()) {
                     MASS mass;
-                    switch((*itgeom)->GetType()) {
+                    switch(itgeom->GetType()) {
                     case GT_Sphere:
-                        mass = MASS::GetSphericalMassD((*itgeom)->GetSphereRadius(), Vector(),_fMassDensity);
+                        mass = MASS::GetSphericalMassD(itgeom->GetSphereRadius(), Vector(),mass_density_);
                         break;
                     case GT_Box:
-                        mass = MASS::GetBoxMassD((*itgeom)->GetBoxExtents(), Vector(), _fMassDensity);
+                        mass = MASS::GetBoxMassD(itgeom->GetBoxExtents(), Vector(), mass_density_);
                         break;
                     case GT_Cage:
-                        mass = MASS::GetBoxMassD(0.5*(*itgeom)->GetContainerOuterExtents(), Vector(), _fMassDensity);
+                        mass = MASS::GetBoxMassD(0.5*itgeom->GetContainerOuterExtents(), Vector(), mass_density_);
                         break;
                     case GT_Container:
-                        mass = MASS::GetBoxMassD(0.5*(*itgeom)->GetContainerOuterExtents(), Vector(), _fMassDensity);
+                        mass = MASS::GetBoxMassD(0.5*itgeom->GetContainerOuterExtents(), Vector(), mass_density_);
                         break;
                     case GT_Cylinder:
-                        mass = MASS::GetCylinderMassD((*itgeom)->GetCylinderRadius(), (*itgeom)->GetCylinderHeight(), Vector(), _fMassDensity);
+                        mass = MASS::GetCylinderMassD(itgeom->GetCylinderRadius(), itgeom->GetCylinderHeight(),
+							Vector(), mass_density_);
                         break;
                     default:
                         break;
                     }
 
-                    totalmass += mass.ChangeCoordinateSystem((*itgeom)->GetTransform());
+                    totalmass += mass.ChangeCoordinateSystem(itgeom->GetTransform());
                 }
             }
-            else if( _masstype == MT_MimicGeomMass ) {
+            else if( mass_type_ == MT_MimicGeomMass ) {
                 std::vector<MASS> masses;
                 dReal dummytotal=0;
                 FOREACHC(itgeom, link_->GetGeometries()) {
@@ -1200,7 +1326,7 @@ public:
                     dummytotal+=mass.fTotalMass;
                 }
                 RAVELOG_VERBOSE("Total dummy mass is %f\n",dummytotal);
-                dReal ratio=_fTotalMass/dummytotal;
+                dReal ratio=total_mass_/dummytotal;
                 //Store new masses based on the percentage of the total geometry volume in each piece
                 FOREACH(itmass,masses){
                     itmass->fTotalMass=itmass->fTotalMass*ratio;
@@ -1209,25 +1335,25 @@ public:
                 }
 
             }
-            else if( _masstype == MT_Box ) {
-                totalmass = MASS::GetBoxMassD(_vMassExtents, Vector(), _fMassDensity);
+            else if( mass_type_ == MT_Box ) {
+                totalmass = MASS::GetBoxMassD(mass_extents_, Vector(), mass_density_);
             }
-            else if( _masstype == MT_BoxMass ) {
-                totalmass = MASS::GetBoxMass(_vMassExtents, Vector(), _fTotalMass);
+            else if( mass_type_ == MT_BoxMass ) {
+                totalmass = MASS::GetBoxMass(mass_extents_, Vector(), total_mass_);
             }
-            else if( _masstype == MT_Sphere ) {
-                totalmass = MASS::GetSphericalMassD(_vMassExtents.x, Vector(), _fMassDensity);
+            else if( mass_type_ == MT_Sphere ) {
+                totalmass = MASS::GetSphericalMassD(mass_extents_.x, Vector(), mass_density_);
             }
-            else if( _masstype == MT_Custom ) {
-                totalmass = _massCustom;
+            else if( mass_type_ == MT_Custom ) {
+                totalmass = mass_custom_;
             }
             else {
-                totalmass = MASS::GetSphericalMass(_vMassExtents.x, Vector(), _fTotalMass);
+                totalmass = MASS::GetSphericalMass(mass_extents_.x, Vector(), total_mass_);
             }
 
             totalmass.GetMassFrame(link_->info_.mass_frame_transform_, link_->info_.inertia_moments_vector_);
             link_->info_.mass_ =totalmass.fTotalMass;
-            tOrigTrans = link_->GetTransform();
+            orig_transform_ = link_->GetTransform();
 
             Transform cur;
             if( !!_offsetfrom ) {
@@ -1241,7 +1367,7 @@ public:
                 }
                 cur = link_->GetTransform();
                 cur = root * cur;
-                tOrigTrans = root * tOrigTrans;         // update orig trans separately
+                orig_transform_ = root * orig_transform_;         // update orig trans separately
                 link_->SetTransform(cur);
             }
 
@@ -1250,30 +1376,30 @@ public:
 
         if( xmlname == "translation" ) {
             Vector v;
-            _ss >> v.x >> v.y >> v.z;
-            link_->info_.transform_.trans += v*_vScaleGeometry;
+            string_stream_ >> v.x >> v.y >> v.z;
+            link_->info_.transform_.trans += v*scale_geometry_;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
-            _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+            string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
             link_->info_.transform_.rot = (Transform(tnew)*link_->info_.transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
-            _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+            string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
             link_->info_.transform_.rot = (tnew*link_->info_.transform_).rot;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
-            _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
+            string_stream_ >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
             link_->info_.transform_.rot = (tnew*link_->info_.transform_).rot;
         }
         else if( xmlname == "offsetfrom" ) {
             // figure out which body
             string linkname;
-            _ss >> linkname;
+            string_stream_ >> linkname;
             _offsetfrom = parent_->GetLink(linkname);
             if( !_offsetfrom ) {
                 RAVELOG_WARN(str(boost::format("Failed to find offsetfrom body %s\n")%linkname));
@@ -1281,18 +1407,18 @@ public:
             }
         }
 
-        if( xmlname !=_processingtag ) {
-            RAVELOG_WARN(str(boost::format("invalid tag %s!=%s\n")%xmlname%_processingtag));
+        if( xmlname !=processing_tag_ ) {
+            RAVELOG_WARN(str(boost::format("invalid tag %s!=%s\n")%xmlname%processing_tag_));
         }
-        _processingtag = "";
+        processing_tag_ = "";
         return false;
     }
 
     virtual void characters(const std::string& ch)
     {
-        if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+        if( processing_tag_.size() > 0 ) {
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             StreamXMLReader::characters(ch);
@@ -1301,38 +1427,39 @@ public:
 
     void SetMassType(MassType type, float fValue, const Vector &vMassExtents)
     {
-        _masstype = type;
-        _fMassDensity = _fTotalMass = fValue;
-        _vMassExtents = vMassExtents;
+        mass_type_ = type;
+        mass_density_ = total_mass_ = fValue;
+        mass_extents_ = vMassExtents;
     }
 
     Transform GetOrigTransform() const {
-        return tOrigTrans;
+        return orig_transform_;
     }
 
-    boost::function<string(const std::string&)> _fnGetModelsDir;
+    boost::function<string(const std::string&)> fn_GetModelsDir_;
     boost::function<Transform(KinBody::LinkPtr)> _fnGetOffsetFrom;
 
 private:
-    MASS _mass;                            //!< current mass of the object
+    MASS mass_;                            //!< current mass of the object
     KinBody::LinkPtr& link_;
     KinBodyPtr parent_;
     KinBody::LinkPtr _offsetfrom;                            //!< all transformations are relative to the this body
-    bool _bSkipGeometry;
-    Vector _vScaleGeometry;
-    Transform tOrigTrans;
+    bool is_skip_geometry_;
+    Vector scale_geometry_;
+    Transform orig_transform_;
 
     // Mass
-    MassType _masstype;                   //!< if true, mass is craeted so that it mimics the geometry
-    string _processingtag;         /// if not empty, currently processing
-    MASS _massCustom;
-    float _fMassDensity, _fTotalMass;
-    Vector _vMassExtents;                   //!< used only if mass is a box
+    MassType mass_type_;                   //!< if true, mass is craeted so that it mimics the geometry
+    std::string processing_tag_;         /// if not empty, currently processing
+    MASS mass_custom_;
+    float mass_density_, total_mass_;
+    Vector mass_extents_;                   //!< used only if mass is a box
 };
 
-bool CreateGeometries(EnvironmentBasePtr penv, const std::string& filename, const Vector &vscale, std::list<KinBody::GeometryInfo>& listGeometries)
+bool CreateGeometries(EnvironmentBasePtr penv, const std::string& filename, 
+	const Vector &vscale, std::list<KinBody::GeometryInfo>& geometries_list)
 {
-    return LinkXMLReader::CreateGeometries(penv,filename,vscale,listGeometries);
+    return LinkXMLReader::CreateGeometries(penv,filename,vscale,geometries_list);
 }
 
 // Joint Reader
@@ -1460,7 +1587,7 @@ public:
 
         if( xmlname == "actuator" ) {
             _processingtag = "";
-            _pcurreader.reset(new xmlreaders::ElectricMotorActuatorInfoReader(ElectricMotorActuatorInfoPtr(), atts));
+            cur_reader_.reset(new xmlreaders::ElectricMotorActuatorInfoReader(ElectricMotorActuatorInfoPtr(), atts));
             return PE_Support;
         }
 
@@ -1477,13 +1604,13 @@ public:
         int numindices = _pjoint->GetDOF();
         dReal fRatio = _pjoint->info_.type_ == KinBody::JointSlider ? (dReal)1 : (dReal)PI / 180.0f;         // most, but not all, joint take degrees
 
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
-                xmlreaders::ElectricMotorActuatorInfoReaderPtr actuatorreader = std::dynamic_pointer_cast<xmlreaders::ElectricMotorActuatorInfoReader>(_pcurreader);
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
+                xmlreaders::ElectricMotorActuatorInfoReaderPtr actuatorreader = std::dynamic_pointer_cast<xmlreaders::ElectricMotorActuatorInfoReader>(cur_reader_);
                 if( !!actuatorreader ) {
                     _pjoint->info_.electric_motor_info_ = actuatorreader->GetActuatorInfo();
                 }
-                _pcurreader.reset();
+                cur_reader_.reset();
             }
         }
         else if( xmlname == "joint" ) {
@@ -1528,18 +1655,18 @@ public:
         }
         else if( xmlname == "weight" ) {
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->info_.weights_vector_.at(i);
+                string_stream_ >> _pjoint->info_.weights_vector_.at(i);
             }
         }
         else if( xmlname == "initial" ) {
-            _vinitialvalues = std::vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            _vinitialvalues = std::vector<dReal>((istream_iterator<dReal>(string_stream_)), istream_iterator<dReal>());
         }
         else if( xmlname == "body" ) {
             // figure out which body
             int index = !attachedbodies[0] ? 0 : 1;
             bool bQuery = true;
             string linkname;
-            _ss >> linkname;
+            string_stream_ >> linkname;
 
             FOREACHC(itlink, _pparent->GetLinks()) {
                 if( _stricmp((*itlink)->GetName().c_str(), linkname.c_str()) == 0 ) {
@@ -1559,7 +1686,7 @@ public:
                 throw OpenRAVEException(_tr("cannot specify <limits> with <lostop> and <histop>, choose one"));
             }
             dReal fmult = xmlname == "limitsdeg" ? fRatio : dReal(1.0);
-            vector<dReal> values = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            vector<dReal> values = vector<dReal>((istream_iterator<dReal>(string_stream_)), istream_iterator<dReal>());
             if( (int)values.size() == 2*_pjoint->GetDOF() ) {
                 for(int i = 0; i < _pjoint->GetDOF(); ++i ) {
                     _pjoint->info_.lower_limit_vector_.at(i) = fmult*min(values[2*i+0],values[2*i+1]);
@@ -1574,7 +1701,7 @@ public:
             _bNegateJoint = true;
             RAVELOG_ERROR(str(boost::format("%s: <lostop> is deprecated, please use <limits> (now in radians), <limitsrad>, or <limitsdeg> tag and negate your joint axis!\n")%_pparent->GetName()));
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->info_.lower_limit_vector_.at(i);
+                string_stream_ >> _pjoint->info_.lower_limit_vector_.at(i);
                 _pjoint->info_.lower_limit_vector_.at(i) *= fRatio;
             }
         }
@@ -1582,50 +1709,50 @@ public:
             _bNegateJoint = true;
             RAVELOG_ERROR(str(boost::format("%s: <histop> deprecated, please use <limits> (now in radians), <limitsrad>, <limitsdeg> tag and negate your joint axis!\n")%_pparent->GetName()));
             for(int i = 0; i < numindices; ++i) {
-                _ss >> _pjoint->info_.upper_limit_vector_.at(i);
+                string_stream_ >> _pjoint->info_.upper_limit_vector_.at(i);
                 _pjoint->info_.upper_limit_vector_.at(i) *= fRatio;
             }
         }
         else if( xmlname == "maxvel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.max_velocity_vector_[idof];
+                string_stream_ >> _pjoint->info_.max_velocity_vector_[idof];
             }
         }
         else if( xmlname == "maxveldeg" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.max_velocity_vector_[idof];
+                string_stream_ >> _pjoint->info_.max_velocity_vector_[idof];
                 _pjoint->info_.max_velocity_vector_[idof] *= PI/180.0;
             }
         }
         else if( xmlname == "hardmaxvel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.hard_max_velocity_vector_[idof];
+                string_stream_ >> _pjoint->info_.hard_max_velocity_vector_[idof];
             }
         }
         else if( xmlname == "maxaccel" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.max_accelerate_vector_[idof];
+                string_stream_ >> _pjoint->info_.max_accelerate_vector_[idof];
             }
         }
         else if( xmlname == "maxacceldeg" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.max_accelerate_vector_[idof];
+                string_stream_ >> _pjoint->info_.max_accelerate_vector_[idof];
                 _pjoint->info_.max_accelerate_vector_[idof] *= PI/180.0;
             }
         }
         else if( xmlname == "maxtorque" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.max_torque_vector_[idof];
+                string_stream_ >> _pjoint->info_.max_torque_vector_[idof];
             }
         }
         else if( xmlname == "maxinertia" ) {
             for(int idof = 0; idof < _pjoint->GetDOF(); ++idof) {
-                _ss >> _pjoint->info_.max_inertia_vector_[idof];
+                string_stream_ >> _pjoint->info_.max_inertia_vector_[idof];
             }
         }
         else if( xmlname == "resolution" ) {
             dReal fResolution = 0.02;
-            _ss >> fResolution;
+            string_stream_ >> fResolution;
             fResolution *= fRatio;
             FOREACH(itvalue, _pjoint->info_.resolution_vector_) {
                 *itvalue = fResolution;
@@ -1633,7 +1760,7 @@ public:
         }
         else if( xmlname == "offsetfrom" ) {
             // figure out which body
-            string linkname; _ss >> linkname;
+            string linkname; string_stream_ >> linkname;
             _offsetfrom = _pparent->GetLink(linkname);
 
             if( !_offsetfrom ) {
@@ -1646,51 +1773,51 @@ public:
             switch(_pjoint->info_.type_) {
             case KinBody::JointHinge:
                 if( xmlname == "anchor" ) {
-                    _ss >> _vanchor.x >> _vanchor.y >> _vanchor.z;
+                    string_stream_ >> _vanchor.x >> _vanchor.y >> _vanchor.z;
                     _vanchor *= _vScaleGeometry;
                 }
                 else if( xmlname == "axis" ) {
-                    _ss >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
+                    string_stream_ >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
                     _vAxes.at(0).normalize3();
                 }
                 break;
             case KinBody::JointSlider:
                 if( xmlname == "axis" ) {
-                    _ss >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
+                    string_stream_ >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
                     _vAxes.at(0).normalize3();
                 }
                 break;
             case KinBody::JointUniversal:
                 if( xmlname == "anchor" ) {
-                    _ss >> _vanchor.x >> _vanchor.y >> _vanchor.z;
+                    string_stream_ >> _vanchor.x >> _vanchor.y >> _vanchor.z;
                     _vanchor *= _vScaleGeometry;
                 }
                 else if( xmlname == "axis1" ) {
-                    _ss >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
+                    string_stream_ >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
                     _vAxes.at(0).normalize3();
                 }
                 else if( xmlname == "axis2" ) {
-                    _ss >> _vAxes.at(1).x >> _vAxes.at(1).y >> _vAxes.at(1).z;
+                    string_stream_ >> _vAxes.at(1).x >> _vAxes.at(1).y >> _vAxes.at(1).z;
                     _vAxes.at(0).normalize3();
                 }
                 break;
             case KinBody::JointHinge2:
                 if( xmlname == "anchor" ) {
-                    _ss >> _vanchor.x >> _vanchor.y >> _vanchor.z;
+                    string_stream_ >> _vanchor.x >> _vanchor.y >> _vanchor.z;
                     _vanchor *= _vScaleGeometry;
                 }
                 else if( xmlname == "axis1" ) {
-                    _ss >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
+                    string_stream_ >> _vAxes.at(0).x >> _vAxes.at(0).y >> _vAxes.at(0).z;
                     _vAxes.at(0).normalize3();
                 }
                 else if( xmlname == "axis2" ) {
-                    _ss >> _vAxes.at(1).x >> _vAxes.at(1).y >> _vAxes.at(1).z;
+                    string_stream_ >> _vAxes.at(1).x >> _vAxes.at(1).y >> _vAxes.at(1).z;
                     _vAxes.at(0).normalize3();
                 }
                 break;
             case KinBody::JointSpherical:
                 if( xmlname == "anchor" ) {
-                    _ss >> _vanchor.x >> _vanchor.y >> _vanchor.z;
+                    string_stream_ >> _vanchor.x >> _vanchor.y >> _vanchor.z;
                     _vanchor *= _vScaleGeometry;
                 }
                 break;
@@ -1707,8 +1834,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             StreamXMLReader::characters(ch);
@@ -1760,7 +1887,7 @@ public:
                 }
 
                 //BaseXMLReaderPtr preader = CreateInterfaceReader(_penv,_type,_pinterface, xmltag, listnewatts);
-                //bool bSuccess = ParseXMLFile(preader, itatt->second);
+                //bool is_success = ParseXMLFile(preader, itatt->second);
                 string filedata = RaveFindLocalFile(itatt->second,GetParseDirectory());
                 if( filedata.size() == 0 ) {
                     continue;
@@ -1926,9 +2053,9 @@ public:
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
-                _pcurreader.reset();
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
+                cur_reader_.reset();
             }
         }
         else if( !!_pcustomreader ) {
@@ -1948,7 +2075,7 @@ public:
                 _CheckInterface();
                 if( !!_pinterface ) {
                     stringstream sout;
-                    if( !_pinterface->SendCommand(sout,_ss) ) {
+                    if( !_pinterface->SendCommand(sout,string_stream_) ) {
                         RAVELOG_WARN("interface command failed\n");
                     }
                 }
@@ -1972,8 +2099,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _interfaceprocessingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else if( !!_pcustomreader ) {
             _pcustomreader->characters(ch);
@@ -2122,7 +2249,7 @@ public:
             AttributesList newatts = atts;
             newatts.emplace_back("skipgeometry", _bSkipGeometry ? "1" : "0");
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            _pcurreader = CreateInterfaceReader(_penv,PT_KinBody,_pinterface, xmlname, newatts);
+            cur_reader_ = CreateInterfaceReader(_penv,PT_KinBody,_pinterface, xmlname, newatts);
             return PE_Support;
         }
 
@@ -2134,9 +2261,9 @@ public:
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
             std::shared_ptr<LinkXMLReader> plinkreader(new LinkXMLReader(_plink, _pchain, newatts));
             plinkreader->SetMassType(_masstype, _fMassValue, _vMassExtents);
-            plinkreader->_fnGetModelsDir = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
+            plinkreader->fn_GetModelsDir_ = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
             plinkreader->_fnGetOffsetFrom = boost::bind(&KinBodyXMLReader::GetOffsetFrom,this,_1);
-            _pcurreader = plinkreader;
+            cur_reader_ = plinkreader;
             return PE_Support;
         }
         else if( xmlname == "joint" ) {
@@ -2146,7 +2273,7 @@ public:
             std::shared_ptr<JointXMLReader> pjointreader(new JointXMLReader(_pjoint,_pchain, atts));
             pjointreader->_fnGetModelsDir = boost::bind(&KinBodyXMLReader::GetModelsDir,this,_1);
             pjointreader->_fnGetOffsetFrom = boost::bind(&KinBodyXMLReader::GetOffsetFrom,this,_1);
-            _pcurreader = pjointreader;
+            cur_reader_ = pjointreader;
             return PE_Support;
         }
 
@@ -2183,8 +2310,8 @@ public:
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
                 if( xmlname == "body" ) {
                     if( !_plink )
                         throw OpenRAVEException(_tr("link should be valid"));
@@ -2197,12 +2324,12 @@ public:
                     }
 
                     // do this later, or else offsetfrom will be messed up!
-                    _vTransforms.at(_plink->GetIndex()) = std::dynamic_pointer_cast<LinkXMLReader>(_pcurreader)->GetOrigTransform();
+                    _vTransforms.at(_plink->GetIndex()) = std::dynamic_pointer_cast<LinkXMLReader>(cur_reader_)->GetOrigTransform();
                     _plink.reset();
                 }
                 else if( xmlname == "joint" ) {
                     _pjoint->dofindex = _pchain->GetDOF();
-                    std::shared_ptr<JointXMLReader> pjointreader = std::dynamic_pointer_cast<JointXMLReader>(_pcurreader);
+                    std::shared_ptr<JointXMLReader> pjointreader = std::dynamic_pointer_cast<JointXMLReader>(cur_reader_);
                     if( _pjoint->info_.is_active_ ) {
                         _pjoint->jointindex = (int)_pchain->joints_vector_.size();
                         _pchain->joints_vector_.push_back(_pjoint);
@@ -2224,7 +2351,7 @@ public:
                 else
                     RAVELOG_INFOA(str(boost::format("releasing unknown tag %s\n")%xmlname));
 
-                _pcurreader.reset();
+                cur_reader_.reset();
             }
         }
         else if( _processingtag == "mass" ) {
@@ -2236,7 +2363,7 @@ public:
                     _masstype = MT_Box;
                 else if( _masstype == MT_SphereMass)
                     _masstype = MT_Sphere;
-                _ss >> _fMassValue;
+                string_stream_ >> _fMassValue;
             }
             else if( xmlname == "total" ) {
                 if( _masstype == MT_Box ) {
@@ -2245,64 +2372,64 @@ public:
                 else if( _masstype == MT_Sphere) {
                     _masstype = MT_SphereMass;
                 }
-                _ss >> _fMassValue;
+                string_stream_ >> _fMassValue;
             }
             else if( xmlname == "radius" ) {
-                _ss >> _vMassExtents.x;
+                string_stream_ >> _vMassExtents.x;
             }
             else if( _masstype == MT_Box && xmlname == "extents" ) {
-                _ss >> _vMassExtents.x >> _vMassExtents.y >> _vMassExtents.z;
+                string_stream_ >> _vMassExtents.x >> _vMassExtents.y >> _vMassExtents.z;
             }
         }
         else if( _processingtag.size() > 0 ) {
             if( xmlname == "translation" ) {
                 Vector v;
-                _ss >> v.x >> v.y >> v.z;
+                string_stream_ >> v.x >> v.y >> v.z;
                 _trans.trans += v*_vScaleGeometry;
             }
             else if( xmlname == "rotationaxis" ) {
                 Vector vaxis; dReal fangle=0;
-                _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+                string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
                 Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
                 _trans.rot = (tnew*_trans).rot;
             }
             else if( xmlname == "quat" ) {
                 Transform tnew;
-                _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
+                string_stream_ >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
                 tnew.rot.normalize4();
                 _trans.rot = (tnew*_trans).rot;
             }
             else if( xmlname == "rotationmat" ) {
                 TransformMatrix tnew;
-                _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+                string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
                 _trans.rot = (Transform(tnew)*_trans).rot;
             }
             else if( xmlname == "adjacent" ) {
                 pair<string, string> entry;
-                _ss >> entry.first >> entry.second;
+                string_stream_ >> entry.first >> entry.second;
                 _pchain->_vForcedAdjacentLinks.push_back(entry);
             }
             else if( xmlname == "modelsdir" ) {
-                _strModelsDir = _ss.str();
+                _strModelsDir = string_stream_.str();
                 boost::trim(_strModelsDir);
                 _strModelsDir += "/";
             }
             else if( xmlname == "diffuseColor" ) {
                 // check attributes for format (default is vrml)
-                _ss >> _diffusecol.x >> _diffusecol.y >> _diffusecol.z;
+                string_stream_ >> _diffusecol.x >> _diffusecol.y >> _diffusecol.z;
                 _bOverwriteDiffuse = true;
             }
             else if( xmlname == "ambientColor" ) {
                 // check attributes for format (default is vrml)
-                _ss >> _ambientcol.x >> _ambientcol.y >> _ambientcol.z;
+                string_stream_ >> _ambientcol.x >> _ambientcol.y >> _ambientcol.z;
                 _bOverwriteAmbient = true;
             }
             else if( xmlname == "transparency" ) {
-                _ss >> _transparency;
+                string_stream_ >> _transparency;
                 _bOverwriteTransparency = true;
             }
             else if( xmlname == "jointvalues" ) {
-                _vjointvalues.reset(new std::vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>()));
+                _vjointvalues.reset(new std::vector<dReal>((istream_iterator<dReal>(string_stream_)), istream_iterator<dReal>()));
             }
 
             if( xmlname !=_processingtag ) {
@@ -2377,8 +2504,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             InterfaceXMLReader::characters(ch);
@@ -2533,21 +2660,21 @@ public:
             return true;
         }
         else if( xmlname == "effector" ) {
-            _ss >> _manipinfo.effector_link_name_;
+            string_stream_ >> _manipinfo.effector_link_name_;
             if( !!_probot && !_probot->GetLink(_manipinfo.effector_link_name_) ) {
                 RAVELOG_WARN(str(boost::format("Failed to find manipulator end effector %s")%_manipinfo.effector_link_name_));
                 GetXMLErrorCount()++;
             }
         }
         else if( xmlname == "base" ) {
-            _ss >> _manipinfo.base_link_name_;
+            string_stream_ >> _manipinfo.base_link_name_;
             if( !!_probot && !_probot->GetLink(_manipinfo.base_link_name_) ) {
                 RAVELOG_WARN(str(boost::format("Failed to find manipulator base %s")%_manipinfo.base_link_name_));
                 GetXMLErrorCount()++;
             }
         }
         else if((xmlname == "joints")||(xmlname == "gripperjoints")) {
-            _manipinfo.gripper_joint_names_vector_ = vector<string>((istream_iterator<string>(_ss)), istream_iterator<string>());
+            _manipinfo.gripper_joint_names_vector_ = vector<string>((istream_iterator<string>(string_stream_)), istream_iterator<string>());
         }
         else if( xmlname == "armjoints" ) {
             RAVELOG_WARN("<armjoints> for <manipulator> tag is not used anymore\n");
@@ -2556,7 +2683,7 @@ public:
             if( xmlname == "palmdirection" ) {
                 RAVELOG_WARN("<palmdirection> tag in Manipulator changed to <direction>\n");
             }
-            _ss >> _manipinfo.direction_.x >> _manipinfo.direction_.y >> _manipinfo.direction_.z;
+            string_stream_ >> _manipinfo.direction_.x >> _manipinfo.direction_.y >> _manipinfo.direction_.z;
             dReal flen = _manipinfo.direction_.lengthsqr3();
             if( flen == 0 ) {
                 RAVELOG_WARN("palm direction is 0, setting to default value\n");
@@ -2567,7 +2694,7 @@ public:
             }
         }
         else if( xmlname == "iksolver" ) {
-            string iklibraryname = _ss.str();
+            string iklibraryname = string_stream_.str();
             IkSolverBasePtr piksolver;
             if( RaveHasInterface(PT_IkSolver,iklibraryname) ) {
                 piksolver = RaveCreateIkSolver(_probot->GetEnv(), iklibraryname);
@@ -2602,7 +2729,7 @@ public:
 
                     if( !!pIKFastLoader ) {
                         string ikonly;
-                        _ss >> ikonly;
+                        string_stream_ >> ikonly;
                         stringstream scmd(string("AddIkLibrary ") + ikonly + string(" ") + ikonly);
                         stringstream sout;
                         if( !ifstream(ikonly.c_str()) || !pIKFastLoader->SendCommand(sout, scmd)) {
@@ -2639,7 +2766,7 @@ public:
             }
         }
         else if( xmlname == "closingdirection" || xmlname == "closingdir" || xmlname == "chuckingdirection" ) {
-            _manipinfo.chucking_direction_vector_ = vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>());
+            _manipinfo.chucking_direction_vector_ = vector<dReal>((istream_iterator<dReal>(string_stream_)), istream_iterator<dReal>());
             FOREACH(it, _manipinfo.chucking_direction_vector_) {
                 if( *it > 0 ) {
                     *it = 1;
@@ -2651,24 +2778,24 @@ public:
         }
         else if( xmlname == "translation" ) {
             Vector v;
-            _ss >> v.x >> v.y >> v.z;
+            string_stream_ >> v.x >> v.y >> v.z;
             _manipinfo.local_tool_transform_.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
-            _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
+            string_stream_ >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
             _manipinfo.local_tool_transform_.rot = (tnew*_manipinfo.local_tool_transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
-            _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+            string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
             _manipinfo.local_tool_transform_.rot = (tnew*_manipinfo.local_tool_transform_).rot;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
-            _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+            string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
             _manipinfo.local_tool_transform_.rot = (Transform(tnew)*_manipinfo.local_tool_transform_).rot;
         }
 
@@ -2682,8 +2809,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             StreamXMLReader::characters(ch);
@@ -2743,7 +2870,7 @@ public:
         if( xmlname == "sensor" ) {
             // create the sensor
             _psensorinterface.reset();
-            _pcurreader = CreateInterfaceReader(_probot->GetEnv(),PT_Sensor,_psensorinterface, xmlname, atts);
+            cur_reader_ = CreateInterfaceReader(_probot->GetEnv(),PT_Sensor,_psensorinterface, xmlname, atts);
             return PE_Support;
         }
 
@@ -2755,9 +2882,9 @@ public:
     }
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
-                _pcurreader.reset();
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
+                cur_reader_.reset();
                 _psensor->sensor_ = RaveInterfaceCast<SensorBase>(_psensorinterface);
             }
             return false;
@@ -2783,7 +2910,7 @@ public:
         }
         else if( xmlname == "link" ) {
             string linkname;
-            _ss >> linkname;
+            string_stream_ >> linkname;
             _psensor->pattachedlink = _probot->GetLink(linkname);
 
             if( _psensor->pattachedlink.expired() ) {
@@ -2793,24 +2920,24 @@ public:
         }
         else if( xmlname == "translation" ) {
             Vector v;
-            _ss >> v.x >> v.y >> v.z;
+            string_stream_ >> v.x >> v.y >> v.z;
             _psensor->info_.relative_transform_.trans += v*_vScaleGeometry;
         }
         else if( xmlname == "quat" ) {
             Transform tnew;
-            _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
+            string_stream_ >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
             tnew.rot.normalize4();
             _psensor->info_.relative_transform_.rot = (tnew*_psensor->info_.relative_transform_).rot;
         }
         else if( xmlname == "rotationaxis" ) {
             Vector vaxis; dReal fangle=0;
-            _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+            string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
             _psensor->info_.relative_transform_.rot = (tnew*_psensor->info_.relative_transform_).rot;
         }
         else if( xmlname == "rotationmat" ) {
             TransformMatrix tnew;
-            _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+            string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
             _psensor->info_.relative_transform_.rot = (Transform(tnew)*_psensor->info_.relative_transform_).rot;
         }
 
@@ -2823,8 +2950,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             StreamXMLReader::characters(ch);
@@ -2910,7 +3037,7 @@ public:
             AttributesList newatts = atts;
             newatts.emplace_back("skipgeometry", _bSkipGeometry ? "1" : "0");
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            _pcurreader = CreateInterfaceReader(_penv, PT_Robot, _pinterface, xmlname, newatts);
+            cur_reader_ = CreateInterfaceReader(_penv, PT_Robot, _pinterface, xmlname, newatts);
             return PE_Support;
         }
 
@@ -2919,18 +3046,18 @@ public:
             AttributesList newatts = atts;
             newatts.emplace_back("skipgeometry", _bSkipGeometry ? "1" : "0");
             newatts.emplace_back("scalegeometry", str(boost::format("%f %f %f")%_vScaleGeometry.x%_vScaleGeometry.y%_vScaleGeometry.z));
-            _pcurreader = CreateInterfaceReader(_penv,PT_KinBody,_pinterface, xmlname, newatts);
+            cur_reader_ = CreateInterfaceReader(_penv,PT_KinBody,_pinterface, xmlname, newatts);
         }
         else if( xmlname == "manipulator" ) {
-            _pcurreader.reset(new ManipulatorXMLReader(_probot, atts));
+            cur_reader_.reset(new ManipulatorXMLReader(_probot, atts));
         }
         else if( xmlname == "attachedsensor" ) {
             _psensor.reset();
-            _pcurreader.reset(new AttachedSensorXMLReader(_psensor, _probot, atts));
+            cur_reader_.reset(new AttachedSensorXMLReader(_psensor, _probot, atts));
         }
         else if( xmlname == "controller" ) {
             _pcontroller.reset();
-            _pcurreader.reset(new ControllerXMLReader(_probot->GetEnv(),_pcontroller,atts,_probot));
+            cur_reader_.reset(new ControllerXMLReader(_probot->GetEnv(),_pcontroller,atts,_probot));
         }
         else if((xmlname == "translation")||(xmlname == "rotationmat")||(xmlname == "rotationaxis")||(xmlname == "quat")||(xmlname == "jointvalues")) {
             _processingtag = xmlname;
@@ -2943,15 +3070,15 @@ public:
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
-                KinBodyXMLReaderPtr kinbodyreader = std::dynamic_pointer_cast<KinBodyXMLReader>(_pcurreader);
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
+                KinBodyXMLReaderPtr kinbodyreader = std::dynamic_pointer_cast<KinBodyXMLReader>(cur_reader_);
                 if( !!kinbodyreader ) {
                     if( !_vjointvalues ) {
                         _vjointvalues = kinbodyreader->GetJointValues();
                     }
                 }
-                _pcurreader.reset();
+                cur_reader_.reset();
             }
             _probot = RaveInterfaceCast<RobotBase>(_pinterface);         // might be updated by readers
             return false;
@@ -2959,30 +3086,30 @@ public:
         else if( _processingtag.size() > 0 ) {
             if( xmlname == "translation" ) {
                 Vector v;
-                _ss >> v.x >> v.y >> v.z;
+                string_stream_ >> v.x >> v.y >> v.z;
                 _trans.trans += v*_vScaleGeometry;
             }
             else if( xmlname == "rotationaxis" ) {
                 Vector vaxis; dReal fangle=0;
-                _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+                string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
                 Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
                 _trans.rot = (tnew*_trans).rot;
             }
             else if( xmlname == "quat" ) {
                 Transform tnew;
-                _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
+                string_stream_ >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
                 tnew.rot.normalize4();
                 _trans.rot = (tnew*_trans).rot;
             }
             else if( xmlname == "rotationmat" ) {
                 TransformMatrix tnew;
-                _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+                string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
                 _trans.rot = (Transform(tnew)*_trans).rot;
             }
             else if( xmlname == "controller" ) {
             }
             else if( xmlname == "jointvalues" ) {
-                _vjointvalues.reset(new std::vector<dReal>((istream_iterator<dReal>(_ss)), istream_iterator<dReal>()));
+                _vjointvalues.reset(new std::vector<dReal>((istream_iterator<dReal>(string_stream_)), istream_iterator<dReal>()));
             }
 
             if( xmlname !=_processingtag ) {
@@ -3098,8 +3225,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             InterfaceXMLReader::characters(ch);
@@ -3214,33 +3341,33 @@ public:
     }
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
-                _pcurreader.reset();
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
+                cur_reader_.reset();
             }
             return false;
         }
         else if( _processingtag.size() > 0 ) {
             if( xmlname == "translation" ) {
                 Vector v;
-                _ss >> v.x >> v.y >> v.z;
+                string_stream_ >> v.x >> v.y >> v.z;
                 _tsensor.trans += v*_vScaleGeometry;
             }
             else if( xmlname == "quat" ) {
                 Transform tnew;
-                _ss >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
+                string_stream_ >> tnew.rot.x >> tnew.rot.y >> tnew.rot.z >> tnew.rot.w;
                 tnew.rot.normalize4();
                 _tsensor.rot = (tnew*_tsensor).rot;
             }
             else if( xmlname == "rotationaxis" ) {
                 Vector vaxis; dReal fangle=0;
-                _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+                string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
                 Transform tnew; tnew.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
                 _tsensor.rot = (tnew*_tsensor).rot;
             }
             else if( xmlname == "rotationmat" ) {
                 TransformMatrix tnew;
-                _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+                string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
                 _tsensor.rot = (Transform(tnew)*_tsensor).rot;
             }
 
@@ -3261,8 +3388,8 @@ public:
     virtual void characters(const std::string& ch)
     {
         if( _processingtag.size() > 0 ) {
-            _ss.clear();
-            _ss << ch;
+            string_stream_.clear();
+            string_stream_ << ch;
         }
         else {
             InterfaceXMLReader::characters(ch);
@@ -3327,17 +3454,17 @@ public:
                 if( !!_pinterface ) {
                     throw OpenRAVEException(_tr("interface should not be initialized"));
                 }
-                _pcurreader = CreateInterfaceReader(_penv,itname->first,_pinterface,"",atts);
-                if( !_pcurreader ) {
+                cur_reader_ = CreateInterfaceReader(_penv,itname->first,_pinterface,"",atts);
+                if( !cur_reader_ ) {
                     RAVELOG_WARN("failed to create interface %s in <environment>\n", itname->second.c_str());
-                    _pcurreader.reset(new DummyXMLReader(xmlname,"environment"));
+                    cur_reader_.reset(new DummyXMLReader(xmlname,"environment"));
                 }
                 return PE_Support;
             }
         }
 
         if( xmlname == "environment" ) {
-            _pcurreader.reset(new EnvironmentXMLReader(_penv,atts,true));
+            cur_reader_.reset(new EnvironmentXMLReader(_penv,atts,true));
             return PE_Support;
         }
 
@@ -3351,17 +3478,17 @@ public:
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
                 if( !_bInEnvironment ) {
-                    InterfaceXMLReaderPtr pinterfacereader = std::dynamic_pointer_cast<InterfaceXMLReader>(_pcurreader);
+                    InterfaceXMLReaderPtr pinterfacereader = std::dynamic_pointer_cast<InterfaceXMLReader>(cur_reader_);
                     if( !!pinterfacereader ) {
                         pinterfacereader->SetFilename(file_name_);
                     }
                 }
 
-                if( !!std::dynamic_pointer_cast<RobotXMLReader>(_pcurreader) ) {
-                    std::shared_ptr<RobotXMLReader> robotreader = std::dynamic_pointer_cast<RobotXMLReader>(_pcurreader);
+                if( !!std::dynamic_pointer_cast<RobotXMLReader>(cur_reader_) ) {
+                    std::shared_ptr<RobotXMLReader> robotreader = std::dynamic_pointer_cast<RobotXMLReader>(cur_reader_);
                     BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_Robot);
                     RobotBasePtr probot = RaveInterfaceCast<RobotBase>(_pinterface);
                     _penv->Add(probot);
@@ -3374,8 +3501,8 @@ public:
                         }
                     }
                 }
-                else if( !!std::dynamic_pointer_cast<KinBodyXMLReader>(_pcurreader) ) {
-                    KinBodyXMLReaderPtr kinbodyreader = std::dynamic_pointer_cast<KinBodyXMLReader>(_pcurreader);
+                else if( !!std::dynamic_pointer_cast<KinBodyXMLReader>(cur_reader_) ) {
+                    KinBodyXMLReaderPtr kinbodyreader = std::dynamic_pointer_cast<KinBodyXMLReader>(cur_reader_);
                     BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_KinBody);
                     KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_pinterface);
                     _penv->Add(pbody);
@@ -3388,20 +3515,20 @@ public:
                         }
                     }
                 }
-                else if( !!std::dynamic_pointer_cast<SensorXMLReader>(_pcurreader) ) {
+                else if( !!std::dynamic_pointer_cast<SensorXMLReader>(cur_reader_) ) {
                     BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_Sensor);
                     _penv->Add(RaveInterfaceCast<SensorBase>(_pinterface));
                 }
-                else if( !!std::dynamic_pointer_cast< DummyInterfaceXMLReader<PT_PhysicsEngine> >(_pcurreader) ) {
+                else if( !!std::dynamic_pointer_cast< DummyInterfaceXMLReader<PT_PhysicsEngine> >(cur_reader_) ) {
                     BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_PhysicsEngine);
                     _penv->SetPhysicsEngine(RaveInterfaceCast<PhysicsEngineBase>(_pinterface));
                 }
-                else if( !!std::dynamic_pointer_cast< DummyInterfaceXMLReader<PT_CollisionChecker> >(_pcurreader) ) {
+                else if( !!std::dynamic_pointer_cast< DummyInterfaceXMLReader<PT_CollisionChecker> >(cur_reader_) ) {
                     BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_CollisionChecker);
                     _penv->SetCollisionChecker(RaveInterfaceCast<CollisionCheckerBase>(_pinterface));
                 }
-                else if( !!std::dynamic_pointer_cast<ModuleXMLReader>(_pcurreader) ) {
-                    ModuleXMLReaderPtr modulereader = std::dynamic_pointer_cast<ModuleXMLReader>(_pcurreader);
+                else if( !!std::dynamic_pointer_cast<ModuleXMLReader>(cur_reader_) ) {
+                    ModuleXMLReaderPtr modulereader = std::dynamic_pointer_cast<ModuleXMLReader>(cur_reader_);
                     ModuleBasePtr module = RaveInterfaceCast<ModuleBase>(_pinterface);
                     if( !!module ) {
                         int ret = _penv->AddModule(module,modulereader->GetArgs());
@@ -3415,7 +3542,7 @@ public:
                     _penv->OwnInterface(_pinterface);
                 }
                 _pinterface.reset();
-                _pcurreader.reset();
+                cur_reader_.reset();
             }
             return false;
         }
@@ -3431,12 +3558,12 @@ public:
         }
 
         if( xmlname == "bkgndcolor" ) {
-            _ss >> vBkgndColor.x >> vBkgndColor.y >> vBkgndColor.z;
+            string_stream_ >> vBkgndColor.x >> vBkgndColor.y >> vBkgndColor.z;
         }
         else if( xmlname == "camrotaxis" ) {
             RAVELOG_INFO("<camrotaxis> is deprecated, use <camrotationaxis> by rotating 180 around Z axis\n");
             Vector vaxis; dReal fangle=0;
-            _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+            string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             _tCamera.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
             // have to rotate due to old bug
             RaveTransform<float> trot; trot.rot = quatFromAxisAngle(RaveVector<float>(1,0,0),(float)PI);
@@ -3445,32 +3572,32 @@ public:
         }
         else if( xmlname == "camrotationaxis" ) {
             Vector vaxis; dReal fangle=0;
-            _ss >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
+            string_stream_ >> vaxis.x >> vaxis.y >> vaxis.z >> fangle;
             _tCamera.rot = quatFromAxisAngle(vaxis, fangle * PI / 180.0f);
             bTransSpecified = true;
         }
         else if( xmlname == "camrotmat" ) {
             TransformMatrix tnew;
-            _ss >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
+            string_stream_ >> tnew.m[0] >> tnew.m[1] >> tnew.m[2] >> tnew.m[4] >> tnew.m[5] >> tnew.m[6] >> tnew.m[8] >> tnew.m[9] >> tnew.m[10];
             _tCamera.rot = Transform(tnew).rot;
             bTransSpecified = true;
         }
         else if( xmlname == "camtrans" ) {
-            _ss >> _tCamera.trans.x >> _tCamera.trans.y >> _tCamera.trans.z;
+            string_stream_ >> _tCamera.trans.x >> _tCamera.trans.y >> _tCamera.trans.z;
             bTransSpecified = true;
         }
         else if( xmlname == "camfocal" ) {
-            _ss >> _fCameraFocalDistance;
+            string_stream_ >> _fCameraFocalDistance;
             bTransSpecified = true;
         }
         else if( xmlname == "plugin" ) {
             string pluginname;
-            _ss >> pluginname;
+            string_stream_ >> pluginname;
             RaveLoadPlugin(pluginname);
         }
         else if(xmlname == "unit"){
             std::pair<std::string, dReal> unit;
-            _ss >> unit.first >> unit.second;
+            string_stream_ >> unit.first >> unit.second;
             _penv->SetUnit(unit);
         }
 
@@ -3553,8 +3680,8 @@ public:
 
         if( xmlname == "environment" ) 
 		{
-            _pcurreader = CreateEnvironmentReader(_penv,newatts);
-            if( !!_pcurreader ) 
+            cur_reader_ = CreateEnvironmentReader(_penv,newatts);
+            if( !!cur_reader_ ) 
 			{
                 return PE_Support;
             }
@@ -3569,7 +3696,7 @@ public:
 				{
                     throw OpenRAVEException(_tr("interface should not be initialized"));
                 }
-                _pcurreader = CreateInterfaceReader(_penv,itname->first,_pinterface,"",newatts);
+                cur_reader_ = CreateInterfaceReader(_penv,itname->first,_pinterface,"",newatts);
                 if( !_pinterface ) {
                     throw OpenRAVEException(str(boost::format(_tr("failed to create interface %s"))%itname->second));
                 }
@@ -3582,13 +3709,13 @@ public:
 
     virtual bool endElement(const std::string& xmlname)
     {
-        if( !!_pcurreader ) {
-            if( _pcurreader->endElement(xmlname) ) {
+        if( !!cur_reader_ ) {
+            if( cur_reader_->endElement(xmlname) ) {
                 if( !!_pinterface ) {
                     if( _bAddToEnvironment ) {
                         // set joint values if kinbody or robot
-                        if( !!std::dynamic_pointer_cast<RobotXMLReader>(_pcurreader) ) {
-                            std::shared_ptr<RobotXMLReader> robotreader = std::dynamic_pointer_cast<RobotXMLReader>(_pcurreader);
+                        if( !!std::dynamic_pointer_cast<RobotXMLReader>(cur_reader_) ) {
+                            std::shared_ptr<RobotXMLReader> robotreader = std::dynamic_pointer_cast<RobotXMLReader>(cur_reader_);
                             BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_Robot);
                             RobotBasePtr probot = RaveInterfaceCast<RobotBase>(_pinterface);
                             _penv->Add(probot);
@@ -3601,8 +3728,8 @@ public:
                                 }
                             }
                         }
-                        else if( !!std::dynamic_pointer_cast<KinBodyXMLReader>(_pcurreader) ) {
-                            KinBodyXMLReaderPtr kinbodyreader = std::dynamic_pointer_cast<KinBodyXMLReader>(_pcurreader);
+                        else if( !!std::dynamic_pointer_cast<KinBodyXMLReader>(cur_reader_) ) {
+                            KinBodyXMLReaderPtr kinbodyreader = std::dynamic_pointer_cast<KinBodyXMLReader>(cur_reader_);
                             BOOST_ASSERT(_pinterface->GetInterfaceType()==PT_KinBody);
                             KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_pinterface);
                             _penv->Add(pbody);
@@ -3615,8 +3742,8 @@ public:
                                 }
                             }
                         }
-                        else if( !!std::dynamic_pointer_cast<ModuleXMLReader>(_pcurreader) ) {
-                            ModuleXMLReaderPtr modulereader = std::dynamic_pointer_cast<ModuleXMLReader>(_pcurreader);
+                        else if( !!std::dynamic_pointer_cast<ModuleXMLReader>(cur_reader_) ) {
+                            ModuleXMLReaderPtr modulereader = std::dynamic_pointer_cast<ModuleXMLReader>(cur_reader_);
                             ModuleBasePtr module = RaveInterfaceCast<ModuleBase>(_pinterface);
                             if( !!module ) {
                                 int ret = _penv->AddModule(module,modulereader->GetArgs());
@@ -3631,8 +3758,8 @@ public:
                     }
                     return true;
                 }
-                bool bisenvironment = !!std::dynamic_pointer_cast<EnvironmentXMLReader>(_pcurreader);
-                _pcurreader.reset();
+                bool bisenvironment = !!std::dynamic_pointer_cast<EnvironmentXMLReader>(cur_reader_);
+                cur_reader_.reset();
                 return bisenvironment;
             }
         }

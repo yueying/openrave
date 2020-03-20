@@ -165,17 +165,19 @@ namespace OpenRAVE
 
 		// don't use any log statements since global instance might be null
 		// environments have to be destroyed carefully since their destructors can be called, which will attempt to unregister the environment
-		std::map<int, EnvironmentBase*> mapenvironments;
+		std::map<int, EnvironmentBase*> environments_map;
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			mapenvironments = environments_map_;
+			environments_map = environments_map_;
 		}
-		FOREACH(itenv, mapenvironments) {
+
+		for(auto& itenv: environments_map)
+		{
 			// equire a shared pointer to prevent environment from getting deleted during Destroy loop
-			EnvironmentBasePtr penv = itenv->second->shared_from_this();
+			EnvironmentBasePtr penv = itenv.second->shared_from_this();
 			penv->Destroy();
 		}
-		mapenvironments.clear();
+		environments_map.clear();
 		environments_map_.clear();
 		default_space_sampler_.reset();
 		_mapxmlreaders.clear();

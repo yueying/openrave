@@ -834,7 +834,7 @@ namespace OpenRAVE
 			}
 
 			// parse each instance kinematics scene, prioritize robots
-			bool bSuccess = false;
+			bool is_success = false;
 			for (size_t iscene = 0; iscene < allscene->getInstance_kinematics_scene_array().getCount(); iscene++) {
 				domInstance_kinematics_sceneRef kiscene = allscene->getInstance_kinematics_scene_array()[iscene];
 				domKinematics_sceneRef kscene = daeSafeCast<domKinematics_scene>(kiscene->getUrl().getElement().cast());
@@ -855,11 +855,11 @@ namespace OpenRAVE
 					std::list<daeElementRef> listInstanceScope;
 					if (ExtractArticulatedSystem(pbody, kscene->getInstance_articulated_system_array()[ias], *bindings, listInstanceScope) && !!pbody) {
 						probot = RaveInterfaceCast<RobotBase>(pbody);
-						bSuccess = true;
+						is_success = true;
 						break;
 					}
 				}
-				if (bSuccess) {
+				if (is_success) {
 					break;
 				}
 				for (size_t ikmodel = 0; ikmodel < kscene->getInstance_kinematics_model_array().getCount(); ++ikmodel) {
@@ -867,7 +867,7 @@ namespace OpenRAVE
 				}
 			}
 
-			if (!bSuccess) {
+			if (!is_success) {
 				KinBodyPtr pbody = probot;
 				FOREACH(it, listPossibleBodies) {
 					if (articulatedSystemId.size() > 0) {
@@ -878,13 +878,13 @@ namespace OpenRAVE
 					}
 					std::list<daeElementRef> listInstanceScope;
 					if (ExtractKinematicsModel(pbody, it->first, *it->second, listInstanceScope) && !!pbody) {
-						bSuccess = true;
+						is_success = true;
 						break;
 					}
 				}
 			}
 
-			if (bSuccess) {
+			if (is_success) {
 				if (prefix_.size() > 0) {
 					_AddPrefixForKinBody(probot, prefix_);
 					FOREACH(itmanip, probot->manipulators_vector_) {
@@ -905,7 +905,7 @@ namespace OpenRAVE
 				}
 			}
 
-			return bSuccess;
+			return is_success;
 		}
 
 		/// \extract a kinbody from the scene
@@ -930,7 +930,7 @@ namespace OpenRAVE
 			}
 
 			std::list< pair<domInstance_kinematics_modelRef, std::shared_ptr<KinematicsSceneBindings> > > listPossibleBodies;
-			bool bSuccess = false;
+			bool is_success = false;
 			//  parse each instance kinematics scene for the first available model
 			for (size_t iscene = 0; iscene < allscene->getInstance_kinematics_scene_array().getCount(); iscene++) {
 				domInstance_kinematics_sceneRef kiscene = allscene->getInstance_kinematics_scene_array()[iscene];
@@ -950,11 +950,11 @@ namespace OpenRAVE
 					}
 					std::list<daeElementRef> listInstanceScope;
 					if (ExtractArticulatedSystem(pbody, kscene->getInstance_articulated_system_array()[ias], *bindings, listInstanceScope) && !!pbody) {
-						bSuccess = true;
+						is_success = true;
 						break;
 					}
 				}
-				if (bSuccess) {
+				if (is_success) {
 					break;
 				}
 				for (size_t ikmodel = 0; ikmodel < kscene->getInstance_kinematics_model_array().getCount(); ++ikmodel) {
@@ -970,11 +970,11 @@ namespace OpenRAVE
 				}
 				std::list<daeElementRef> listInstanceScope;
 				if (ExtractKinematicsModel(pbody, it->first, *it->second, listInstanceScope) && !!pbody) {
-					bSuccess = true;
+					is_success = true;
 					break;
 				}
 			}
-			if (bSuccess) {
+			if (is_success) {
 				return true;
 			}
 
@@ -986,16 +986,16 @@ namespace OpenRAVE
 					std::list<daeElementRef> listInstanceScope;
 					pbody = _ExtractKinematicsModel(visual_scene->getNode_array()[node], KinematicsSceneBindings(), vprocessednodes, listInstanceScope);
 					if (!!pbody) {
-						bSuccess = true;
+						is_success = true;
 						break;
 					}
 				}
 			}
 
-			if (bSuccess && prefix_.size() > 0) {
+			if (is_success && prefix_.size() > 0) {
 				_AddPrefixForKinBody(pbody, prefix_);
 			}
-			return bSuccess;
+			return is_success;
 		}
 
 		void _AddPrefixForKinBody(KinBodyPtr pbody, const std::string& prefix)
@@ -5430,7 +5430,7 @@ namespace OpenRAVE
 			//            qpoints[3*i+2] = verts[i].z;
 			//        }
 			//
-			//        bool bSuccess = false;
+			//        bool is_success = false;
 			//        boolT ismalloc = 0;           // True if qhull should free points in qh_freeqhull() or reallocation
 			//        char flags[]= "qhull Tv"; // option flags for qhull, see qh_opt.htm
 			//        FILE *outfile = NULL;    // stdout, output from qh_produce_output(), use NULL to skip qh_produce_output()
@@ -5445,7 +5445,7 @@ namespace OpenRAVE
 			//                vconvexplanes.push_back(Vector(facet->normal[0], facet->normal[1], facet->normal[2], facet->offset));
 			//            }
 			//
-			//            bSuccess = true;
+			//            is_success = true;
 			//        }
 			//
 			//        qh_freeqhull(!qh_ALL);
@@ -5455,7 +5455,7 @@ namespace OpenRAVE
 			//            ROS_ERROR("qhull internal warning (main): did not free %d bytes of long memory (%d pieces)", totlong, curlong);
 			//
 			//        fclose(errfile);
-			//        return bSuccess;
+			//        return is_success;
 		}
 
 		inline std::string _ConvertToOpenRAVEName(const std::string& name) {
