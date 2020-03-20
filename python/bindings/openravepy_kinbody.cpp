@@ -689,7 +689,7 @@ void PyJointInfo::_Update(const KinBody::JointInfo& info) {
         }
         else {
             py::list oequations;
-            FOREACHC(itequation, (*itmimic)->_equations) {
+            FOREACHC(itequation, (*itmimic)->equations_) {
                 oequations.append(*itequation);
             }
             _vmimic.append(oequations);
@@ -857,7 +857,7 @@ KinBody::JointInfoPtr PyJointInfo::GetJointInfo() {
                 OPENRAVE_ASSERT_OP(len(omimic),==,3);
                 info._vmimic[i].reset(new KinBody::MimicInfo());
                 for(size_t j = 0; j < 3; ++j) {
-                    info._vmimic[i]->_equations.at(j) = py::extract<std::string>(omimic[j]);
+                    info._vmimic[i]->equations_.at(j) = py::extract<std::string>(omimic[j]);
                 }
             }
         }

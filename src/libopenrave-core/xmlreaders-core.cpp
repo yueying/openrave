@@ -1511,27 +1511,27 @@ public:
                     RAVELOG_WARN(str(boost::format("failed to set mimic properties correctly from: %s\n")%itatt->second));
                 }
                 _pjoint->mimic_array_[0].reset(new KinBody::Mimic());
-                _pjoint->mimic_array_[0]->_equations[0] = str(boost::format("%s*%f+%f")%strmimicjoint%a%b);
-                _pjoint->mimic_array_[0]->_equations[1] = str(boost::format("|%s %f")%strmimicjoint%a);
-                _pjoint->mimic_array_[0]->_equations[2] = str(boost::format("|%s %f")%strmimicjoint%a);
+                _pjoint->mimic_array_[0]->equations_[0] = str(boost::format("%s*%f+%f")%strmimicjoint%a%b);
+                _pjoint->mimic_array_[0]->equations_[1] = str(boost::format("|%s %f")%strmimicjoint%a);
+                _pjoint->mimic_array_[0]->equations_[2] = str(boost::format("|%s %f")%strmimicjoint%a);
             }
             else if( itatt->first.size() >= 9&&itatt->first.substr(0,9) == "mimic_pos") {
                 if( !_pjoint->mimic_array_[0] ) {
                     _pjoint->mimic_array_[0].reset(new KinBody::Mimic());
                 }
-                _pjoint->mimic_array_[0]->_equations[0] = itatt->second;
+                _pjoint->mimic_array_[0]->equations_[0] = itatt->second;
             }
             else if( itatt->first.size() >= 9 && itatt->first.substr(0,9) == "mimic_vel") {
                 if( !_pjoint->mimic_array_[0] ) {
                     _pjoint->mimic_array_[0].reset(new KinBody::Mimic());
                 }
-                _pjoint->mimic_array_[0]->_equations[1] = itatt->second;
+                _pjoint->mimic_array_[0]->equations_[1] = itatt->second;
             }
             else if( itatt->first.size() >= 11 && itatt->first.substr(0,11) == "mimic_accel") {
                 if( !_pjoint->mimic_array_[0] ) {
                     _pjoint->mimic_array_[0].reset(new KinBody::Mimic());
                 }
-                _pjoint->mimic_array_[0]->_equations[2] = itatt->second;
+                _pjoint->mimic_array_[0]->equations_[2] = itatt->second;
             }
             else if( itatt->first == "circular" ) {
                 _pjoint->info_.is_circular_[0] = !(_stricmp(itatt->second.c_str(), "false") == 0 || itatt->second=="0");
@@ -2331,11 +2331,11 @@ public:
                     _pjoint->dof_index_ = _pchain->GetDOF();
                     std::shared_ptr<JointXMLReader> pjointreader = std::dynamic_pointer_cast<JointXMLReader>(cur_reader_);
                     if( _pjoint->info_.is_active_ ) {
-                        _pjoint->jointindex = (int)_pchain->joints_vector_.size();
+                        _pjoint->joint_index_ = (int)_pchain->joints_vector_.size();
                         _pchain->joints_vector_.push_back(_pjoint);
                     }
                     else {
-                        _pjoint->jointindex = -1;
+                        _pjoint->joint_index_ = -1;
                         _pjoint->dof_index_ = -1;
                         _pchain->passive_joints_vector_.push_back(_pjoint);
                     }
@@ -3184,8 +3184,8 @@ public:
                         if( (*itjoint2)->IsMimic(idof) ) {
                             for(int ieq = 0; ieq < 3; ++ieq) {
                                 string neweq;
-                                utils::SearchAndReplace(neweq,(*itjoint2)->mimic_array_[idof]->_equations[ieq],jointnamepairs);
-                                (*itjoint2)->mimic_array_[idof]->_equations[ieq] = neweq;
+                                utils::SearchAndReplace(neweq,(*itjoint2)->mimic_array_[idof]->equations_[ieq],jointnamepairs);
+                                (*itjoint2)->mimic_array_[idof]->equations_[ieq] = neweq;
                             }
                         }
                     }

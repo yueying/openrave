@@ -290,8 +290,8 @@ protected:
                     // joint already exists, so must be mimic?
                     dReal fmult = RaveSqrt(vmotiondirection.lengthsqr3());
                     pjoint->mimic_array_[0].reset(new KinBody::Mimic());
-                    pjoint->mimic_array_[0]->_equations[0] = str(boost::format("%s*%f")%orgjointname%fmult);
-                    pjoint->mimic_array_[0]->_equations[1] = str(boost::format("|%s %f")%orgjointname%fmult);
+                    pjoint->mimic_array_[0]->equations_[0] = str(boost::format("%s*%f")%orgjointname%fmult);
+                    pjoint->mimic_array_[0]->equations_[1] = str(boost::format("|%s %f")%orgjointname%fmult);
                 }
                 else {
                     // add the joint (make sure motion direction is unit)

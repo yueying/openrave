@@ -264,7 +264,21 @@ protected:
 class OPENRAVE_API GraspParameters : public PlannerBase::PlannerParameters
 {
 public:
-    GraspParameters(EnvironmentBasePtr penv) : PlannerBase::PlannerParameters(), fstandoff(0), ftargetroll(0), vtargetdirection(0,0,1), btransformrobot(false), breturntrajectory(false), bonlycontacttarget(true), btightgrasp(false), bavoidcontact(false), fcoarsestep(0.1f), ffinestep(0.001f), ftranslationstepmult(0.1f), fgraspingnoise(0), _penv(penv) {
+    GraspParameters(EnvironmentBasePtr penv) 
+		: PlannerBase::PlannerParameters(),
+		fstandoff(0), ftargetroll(0), 
+		vtargetdirection(0,0,1), 
+		btransformrobot(false), 
+		breturntrajectory(false), 
+		bonlycontacttarget(true), 
+		btightgrasp(false), 
+		bavoidcontact(false), 
+		fcoarsestep(0.1f), 
+		ffinestep(0.001f), 
+		ftranslationstepmult(0.1f), 
+		fgraspingnoise(0), 
+		_penv(penv) 
+	{
         xml_parameters_vector_.push_back("fstandoff");
         xml_parameters_vector_.push_back("targetbody");
         xml_parameters_vector_.push_back("ftargetroll");
@@ -452,7 +466,16 @@ typedef std::shared_ptr<GraspParameters const> GraspParametersConstPtr;
 class OPENRAVE_API TrajectoryTimingParameters : public PlannerBase::PlannerParameters
 {
 public:
-    TrajectoryTimingParameters() : _interpolation(""), _pointtolerance(0.2), _hastimestamps(false), _hasvelocities(false), _outputaccelchanges(true), _multidofinterp(0), verifyinitialpath(1), _bProcessing(false) {
+    TrajectoryTimingParameters() 
+		: _interpolation(""), 
+		_pointtolerance(0.2), 
+		_hastimestamps(false), 
+		_hasvelocities(false), 
+		_outputaccelchanges(true),
+		_multidofinterp(0), 
+		verifyinitialpath(1), 
+		_bProcessing(false) 
+	{
         step_length_ = 0; // reset to 0 since it is being used
         xml_parameters_vector_.push_back("interpolation");
         xml_parameters_vector_.push_back("hastimestamps");
@@ -502,7 +525,13 @@ protected:
         case PE_Ignore: return PE_Ignore;
         }
 
-        _bProcessing = name=="interpolation" || name=="hastimestamps" || name=="hasvelocities" || name=="pointtolerance" || name=="outputaccelchanges" || name=="multidofinterp"||name=="verifyinitialpath";
+        _bProcessing = name=="interpolation" 
+			|| name=="hastimestamps" 
+			|| name=="hasvelocities" 
+			|| name=="pointtolerance" 
+			|| name=="outputaccelchanges" 
+			|| name=="multidofinterp"
+			||name=="verifyinitialpath";
         return _bProcessing ? PE_Support : PE_Pass;
     }
 
@@ -548,7 +577,24 @@ typedef std::shared_ptr<TrajectoryTimingParameters const> TrajectoryTimingParame
 class OPENRAVE_API ConstraintTrajectoryTimingParameters : public TrajectoryTimingParameters
 {
 public:
-    ConstraintTrajectoryTimingParameters() : TrajectoryTimingParameters(), maxlinkspeed(0), maxlinkaccel(0), maxmanipspeed(0), maxmanipaccel(0), vConstraintManipDir(0,0,1), vConstraintGlobalDir(0,0,1), fCosManipAngleThresh(-1), mingripperdistance(0), velocitydistancethresh(0), maxmergeiterations(1000), minswitchtime(0.2),nshortcutcycles(1), fSearchVelAccelMult(0.8), durationImprovementCutoffRatio(0.001), _bCProcessing(false) {
+    ConstraintTrajectoryTimingParameters() 
+		: TrajectoryTimingParameters(),
+		maxlinkspeed(0), 
+		maxlinkaccel(0),
+		maxmanipspeed(0),
+		maxmanipaccel(0), 
+		vConstraintManipDir(0,0,1), 
+		vConstraintGlobalDir(0,0,1), 
+		fCosManipAngleThresh(-1), 
+		mingripperdistance(0), 
+		velocitydistancethresh(0),
+		maxmergeiterations(1000), 
+		minswitchtime(0.2),
+		nshortcutcycles(1), 
+		fSearchVelAccelMult(0.8), 
+		durationImprovementCutoffRatio(0.001),
+		_bCProcessing(false) 
+	{
         xml_parameters_vector_.push_back("maxlinkspeed");
         xml_parameters_vector_.push_back("maxlinkaccel");
         xml_parameters_vector_.push_back("manipname");
@@ -728,7 +774,8 @@ typedef std::shared_ptr<WorkspaceTrajectoryParameters const> WorkspaceTrajectory
 class OPENRAVE_API RRTParameters : public PlannerBase::PlannerParameters
 {
 public:
-    RRTParameters() : _minimumgoalpaths(1), _bProcessing(false) {
+    RRTParameters() : _minimumgoalpaths(1), _bProcessing(false) 
+	{
         xml_parameters_vector_.push_back("minimumgoalpaths");
     }
 
@@ -786,7 +833,13 @@ typedef std::shared_ptr<RRTParameters> RRTParametersPtr;
 class OPENRAVE_API BasicRRTParameters : public RRTParameters
 {
 public:
-    BasicRRTParameters() : RRTParameters(), _fGoalBiasProb(0.05f), _nRRTExtentType(0), _nMinIterations(0), _bProcessingBasic(false) {
+    BasicRRTParameters() 
+		: RRTParameters(), 
+		_fGoalBiasProb(0.05f),
+		_nRRTExtentType(0),
+		_nMinIterations(0), 
+		_bProcessingBasic(false)
+	{
         xml_parameters_vector_.push_back("goalbias");
         xml_parameters_vector_.push_back("nrrtextenttype");
         xml_parameters_vector_.push_back("nminiterations");

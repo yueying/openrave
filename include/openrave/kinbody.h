@@ -844,7 +844,7 @@ namespace OpenRAVE
 		class OPENRAVE_API MimicInfo
 		{
 		public:
-			std::array< std::string, 3>  _equations;         //!< the original equations
+			std::array< std::string, 3>  equations_;         //!< the original equations
 			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator,
 				dReal unit_scale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
@@ -855,7 +855,7 @@ namespace OpenRAVE
 		class OPENRAVE_API Mimic
 		{
 		public:
-			std::array< std::string, 3>  _equations;         //!< the original equations
+			std::array< std::string, 3>  equations_;         //!< the original equations
 
 			struct DOFFormat
 			{
@@ -870,18 +870,19 @@ namespace OpenRAVE
 			struct DOFHierarchy
 			{
 				int16_t dofindex;         //!< >=0 dof index
-				uint16_t dofformatindex;         //!< index into _vdofformat to follow the computation
-				bool operator ==(const DOFHierarchy& r) const {
+				uint16_t dofformatindex;         //!< index into dof_format_vector_ to follow the computation
+				bool operator ==(const DOFHierarchy& r) const 
+				{
 					return dofindex == r.dofindex && dofformatindex == r.dofformatindex;
 				}
 			};
 
 			/// @name automatically set
 			//@{
-			std::vector< DOFFormat > _vdofformat;         //!< the format of the values the equation takes order is important.
-			std::vector<DOFHierarchy> _vmimicdofs;         //!< all dof indices that the equations depends on. DOFHierarchy::dofindex can repeat
+			std::vector< DOFFormat > dof_format_vector_;         //!< the format of the values the equation takes order is important.
+			std::vector<DOFHierarchy> mimic_dofs_vector_;         //!< all dof indices that the equations depends on. DOFHierarchy::dofindex can repeat
 			OpenRAVEFunctionParserRealPtr _posfn;
-			std::vector<OpenRAVEFunctionParserRealPtr > _velfns, _accelfns;         //!< the velocity and acceleration partial derivatives with respect to each of the values in _vdofformat
+			std::vector<OpenRAVEFunctionParserRealPtr > _velfns, _accelfns;         //!< the velocity and acceleration partial derivatives with respect to each of the values in dof_format_vector_
 			//@}
 		};
 		typedef std::shared_ptr<Mimic> MimicPtr;
@@ -1064,7 +1065,7 @@ namespace OpenRAVE
 			/// \brief Get the joint index into KinBody::GetJoints.
 			inline int GetJointIndex() const 
 			{
-				return jointindex;
+				return joint_index_;
 			}
 
 			/// \brief parent body that joint belongs to.
@@ -1342,7 +1343,7 @@ namespace OpenRAVE
 
 				MathML:
 
-				Set 'format' to "mathml". The joint variables are specified with <csymbol>. If a targetted joint has more than one degree of freedom, then axis is suffixed with _\%d. If 'type' is 1 or 2, the partial derivatives are outputted as consecutive <math></math> tags in the same order as \ref Mimic::_vdofformat
+				Set 'format' to "mathml". The joint variables are specified with <csymbol>. If a targetted joint has more than one degree of freedom, then axis is suffixed with _\%d. If 'type' is 1 or 2, the partial derivatives are outputted as consecutive <math></math> tags in the same order as \ref Mimic::dof_format_vector_
 			 */
 			virtual std::string GetMimicEquation(int axis = 0, int type = 0, const std::string& format = "") const;
 
@@ -1438,7 +1439,7 @@ namespace OpenRAVE
 
 			std::array< MimicPtr, 3> mimic_array_;   //!< the mimic properties of each of the joint axes. It is theoretically possible for a multi-dof joint to have one axes mimiced and the others free. When cloning, is it ok to copy this and assume it is constant?
 
-			/** \brief computes the partial velocities with respect to all dependent DOFs specified by Mimic::_vmimicdofs.
+			/** \brief computes the partial velocities with respect to all dependent DOFs specified by Mimic::mimic_dofs_vector_.
 
 				If the joint is not mimic, then just returns its own index
 				\param[out] vpartials A list of dof_index_/velocity_partial pairs. The final velocity is computed by taking the dot product. The dofindices do not repeat.
@@ -1466,7 +1467,7 @@ namespace OpenRAVE
 			///
 			/// \param[in] axis the joint axis
 			/// \param[in] timederiv the time derivative to evaluate. 0 is position, 1 is velocity, 2 is acceleration, etc
-			/// \param[in] vdependentvalues input values ordered with respect to _vdofformat[iaxis]
+			/// \param[in] vdependentvalues input values ordered with respect to dof_format_vector_[iaxis]
 			/// \param[out] voutput the output values
 			/// \return an internal error code, 0 if no error
 			virtual int _Eval(int axis, uint32_t timederiv, const std::vector<dReal>& vdependentvalues, std::vector<dReal>& voutput);
@@ -1486,7 +1487,7 @@ namespace OpenRAVE
 			/// @name Private Joint Variables
 			//@{
 			int dof_index_;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::joints_vector_!
-			int jointindex;                 //!< the joint index into KinBody::joints_vector_
+			int joint_index_;                 //!< the joint index into KinBody::joints_vector_
 			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         //!< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
 
 			KinBodyWeakPtr _parent;               //!< body that joint belong to
@@ -2657,7 +2658,7 @@ namespace OpenRAVE
 		std::vector<LinkPtr> links_vector_; //!< \see GetLinks
 		std::vector<int> dof_indices_vector_; //!< cached start joint indices, indexed by dof indices
 		std::vector<std::pair<int16_t, int16_t> > all_pairs_shortest_paths_vector_; //!< all-pairs shortest paths through the link hierarchy. The first value describes the parent link index, and the second value is an index into joints_vector_ or passive_joints_vector_. If the second value is greater or equal to  joints_vector_.size() then it indexes into passive_joints_vector_.
-		std::vector<int8_t> joints_affecting_links_vector_; //!< joint x link: (jointindex*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
+		std::vector<int8_t> joints_affecting_links_vector_; //!< joint x link: (joint_index_*_veclinks.size()+linkindex). entry is non-zero if the joint affects the link in the forward kinematics. If negative, the partial derivative of ds/dtheta should be negated.
 		std::vector< std::vector< std::pair<LinkPtr, JointPtr> > > closed_loops_vector_; //!< \see GetClosedLoops
 		std::vector< std::vector< std::pair<int16_t, int16_t> > > closed_loop_indices_vector_; //!< \see GetClosedLoops
 		std::vector<JointPtr> passive_joints_vector_; //!< \see GetPassiveJoints()

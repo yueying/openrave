@@ -1674,7 +1674,7 @@ private:
                     continue;
                 }
                 size_t offset = 0;
-                FOREACHC(itdofformat, pjoint->mimic_array_[iaxis]->_vdofformat) {
+                FOREACHC(itdofformat, pjoint->mimic_array_[iaxis]->dof_format_vector_) {
                     if(offset<sequations[itype].size()) {
                         daeElementRef pelt = pftec->add("equation");
                         pelt->setAttribute("type",sequationids[itype]);

@@ -34,6 +34,7 @@ IkSolverBasePtr CreateIkSolverFromName(const std::string& name,
 	const std::vector<dReal>& vfreeinc, dReal ikthreshold, EnvironmentBasePtr penv);
 
 ModuleBasePtr CreateIkFastModule(EnvironmentBasePtr penv, std::istream& sinput);
+
 void DestroyIkFastLibraries();
 
 InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
@@ -51,14 +52,17 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
 			{
                 // check if ikthreshold parameter exists
                 dReal ikthreshold=1e-4;
-                vector<dReal> vfreeinc;
+				std::vector<dReal> vfreeinc;
                 std::string paramname;
                 sinput >> paramname;
-                if( !!sinput ) {
-                    if( paramname == "ikthreshold" ) {
+                if( !!sinput ) 
+				{
+                    if( paramname == "ikthreshold" ) 
+					{
                         sinput >> ikthreshold;
                     }
-                    else {
+                    else 
+					{
                         // most likely a free inc parameter
                         vfreeinc.push_back(boost::lexical_cast<dReal>(paramname));
                     }
@@ -69,54 +73,69 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
                 
                 // look at all the ikfast problem solvers
                 IkSolverBasePtr psolver = CreateIkSolverFromName(ikfastname, vfreeinc, ikthreshold, penv);
-                if( !!psolver ) {
+                if( !!psolver ) 
+				{
                     return psolver;
                 }
             }
         }
-        else {
+        else 
+		{
 			std::vector<dReal> vfreeinc((std::istream_iterator<dReal>(sinput)), std::istream_iterator<dReal>());
-            if( interfacename == "wam7ikfast" ) {
+            if( interfacename == "wam7ikfast" ) 
+			{
                 return ik_barrettwam::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "pa10ikfast" ) {
+            else if( interfacename == "pa10ikfast" ) 
+			{
                 return ik_pa10::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "pumaikfast" ) {
+            else if( interfacename == "pumaikfast" ) 
+			{
                 return ik_puma::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_pr2_head" ) {
+            else if( interfacename == "ikfast_pr2_head" ) 
+			{
                 return ik_pr2_head::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_pr2_head_torso" ) {
+            else if( interfacename == "ikfast_pr2_head_torso" )
+			{
                 return ik_pr2_head_torso::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_pr2_rightarm" ) {
+            else if( interfacename == "ikfast_pr2_rightarm" ) 
+			{
                 return ik_pr2_rightarm::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_pr2_rightarm_torso" ) {
+            else if( interfacename == "ikfast_pr2_rightarm_torso" )
+			{
                 return ik_pr2_rightarm_torso::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_pr2_leftarm" ) {
+            else if( interfacename == "ikfast_pr2_leftarm" ) 
+			{
                 return ik_pr2_leftarm::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_pr2_leftarm_torso" ) {
+            else if( interfacename == "ikfast_pr2_leftarm_torso" )
+			{
                 return ik_pr2_leftarm_torso::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_schunk_lwa3" ) {
+            else if( interfacename == "ikfast_schunk_lwa3" )
+			{
                 return ik_schunk_lwa3::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_katana5d" ) {
+            else if( interfacename == "ikfast_katana5d" )
+			{
                 return ik_katana5d::CreateIkSolver(penv, sinput, vfreeinc);
             }
-            else if( interfacename == "ikfast_katana5d_trans" ) {
+            else if( interfacename == "ikfast_katana5d_trans" )
+			{
                 return ik_katana5d_trans::CreateIkSolver(penv, sinput, vfreeinc);
             }
         }
         break;
     }
     case PT_Module:
-        if( interfacename == "ikfast") {
+        if( interfacename == "ikfast") 
+		{
             return CreateIkFastModule(penv,sinput);
         }
         break;

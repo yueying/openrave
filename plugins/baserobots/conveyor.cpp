@@ -133,13 +133,13 @@ public:
                 return false;
             }
             if( name == "mimic_pos" ) {
-                _cmdata->_mimic->_equations[0] = _ss.str();
+                _cmdata->_mimic->equations_[0] = _ss.str();
             }
             else if( name == "mimic_vel" ) {
-                _cmdata->_mimic->_equations[1] = _ss.str();
+                _cmdata->_mimic->equations_[1] = _ss.str();
             }
             else if( name == "mimic_accel" ) {
-                _cmdata->_mimic->_equations[2] = _ss.str();
+                _cmdata->_mimic->equations_[2] = _ss.str();
             }
             else if( name == "parentlink" ) {
                 string linkname;
@@ -240,7 +240,7 @@ protected:
 
                 std::shared_ptr<KinBody::Mimic> mimic(new KinBody::Mimic());
                 *mimic = *cmdata->_mimic;
-                mimic->_equations[0] += str(boost::format(" +%.15e")%curtime); // have to add the offset inside the equations
+                mimic->equations_[0] += str(boost::format(" +%.15e")%curtime); // have to add the offset inside the equations
                 std::shared_ptr<ConveyorJoint> pchildjoint(new ConveyorJoint(pchildlink->GetName(), cmdata->_trajfollow, mimic, cmdata->_bIsCircular, shared_kinbody()));
                 joints_vector_.push_back(pchildjoint);
                 pchildjoint->_ComputeInternalInformation(cmdata->_linkParent, pchildlink, curtime);

@@ -1027,8 +1027,8 @@ namespace OpenRAVE
 					if ((*itjoint)->IsMimic(idof)) {
 						for (int ieq = 0; ieq < 3; ++ieq) {
 							string neweq;
-							utils::SearchAndReplace(neweq, (*itjoint)->mimic_array_[idof]->_equations[ieq], jointnamepairs);
-							(*itjoint)->mimic_array_[idof]->_equations[ieq] = neweq;
+							utils::SearchAndReplace(neweq, (*itjoint)->mimic_array_[idof]->equations_[ieq], jointnamepairs);
+							(*itjoint)->mimic_array_[idof]->equations_[ieq] = neweq;
 						}
 					}
 				}
@@ -1565,21 +1565,21 @@ namespace OpenRAVE
 									eq = str(boost::format("%f*(%s)") % ftargetunit%eq);
 								}
 								if (equationtype == "position") {
-									pjoint->mimic_array_[iaxis]->_equations[0] = eq;
+									pjoint->mimic_array_[iaxis]->equations_[0] = eq;
 								}
 								else if (equationtype == "first_partial") {
 									if (!pjointtarget) {
 										RAVELOG_WARN(str(boost::format("first_partial equation '%s' needs a target attribute! ignoring...\n") % eq));
 										continue;
 									}
-									pjoint->mimic_array_[iaxis]->_equations[1] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
+									pjoint->mimic_array_[iaxis]->equations_[1] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
 								}
 								else if (equationtype == "second_partial") {
 									if (!pjointtarget) {
 										RAVELOG_WARN(str(boost::format("second_partial equation '%s' needs a target attribute! ignoring...\n") % eq));
 										continue;
 									}
-									pjoint->mimic_array_[iaxis]->_equations[2] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
+									pjoint->mimic_array_[iaxis]->equations_[2] += str(boost::format("|%s %s ") % pjointtarget->GetName() % eq);
 								}
 								else {
 									RAVELOG_WARN(str(boost::format("unknown equation type %s") % equationtype));
@@ -1600,7 +1600,7 @@ namespace OpenRAVE
 								eq = str(boost::format("%f*(%s)") % ftargetunit%eq);
 							}
 							if (eq.size() > 0) {
-								pjoint->mimic_array_[iaxis]->_equations[0] = eq;
+								pjoint->mimic_array_[iaxis]->equations_[0] = eq;
 								break;
 							}
 						}
@@ -2047,14 +2047,14 @@ namespace OpenRAVE
 					pjoint->info_.type_ = (KinBody::JointType)jointtype;
 					_mapJointUnits[pjoint] = vaxisunits;
 					if (pjoint->info_.is_active_) {
-						pjoint->jointindex = (int)pkinbody->joints_vector_.size();
+						pjoint->joint_index_ = (int)pkinbody->joints_vector_.size();
 						pjoint->dof_index_ = pkinbody->GetDOF();
 					}
 					if (!!pdomjoint->getName()) {
 						pjoint->info_.name_ = _ConvertToOpenRAVEName(pdomjoint->getName());
 					}
 					else {
-						pjoint->info_.name_ = str(boost::format("dummy%d") % pjoint->jointindex);
+						pjoint->info_.name_ = str(boost::format("dummy%d") % pjoint->joint_index_);
 					}
 
 					if (pjoint->info_.is_active_) {
@@ -2074,7 +2074,7 @@ namespace OpenRAVE
 						_mapJointSids[jointsidref.substr(lastJointSidIndex + 1)] = pjoint;
 					}
 
-					RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)") % pjoint->info_.name_%pjoint->jointindex%pjoint->dof_index_));
+					RAVELOG_DEBUG(str(boost::format("joint %s (%d:%d)") % pjoint->info_.name_%pjoint->joint_index_%pjoint->dof_index_));
 
 					KinBody::LinkPtr pchildlink = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, plink->info_.transform_ * tatt, vdomjoints, bindings);
 
@@ -3517,7 +3517,7 @@ namespace OpenRAVE
 			int jointindex = 0;
 			int dofindex = 0;
 			FOREACH(itjoint, probot->joints_vector_) {
-				(*itjoint)->jointindex = jointindex++;
+				(*itjoint)->joint_index_ = jointindex++;
 				(*itjoint)->dof_index_ = dofindex;
 				dofindex += (*itjoint)->GetDOF();
 			}

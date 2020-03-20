@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2014 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,9 +138,21 @@ template <typename T>
 class IkFastFunctions
 {
 public:
-    IkFastFunctions() : _ComputeIk(NULL), _ComputeIk2(NULL), _ComputeFk(NULL), _GetNumFreeParameters(NULL), _GetFreeIndices(NULL), _GetNumJoints(NULL), _GetIkRealSize(NULL), _GetIkFastVersion(NULL), _GetIkType(NULL), _GetKinematicsHash(NULL) {
+    IkFastFunctions() : 
+		_ComputeIk(NULL),
+		_ComputeIk2(NULL),
+		_ComputeFk(NULL), 
+		_GetNumFreeParameters(NULL), 
+		_GetFreeIndices(NULL), 
+		_GetNumJoints(NULL), 
+		_GetIkRealSize(NULL), 
+		_GetIkFastVersion(NULL), 
+		_GetIkType(NULL), 
+		_GetKinematicsHash(NULL)
+	{
     }
-    virtual ~IkFastFunctions() {
+    virtual ~IkFastFunctions() 
+	{
     }
     typedef bool (*ComputeIkFn)(const T*, const T*, const T*, IkSolutionListBase<T>&);
     ComputeIkFn _ComputeIk;

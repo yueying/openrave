@@ -498,10 +498,10 @@ void RobotBase::_ComputeConnectedBodiesInformation()
                 if (!(*itmimic)) {
                     continue;
                 }
-                for (std::size_t iequation = 0; iequation < (*itmimic)->_equations.size(); ++iequation) {
+                for (std::size_t iequation = 0; iequation < (*itmimic)->equations_.size(); ++iequation) {
                     std::string eq;
-                    utils::SearchAndReplace(eq, (*itmimic)->_equations[iequation], jointNamePairs);
-                    (*itmimic)->_equations[iequation] = eq;
+                    utils::SearchAndReplace(eq, (*itmimic)->equations_[iequation], jointNamePairs);
+                    (*itmimic)->equations_[iequation] = eq;
                 }
             }
 

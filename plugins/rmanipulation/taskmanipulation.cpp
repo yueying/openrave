@@ -19,12 +19,12 @@
 
 struct GRASPGOAL
 {
-    vector<dReal> vpreshape;
+    std::vector<dReal> vpreshape;
     IkParameterization tgrasp; //!< transform of the grasp
-    vector<dReal> viksolution; //!< optional joint values for robot arm that achive the grasp goal
-    list<IkParameterization> listDests; //!< transform of the grasps at the destination
+	std::vector<dReal> viksolution; //!< optional joint values for robot arm that achive the grasp goal
+	std::list<IkParameterization> listDests; //!< transform of the grasps at the destination
     int graspindex;
-    vector<dReal> vgoalconfiguration; //!< contains the configuration if this grasp was picked
+	std::vector<dReal> vgoalconfiguration; //!< contains the configuration if this grasp was picked
 };
 
 #ifdef RAVE_REGISTER_BOOST
@@ -42,7 +42,7 @@ public:
 class TaskManipulation : public ModuleBase
 {
 public:
-    typedef std::map<vector<dReal>, TrajectoryBasePtr, GraspVectorCompare > PRESHAPETRAJMAP;
+    typedef std::map<std::vector<dReal>, TrajectoryBasePtr, GraspVectorCompare > PRESHAPETRAJMAP;
 
     TaskManipulation(EnvironmentBasePtr penv) : ModuleBase(penv) {
         description_ = ":Interface Author: Rosen Diankov\n\n\
@@ -111,9 +111,9 @@ Task-based manipulation planning involving target objects. A lot of the algorith
     {
         ModuleBase::Destroy();
         listsystems.clear();
-        _pGrasperPlanner.reset();
-        _pRRTPlanner.reset();
-        _robot.reset();
+        grasper_planner_.reset();
+        rrt_planner_.reset();
+        robot_.reset();
     }
 
     virtual void Reset()
@@ -121,102 +121,119 @@ Task-based manipulation planning involving target objects. A lot of the algorith
         ModuleBase::Reset();
         listsystems.clear();
         // recreate the planners since they store state
-        if( !!_pRRTPlanner ) {
-            _pRRTPlanner = RaveCreatePlanner(GetEnv(),_pRRTPlanner->GetXMLId());
+        if( !!rrt_planner_ )
+		{
+            rrt_planner_ = RaveCreatePlanner(GetEnv(),rrt_planner_->GetXMLId());
         }
-        if( !!_pGrasperPlanner ) {
-            _pGrasperPlanner = RaveCreatePlanner(GetEnv(),_pGrasperPlanner->GetXMLId());
+        if( !!grasper_planner_ ) 
+		{
+            grasper_planner_ = RaveCreatePlanner(GetEnv(),grasper_planner_->GetXMLId());
         }
     }
 
-    int main(const string& args)
+    int main(const std::string& args)
     {
-        string name;
-        stringstream ss(args);
+		std::string name;
+		std::stringstream ss(args);
         _fMaxVelMult=1;
         _minimumgoalpaths=1;
-        ss >> _strRobotName;
+        ss >> robot_name_;
 
-        string plannername, graspername = "Grasper";
-        string cmd;
-        while(!ss.eof()) {
+		std::string plannername, graspername = "Grasper";
+		std::string cmd;
+        while(!ss.eof()) 
+		{
             ss >> cmd;
-            if( !ss ) {
+            if( !ss )
+			{
                 break;
             }
             std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
-            if( cmd == "planner" ) {
+            if( cmd == "planner" ) 
+			{
                 ss >> plannername;
             }
-            else if( cmd == "maxvelmult" ) {
+            else if( cmd == "maxvelmult" ) 
+			{
                 ss >> _fMaxVelMult;
             }
-            else if( cmd == "graspername" ) {
+            else if( cmd == "graspername" ) 
+			{
                 ss >> graspername;
             }
-            else if( cmd == "nograsper" ) {
+            else if( cmd == "nograsper" )
+			{
                 graspername = "";
             }
 
-            if( ss.fail() || !ss ) {
+            if( ss.fail() || !ss ) 
+			{
                 break;
             }
         }
 
-        if( plannername.size() > 0 ) {
-            _pRRTPlanner = RaveCreatePlanner(GetEnv(),plannername);
+        if( plannername.size() > 0 ) 
+		{
+            rrt_planner_ = RaveCreatePlanner(GetEnv(),plannername);
         }
-        if( !_pRRTPlanner ) {
+        if( !rrt_planner_ ) 
+		{
             plannername = "BiRRT";
-            _pRRTPlanner = RaveCreatePlanner(GetEnv(),plannername);
+            rrt_planner_ = RaveCreatePlanner(GetEnv(),plannername);
         }
 
-        if( !_pRRTPlanner ) {
+        if( !rrt_planner_ ) 
+		{
             RAVELOG_WARN("could not find an rrt planner\n");
             return -1;
         }
         RAVELOG_DEBUG(str(boost::format("using %s planner\n")%plannername));
 
-        if( graspername.size() > 0 ) {
-            _pGrasperPlanner = RaveCreatePlanner(GetEnv(),graspername);
-            if( !_pGrasperPlanner ) {
+        if( graspername.size() > 0 ) 
+		{
+            grasper_planner_ = RaveCreatePlanner(GetEnv(),graspername);
+            if( !grasper_planner_ ) 
+			{
                 RAVELOG_WARN(str(boost::format("Failed to create a grasper planner %s\n")%graspername));
             }
         }
-        else {
-            _pGrasperPlanner.reset();
+        else 
+		{
+            grasper_planner_.reset();
         }
-        _robot = GetEnv()->GetRobot(_strRobotName);
+        robot_ = GetEnv()->GetRobot(robot_name_);
         return 0;
     }
 
     virtual bool SendCommand(std::ostream& sout, std::istream& sinput)
     {
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
-        _robot = GetEnv()->GetRobot(_strRobotName);
+        robot_ = GetEnv()->GetRobot(robot_name_);
         return ModuleBase::SendCommand(sout,sinput);
     }
 
-    bool SetRobotCommand(ostream& sout, istream& sinput)
+    bool SetRobotCommand(std::ostream& sout, std::istream& sinput)
     {
-        sinput >> _strRobotName;
-        _robot = GetEnv()->GetRobot(_strRobotName);
-        return !!_robot;
+        sinput >> robot_name_;
+        robot_ = GetEnv()->GetRobot(robot_name_);
+        return !!robot_;
     }
 
-    bool CreateSystem(ostream& sout, istream& sinput)
+    bool CreateSystem(std::ostream& sout, std::istream& sinput)
     {
-        string systemname;
+		std::string systemname;
         sinput >> systemname;
-        if( !sinput ) {
+        if( !sinput ) 
+		{
             return false;
         }
         SensorSystemBasePtr psystem = RaveCreateSensorSystem(GetEnv(),systemname);
-        if( !psystem ) {
+        if( !psystem ) 
+		{
             return false;
         }
-        vector<KinBodyPtr> vbodies;
+		std::vector<KinBodyPtr> vbodies;
         GetEnv()->GetBodies(vbodies);
         psystem->AddRegisteredBodies(vbodies);
         listsystems.push_back(psystem);
@@ -229,88 +246,105 @@ Task-based manipulation planning involving target objects. A lot of the algorith
     class ActiveDistMetric
     {
 public:
-        ActiveDistMetric(RobotBasePtr robot) : _robot(robot) {
-            _robot->GetActiveDOFWeights(weights);
-            FOREACH(it,weights) {
-                *it *= *it;
+        ActiveDistMetric(RobotBasePtr robot) : robot_(robot)
+		{
+            robot_->GetActiveDOFWeights(weights);
+            for(auto& it:weights) 
+			{
+                it *= it;
             }
         }
         virtual dReal Eval(const std::vector<dReal>& c0, const std::vector<dReal>& c1)
         {
             dReal out = 0;
-            for(int i=0; i < _robot->GetActiveDOF(); i++) {
+            for(int i=0; i < robot_->GetActiveDOF(); i++) 
+			{
                 out += weights.at(i) * (c0.at(i)-c1.at(i))*(c0[i]-c1[i]);
             }
             return RaveSqrt(out);
         }
 
 protected:
-        RobotBasePtr _robot;
-        vector<dReal> weights;
+        RobotBasePtr robot_;
+        std::vector<dReal> weights;
     };
 
-    bool EvaluateConstraints(ostream& sout, istream& sinput)
+    bool EvaluateConstraints(std::ostream& sout, std::istream& sinput)
     {
         Transform tTargetWorldFrame, tConstraintTaskFrame;
         std::array<double,6> vfreedoms = { { 1,1,1,1,1,1}};
-        string cmd;
-        list< vector<dReal> > listconfigs;
+		std::string cmd;
+		std::list< std::vector<dReal> > listconfigs;
         double errorthresh=1e-3;
-        while(!sinput.eof()) {
+        while(!sinput.eof()) 
+		{
             sinput >> cmd;
-            if( !sinput ) {
+            if( !sinput ) 
+			{
                 break;
             }
             std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
-            if( cmd == "constraintfreedoms" ) {
-                FOREACH(it,vfreedoms) {
-                    sinput >> *it;
+            if( cmd == "constraintfreedoms" ) 
+			{
+                for(auto& it:vfreedoms) 
+				{
+                    sinput >> it;
                 }
             }
-            else if( cmd == "constraintmatrix" ) {
+            else if( cmd == "constraintmatrix" )
+			{
                 TransformMatrix m; sinput >> m; tTargetWorldFrame = m;
             }
-            else if( cmd == "constraintpose" ) {
+            else if( cmd == "constraintpose" ) 
+			{
                 sinput >> tTargetWorldFrame;
             }
-            else if( cmd == "constrainttaskmatrix" ) {
+            else if( cmd == "constrainttaskmatrix" )
+			{
                 TransformMatrix m; sinput >> m; tConstraintTaskFrame = m;
             }
-            else if( cmd == "constrainttaskpose" ) {
+            else if( cmd == "constrainttaskpose" ) 
+			{
                 sinput >> tConstraintTaskFrame;
             }
-            else if( cmd == "config" ) {
-                vector<dReal> vconfig(_robot->GetActiveDOF());
-                FOREACH(it,vconfig) {
-                    sinput >> *it;
+            else if( cmd == "config" ) 
+			{
+				std::vector<dReal> vconfig(robot_->GetActiveDOF());
+                for(auto& it:vconfig) 
+				{
+                    sinput >> it;
                 }
                 listconfigs.push_back(vconfig);
             }
-            else if( cmd == "constrainterrorthresh" ) {
+            else if( cmd == "constrainterrorthresh" )
+			{
                 sinput >> errorthresh;
             }
-            else {
+            else
+			{
                 RAVELOG_WARN(str(boost::format("unrecognized command: %s\n")%cmd));
                 break;
             }
 
-            if( !sinput ) {
+            if( !sinput )
+			{
                 RAVELOG_ERROR(str(boost::format("failed processing command %s\n")%cmd));
                 return false;
             }
         }
 
-        RobotBase::RobotStateSaver saver(_robot);
+        RobotBase::RobotStateSaver saver(robot_);
 
-        ActiveDistMetric distmetric(_robot);
-        vector<dReal> vprev, vdelta;
-        _robot->GetActiveDOFValues(vprev);
-        CM::GripperJacobianConstrains<double> constraints(_robot->GetActiveManipulator(),tTargetWorldFrame,tConstraintTaskFrame, vfreedoms,errorthresh);
+        ActiveDistMetric distmetric(robot_);
+		std::vector<dReal> vprev, vdelta;
+        robot_->GetActiveDOFValues(vprev);
+        CM::GripperJacobianConstrains<double> constraints(robot_->GetActiveManipulator(),
+			tTargetWorldFrame,tConstraintTaskFrame, vfreedoms,errorthresh);
         constraints._distmetricfn = boost::bind(&ActiveDistMetric::Eval,&distmetric,_1,_2);
         vdelta.resize(vprev.size());
         FOREACH(itconfig,listconfigs) {
-            _robot->SetActiveDOFValues(*itconfig);
+            robot_->SetActiveDOFValues(*itconfig);
             for(size_t j = 0; j < vprev.size(); ++j) {
                 vdelta[j] = (*itconfig)[j] - vprev[j];
             }
@@ -330,7 +364,9 @@ protected:
     class GeometryGroupSaver
     {
 public:
-        GeometryGroupSaver(KinBodyPtr pbody, const std::string& sPaddedGeometryGroup) : _pbody(pbody), _sPaddedGeometryGroup(sPaddedGeometryGroup), _bPadded(false) {
+        GeometryGroupSaver(KinBodyPtr pbody, const std::string& sPaddedGeometryGroup) 
+			: _pbody(pbody), _sPaddedGeometryGroup(sPaddedGeometryGroup), _bPadded(false)
+		{
         }
         ~GeometryGroupSaver() {
             SwitchRegular();
@@ -355,22 +391,22 @@ protected:
         bool _bPadded;
     };
 
-    bool GraspPlanning(ostream& sout, istream& sinput)
+    bool GraspPlanning(std::ostream& sout, std::istream& sinput)
     {
-        RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
+        RobotBase::ManipulatorConstPtr pmanip = robot_->GetActiveManipulator();
 
-        vector<dReal> vgrasps;
+		std::vector<dReal> vgrasps;
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
 
         KinBodyPtr ptarget;
         int nNumGrasps=0, nGraspDim=0;
         dReal fApproachOffset=0.0f;     // offset before approaching to the target
-        string targetname;
-        vector<Transform> vObjDestinations;
-        string strpreshapetraj;     // save the preshape trajectory
+		std::string targetname;
+		std::vector<Transform> vObjDestinations;
+		std::string strpreshapetraj;     // save the preshape trajectory
         bool bCombinePreShapeTraj = true;
         bool bExecute = true;
-        string strtrajfilename;
+		std::string strtrajfilename;
         bool bRandomDests = true, bRandomGrasps = true;     // if true, permute the grasps and destinations when iterating through them
         std::shared_ptr<ostream> pOutputTrajStream;
         int nMaxSeedGrasps = 20, nMaxSeedDests = 5, nMaxSeedIkSolutions = 0;
@@ -387,7 +423,7 @@ protected:
         int iGraspTransform = -1;     // if >= 0, use the grasp transform to check for collisions
         int iGraspTransformNoCol = -1;
         int iStartCountdown = 40;
-        string cmd;
+		std::string cmd;
         CollisionReportPtr report(new CollisionReport);
         Vector vLocalGraspTranslationOffset;
 
@@ -528,9 +564,9 @@ protected:
         if( pmanip->IsGrabbing(*ptarget) ) {
             throw OPENRAVE_EXCEPTION_FORMAT("manipulator %s is already grasping %s", pmanip->GetName()%ptarget->GetName(),ORE_InvalidArguments);
         }
-        RobotBase::RobotStateSaver saver(_robot);
+        RobotBase::RobotStateSaver saver(robot_);
 
-        int nMobileAffine = _robot->GetAffineDOF();     // if mobile base, cannot rely on IK
+        int nMobileAffine = robot_->GetAffineDOF();     // if mobile base, cannot rely on IK
         if( nMobileAffine ) {
             RAVELOG_INFO("planning with mobile base!\n");
         }
@@ -538,8 +574,8 @@ protected:
         vector<int> vindices(pmanip->GetArmIndices().size()+pmanip->GetGripperIndices().size());
         std::copy(pmanip->GetArmIndices().begin(),pmanip->GetArmIndices().end(),vindices.begin());
         std::copy(pmanip->GetGripperIndices().begin(),pmanip->GetGripperIndices().end(),vindices.begin()+pmanip->GetArmIndices().size());
-        _robot->SetActiveDOFs(vindices, nMobileAffine, _robot->GetAffineRotationAxis());
-        ConfigurationSpecification specfinal = _robot->GetActiveConfigurationSpecification();
+        robot_->SetActiveDOFs(vindices, nMobileAffine, robot_->GetAffineRotationAxis());
+        ConfigurationSpecification specfinal = robot_->GetActiveConfigurationSpecification();
         specfinal.AddDerivativeGroups(1,true);
         specfinal.AddDeltaTimeGroup();
 
@@ -552,25 +588,25 @@ protected:
         // jitter again for initial collision
 
         vector<dReal> vCurHandValues, vCurRobotValues, vHandLowerLimits, vHandUpperLimits;
-        _robot->SetActiveDOFs(pmanip->GetGripperIndices());
-        _robot->GetActiveDOFValues(vCurHandValues);
-        _robot->GetActiveDOFLimits(vHandLowerLimits,vHandUpperLimits);
-        _robot->GetDOFValues(vCurRobotValues);
+        robot_->SetActiveDOFs(pmanip->GetGripperIndices());
+        robot_->GetActiveDOFValues(vCurHandValues);
+        robot_->GetActiveDOFLimits(vHandLowerLimits,vHandUpperLimits);
+        robot_->GetDOFValues(vCurRobotValues);
 
-        GeometryGroupSaver geometrypadder(KinBodyPtr(_robot), sPaddedGeometryGroup);
+        GeometryGroupSaver geometrypadder(KinBodyPtr(robot_), sPaddedGeometryGroup);
         geometrypadder.SwitchPadded();
 
         // check if robot is in collision with padded models
-        if( GetEnv()->CheckCollision(KinBodyConstPtr(_robot)) ) {
-            _robot->SetActiveDOFs(pmanip->GetArmIndices());
-            switch( planningutils::JitterActiveDOF(_robot,nJitterIterations,jitter) ) {
+        if( GetEnv()->CheckCollision(KinBodyConstPtr(robot_)) ) {
+            robot_->SetActiveDOFs(pmanip->GetArmIndices());
+            switch( planningutils::JitterActiveDOF(robot_,nJitterIterations,jitter) ) {
             case 0:
                 RAVELOG_WARN("jitter failed for initial\n");
                 return false;
             case 1:
                 RAVELOG_DEBUG("original robot position in collision, so jittered out of it\n");
                 vinsertconfiguration = vCurRobotValues;
-                _robot->GetDOFValues(vCurRobotValues);
+                robot_->GetDOFValues(vCurRobotValues);
                 break;
             }
         }
@@ -585,9 +621,9 @@ protected:
         {
             // fill with a trajectory with one point
             TrajectoryBasePtr pstarttraj = RaveCreateTrajectory(GetEnv(),"");
-            pstarttraj->Init(_robot->GetConfigurationSpecification());
+            pstarttraj->Init(robot_->GetConfigurationSpecification());
             vector<dReal> v;
-            _robot->GetConfigurationValues(v);
+            robot_->GetConfigurationValues(v);
             pstarttraj->Insert(0,v);
             mapPreshapeTrajectories[vCurHandValues] = pstarttraj;
         }
@@ -612,7 +648,7 @@ protected:
             PermutateRandomly(vgrasppermuation);
         }
         if( iGraspTransformNoCol < 0 ) {
-            if( !_pGrasperPlanner ) {
+            if( !grasper_planner_ ) {
                 RAVELOG_ERROR("grasper problem not valid\n");
                 return false;
             }
@@ -684,17 +720,17 @@ protected:
 
             IkParameterization tGoalEndEffector;
             // set the goal preshape
-            _robot->SetActiveDOFs(pmanip->GetGripperIndices(), DOF_NoTransform);
-            _robot->SetActiveDOFValues(vgoalpreshape,true);
+            robot_->SetActiveDOFs(pmanip->GetGripperIndices(), DOF_NoTransform);
+            robot_->SetActiveDOFValues(vgoalpreshape,true);
 
             dReal fGraspApproachOffset = fApproachOffset;
 
-            if( !!_pGrasperPlanner && pmanip->GetIkSolver()->Supports(IKP_Transform6D) ) {
-                _robot->SetActiveDOFs(pmanip->GetGripperIndices(), DOF_X|DOF_Y|DOF_Z);
+            if( !!grasper_planner_ && pmanip->GetIkSolver()->Supports(IKP_Transform6D) ) {
+                robot_->SetActiveDOFs(pmanip->GetGripperIndices(), DOF_X|DOF_Y|DOF_Z);
                 if( !_phandtraj ) {
                     _phandtraj = RaveCreateTrajectory(GetEnv(),"");
                 }
-                _phandtraj->Init(_robot->GetActiveConfigurationSpecification());
+                _phandtraj->Init(robot_->GetActiveConfigurationSpecification());
                 graspparams->fstandoff = pgrasp[iGraspStandoff];
                 graspparams->targetbody = ptarget;
                 graspparams->ftargetroll = pgrasp[iGraspRoll];
@@ -716,29 +752,29 @@ protected:
                 graspparams->bavoidcontact = true;
                 // TODO: in order to reproduce the same exact conditions as the original grasp, have to also transfer the step sizes
 
-                KinBody::KinBodyStateSaver robotlinksaver(_robot, KinBody::Save_LinkEnable);
+                KinBody::KinBodyStateSaver robotlinksaver(robot_, KinBody::Save_LinkEnable);
                 
                 // disable all links not children to the manipulator
-                FOREACHC(itlink,_robot->GetLinks()) {
+                FOREACHC(itlink,robot_->GetLinks()) {
                     if( std::find(vmanipchildlinks.begin(),vmanipchildlinks.end(),*itlink) == vmanipchildlinks.end() ) {
                         (*itlink)->Enable(false);
                     }
                 }
                 
-                if( !_pGrasperPlanner->InitPlan(_robot,graspparams) ) {
+                if( !grasper_planner_->InitPlan(robot_,graspparams) ) {
                     RAVELOG_DEBUG("grasper planner failed: %d\n", igrasp);
                     continue;
                 }
                 
-                if( !_pGrasperPlanner->PlanPath(_phandtraj).GetStatusCode() ) {
+                if( !grasper_planner_->PlanPath(_phandtraj).GetStatusCode() ) {
                     RAVELOG_DEBUG("grasper planner failed: %d\n", igrasp);
                     continue;
                 }
 
                 BOOST_ASSERT(_phandtraj->GetNumWaypoints()>0);
                 _phandtraj->GetWaypoint(-1,vtrajdata);
-                Transform t = _robot->GetTransform();
-                _phandtraj->GetConfigurationSpecification().ExtractTransform(t,vtrajdata.begin(),_robot);
+                Transform t = robot_->GetTransform();
+                _phandtraj->GetConfigurationSpecification().ExtractTransform(t,vtrajdata.begin(),robot_);
 
                 Vector vglobalpalmdir;
                 if( iGraspDir >= 0 ) {
@@ -750,15 +786,15 @@ protected:
 
                 // move back a little if robot/target in collision
                 if( !!ptarget ) {
-                    RobotBase::RobotStateSaver saverlocal(_robot);
-                    _robot->SetTransform(t);
+                    RobotBase::RobotStateSaver saverlocal(robot_);
+                    robot_->SetTransform(t);
                     dReal fstep=0;
                     dReal fstepbacksize = 0.001f;
-                    while(GetEnv()->CheckCollision(KinBodyConstPtr(_robot),KinBodyConstPtr(ptarget))) {
+                    while(GetEnv()->CheckCollision(KinBodyConstPtr(robot_),KinBodyConstPtr(ptarget))) {
                         t.trans -= vglobalpalmdir*fstepbacksize;
                         fGraspApproachOffset -= fstepbacksize;
                         fstep += fstepbacksize;
-                        _robot->SetTransform(t);
+                        robot_->SetTransform(t);
                     }
                     if( fstep > 0 ) {
                         RAVELOG_DEBUG(str(boost::format("grasp %d: moved %f along direction=[%f,%f,%f]")%igrasp%fstep% -vglobalpalmdir.x% -vglobalpalmdir.y% -vglobalpalmdir.z));
@@ -766,7 +802,7 @@ protected:
                 }
 
                 // find the end effector transform
-                tGoalEndEffector.SetTransform6D(t * _robot->GetTransform().inverse() * pmanip->GetTransform());
+                tGoalEndEffector.SetTransform6D(t * robot_->GetTransform().inverse() * pmanip->GetTransform());
 
                 if( iGraspTransform >= 0 ) {
                     // use the grasp transform to figure out how much backing to compensate for, this is just a sanity check
@@ -785,7 +821,7 @@ protected:
                 }
 
                 vFinalGripperValues.resize(pmanip->GetGripperIndices().size(),0);
-                _phandtraj->GetConfigurationSpecification().ExtractJointValues(vFinalGripperValues.begin(),vtrajdata.begin(),_robot,pmanip->GetGripperIndices());
+                _phandtraj->GetConfigurationSpecification().ExtractJointValues(vFinalGripperValues.begin(),vtrajdata.begin(),robot_,pmanip->GetGripperIndices());
             }
             else if( iGraspTransformNoCol >= 0 ) {
                 vFinalGripperValues.resize(0);
@@ -831,9 +867,9 @@ protected:
             }
 
             // set the initial hand joints
-            _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+            robot_->SetActiveDOFs(pmanip->GetGripperIndices());
             if( pmanip->GetGripperIndices().size() > 0 && iGraspPreshape >= 0 ) {
-                _robot->SetActiveDOFValues(vector<dReal>(pgrasp+iGraspPreshape,pgrasp+iGraspPreshape+_robot->GetActiveDOF()),true);
+                robot_->SetActiveDOFValues(vector<dReal>(pgrasp+iGraspPreshape,pgrasp+iGraspPreshape+robot_->GetActiveDOF()),true);
             }
 
             IkParameterization tApproachEndEffector = tGoalEndEffector;
@@ -868,10 +904,10 @@ protected:
                     tApproachEndEffector = tsmalloffset*tApproachEndEffector;
 
                     // set the previous robot ik configuration to get the closest configuration!!
-                    _robot->SetActiveDOFs(pmanip->GetArmIndices());
-                    _robot->SetActiveDOFValues(viksolution);
+                    robot_->SetActiveDOFs(pmanip->GetArmIndices());
+                    robot_->SetActiveDOFValues(viksolution);
                     if( !pmanip->FindIKSolution(tApproachEndEffector, viksolution, IKFO_CheckEnvCollisions) ) {
-                        _robot->SetDOFValues(vCurRobotValues);     // reset robot to original position
+                        robot_->SetDOFValues(vCurRobotValues);     // reset robot to original position
                         RAVELOG_DEBUG("grasp %d: No IK solution found (approach)\n", igrasp);
                         continue;
                     }
@@ -888,9 +924,9 @@ protected:
             }
 
             // set the joints that the grasper plugin calculated
-            _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+            robot_->SetActiveDOFs(pmanip->GetGripperIndices());
             if( vFinalGripperValues.size() > 0 ) {
-                _robot->SetActiveDOFValues(vFinalGripperValues, true);
+                robot_->SetActiveDOFValues(vFinalGripperValues, true);
             }
 
             // should test destination with original models
@@ -907,8 +943,8 @@ protected:
                 ptarget->SetTransform(transDestTarget);
                 bool bTargetCollision;
                 {
-                    RobotBase::RobotStateSaver linksaver(_robot,KinBody::Save_LinkEnable);
-                    _robot->Enable(false);     // remove robot from target collisions
+                    RobotBase::RobotStateSaver linksaver(robot_,KinBody::Save_LinkEnable);
+                    robot_->Enable(false);     // remove robot from target collisions
                     bTargetCollision = GetEnv()->CheckCollision(KinBodyConstPtr(ptarget),report);
                 }
 
@@ -951,7 +987,7 @@ protected:
                 }
             }
 
-            _robot->SetDOFValues(vCurRobotValues);     // reset robot to original position
+            robot_->SetDOFValues(vCurRobotValues);     // reset robot to original position
 
             if(( vObjDestinations.size() > 0) &&( listDests.size() == 0) ) {
                 RAVELOG_WARN("grasp %d: could not find destination\n", igrasp);
@@ -965,12 +1001,12 @@ protected:
                 // not present in map, so look for correct one
                 // initial joint is far from desired preshape, have to plan to get to it
                 // note that this changes trajectory of robot!
-                _robot->SetActiveDOFValues(vCurHandValues, true);
+                robot_->SetActiveDOFValues(vCurHandValues, true);
 
-                _robot->SetActiveDOFs(pmanip->GetArmIndices());
+                robot_->SetActiveDOFs(pmanip->GetArmIndices());
                 TrajectoryBasePtr ptrajToPreshape = RaveCreateTrajectory(GetEnv(),"");
                 ptrajToPreshape->Init(specfinal);
-                bool bSuccess = CM::MoveUnsync::_MoveUnsyncJoints(GetEnv(), _robot, ptrajToPreshape, pmanip->GetGripperIndices(), vgoalpreshape);
+                bool bSuccess = CM::MoveUnsync::_MoveUnsyncJoints(GetEnv(), robot_, ptrajToPreshape, pmanip->GetGripperIndices(), vgoalpreshape);
 
                 if( !bSuccess ) {
                     mapPreshapeTrajectories[vgoalpreshape].reset();     // set to empty
@@ -983,9 +1019,9 @@ protected:
                 if( iGraspPreshape >= 0 ) {
                     planningutils::ConvertTrajectorySpecification(ptrajToPreshape,specfinal);
                     vector<dReal> vpreshapevalues(pgrasp+iGraspPreshape,pgrasp+iGraspPreshape+pmanip->GetGripperIndices().size());
-                    _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+                    robot_->SetActiveDOFs(pmanip->GetGripperIndices());
                     // actually should use _phandtraj
-                    planningutils::InsertActiveDOFWaypointWithRetiming(ptrajToPreshape->GetNumWaypoints(), vpreshapevalues, std::vector<dReal>(), ptrajToPreshape, _robot, _fMaxVelMult);
+                    planningutils::InsertActiveDOFWaypointWithRetiming(ptrajToPreshape->GetNumWaypoints(), vpreshapevalues, std::vector<dReal>(), ptrajToPreshape, robot_, _fMaxVelMult);
                 }
 
                 mapPreshapeTrajectories[vgoalpreshape] = ptrajToPreshape;
@@ -995,7 +1031,7 @@ protected:
 //            BOOST_ASSERT(itpreshapetraj != mapPreshapeTrajectories.end());
 
 //            if( iGraspPreshape >= 0 ) {
-//                _robot->SetActiveDOFValues(vector<dReal>(pgrasp+iGraspPreshape,pgrasp+iGraspPreshape+_robot->GetActiveDOF()),true);
+//                robot_->SetActiveDOFValues(vector<dReal>(pgrasp+iGraspPreshape,pgrasp+iGraspPreshape+robot_->GetActiveDOF()),true);
 //            }
 
             listGraspGoals.push_back(GRASPGOAL());
@@ -1068,27 +1104,27 @@ protected:
         ptrajfinal->Init(specfinal);
 
         if( vinsertconfiguration.size() > 0 ) {
-            _robot->SetActiveDOFs(pmanip->GetArmIndices());
-            _robot->SetDOFValues(vinsertconfiguration);
-            _robot->GetActiveDOFValues(vtrajdata);
+            robot_->SetActiveDOFs(pmanip->GetArmIndices());
+            robot_->SetDOFValues(vinsertconfiguration);
+            robot_->GetActiveDOFValues(vtrajdata);
 
-            vector<int> vindices(_robot->GetDOF());
+            vector<int> vindices(robot_->GetDOF());
             for(size_t i = 0; i < vindices.size(); ++i) {
                 vindices[i] = i;
             }
-            ptrajfinal->Insert(0,vCurRobotValues,_robot->GetConfigurationSpecificationIndices(vindices));
-            planningutils::InsertActiveDOFWaypointWithRetiming(0, vtrajdata, std::vector<dReal>(), ptrajfinal, _robot, _fMaxVelMult);
+            ptrajfinal->Insert(0,vCurRobotValues,robot_->GetConfigurationSpecificationIndices(vindices));
+            planningutils::InsertActiveDOFWaypointWithRetiming(0, vtrajdata, std::vector<dReal>(), ptrajfinal, robot_, _fMaxVelMult);
         }
 
-        _robot->SetDOFValues(vCurRobotValues);
+        robot_->SetDOFValues(vCurRobotValues);
 
         if( bCombinePreShapeTraj && pmanip->GetGripperIndices().size() > 0 ) {     // add the preshape
             RAVELOG_DEBUG(str(boost::format("combine preshape trajectory, duration=%f")%itpreshapetraj->second->GetDuration()));
             itpreshapetraj->second->GetWaypoints(0,itpreshapetraj->second->GetNumWaypoints(),vtrajdata,specfinal);
             ptrajfinal->Insert(ptrajfinal->GetNumWaypoints(),vtrajdata);
             // set the last point so the converters can pick it up
-            ptrajfinal->GetWaypoint(-1,vtrajdata,_robot->GetConfigurationSpecification());
-            _robot->SetConfigurationValues(vtrajdata.begin(),true);
+            ptrajfinal->GetWaypoint(-1,vtrajdata,robot_->GetConfigurationSpecification());
+            robot_->SetConfigurationValues(vtrajdata.begin(),true);
         }
 
         ptraj->GetWaypoints(0,ptraj->GetNumWaypoints(),vtrajdata,specfinal);
@@ -1105,7 +1141,7 @@ protected:
             sout << *itdest << " ";
         }
         sout << goalFound.graspindex << " " << (float)nSearchTime/1000000.0f << " ";
-        CM::SetActiveTrajectory(_robot,ptrajfinal, bExecute, strtrajfilename, pOutputTrajStream);
+        CM::SetActiveTrajectory(robot_,ptrajfinal, bExecute, strtrajfilename, pOutputTrajStream);
         return true;
     }
 
@@ -1115,7 +1151,7 @@ protected:
         string strtrajfilename;
         std::shared_ptr<ostream> pOutputTrajStream;
         Vector direction;
-        RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
+        RobotBase::ManipulatorConstPtr pmanip = robot_->GetActiveManipulator();
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
         graspparams->goal_config_vector_ = pmanip->GetChuckingDirection();
 
@@ -1171,8 +1207,8 @@ protected:
             }
         }
 
-        RobotBase::RobotStateSaver saver(_robot);
-        _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+        RobotBase::RobotStateSaver saver(robot_);
+        robot_->SetActiveDOFs(pmanip->GetGripperIndices());
 
         std::shared_ptr<PlannerBase> graspplanner = RaveCreatePlanner(GetEnv(),"Grasper");
         if( !graspplanner ) {
@@ -1180,8 +1216,8 @@ protected:
             return false;
         }
 
-        graspparams->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(graspparams->initial_config_vector_);
+        graspparams->SetRobotActiveJoints(robot_);
+        robot_->GetActiveDOFValues(graspparams->initial_config_vector_);
         graspparams->btransformrobot = false;
         graspparams->breturntrajectory = false;
         graspparams->bonlycontacttarget = false;
@@ -1189,10 +1225,10 @@ protected:
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
-        ptraj->Init(_robot->GetActiveConfigurationSpecification());
+        ptraj->Init(robot_->GetActiveConfigurationSpecification());
         ptraj->Insert(0,graspparams->initial_config_vector_); // have to add the first point
 
-        if( !graspplanner->InitPlan(_robot, graspparams) ) {
+        if( !graspplanner->InitPlan(robot_, graspparams) ) {
             RAVELOG_ERROR("InitPlan failed\n");
             return false;
         }
@@ -1207,24 +1243,24 @@ protected:
         }
         if( bOutputFinal ) {
             vector<dReal> q;
-            ptraj->GetWaypoint(-1,q,_robot->GetActiveConfigurationSpecification());
+            ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
             FOREACH(itq,q) {
                 sout << *itq << " ";
             }
         }
 
         vector<dReal> vlastvalues;
-        ptraj->GetWaypoint(-1,vlastvalues,_robot->GetActiveConfigurationSpecification());
+        ptraj->GetWaypoint(-1,vlastvalues,robot_->GetActiveConfigurationSpecification());
         if(vlastvalues.size() == voffset.size() ) {
             for(size_t i = 0; i < voffset.size(); ++i) {
                 vlastvalues[i] += voffset[i]*pmanip->GetChuckingDirection().at(i);
             }
-            _robot->SetActiveDOFValues(vlastvalues,true);
-            _robot->GetActiveDOFValues(vlastvalues);
-            ptraj->Insert(ptraj->GetNumWaypoints(),vlastvalues,_robot->GetActiveConfigurationSpecification());
+            robot_->SetActiveDOFValues(vlastvalues,true);
+            robot_->GetActiveDOFValues(vlastvalues);
+            ptraj->Insert(ptraj->GetNumWaypoints(),vlastvalues,robot_->GetActiveConfigurationSpecification());
         }
 
-        CM::SetActiveTrajectory(_robot, ptraj, bExecute, strtrajfilename, pOutputTrajStream,_fMaxVelMult);
+        CM::SetActiveTrajectory(robot_, ptraj, bExecute, strtrajfilename, pOutputTrajStream,_fMaxVelMult);
         return true;
     }
 
@@ -1235,7 +1271,7 @@ protected:
         std::shared_ptr<ostream> pOutputTrajStream;
         Vector direction;
         KinBodyPtr ptarget;
-        RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
+        RobotBase::ManipulatorConstPtr pmanip = robot_->GetActiveManipulator();
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
         graspparams->goal_config_vector_ = pmanip->GetChuckingDirection();
         FOREACH(it,graspparams->goal_config_vector_) {
@@ -1291,23 +1327,23 @@ protected:
             }
         }
 
-        RobotBase::RobotStateSaver saver(_robot);
-        _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+        RobotBase::RobotStateSaver saver(robot_);
+        robot_->SetActiveDOFs(pmanip->GetGripperIndices());
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
-        ptraj->Init(_robot->GetActiveConfigurationSpecification());
+        ptraj->Init(robot_->GetActiveConfigurationSpecification());
 
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         // have to add the first point
         vector<dReal> vinitialconfig;
-        _robot->GetActiveDOFValues(vinitialconfig);
+        robot_->GetActiveDOFValues(vinitialconfig);
         ptraj->Insert(0,vinitialconfig);
-        switch(planningutils::JitterActiveDOF(_robot) ) {
+        switch(planningutils::JitterActiveDOF(robot_) ) {
         case 0:
             RAVELOG_WARN("robot initially in collision\n");
             return false;
         case 1:
-            _robot->GetActiveDOFValues(vinitialconfig);
+            robot_->GetActiveDOFValues(vinitialconfig);
             break;
         }
 
@@ -1317,14 +1353,14 @@ protected:
             return false;
         }
 
-        graspparams->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(graspparams->initial_config_vector_);
+        graspparams->SetRobotActiveJoints(robot_);
+        robot_->GetActiveDOFValues(graspparams->initial_config_vector_);
         graspparams->btransformrobot = false;
         graspparams->breturntrajectory = false;
         graspparams->bonlycontacttarget = false;
         graspparams->bavoidcontact = true;
 
-        if( !graspplanner->InitPlan(_robot, graspparams) ) {
+        if( !graspplanner->InitPlan(robot_, graspparams) ) {
             RAVELOG_ERROR("InitPlan failed\n");
             return false;
         }
@@ -1340,7 +1376,7 @@ protected:
 
         vector<dReal> q;
         if( bOutputFinal ) {
-            ptraj->GetWaypoint(-1,q,_robot->GetActiveConfigurationSpecification());
+            ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
             FOREACH(itq,q) {
                 sout << *itq << " ";
             }
@@ -1349,26 +1385,26 @@ protected:
         bool bForceRetime = false;
         {
             // check final trajectory for colliding points
-            RobotBase::RobotStateSaver saver2(_robot);
-            ptraj->GetWaypoint(-1,q,_robot->GetActiveConfigurationSpecification());
-            _robot->SetActiveDOFValues(q);
-            if( planningutils::JitterActiveDOF(_robot) > 0 ) {
+            RobotBase::RobotStateSaver saver2(robot_);
+            ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
+            robot_->SetActiveDOFValues(q);
+            if( planningutils::JitterActiveDOF(robot_) > 0 ) {
                 RAVELOG_WARN("robot final configuration is in collision\n");
-                _robot->GetActiveDOFValues(q);
-                ptraj->Insert(ptraj->GetNumWaypoints(),q,_robot->GetActiveConfigurationSpecification());
+                robot_->GetActiveDOFValues(q);
+                ptraj->Insert(ptraj->GetNumWaypoints(),q,robot_->GetActiveConfigurationSpecification());
                 bForceRetime = true;
             }
         }
 
         if( !!ptarget ) {
-            _robot->Release(*ptarget);
-            ptraj->GetWaypoint(-1,q,_robot->GetActiveConfigurationSpecification());
-            _robot->SetActiveDOFValues(q);
-            if( GetEnv()->CheckCollision(KinBodyConstPtr(_robot),KinBodyConstPtr(ptarget)) ) {
-                RAVELOG_WARN(str(boost::format("even after releasing, in collision with target %s")%_robot->GetName()));
+            robot_->Release(*ptarget);
+            ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
+            robot_->SetActiveDOFValues(q);
+            if( GetEnv()->CheckCollision(KinBodyConstPtr(robot_),KinBodyConstPtr(ptarget)) ) {
+                RAVELOG_WARN(str(boost::format("even after releasing, in collision with target %s")%robot_->GetName()));
             }
         }
-        CM::SetActiveTrajectory(_robot, ptraj, bExecute, strtrajfilename, pOutputTrajStream,_fMaxVelMult);
+        CM::SetActiveTrajectory(robot_, ptraj, bExecute, strtrajfilename, pOutputTrajStream,_fMaxVelMult);
         return true;
     }
 
@@ -1380,8 +1416,8 @@ protected:
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
 
         // initialize the moving direction as the opposite of the chucking direction defined in the manipulators
-        vector<dReal> vchuckingsign_full(_robot->GetDOF(), 0);
-        FOREACHC(itmanip, _robot->GetManipulators()) {
+        vector<dReal> vchuckingsign_full(robot_->GetDOF(), 0);
+        FOREACHC(itmanip, robot_->GetManipulators()) {
             BOOST_ASSERT((*itmanip)->GetChuckingDirection().size()==(*itmanip)->GetGripperIndices().size());
             for(size_t i = 0; i < (*itmanip)->GetChuckingDirection().size(); ++i) {
                 if( (*itmanip)->GetChuckingDirection()[i] != 0 )
@@ -1389,9 +1425,9 @@ protected:
             }
         }
 
-        graspparams->goal_config_vector_.resize(_robot->GetActiveDOF());
+        graspparams->goal_config_vector_.resize(robot_->GetActiveDOF());
         int i = 0;
-        FOREACHC(itindex,_robot->GetActiveDOFIndices()) {
+        FOREACHC(itindex,robot_->GetActiveDOFIndices()) {
             graspparams->goal_config_vector_[i++] = -vchuckingsign_full.at(*itindex);
         }
 
@@ -1437,22 +1473,22 @@ protected:
             }
         }
 
-        RobotBase::RobotStateSaver saver(_robot);
+        RobotBase::RobotStateSaver saver(robot_);
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
-        ptraj->Init(_robot->GetActiveConfigurationSpecification());
+        ptraj->Init(robot_->GetActiveConfigurationSpecification());
 
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         // have to add the first point
         vector<dReal> vinitialconfig;
-        _robot->GetActiveDOFValues(vinitialconfig);
+        robot_->GetActiveDOFValues(vinitialconfig);
         ptraj->Insert(0,vinitialconfig);
-        switch( planningutils::JitterActiveDOF(_robot) ) {
+        switch( planningutils::JitterActiveDOF(robot_) ) {
         case 0:
             RAVELOG_WARN("robot initially in collision\n");
             return false;
         case 1:
-            _robot->GetActiveDOFValues(vinitialconfig);
+            robot_->GetActiveDOFValues(vinitialconfig);
             break;
         }
 
@@ -1462,15 +1498,15 @@ protected:
             return false;
         }
 
-        _robot->SetActiveManipulator(RobotBase::ManipulatorPtr());     // reset the manipulator
-        graspparams->SetRobotActiveJoints(_robot);
-        _robot->GetActiveDOFValues(graspparams->initial_config_vector_);
+        robot_->SetActiveManipulator(RobotBase::ManipulatorPtr());     // reset the manipulator
+        graspparams->SetRobotActiveJoints(robot_);
+        robot_->GetActiveDOFValues(graspparams->initial_config_vector_);
         graspparams->btransformrobot = false;
         graspparams->breturntrajectory = false;
         graspparams->bonlycontacttarget = false;
         graspparams->bavoidcontact = true;
 
-        if( !graspplanner->InitPlan(_robot, graspparams) ) {
+        if( !graspplanner->InitPlan(robot_, graspparams) ) {
             RAVELOG_ERROR("InitPlan failed\n");
             return false;
         }
@@ -1486,7 +1522,7 @@ protected:
 
         vector<dReal> q;
         if( bOutputFinal ) {
-            ptraj->GetWaypoint(-1,q,_robot->GetActiveConfigurationSpecification());
+            ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
             FOREACH(itq,q) {
                 sout << *itq << " ";
             }
@@ -1495,18 +1531,18 @@ protected:
         bool bForceRetime = false;
         {
             // check final trajectory for colliding points
-            RobotBase::RobotStateSaver saver2(_robot);
-            ptraj->GetWaypoint(-1,q,_robot->GetActiveConfigurationSpecification());
-            _robot->SetActiveDOFValues(q);
-            if( planningutils::JitterActiveDOF(_robot) > 0 ) {
+            RobotBase::RobotStateSaver saver2(robot_);
+            ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
+            robot_->SetActiveDOFValues(q);
+            if( planningutils::JitterActiveDOF(robot_) > 0 ) {
                 RAVELOG_WARN("robot final configuration is in collision\n");
-                _robot->GetActiveDOFValues(q);
-                ptraj->Insert(ptraj->GetNumWaypoints(),q,_robot->GetActiveConfigurationSpecification());
+                robot_->GetActiveDOFValues(q);
+                ptraj->Insert(ptraj->GetNumWaypoints(),q,robot_->GetActiveConfigurationSpecification());
                 bForceRetime = true;
             }
         }
 
-        CM::SetActiveTrajectory(_robot, ptraj, bExecute, strtrajfilename, pOutputTrajStream,_fMaxVelMult);
+        CM::SetActiveTrajectory(robot_, ptraj, bExecute, strtrajfilename, pOutputTrajStream,_fMaxVelMult);
         return true;
     }
 
@@ -1521,20 +1557,20 @@ protected:
     /// \brief grasps using the list of grasp goals. Removes all the goals that the planner planned with
     TrajectoryBasePtr _PlanGrasp(list<GRASPGOAL>&listGraspGoals, int nSeedIkSolutions, GRASPGOAL& goalfound, int nMaxIterations,PRESHAPETRAJMAP& mapPreshapeTrajectories, GeometryGroupSaver& geometrypadder, dReal fPadding, dReal fRRTStepLength)
     {
-        RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
+        RobotBase::ManipulatorConstPtr pmanip = robot_->GetActiveManipulator();
         TrajectoryBasePtr ptraj;
 
         // set all teh goals, be careful! not all goals have the same preshape!!!
         if( listGraspGoals.size() == 0 ) {
             return ptraj;
         }
-        RobotBase::RobotStateSaver _saver(_robot);
+        RobotBase::RobotStateSaver _saver(robot_);
 
         // set back to the initial hand joints
-        _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+        robot_->SetActiveDOFs(pmanip->GetGripperIndices());
         vector<dReal> vpreshape = listGraspGoals.front().vpreshape;
 
-        _robot->SetActiveDOFValues(vpreshape,true);
+        robot_->SetActiveDOFValues(vpreshape,true);
 
         list<GRASPGOAL>::iterator itgoals = listGraspGoals.begin();
         list<GRASPGOAL> listgraspsused;
@@ -1565,9 +1601,9 @@ protected:
         if( itpreshapetraj != mapPreshapeTrajectories.end() ) {
             if( itpreshapetraj->second->GetNumWaypoints() > 0 ) {
                 vector<dReal> vconfig;
-                _robot->GetConfigurationValues(vconfig);
-                itpreshapetraj->second->GetWaypoint(-1,vconfig,_robot->GetConfigurationSpecification());
-                _robot->SetConfigurationValues(vconfig.begin(),true);
+                robot_->GetConfigurationValues(vconfig);
+                itpreshapetraj->second->GetWaypoint(-1,vconfig,robot_->GetConfigurationSpecification());
+                robot_->SetConfigurationValues(vconfig.begin(),true);
             }
         }
         else {
@@ -1592,7 +1628,7 @@ protected:
             // have to check that the goal is accurate, otherwise have to insert a new waypoint (or extend waypoint?)
             std::vector<dReal> vplannedgoal;
             ptraj->GetWaypoint(-1, vplannedgoal, pmanip->GetArmConfigurationSpecification());
-            _robot->SetDOFValues(vplannedgoal, KinBody::CLA_CheckLimits, pmanip->GetArmIndices());
+            robot_->SetDOFValues(vplannedgoal, KinBody::CLA_CheckLimits, pmanip->GetArmIndices());
             IkParameterization plannedikparam = pmanip->GetIkParameterization(goalfound.tgrasp.GetType());
             dReal ferror2 = goalfound.tgrasp.ComputeDistanceSqr(plannedikparam);
             if( ferror2 >= dReal(1e-6) ) {
@@ -1606,7 +1642,7 @@ protected:
                     std::vector<dReal> vtest;
                     for(size_t isolution = 0; isolution < _vcachedsolutions.size(); ++isolution) {
                         vtest = _vcachedsolutions[isolution];
-                        _robot->SubtractDOFValues(vtest, vplannedgoal, pmanip->GetArmIndices());
+                        robot_->SubtractDOFValues(vtest, vplannedgoal, pmanip->GetArmIndices());
                         dReal fdist = 0;
                         FOREACHC(itvalue, vtest) {
                             fdist += RaveFabs(*itvalue);
@@ -1619,8 +1655,8 @@ protected:
                     if( bestdist < 0.4 ) {
                         RAVELOG_DEBUG_FORMAT("found solution with abs dist %f, extending trajectory to it...", bestdist);
                         // extend the waypoint rather than insert in order to keep velocity
-                        _robot->SetActiveDOFs(pmanip->GetArmIndices());
-                        planningutils::ExtendActiveDOFWaypoint(ptraj->GetNumWaypoints(), _vcachedsolutions.at(bestindex), std::vector<dReal>(), ptraj, _robot);
+                        robot_->SetActiveDOFs(pmanip->GetArmIndices());
+                        planningutils::ExtendActiveDOFWaypoint(ptraj->GetNumWaypoints(), _vcachedsolutions.at(bestindex), std::vector<dReal>(), ptraj, robot_);
                     }
                     else {
                         RAVELOG_WARN_FORMAT("found solution with abs dist %f, this is too big so ignoring", bestdist);
@@ -1637,23 +1673,26 @@ protected:
         return ptraj;
     }
 
-    TrajectoryBasePtr _MoveArm(const vector<int>&activejoints, planningutils::ManipulatorIKGoalSampler& goalsampler, int& nGoalIndex, int nMaxIterations, dReal fPadding, dReal fRRTStepLength, int nMaxTries = 1)
+    TrajectoryBasePtr _MoveArm(const vector<int>&activejoints, 
+		planningutils::ManipulatorIKGoalSampler& goalsampler, 
+		int& nGoalIndex, int nMaxIterations, 
+		dReal fPadding, dReal fRRTStepLength, int nMaxTries = 1)
     {
         int nSeedIkSolutions = 8;
         int nJitterIterations = 5000;
         dReal jitter = 0.03;
         dReal fGoalSamplingProb = 0.05;
         RAVELOG_DEBUG("Starting MoveArm...\n");
-        BOOST_ASSERT( !!_pRRTPlanner );
+        BOOST_ASSERT( !!rrt_planner_ );
         TrajectoryBasePtr ptraj;
-        RobotBase::RobotStateSaver _saver(_robot);
+        RobotBase::RobotStateSaver _saver(robot_);
 
         if( activejoints.size() == 0 ) {
             RAVELOG_WARN("move arm failed\n");
             return ptraj;
         }
 
-        if( GetEnv()->CheckCollision(KinBodyConstPtr(_robot)) )
+        if( GetEnv()->CheckCollision(KinBodyConstPtr(robot_)) )
             RAVELOG_WARN("Hand in collision\n");
 
         RRTParametersPtr params(new RRTParameters());
@@ -1661,18 +1700,18 @@ protected:
         if( _sPostProcessingParameters.size() > 0 ) {
             params->_sPostProcessingParameters = _sPostProcessingParameters;
         }
-        _robot->SetActiveDOFs(activejoints);
-        params->SetRobotActiveJoints(_robot);
+        robot_->SetActiveDOFs(activejoints);
+        params->SetRobotActiveJoints(robot_);
         if( fRRTStepLength > 0 ) {
             params->step_length_ = fRRTStepLength;
         }
         //params->_sPathOptimizationPlanner = ""; // no smoothing
 
-        _robot->GetActiveDOFValues(params->initial_config_vector_);
+        robot_->GetActiveDOFValues(params->initial_config_vector_);
 
         // make sure the initial and goal configs are not in collision
         vector<dReal> vgoal;
-        params->goal_config_vector_.reserve(nSeedIkSolutions*_robot->GetActiveDOF());
+        params->goal_config_vector_.reserve(nSeedIkSolutions*robot_->GetActiveDOF());
         goalsampler.SetSamplingProb(1);
         goalsampler.SetJitter(fPadding*2.5);
         while(nSeedIkSolutions > 0) {
@@ -1695,11 +1734,11 @@ protected:
         params->_samplegoalfn = boost::bind(&planningutils::ManipulatorIKGoalSampler::Sample,&goalsampler,_1);
 
         // restore
-        _robot->SetActiveDOFValues(params->initial_config_vector_);
+        robot_->SetActiveDOFValues(params->initial_config_vector_);
 
         vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
         // jitter again for initial collision
-        switch( planningutils::JitterActiveDOF(_robot,nJitterIterations,jitter) ) {
+        switch( planningutils::JitterActiveDOF(robot_,nJitterIterations,jitter) ) {
         case 0: {
             std::stringstream ss; ss << std::setprecision(std::numeric_limits<dReal>::digits10+1);
             ss << "jitter failed for initial=[";
@@ -1713,7 +1752,7 @@ protected:
         case 1:
             RAVELOG_DEBUG("original robot position in collision, so jittered out of it\n");
             vinsertconfiguration = params->initial_config_vector_;
-            _robot->GetActiveDOFValues(params->initial_config_vector_);
+            robot_->GetActiveDOFValues(params->initial_config_vector_);
             break;
         }
 
@@ -1725,15 +1764,15 @@ protected:
 
         stringstream ss;
         for(int iter = 0; iter < nMaxTries; ++iter) {
-            if( !_pRRTPlanner->InitPlan(_robot, params) ) {
+            if( !rrt_planner_->InitPlan(robot_, params) ) {
                 RAVELOG_WARN("InitPlan failed\n");
                 ptraj.reset();
                 return ptraj;
             }
 
-            if( _pRRTPlanner->PlanPath(ptraj).GetStatusCode() ) {
+            if( rrt_planner_->PlanPath(ptraj).GetStatusCode() ) {
                 stringstream sinput; sinput << "GetGoalIndex";
-                _pRRTPlanner->SendCommand(ss,sinput);
+                rrt_planner_->SendCommand(ss,sinput);
                 ss >> nGoalIndex;     // extract the goal index
                 if( !ss ) {
                     RAVELOG_WARN("failed to extract goal index\n");
@@ -1756,14 +1795,16 @@ protected:
             planningutils::VerifyTrajectory(params, ptraj);
         }
         if( vinsertconfiguration.size() > 0 ) {
-            planningutils::InsertActiveDOFWaypointWithRetiming(0,vinsertconfiguration,vector<dReal>(), ptraj, _robot, _fMaxVelMult);
+            planningutils::InsertActiveDOFWaypointWithRetiming(0,vinsertconfiguration,vector<dReal>(), ptraj, robot_, _fMaxVelMult);
         }
         return ptraj;
     }
 
-    IkReturn _FilterIkForGrasping(std::vector<dReal>& vsolution, RobotBase::ManipulatorConstPtr pmanip, const IkParameterization &ikparam, KinBodyPtr ptarget)
+    IkReturn _FilterIkForGrasping(std::vector<dReal>& vsolution, 
+		RobotBase::ManipulatorConstPtr pmanip, 
+		const IkParameterization &ikparam, KinBodyPtr ptarget)
     {
-        if( _robot->IsGrabbing(*ptarget) ) {
+        if( robot_->IsGrabbing(*ptarget) ) {
             return IKRA_Success;
         }
         if( ikparam.GetType() != IKP_Transform6D ) {
@@ -1789,9 +1830,9 @@ protected:
             return IKRA_Success;
         }
 
-        if( pmanip->GetGripperIndices().size() > 0 && !!_pGrasperPlanner) {
-            RobotBase::RobotStateSaver saver(_robot);
-            _robot->SetActiveDOFs(pmanip->GetGripperIndices());
+        if( pmanip->GetGripperIndices().size() > 0 && !!grasper_planner_) {
+            RobotBase::RobotStateSaver saver(robot_);
+            robot_->SetActiveDOFs(pmanip->GetGripperIndices());
             if( !_phandtraj ) {
                 _phandtraj = RaveCreateTrajectory(GetEnv(),"");
             }
@@ -1804,17 +1845,17 @@ protected:
             graspparams->btightgrasp = false;
             graspparams->bavoidcontact = true;
             // TODO: in order to reproduce the same exact conditions as the original grasp, have to also transfer the step sizes
-            if( !_pGrasperPlanner->InitPlan(_robot,graspparams) ) {
+            if( !grasper_planner_->InitPlan(robot_,graspparams) ) {
                 RAVELOG_DEBUG("grasper planner InitPlan failed\n");
                 return IKRA_Reject;
             }
 
-            if( !_pGrasperPlanner->PlanPath(_phandtraj).GetStatusCode() ) {
+            if( !grasper_planner_->PlanPath(_phandtraj).GetStatusCode() ) {
                 RAVELOG_DEBUG("grasper planner PlanPath failed\n");
                 return IKRA_Reject;
             }
 
-            _phandtraj->GetWaypoint(-1,_vFinalGripperValues, _robot->GetConfigurationSpecificationIndices(pmanip->GetGripperIndices()));
+            _phandtraj->GetWaypoint(-1,_vFinalGripperValues, robot_->GetConfigurationSpecificationIndices(pmanip->GetGripperIndices()));
         }
         else {
             _phandtraj.reset();
@@ -1822,14 +1863,14 @@ protected:
         return IKRA_Success;
     }
 
-    bool SetMinimumGoalPathsCommand(ostream& sout, istream& sinput)
+    bool SetMinimumGoalPathsCommand(std::ostream& sout, std::istream& sinput)
     {
         sinput >> _minimumgoalpaths;
         BOOST_ASSERT(_minimumgoalpaths>=0);
         return !!sinput;
     }
 
-    bool SetPostProcessingCommand(ostream& sout, istream& sinput)
+    bool SetPostProcessingCommand(std::ostream& sout, std::istream& sinput)
     {
         if( !getline(sinput, _sPostProcessingParameters) ) {
             return false;
@@ -1837,19 +1878,20 @@ protected:
         return !!sinput;
     }
 
-    string _strRobotName;     //!< name of the active robot
-    RobotBasePtr _robot;
+	std::string robot_name_;     //!< name of the active robot
+    RobotBasePtr robot_;
     dReal _fMaxVelMult;
-    list<SensorSystemBasePtr > listsystems;
-    PlannerBasePtr _pRRTPlanner, _pGrasperPlanner;
+	std::list<SensorSystemBasePtr > listsystems;
+    PlannerBasePtr rrt_planner_, grasper_planner_;
     TrajectoryBasePtr _phandtraj;
-    vector<dReal> _vFinalGripperValues;
+	std::vector<dReal> _vFinalGripperValues;
     std::vector< std::vector<dReal> > _vcachedsolutions;
     std::string _sPostProcessingParameters;
     int _minimumgoalpaths;
     CollisionReportPtr _report;
 };
 
-ModuleBasePtr CreateTaskManipulation(EnvironmentBasePtr penv) {
+ModuleBasePtr CreateTaskManipulation(EnvironmentBasePtr penv)
+{
     return ModuleBasePtr(new TaskManipulation(penv));
 }

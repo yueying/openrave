@@ -35,7 +35,10 @@ public:
     class CubicGroupInfo : public GroupInfo
     {
 public:
-        CubicGroupInfo(int degree, const ConfigurationSpecification::Group& gpos, const ConfigurationSpecification::Group &gvel) : GroupInfo(degree, gpos, gvel) {
+        CubicGroupInfo(int degree, const ConfigurationSpecification::Group& gpos, 
+			const ConfigurationSpecification::Group &gvel) 
+			: GroupInfo(degree, gpos, gvel) 
+		{
         }
 
         //ConfigurationSpecification::Group gaccel;
@@ -43,9 +46,11 @@ public:
     typedef std::shared_ptr<CubicGroupInfo> CubicGroupInfoPtr;
     typedef std::shared_ptr<CubicGroupInfo const> CubicGroupInfoConstPtr;
 
-    CubicTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) : TrajectoryRetimer(penv,sinput)
+    CubicTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) 
+		: TrajectoryRetimer(penv,sinput)
     {
-        description_ = ":Interface Author: Rosen Diankov\n\nSingle cubic trajectory re-timing while passing through the waypoints, waypoints will not be modified. Computing fastest time is slow";
+        description_ = ":Interface Author: Rosen Diankov\n\nSingle cubic trajectory re-timing while passing through the waypoints,\
+                         waypoints will not be modified. Computing fastest time is slow";
     }
 
     virtual PlannerStatus PlanPath(TrajectoryBasePtr ptraj, int planningoptions) override
@@ -55,7 +60,10 @@ public:
     }
 
 protected:
-    GroupInfoPtr CreateGroupInfo(int degree, const ConfigurationSpecification& spec, const ConfigurationSpecification::Group& gpos, const ConfigurationSpecification::Group &gvel) {
+    GroupInfoPtr CreateGroupInfo(int degree, const ConfigurationSpecification& spec, 
+		const ConfigurationSpecification::Group& gpos, 
+		const ConfigurationSpecification::Group &gvel) 
+	{
         CubicGroupInfoPtr g(new CubicGroupInfo(degree, gpos, gvel));
 //        if( gvel.name.size() >= 16 && gvel.name.substr(0,16) == std::string("joint_velocities") ) {
 //            std::string accelname = std::string("joint_accelerations") + gvel.name.substr(16);
@@ -68,17 +76,24 @@ protected:
     {
     }
 
-    bool _SupportInterpolation() {
-        if( _parameters->_interpolation.size() == 0 ) {
+    bool _SupportInterpolation() 
+	{
+        if( _parameters->_interpolation.size() == 0 ) 
+		{
             _parameters->_interpolation = "cubic";
             return true;
         }
-        else {
+        else 
+		{
             return _parameters->_interpolation == "cubic";
         }
     }
 
-    bool _ValidateCubicSpline(const std::vector<dReal>& v0pos, const std::vector<dReal>& v0vel, const std::vector<dReal>& v1pos, const std::vector<dReal>& v1vel, dReal deltatime)
+    bool _ValidateCubicSpline(const std::vector<dReal>& v0pos, 
+		const std::vector<dReal>& v0vel,
+		const std::vector<dReal>& v1pos,
+		const std::vector<dReal>& v1vel, 
+		dReal deltatime)
     {
         dReal ideltatime = 1/deltatime;
         dReal ideltatime2 = ideltatime*ideltatime;
@@ -124,7 +139,12 @@ protected:
         return true;
     }
 
-    dReal _ComputeMinimumTimeJointValues(GroupInfoConstPtr info, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity) {
+    dReal _ComputeMinimumTimeJointValues(GroupInfoConstPtr info, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::const_iterator itdata,
+		bool bUseEndVelocity) 
+	{
         dReal mintime = 0;
         _v0pos.resize(info->gpos.dof);
         _v1pos.resize(info->gpos.dof);
@@ -162,7 +182,11 @@ protected:
         return -1;
     }
 
-    void _ComputeVelocitiesJointValues(GroupInfoConstPtr info, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata) {
+    void _ComputeVelocitiesJointValues(GroupInfoConstPtr info, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata) 
+	{
         if( info->orgveloffset >= 0 ) {
             for(int i=0; i < info->gvel.dof; ++i) {
                 *(itdata+info->gvel.offset+i) = *(itorgdiff+info->orgveloffset+i);
@@ -175,7 +199,11 @@ protected:
         }
     }
 
-    bool _CheckJointValues(GroupInfoConstPtr info, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata, int checkoptions=0xffffffff) {
+    bool _CheckJointValues(GroupInfoConstPtr info, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata, 
+		int checkoptions=0xffffffff) 
+	{
         dReal deltatime = *(itdata+_timeoffset);
         dReal ideltatime = 1/deltatime;
         dReal ideltatime2 = ideltatime*ideltatime;
@@ -271,49 +299,90 @@ protected:
         return true;
     }
 
-    dReal _ComputeMinimumTimeAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity) {
+    dReal _ComputeMinimumTimeAffine(GroupInfoConstPtr info, int affinedofs,
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_ComputeMinimumTimeAffine not implemented"), ORE_NotImplemented);
     }
 
-    void _ComputeVelocitiesAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata) {
+    void _ComputeVelocitiesAffine(GroupInfoConstPtr info, int affinedofs, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_ComputeVelocitiesAffine not implemented"), ORE_NotImplemented);
     }
 
-    bool _CheckAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata, int checkoptions) {
+    bool _CheckAffine(GroupInfoConstPtr info, int affinedofs,
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata,
+		int checkoptions) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("not implemented"), ORE_NotImplemented);
     }
 
-    bool _WriteAffine(GroupInfoConstPtr info, int affinedofs, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata) {
+    bool _WriteAffine(GroupInfoConstPtr info,
+		int affinedofs, std::vector<dReal>::const_iterator itorgdiff,
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_WriteAffine not implemented"), ORE_NotImplemented);
     }
 
-    dReal _ComputeMinimumTimeIk(GroupInfoConstPtr info, IkParameterizationType iktype, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::const_iterator itdata, bool bUseEndVelocity) {
+    dReal _ComputeMinimumTimeIk(GroupInfoConstPtr info, 
+		IkParameterizationType iktype, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::const_iterator itdata,
+		bool bUseEndVelocity) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_ComputeMinimumTimeIk not implemented"), ORE_NotImplemented);
     }
 
-    void _ComputeVelocitiesIk(GroupInfoConstPtr info, IkParameterizationType iktype, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata) {
+    void _ComputeVelocitiesIk(GroupInfoConstPtr info, 
+		IkParameterizationType iktype, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_ComputeVelocitiesIk not implemented"), ORE_NotImplemented);
     }
 
-    bool _CheckIk(GroupInfoConstPtr info, IkParameterizationType iktype, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata, int checkoptions) {
+    bool _CheckIk(GroupInfoConstPtr info, 
+		IkParameterizationType iktype, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata, 
+		int checkoptions) 
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("not implemented"), ORE_NotImplemented);
         return true;
     }
 
-    bool _WriteIk(GroupInfoConstPtr inforaw, IkParameterizationType iktype, std::vector<dReal>::const_iterator itorgdiff, std::vector<dReal>::const_iterator itdataprev, std::vector<dReal>::iterator itdata) {
+    bool _WriteIk(GroupInfoConstPtr inforaw, 
+		IkParameterizationType iktype, 
+		std::vector<dReal>::const_iterator itorgdiff, 
+		std::vector<dReal>::const_iterator itdataprev, 
+		std::vector<dReal>::iterator itdata)
+	{
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("_WriteIk not implemented"), ORE_NotImplemented);
     }
 
-    void _WriteTrajectory(TrajectoryBasePtr ptraj, const ConfigurationSpecification& newspec, const std::vector<dReal>& data) {
+    void _WriteTrajectory(TrajectoryBasePtr ptraj, 
+		const ConfigurationSpecification& newspec, 
+		const std::vector<dReal>& data) 
+	{
         ptraj->Init(newspec);
         ptraj->Insert(0,data);
     }
 
-    string _trajxmlid;
+    std::string _trajxmlid;
     std::vector<dReal> _v0pos, _v0vel, _v1pos, _v1vel;
 };
 
-PlannerBasePtr CreateCubicTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) {
+PlannerBasePtr CreateCubicTrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) 
+{
     return PlannerBasePtr(new CubicTrajectoryRetimer(penv, sinput));
 }
 

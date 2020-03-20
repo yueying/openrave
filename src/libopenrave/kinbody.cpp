@@ -124,7 +124,7 @@ void KinBody::Destroy()
     self_collision_checker_.reset();
 }
 
-bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const std::string& uri)
+bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool is_visible, const std::string& uri)
 {
     OPENRAVE_ASSERT_FORMAT(GetEnvironmentId()==0, "%s: cannot Init a body while it is added to the environment", GetName(), ORE_Failed);
     Destroy();
@@ -133,12 +133,13 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
     plink->info_.name_ = "base";
     plink->info_.is_static_ = true;
     size_t numvertices=0, numindices=0;
-    FOREACHC(itab, vaabbs) {
+    for(auto& itab: vaabbs)
+	{
         GeometryInfo info;
         info.type_ = GT_Box;
-        info.transform_.trans = itab->pos;
-        info.is_visible_ = visible;
-        info.gemo_outer_extents_data_ = itab->extents;
+        info.transform_.trans = itab.pos;
+        info.is_visible_ = is_visible;
+        info.gemo_outer_extents_data_ = itab.extents;
         info.diffuse_color_vec_=Vector(1,0.5f,0.5f,1);
         info.ambient_color_vec_=Vector(0.1,0.0f,0.0f,0);
         Link::GeometryPtr geom(new Link::Geometry(plink,info));
@@ -151,9 +152,10 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
     plink->collision_.vertices.reserve(numvertices);
     plink->collision_.indices.reserve(numindices);
     TriMesh trimesh;
-    FOREACH(itgeom,plink->geometries_vector_) {
-        trimesh = (*itgeom)->GetCollisionMesh();
-        trimesh.ApplyTransform((*itgeom)->GetTransform());
+    for(auto& itgeom:plink->geometries_vector_) 
+	{
+        trimesh = itgeom->GetCollisionMesh();
+        trimesh.ApplyTransform(itgeom->GetTransform());
         plink->collision_.Append(trimesh);
     }
     links_vector_.push_back(plink);
@@ -163,7 +165,9 @@ bool KinBody::InitFromBoxes(const std::vector<AABB>& vaabbs, bool visible, const
 
 bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const std::string& uri)
 {
-    OPENRAVE_ASSERT_FORMAT(GetEnvironmentId()==0, "%s: cannot Init a body while it is added to the environment", GetName(), ORE_Failed);
+    OPENRAVE_ASSERT_FORMAT(GetEnvironmentId()==0, 
+		"%s: cannot Init a body while it is added to the environment",
+		GetName(), ORE_Failed);
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->index_ = 0;
@@ -205,7 +209,8 @@ bool KinBody::InitFromBoxes(const std::vector<OBB>& vobbs, bool visible, const s
 
 bool KinBody::InitFromSpheres(const std::vector<Vector>& vspheres, bool visible, const std::string& uri)
 {
-    OPENRAVE_ASSERT_FORMAT(GetEnvironmentId()==0, "%s: cannot Init a body while it is added to the environment", GetName(), ORE_Failed);
+    OPENRAVE_ASSERT_FORMAT(GetEnvironmentId()==0, 
+		"%s: cannot Init a body while it is added to the environment", GetName(), ORE_Failed);
     Destroy();
     LinkPtr plink(new Link(shared_kinbody()));
     plink->index_ = 0;
@@ -326,7 +331,9 @@ void KinBody::SetLinkGroupGeometries(const std::string& geomname, const std::vec
     _PostprocessChangedParameters(Prop_LinkGeometryGroup); // have to notify collision checkers that the geometry info they are caching could have changed.
 }
 
-bool KinBody::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos, const std::vector<KinBody::JointInfoConstPtr>& jointinfos, const std::string& uri)
+bool KinBody::Init(const std::vector<KinBody::LinkInfoConstPtr>& linkinfos,
+	const std::vector<KinBody::JointInfoConstPtr>& jointinfos, 
+	const std::string& uri)
 {
     OPENRAVE_ASSERT_FORMAT(GetEnvironmentId()==0, "%s: cannot Init a body while it is added to the environment", GetName(), ORE_Failed);
     OPENRAVE_ASSERT_OP(linkinfos.size(),>,0);
@@ -661,18 +668,23 @@ void KinBody::GetDOFResolutions(std::vector<dReal>& v, const std::vector<int>& d
 
 void KinBody::GetDOFWeights(std::vector<dReal>& v, const std::vector<int>& dofindices) const
 {
-    if( dofindices.size() == 0 ) {
+    if( dofindices.size() == 0 ) 
+	{
         v.resize(GetDOF());
         std::vector<dReal>::iterator itv = v.begin();
-        FOREACHC(it, dof_ordered_joints_vector_) {
-            for(int i = 0; i < (*it)->GetDOF(); ++i) {
-                *itv++ = (*it)->GetWeight(i);
+        for(auto& it: dof_ordered_joints_vector_) 
+		{
+            for(int i = 0; i < it->GetDOF(); ++i) 
+			{
+                *itv++ = it->GetWeight(i);
             }
         }
     }
-    else {
+    else 
+	{
         v.resize(dofindices.size());
-        for(size_t i = 0; i < dofindices.size(); ++i) {
+        for(size_t i = 0; i < dofindices.size(); ++i) 
+		{
             JointPtr pjoint = GetJointFromDOFIndex(dofindices[i]);
             v[i] = pjoint->GetWeight(dofindices[i]-pjoint->GetDOFIndex());
         }
@@ -973,7 +985,7 @@ void KinBody::SetDOFVelocities(const std::vector<dReal>& vDOFVelocities, const V
             for(int i = 0; i < pjoint->GetDOF(); ++i) {
                 if( pjoint->IsMimic(i) ) {
                     vtempvalues.resize(0);
-                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->_vdofformat;
+                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->dof_format_vector_;
                     FOREACHC(itdof,vdofformat) {
                         JointPtr pj = itdof->jointindex < (int)joints_vector_.size() ? joints_vector_[itdof->jointindex] : passive_joints_vector_.at(itdof->jointindex-joints_vector_.size());
                         vtempvalues.push_back(pj->GetValue(itdof->axis));
@@ -1627,7 +1639,7 @@ void KinBody::SetDOFValues(const std::vector<dReal>& vJointValues, uint32_t chec
             for(int i = 0; i < pjoint->GetDOF(); ++i) {
                 if( pjoint->IsMimic(i) ) {
                     vtempvalues.resize(0);
-                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->_vdofformat;
+                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->dof_format_vector_;
                     FOREACHC(itdof,vdofformat) {
                         if( itdof->dofindex >= 0 ) {
                             vtempvalues.push_back(pJointValues[itdof->dofindex]);
@@ -1995,7 +2007,7 @@ void KinBody::ComputeJacobianTranslation(int linkindex, const Vector& position, 
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->mimic_dofs_vector_) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -2206,7 +2218,7 @@ void KinBody::ComputeJacobianAxisAngle(int linkindex, std::vector<dReal>& vjacob
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->mimic_dofs_vector_) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -2336,7 +2348,7 @@ void KinBody::ComputeHessianTranslation(int linkindex, const Vector& position, s
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->mimic_dofs_vector_) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -2554,7 +2566,7 @@ void KinBody::ComputeHessianAxisAngle(int linkindex, std::vector<dReal>& hessian
                 if( pjoint->IsMimic(idof) ) {
                     bool bhas = dofindices.size() == 0;
                     if( !bhas ) {
-                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->_vmimicdofs) {
+                        FOREACHC(itmimicdof, pjoint->mimic_array_[idof]->mimic_dofs_vector_) {
                             if( find(dofindices.begin(),dofindices.end(),itmimicdof->dofindex) != dofindices.end() ) {
                                 bhas = true;
                                 break;
@@ -3143,7 +3155,7 @@ void KinBody::_ComputeLinkAccelerations(const std::vector<dReal>& vDOFVelocities
             for(int i = 0; i < pjoint->GetDOF(); ++i) {
                 if( pjoint->IsMimic(i) ) {
                     vtempvalues.resize(0);
-                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->_vdofformat;
+                    const std::vector<Mimic::DOFFormat>& vdofformat = pjoint->mimic_array_[i]->dof_format_vector_;
                     FOREACHC(itdof,vdofformat) {
                         JointPtr pj = itdof->jointindex < (int)joints_vector_.size() ? joints_vector_[itdof->jointindex] : passive_joints_vector_.at(itdof->jointindex-joints_vector_.size());
                         vtempvalues.push_back(pj->GetValue(itdof->axis));
@@ -3392,71 +3404,89 @@ void KinBody::_ComputeInternalInformation()
         int dofindex=0;
         for(auto& itjoint:joints_vector_) 
 		{
-            itjoint->jointindex = jointindex++;
+            itjoint->joint_index_ = jointindex++;
             itjoint->dof_index_ = dofindex;
             itjoint->info_.is_active_ = true;
             dofindex += itjoint->GetDOF();
         }
         for(auto& itjoint:passive_joints_vector_) 
 		{
-            itjoint->jointindex = -1;
+            itjoint->joint_index_ = -1;
             itjoint->dof_index_ = -1;
             itjoint->info_.is_active_ = false;
         }
     }
 
-    vector<size_t> vorder(joints_vector_.size());
-    vector<int> vJointIndices(joints_vector_.size());
+    std::vector<size_t> order_vector(joints_vector_.size());
+	std::vector<int> joint_indices(joints_vector_.size());
     dof_indices_vector_.resize(GetDOF());
-    for(size_t i = 0; i < joints_vector_.size(); ++i) {
-        vJointIndices[i] = joints_vector_[i]->dof_index_;
-        for(int idof = 0; idof < joints_vector_[i]->GetDOF(); ++idof) {
-            dof_indices_vector_.at(vJointIndices[i]+idof) = i;
+    for(size_t i = 0; i < joints_vector_.size(); ++i)
+	{
+        joint_indices[i] = joints_vector_[i]->dof_index_;
+        for(int idof = 0; idof < joints_vector_[i]->GetDOF(); ++idof) 
+		{
+            dof_indices_vector_.at(joint_indices[i]+idof) = i;
         }
-        vorder[i] = i;
+        order_vector[i] = i;
     }
-    sort(vorder.begin(), vorder.end(), utils::index_cmp<vector<int>&>(vJointIndices));
+    std::sort(order_vector.begin(), order_vector.end(), utils::index_cmp<std::vector<int>&>(joint_indices));
     dof_ordered_joints_vector_.resize(0);
-    FOREACH(it,vorder) {
-        dof_ordered_joints_vector_.push_back(joints_vector_.at(*it));
+    for(auto& it:order_vector)
+	{
+        dof_ordered_joints_vector_.push_back(joints_vector_.at(it));
     }
 
-    try {
+    try 
+	{
         // initialize all the mimic equations
-        for(int ijoints = 0; ijoints < 2; ++ijoints) {
-            vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
-            FOREACH(itjoint,vjoints) {
-                for(int i = 0; i < (*itjoint)->GetDOF(); ++i) {
-                    if( !!(*itjoint)->mimic_array_[i] ) {
-                        std::string poseq = (*itjoint)->mimic_array_[i]->_equations[0], veleq = (*itjoint)->mimic_array_[i]->_equations[1], acceleq = (*itjoint)->mimic_array_[i]->_equations[2]; // have to copy since memory can become invalidated
-                        (*itjoint)->SetMimicEquations(i,poseq,veleq,acceleq);
+        for(int ijoints = 0; ijoints < 2; ++ijoints) 
+		{
+            std::vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
+            for(auto& itjoint:vjoints) 
+			{
+                for(int i = 0; i < itjoint->GetDOF(); ++i)
+				{
+                    if( !!itjoint->mimic_array_[i] )
+					{
+						std::string poseq = itjoint->mimic_array_[i]->equations_[0];
+						std::string veleq = itjoint->mimic_array_[i]->equations_[1];
+						std::string acceleq = itjoint->mimic_array_[i]->equations_[2]; // have to copy since memory can become invalidated
+                        itjoint->SetMimicEquations(i,poseq,veleq,acceleq);
                     }
                 }
             }
         }
-        // fill Mimic::_vmimicdofs, check that there are no circular dependencies between the mimic joints
-        std::map<Mimic::DOFFormat, std::shared_ptr<Mimic> > mapmimic;
-        for(int ijoints = 0; ijoints < 2; ++ijoints) {
-            vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
+        // fill Mimic::mimic_dofs_vector_, check that there are no circular dependencies between the mimic joints
+        std::map<Mimic::DOFFormat, std::shared_ptr<Mimic> > mimic_map;
+        for(int ijoints = 0; ijoints < 2; ++ijoints)
+		{
+            std::vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
             int jointindex=0;
-            FOREACH(itjoint,vjoints) {
+            for(auto& itjoint:vjoints) 
+			{
                 Mimic::DOFFormat dofformat;
-                if( ijoints ) {
+                if( ijoints ) 
+				{
                     dofformat.dofindex = -1;
                     dofformat.jointindex = jointindex+(int)joints_vector_.size();
                 }
-                else {
-                    dofformat.dofindex = (*itjoint)->GetDOFIndex();
-                    dofformat.jointindex = (*itjoint)->GetJointIndex();
+                else 
+				{
+                    dofformat.dofindex = itjoint->GetDOFIndex();
+                    dofformat.jointindex = itjoint->GetJointIndex();
                 }
-                for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) {
+                for(int idof = 0; idof < itjoint->GetDOF(); ++idof) 
+				{
                     dofformat.axis = idof;
-                    if( !!(*itjoint)->mimic_array_[idof] ) {
+                    if( !!itjoint->mimic_array_[idof] ) 
+					{
                         // only add if depends on mimic joints
-                        FOREACH(itdofformat,(*itjoint)->mimic_array_[idof]->_vdofformat) {
-                            JointPtr pjoint = itdofformat->GetJoint(*this);
-                            if( pjoint->IsMimic(itdofformat->axis) ) {
-                                mapmimic[dofformat] = (*itjoint)->mimic_array_[idof];
+                        for(auto& itdofformat:itjoint->mimic_array_[idof]->dof_format_vector_) 
+						{
+                            JointPtr pjoint = itdofformat.GetJoint(*this);
+                            if( pjoint->IsMimic(itdofformat.axis) ) 
+							{
+                                mimic_map[dofformat] = itjoint->mimic_array_[idof];
                                 break;
                             }
                         }
@@ -3465,28 +3495,37 @@ void KinBody::_ComputeInternalInformation()
                 ++jointindex;
             }
         }
-        bool bchanged = true;
-        while(bchanged) {
-            bchanged = false;
-            FOREACH(itmimic,mapmimic) {
-                std::shared_ptr<Mimic> mimic = itmimic->second;
+        bool is_changed = true;
+        while(is_changed) 
+		{
+            is_changed = false;
+            for(auto& itmimic:mimic_map) 
+			{
+                std::shared_ptr<Mimic> mimic = itmimic.second;
                 Mimic::DOFHierarchy h;
                 h.dofformatindex = 0;
-                FOREACH(itdofformat,mimic->_vdofformat) {
-                    if( mapmimic.find(*itdofformat) == mapmimic.end() ) {
+                for(auto& itdofformat:mimic->dof_format_vector_) 
+				{
+                    if( mimic_map.find(itdofformat) == mimic_map.end() ) 
+					{
                         continue; // this is normal, just means that the parent is a regular dof
                     }
-                    std::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
-                    FOREACH(itmimicdof, mimicparent->_vmimicdofs) {
-                        if( mimicparent->_vdofformat[itmimicdof->dofformatindex] == itmimic->first ) {
-                            JointPtr pjoint = itmimic->first.GetJoint(*this);
-                            JointPtr pjointparent = itdofformat->GetJoint(*this);
-                            throw OPENRAVE_EXCEPTION_FORMAT(_tr("joint index %s uses a mimic joint %s that also depends on %s! this is not allowed"), pjoint->GetName()%pjointparent->GetName()%pjoint->GetName(), ORE_Failed);
+                    std::shared_ptr<Mimic> mimicparent = mimic_map[itdofformat];
+                    for(auto& itmimicdof: mimicparent->mimic_dofs_vector_) 
+					{
+                        if( mimicparent->dof_format_vector_[itmimicdof.dofformatindex] == itmimic.first )
+						{
+                            JointPtr pjoint = itmimic.first.GetJoint(*this);
+                            JointPtr pjointparent = itdofformat.GetJoint(*this);
+                            throw OPENRAVE_EXCEPTION_FORMAT(_tr("joint index %s uses a mimic joint %s that also depends on %s! this is not allowed"), 
+								pjoint->GetName()%pjointparent->GetName()%pjoint->GetName(), ORE_Failed);
                         }
-                        h.dofindex = itmimicdof->dofindex;
-                        if( find(mimic->_vmimicdofs.begin(),mimic->_vmimicdofs.end(),h) == mimic->_vmimicdofs.end() ) {
-                            mimic->_vmimicdofs.push_back(h);
-                            bchanged = true;
+                        h.dofindex = itmimicdof.dofindex;
+                        if( std::find(mimic->mimic_dofs_vector_.begin(),mimic->mimic_dofs_vector_.end(),h) 
+							== mimic->mimic_dofs_vector_.end() )
+						{
+                            mimic->mimic_dofs_vector_.push_back(h);
+                            is_changed = true;
                         }
                     }
                     ++h.dofformatindex;
@@ -3494,13 +3533,17 @@ void KinBody::_ComputeInternalInformation()
             }
         }
     }
-    catch(const std::exception& ex) {
+    catch(const std::exception& ex)
+	{
         RAVELOG_ERROR(str(boost::format("failed to set mimic equations on kinematics body %s: %s\n")%GetName()%ex.what()));
-        for(int ijoints = 0; ijoints < 2; ++ijoints) {
-            vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
-            FOREACH(itjoint,vjoints) {
-                for(int i = 0; i < (*itjoint)->GetDOF(); ++i) {
-                    (*itjoint)->mimic_array_[i].reset();
+        for(int ijoints = 0; ijoints < 2; ++ijoints) 
+		{
+            std::vector<JointPtr>& vjoints = ijoints ? passive_joints_vector_ : joints_vector_;
+            for(auto& itjoint:vjoints) 
+			{
+                for(int i = 0; i < itjoint->GetDOF(); ++i) 
+				{
+                    itjoint->mimic_array_[i].reset();
                 }
             }
         }
@@ -3514,26 +3557,38 @@ void KinBody::_ComputeInternalInformation()
     // compute the all-pairs shortest paths
     {
         all_pairs_shortest_paths_vector_.resize(links_vector_.size()*links_vector_.size());
-        FOREACH(it,all_pairs_shortest_paths_vector_) {
-            it->first = -1;
-            it->second = -1;
+        for(auto& it:all_pairs_shortest_paths_vector_) 
+		{
+            it.first = -1;
+            it.second = -1;
         }
-        vector<uint32_t> vcosts(links_vector_.size()*links_vector_.size(),0x3fffffff); // initialize to 2^30-1 since we'll be adding
-        for(size_t i = 0; i < links_vector_.size(); ++i) {
+		// initialize to 2^30-1 since we'll be adding
+        std::vector<uint32_t> vcosts(links_vector_.size()*links_vector_.size(),0x3fffffff); 
+        for(size_t i = 0; i < links_vector_.size(); ++i)
+		{
             vcosts[i*links_vector_.size()+i] = 0;
         }
-        FOREACHC(itjoint,joints_vector_) {
-            if( !!(*itjoint)->GetFirstAttached() && !!(*itjoint)->GetSecondAttached() ) {
-                int index = (*itjoint)->GetFirstAttached()->GetIndex()*links_vector_.size()+(*itjoint)->GetSecondAttached()->GetIndex();
-                all_pairs_shortest_paths_vector_[index] = std::pair<int16_t,int16_t>((*itjoint)->GetFirstAttached()->GetIndex(),(*itjoint)->GetJointIndex());
+        for(auto itjoint:joints_vector_) 
+		{
+            if( !!itjoint->GetFirstAttached() && !!itjoint->GetSecondAttached() ) 
+			{
+                int index = itjoint->GetFirstAttached()->GetIndex()
+					*links_vector_.size()+itjoint->GetSecondAttached()->GetIndex();
+                all_pairs_shortest_paths_vector_[index] = std::pair<int16_t,int16_t>(
+					itjoint->GetFirstAttached()->GetIndex(),
+					itjoint->GetJointIndex());
                 vcosts[index] = 1;
-                index = (*itjoint)->GetSecondAttached()->GetIndex()*links_vector_.size()+(*itjoint)->GetFirstAttached()->GetIndex();
-                all_pairs_shortest_paths_vector_[index] = std::pair<int16_t,int16_t>((*itjoint)->GetSecondAttached()->GetIndex(),(*itjoint)->GetJointIndex());
+                index = itjoint->GetSecondAttached()->GetIndex()
+					*links_vector_.size()+itjoint->GetFirstAttached()->GetIndex();
+                all_pairs_shortest_paths_vector_[index] = std::pair<int16_t,int16_t>(
+					itjoint->GetSecondAttached()->GetIndex(),
+					itjoint->GetJointIndex());
                 vcosts[index] = 1;
             }
         }
         int jointindex = (int)joints_vector_.size();
-        FOREACHC(itjoint,passive_joints_vector_) {
+        FOREACHC(itjoint,passive_joints_vector_) 
+		{
             if( !!(*itjoint)->GetFirstAttached() && !!(*itjoint)->GetSecondAttached() ) {
                 int index = (*itjoint)->GetFirstAttached()->GetIndex()*links_vector_.size()+(*itjoint)->GetSecondAttached()->GetIndex();
                 all_pairs_shortest_paths_vector_[index] = std::pair<int16_t,int16_t>((*itjoint)->GetFirstAttached()->GetIndex(),jointindex);
@@ -3544,19 +3599,26 @@ void KinBody::_ComputeInternalInformation()
             }
             ++jointindex;
         }
-        for(size_t k = 0; k < links_vector_.size(); ++k) {
-            for(size_t i = 0; i < links_vector_.size(); ++i) {
-                if( i == k ) {
+        for(size_t k = 0; k < links_vector_.size(); ++k)
+		{
+            for(size_t i = 0; i < links_vector_.size(); ++i) 
+			{
+                if( i == k ) 
+				{
                     continue;
                 }
-                for(size_t j = 0; j < links_vector_.size(); ++j) {
-                    if((j == i)||(j == k)) {
+                for(size_t j = 0; j < links_vector_.size(); ++j) 
+				{
+                    if((j == i)||(j == k)) 
+					{
                         continue;
                     }
                     uint32_t kcost = vcosts[k*links_vector_.size()+i] + vcosts[j*links_vector_.size()+k];
-                    if( vcosts[j*links_vector_.size()+i] > kcost ) {
+                    if( vcosts[j*links_vector_.size()+i] > kcost ) 
+					{
                         vcosts[j*links_vector_.size()+i] = kcost;
-                        all_pairs_shortest_paths_vector_[j*links_vector_.size()+i] = all_pairs_shortest_paths_vector_[k*links_vector_.size()+i];
+                        all_pairs_shortest_paths_vector_[j*links_vector_.size()+i] 
+							= all_pairs_shortest_paths_vector_[k*links_vector_.size()+i];
                     }
                 }
             }
@@ -3702,7 +3764,7 @@ void KinBody::_ComputeInternalInformation()
             if( j0->IsMimic() ) {
                 for(int i = 0; i < j0->GetDOF(); ++i) {
                     if(j0->IsMimic(i)) {
-                        FOREACH(itdofformat, j0->mimic_array_[i]->_vdofformat) {
+                        FOREACH(itdofformat, j0->mimic_array_[i]->dof_format_vector_) {
                             if( itdofformat->dofindex < 0 ) {
                                 vjointadjacency[itdofformat->jointindex*numjoints+ij0] = 1;
                             }
@@ -3926,7 +3988,7 @@ void KinBody::_ComputeInternalInformation()
                     if( pjoint->IsMimic() ) {
                         for(int idof = 0; idof < pjoint->GetDOF(); ++idof) {
                             if( pjoint->IsMimic(idof) ) {
-                                FOREACHC(itmimicdof,pjoint->mimic_array_[idof]->_vmimicdofs) {
+                                FOREACHC(itmimicdof,pjoint->mimic_array_[idof]->mimic_dofs_vector_) {
                                     JointPtr pjoint2 = GetJointFromDOFIndex(itmimicdof->dofindex);
                                     joints_affecting_links_vector_[pjoint2->GetJointIndex()*links_vector_.size()+i] = pjoint2->GetHierarchyParentLink()->GetIndex() == i ? -1 : 1;
                                 }
@@ -4937,7 +4999,7 @@ void KinBody::_InitAndAddJoint(JointPtr pjoint)
     for(size_t i = 0; i < info._vmimic.size(); ++i) {
         if( !!info._vmimic[i] ) {
             pjoint->mimic_array_[i].reset(new Mimic());
-            pjoint->mimic_array_[i]->_equations = info._vmimic[i]->_equations;
+            pjoint->mimic_array_[i]->equations_ = info._vmimic[i]->equations_;
         }
     }
     LinkPtr plink0, plink1;

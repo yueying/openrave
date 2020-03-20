@@ -699,7 +699,11 @@ dReal ComputeRampQuality(const std::list<ParabolicRamp::ParabolicRampND>& ramps)
     return 1/res;
 }
 
-bool FurtherMergeRamps(const std::list<ParabolicRamp::ParabolicRampND>&origramps,std::list<ParabolicRamp::ParabolicRampND>&resramps, ConstraintTrajectoryTimingParametersPtr params, dReal upperbound, bool checkcontrollertime, SpaceSamplerBasePtr uniformsampler, ParabolicRamp::RampFeasibilityChecker& check, int options)
+bool FurtherMergeRamps(const std::list<ParabolicRamp::ParabolicRampND>&origramps,
+	std::list<ParabolicRamp::ParabolicRampND>&resramps,
+	ConstraintTrajectoryTimingParametersPtr params, dReal upperbound,
+	bool checkcontrollertime, SpaceSamplerBasePtr uniformsampler, 
+	ParabolicRamp::RampFeasibilityChecker& check, int options)
 {
     //int nitersfurthermerge = params->nitersfurthermerge;
     int nitersfurthermerge = 0;
