@@ -54,55 +54,29 @@ public:
 
         ModuleBasePtr pbasemanip = RaveCreateModule(penv,"basemanipulation"); // create the module
         penv->Add(pbasemanip,true,probot->GetName()); // load the module
-		TrajectoryBasePtr ptraj = RaveCreateTrajectory(penv, "");
-        while(IsOk()) 
-		{
-			GraphHandlePtr pgraph;
-			{
-				EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
 
-				Transform t = pmanip->GetEndEffectorTransform();
-				t.trans += Vector(RaveRandomFloat() - 0.5f, RaveRandomFloat() - 0.5f, RaveRandomFloat() - 0.5f);
-				Vector direction(RaveRandomFloat() - 0.5f, RaveRandomFloat() - 0.5f, 0);
-				direction.normalize();
+        while(IsOk()) {
+            {
+                EnvironmentMutex::scoped_lock lock(penv->GetMutex()); // lock environment
 
-				t.rot = quatMultiply(t.rot, quatFromAxisAngle(Vector(RaveRandomFloat() - 0.5f, RaveRandomFloat() - 0.5f, 0)*0.2f));
+                // find a new manipulator position and feed that into the planner. If valid, robot will move to it safely.
+                Transform t = pmanip->GetEndEffectorTransform();
+                t.trans += Vector(RaveRandomFloat()-0.5f,RaveRandomFloat()-0.5f,RaveRandomFloat()-0.5f);
+                t.rot = quatMultiply(t.rot,quatFromAxisAngle(Vector(RaveRandomFloat()-0.5f,RaveRandomFloat()-0.5f,RaveRandomFloat()-0.5f)*0.2f));
+                ssin.str("");
+                ssin.clear();
+                ssin << "MoveToHandPosition pose " << t;
+                // start the planner and run the robot
+                RAVELOG_INFO("%s\n",ssin.str().c_str());
+                if( !pbasemanip->SendCommand(ssout,ssin) ) {
+                    continue;
+                }
+            }
 
-				IkParameterization ik_param;
-				ik_param.SetLookat3D(RAY(t.trans, direction));
-
-				stringstream ssin, ssout;
-				ssin << "MoveToHandPosition outputtraj pose " << t;
-				//ssin << "MoveHandStraight starteematrix " << t;
-				// start the planner and run the robot
-				RAVELOG_INFO("%s\n", ssin.str().c_str());
-				if (!pbasemanip->SendCommand(ssout, ssin))
-				{
-					continue;
-				}
-				ptraj->deserialize(ssout);
-				RAVELOG_INFO("trajectory duration %fs\n", ptraj->GetDuration());
-
-				// draw the end effector of the trajectory
-				{
-					RobotBase::RobotStateSaver saver(probot); // save the state of the robot since will be setting joint values
-					std::vector<RaveVector<float> > vpoints;
-					std::vector<dReal> vtrajdata;
-					for (dReal ftime = 0; ftime <= ptraj->GetDuration(); ftime += 0.01)
-					{
-						ptraj->Sample(vtrajdata, ftime, probot->GetActiveConfigurationSpecification());
-						probot->SetActiveDOFValues(vtrajdata);
-						vpoints.push_back(pmanip->GetEndEffectorTransform().trans);
-					}
-					pgraph = penv->drawlinestrip(&vpoints[0].x, vpoints.size(), sizeof(vpoints[0]), 1.0f);
-				}
-			}
-
-			// unlock the environment and wait for the robot to finish
-			while (!probot->GetController()->IsDone() && IsOk())
-			{
-				boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-			}
+            // unlock the environment and wait for the robot to finish
+            while(!probot->GetController()->IsDone() && IsOk()) {
+                boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+            }
         }
     }
 };

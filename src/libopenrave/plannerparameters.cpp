@@ -37,7 +37,17 @@ typedef bai::base64_from_binary<    // convert binary values to base64 character
             >
         > base64_text;
 
-WorkspaceTrajectoryParameters::WorkspaceTrajectoryParameters(EnvironmentBasePtr penv) : maxdeviationangle(0.15*PI), maintaintiming(false), greedysearch(true), ignorefirstcollision(0), ignorefirstcollisionee(0), ignorelastcollisionee(0), minimumcompletetime(0), _penv(penv), _bProcessing(false) {
+WorkspaceTrajectoryParameters::WorkspaceTrajectoryParameters(EnvironmentBasePtr penv)
+	: maxdeviationangle(0.15*PI), 
+	maintaintiming(false), 
+	greedysearch(true), 
+	ignorefirstcollision(0), 
+	ignorefirstcollisionee(0), 
+	ignorelastcollisionee(0), 
+	minimumcompletetime(0), 
+	_penv(penv), 
+	_bProcessing(false) 
+{
     xml_parameters_vector_.push_back("maxdeviationangle");
     xml_parameters_vector_.push_back("maintaintiming");
     xml_parameters_vector_.push_back("greedysearch");
@@ -51,7 +61,8 @@ WorkspaceTrajectoryParameters::WorkspaceTrajectoryParameters(EnvironmentBasePtr 
 // save the extra data to XML
 bool WorkspaceTrajectoryParameters::serialize(std::ostream& O, int options) const
 {
-    if( !PlannerParameters::serialize(O, options&~1) ) {
+    if( !PlannerParameters::serialize(O, options&~1) ) 
+	{
         return false;
     }
     O << "<maxdeviationangle>" << maxdeviationangle << "</maxdeviationangle>" << std::endl;
@@ -61,7 +72,8 @@ bool WorkspaceTrajectoryParameters::serialize(std::ostream& O, int options) cons
     O << "<ignorefirstcollisionee>" << ignorefirstcollisionee << "</ignorefirstcollisionee>" << std::endl;
     O << "<ignorelastcollisionee>" << ignorelastcollisionee << "</ignorelastcollisionee>" << std::endl;
     O << "<minimumcompletetime>" << minimumcompletetime << "</minimumcompletetime>" << std::endl;
-    if( !!workspacetraj ) {
+    if( !!workspacetraj ) 
+	{
         O << "<workspacetrajectory><![CDATA[";
 
         std::stringstream ssbinarytraj;

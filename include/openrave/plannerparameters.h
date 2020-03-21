@@ -774,7 +774,7 @@ typedef std::shared_ptr<WorkspaceTrajectoryParameters const> WorkspaceTrajectory
 class OPENRAVE_API RRTParameters : public PlannerBase::PlannerParameters
 {
 public:
-    RRTParameters() : _minimumgoalpaths(1), _bProcessing(false) 
+    RRTParameters() : _minimumgoalpaths(1), is_processing_(false) 
 	{
         xml_parameters_vector_.push_back("minimumgoalpaths");
     }
@@ -782,14 +782,16 @@ public:
     size_t _minimumgoalpaths; //!< minimum number of goals to connect to before exiting. the goal with the shortest path is returned.
 
 protected:
-    bool _bProcessing;
+    bool is_processing_;
     virtual bool serialize(std::ostream& O, int options=0) const
     {
-        if( !PlannerParameters::serialize(O, options&~1) ) {
+        if( !PlannerParameters::serialize(O, options&~1) ) 
+		{
             return false;
         }
         O << "<minimumgoalpaths>" << _minimumgoalpaths << "</minimumgoalpaths>" << std::endl;
-        if( !(options & 1) ) {
+        if( !(options & 1) ) 
+		{
             O << _sExtraParameters << std::endl;
         }
         return !!O;
@@ -797,7 +799,7 @@ protected:
 
     ProcessElement startElement(const std::string& name, const AttributesList& atts)
     {
-        if( _bProcessing ) {
+        if( is_processing_ ) {
             return PE_Ignore;
         }
         switch( PlannerBase::PlannerParameters::startElement(name,atts) ) {
@@ -806,20 +808,20 @@ protected:
         case PE_Ignore: return PE_Ignore;
         }
 
-        _bProcessing = name=="minimumgoalpaths";
-        return _bProcessing ? PE_Support : PE_Pass;
+        is_processing_ = name=="minimumgoalpaths";
+        return is_processing_ ? PE_Support : PE_Pass;
     }
 
     virtual bool endElement(const std::string& name)
     {
-        if( _bProcessing ) {
+        if( is_processing_ ) {
             if( name == "minimumgoalpaths") {
                 _ss >> _minimumgoalpaths;
             }
             else {
                 RAVELOG_WARN(str(boost::format("unknown tag %s\n")%name));
             }
-            _bProcessing = false;
+            is_processing_ = false;
             return false;
         }
 

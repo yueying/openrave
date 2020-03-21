@@ -961,7 +961,7 @@ PyInterfaceBasePtr pyRaveClone(PyInterfaceBasePtr pyreference, int cloningoption
     case PT_SensorSystem: return toPySensorSystem(RaveInterfaceCast<SensorSystemBase>(pclone), pyenv);
     case PT_Controller: return toPyController(RaveInterfaceCast<ControllerBase>(pclone), pyenv);
     case PT_Module: return toPyModule(RaveInterfaceCast<ModuleBase>(pclone), pyenv);
-    case PT_InverseKinematicsSolver: return toPyIkSolver(RaveInterfaceCast<IkSolverBase>(pclone), pyenv);
+    case PT_IkSolver: return toPyIkSolver(RaveInterfaceCast<IkSolverBase>(pclone), pyenv);
     case PT_KinBody: return toPyKinBody(RaveInterfaceCast<KinBody>(pclone), pyenv);
     case PT_PhysicsEngine: return toPyPhysicsEngine(RaveInterfaceCast<PhysicsEngineBase>(pclone), pyenv);
     case PT_Sensor: return toPySensor(RaveInterfaceCast<SensorBase>(pclone), pyenv);

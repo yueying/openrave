@@ -210,7 +210,7 @@ inline const char* RaveGetInterfaceHash(InterfaceType type)
     case PT_SensorSystem: return OPENRAVE_SENSORSYSTEM_HASH;
     case PT_Controller: return OPENRAVE_CONTROLLER_HASH;
     case PT_Module: return OPENRAVE_MODULE_HASH;
-    case PT_InverseKinematicsSolver: return OPENRAVE_IKSOLVER_HASH;
+    case PT_IkSolver: return OPENRAVE_IKSOLVER_HASH;
     case PT_KinBody: return OPENRAVE_KINBODY_HASH;
     case PT_PhysicsEngine: return OPENRAVE_PHYSICSENGINE_HASH;
     case PT_Sensor: return OPENRAVE_SENSOR_HASH;

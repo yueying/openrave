@@ -128,7 +128,7 @@ public:
 		RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFinishCallbackFn;
 
     IkSolverBase(EnvironmentBasePtr penv) 
-		: InterfaceBase(PT_InverseKinematicsSolver, penv)
+		: InterfaceBase(PT_IkSolver, penv)
 	{
     }
 
@@ -139,7 +139,7 @@ public:
     /// return the static interface type this class points to (used for safe casting)
     static inline InterfaceType GetInterfaceTypeStatic() 
 	{
-        return PT_InverseKinematicsSolver;
+        return PT_IkSolver;
     }
 
     /// brief Sets the IkSolverBase attached to a specific robot and sets IkSolverBase specific options.

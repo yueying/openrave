@@ -43,9 +43,7 @@ namespace OpenRAVE
 		PT_SensorSystem = 3, //!< describes \ref SensorSystemBase interface
 		PT_Controller = 4, //!< describes \ref ControllerBase interface
 		PT_Module = 5, //!< describes \ref ModuleBase interface
-		PT_ProblemInstance = 5, //!< describes \ref ModuleBase interface
 		PT_IkSolver = 6, //!< describes \ref IkSolverBase interface
-		PT_InverseKinematicsSolver = 6, //!< describes \ref IkSolverBase interface
 		PT_KinBody = 7, //!< describes \ref KinBody
 		PT_PhysicsEngine = 8, //!< describes \ref PhysicsEngineBase
 		PT_Sensor = 9, //!< describes \ref SensorBase

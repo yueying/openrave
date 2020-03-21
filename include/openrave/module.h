@@ -19,31 +19,37 @@
 
     Automatically included with \ref openrave.h
  */
-#ifndef OPENRAVE_COMMAND_PROBLEM_INSTANCE_H
-#define OPENRAVE_COMMAND_PROBLEM_INSTANCE_H
+#ifndef OPENRAVE_MODULE_INSTANCE_H
+#define OPENRAVE_MODULE_INSTANCE_H
 
-namespace OpenRAVE {
+namespace OpenRAVE 
+{
 
-/** \brief <b>[interface]</b> A loadable module of user code meant to solve a specific domain. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_module.
+/** \brief <b>[interface]</b> A loadable module of user code meant to solve a specific domain. 
+           <b>If not specified, method is not multi-thread safe.</b> See \ref arch_module.
     \ingroup interfaces
  */
 class OPENRAVE_API ModuleBase : public InterfaceBase
 {
 public:
-    ModuleBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Module, penv) {
+    ModuleBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Module, penv) 
+	{
     }
-    virtual ~ModuleBase() {
+    virtual ~ModuleBase()
+	{
     }
 
     /// return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
-        return PT_ProblemInstance;
+    static inline InterfaceType GetInterfaceTypeStatic()
+	{
+        return PT_Module;
     }
 
     /// gets called every time a problem instance is loaded to initialize the problem.
     /// Robots might not necessarily be set before this function call
     /// returns 0 on success
-    virtual int main(const std::string& cmd) {
+    virtual int main(const std::string& cmd) 
+	{
         return 0;
     }
 
@@ -53,24 +59,22 @@ public:
     }
 
     /// called when environment is reset
-    virtual void Reset() {
+    virtual void Reset() 
+	{
     }
 
-    virtual bool SimulationStep(dReal fElapsedTime) {
+    virtual bool SimulationStep(dReal elapsed_time) 
+	{
         return false;
     }
     
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_MODULE_HASH;
     }
 };
 
-typedef ModuleBase ProblemInstance;
-typedef ModuleBasePtr ProblemInstancePtr;
-typedef ModuleBaseWeakPtr ProblemInstanceConstPtr;
-typedef ModuleBaseConstPtr ProblemInstanceWeakPtr;
-
 } // end namespace OpenRAVE
 
-#endif
+#endif //OPENRAVE_MODULE_INSTANCE_H
