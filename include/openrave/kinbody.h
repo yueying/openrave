@@ -1659,7 +1659,7 @@ namespace OpenRAVE
 			std::vector<dReal> _vdoflastsetvalues;
 			std::vector<dReal> _vMaxVelocities, _vMaxAccelerations, _vMaxJerks, _vDOFWeights, _vDOFLimits[2];
 			std::vector<UserDataPtr> _vGrabbedBodies;
-			bool _bRestoreOnDestructor;
+			bool is_restore_on_destructor_;
 		private:
 			virtual void _RestoreKinBody(std::shared_ptr<KinBody> body);
 		};

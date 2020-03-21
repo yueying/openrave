@@ -192,58 +192,67 @@ const std::string& RobotBase::AttachedSensor::GetStructureHash() const
     return hash_structure_;
 }
 
-RobotBase::RobotStateSaver::RobotStateSaver(RobotBasePtr probot, int options) : KinBodyStateSaver(probot, options), _probot(probot)
+RobotBase::RobotStateSaver::RobotStateSaver(RobotBasePtr probot, int options)
+	: KinBodyStateSaver(probot, options), robot_(probot)
 {
-    if( options_ & Save_ActiveDOF ) {
-        vactivedofs = _probot->GetActiveDOFIndices();
-        affinedofs = _probot->GetAffineDOF();
-        rotationaxis = _probot->GetAffineRotationAxis();
+    if( options_ & Save_ActiveDOF ) 
+	{
+        active_dof_indices_ = robot_->GetActiveDOFIndices();
+        affine_dofs_ = robot_->GetAffineDOF();
+        affine_rotation_axis_ = robot_->GetAffineRotationAxis();
     }
-    if( options_ & Save_ActiveManipulator ) {
-        _pManipActive = _probot->GetActiveManipulator();
+    if( options_ & Save_ActiveManipulator )
+	{
+        active_manipulator_ = robot_->GetActiveManipulator();
     }
-    if( options_ & Save_ActiveManipulatorToolTransform ) {
-        _pManipActive = _probot->GetActiveManipulator();
-        if( !!_pManipActive ) {
-            _tActiveManipLocalTool = _pManipActive->GetLocalToolTransform();
-            _vActiveManipLocalDirection = _pManipActive->GetLocalToolDirection();
-            _pActiveManipIkSolver = _pManipActive->GetIkSolver();
+    if( options_ & Save_ActiveManipulatorToolTransform ) 
+	{
+        active_manipulator_ = robot_->GetActiveManipulator();
+        if( !!active_manipulator_ ) 
+		{
+            active_manip_local_tool_transform_ = active_manipulator_->GetLocalToolTransform();
+            active_manip_local_direction_ = active_manipulator_->GetLocalToolDirection();
+            active_manip_ik_solver_ = active_manipulator_->GetIkSolver();
         }
     }
-    if( options_ & Save_ManipulatorsToolTransform ) {
-        std::vector<RobotBase::ManipulatorPtr> vmanips = probot->GetManipulators();
-        _vtManipsLocalTool.resize(vmanips.size());
-        _vvManipsLocalDirection.resize(vmanips.size());
-        _vpManipsIkSolver.resize(vmanips.size());
-        for(int imanip = 0; imanip < (int)vmanips.size(); ++imanip) {
-            RobotBase::ManipulatorPtr pmanip = vmanips[imanip];
-            if( !!pmanip ) {
-                _vtManipsLocalTool[imanip] = pmanip->GetLocalToolTransform();
-                _vvManipsLocalDirection[imanip] = pmanip->GetLocalToolDirection();
-                _vpManipsIkSolver[imanip] = pmanip->GetIkSolver();
+    if( options_ & Save_ManipulatorsToolTransform ) 
+	{
+        std::vector<RobotBase::ManipulatorPtr> manips = probot->GetManipulators();
+        manips_local_tool_vector_.resize(manips.size());
+        manips_local_direction_vector_.resize(manips.size());
+        manips_ik_solver_vector_.resize(manips.size());
+        for(int imanip = 0; imanip < (int)manips.size(); ++imanip) 
+		{
+            RobotBase::ManipulatorPtr pmanip = manips[imanip];
+            if( !!pmanip ) 
+			{
+                manips_local_tool_vector_[imanip] = pmanip->GetLocalToolTransform();
+                manips_local_direction_vector_[imanip] = pmanip->GetLocalToolDirection();
+                manips_ik_solver_vector_[imanip] = pmanip->GetIkSolver();
             }
         }
     }
 
-    _probot->GetConnectedBodyActiveStates(_vConnectedBodyActiveStates);
+    robot_->GetConnectedBodyActiveStates(connected_body_active_states_vector_);
 }
 
 RobotBase::RobotStateSaver::~RobotStateSaver()
 {
-    if( _bRestoreOnDestructor && !!_probot && _probot->GetEnvironmentId() != 0 ) {
-        _RestoreRobot(_probot);
+    if( is_restore_on_destructor_ && !!robot_ && robot_->GetEnvironmentId() != 0 )
+	{
+        _RestoreRobot(robot_);
     }
 }
 
 void RobotBase::RobotStateSaver::Restore(std::shared_ptr<RobotBase> robot)
 {
-    _RestoreRobot(!robot ? _probot : robot);
-    KinBodyStateSaver::Restore(!robot ? KinBodyPtr(_probot) : KinBodyPtr(robot));
+    _RestoreRobot(!robot ? robot_ : robot);
+    KinBodyStateSaver::Restore(!robot ? KinBodyPtr(robot_) : KinBodyPtr(robot));
 }
 
 void RobotBase::RobotStateSaver::Release()
 {
-    _probot.reset();
+    robot_.reset();
     KinBodyStateSaver::Release();
 }
 
@@ -273,92 +282,123 @@ private:
 
 void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot)
 {
-    if( !probot ) {
+    if( !probot ) 
+	{
         return;
     }
-    if( probot->GetEnvironmentId() == 0 ) {
+    if( probot->GetEnvironmentId() == 0 ) 
+	{
         RAVELOG_WARN(str(boost::format("robot %s not added to environment, skipping restore")%probot->GetName()));
         return;
     }
 
-    if( _vConnectedBodyActiveStates.size() == probot->connected_bodies_vector_.size() ) {
-        bool bchanged = false;
-        for(size_t iconnectedbody = 0; iconnectedbody < probot->connected_bodies_vector_.size(); ++iconnectedbody) {
-            if( probot->connected_bodies_vector_[iconnectedbody]->IsActive() != (!!_vConnectedBodyActiveStates[iconnectedbody]) ) {
-                bchanged = true;
+    if( connected_body_active_states_vector_.size() == probot->connected_bodies_vector_.size() )
+	{
+        bool is_changed = false;
+        for(size_t iconnectedbody = 0; iconnectedbody < probot->connected_bodies_vector_.size(); ++iconnectedbody) 
+		{
+            if( probot->connected_bodies_vector_[iconnectedbody]->IsActive() 
+				!= (!!connected_body_active_states_vector_[iconnectedbody]) ) 
+			{
+                is_changed = true;
                 break;
             }
         }
 
-        if( bchanged ) {
+        if( is_changed )
+		{
             EnvironmentRobotRemover robotremover(probot);
             // need to restore active connected bodies
             // but first check whether anything changed
-            probot->SetConnectedBodyActiveStates(_vConnectedBodyActiveStates);
+            probot->SetConnectedBodyActiveStates(connected_body_active_states_vector_);
         }
     }
 
-    if( options_ & Save_ActiveDOF ) {
-        probot->SetActiveDOFs(vactivedofs, affinedofs, rotationaxis);
+    if( options_ & Save_ActiveDOF )
+	{
+        probot->SetActiveDOFs(active_dof_indices_, affine_dofs_, affine_rotation_axis_);
     }
-    if( options_ & Save_ActiveManipulator ) {
-        if( probot == _probot ) {
-            probot->SetActiveManipulator(_pManipActive);
+    if( options_ & Save_ActiveManipulator )
+	{
+        if( probot == robot_ ) 
+		{
+            probot->SetActiveManipulator(active_manipulator_);
         }
-        else {
-            if( !_pManipActive ) {
+        else 
+		{
+            if( !active_manipulator_ ) 
+			{
                 probot->SetActiveManipulator(ManipulatorPtr());
             }
-            else {
-                probot->SetActiveManipulator(_pManipActive->GetName());
+            else 
+			{
+                probot->SetActiveManipulator(active_manipulator_->GetName());
             }
         }
     }
-    if( options_ & Save_ActiveManipulatorToolTransform ) {
-        if( !!_pManipActive ) {
-            if( probot == _probot ) {
-                RobotBase::ManipulatorPtr pmanip = probot->GetManipulator(_pManipActive->GetName()); // manipulator pointers might have changed, it is always safer to re-request the current manip
-                if( !!pmanip ) {
-                    pmanip->SetLocalToolTransform(_tActiveManipLocalTool);
-                    pmanip->SetLocalToolDirection(_vActiveManipLocalDirection);
-                    pmanip->SetIkSolver(_pActiveManipIkSolver);
+    if( options_ & Save_ActiveManipulatorToolTransform ) 
+	{
+        if( !!active_manipulator_ ) 
+		{
+            if( probot == robot_ ) 
+			{
+                RobotBase::ManipulatorPtr pmanip = probot->GetManipulator(active_manipulator_->GetName()); // manipulator pointers might have changed, it is always safer to re-request the current manip
+                if( !!pmanip ) 
+				{
+                    pmanip->SetLocalToolTransform(active_manip_local_tool_transform_);
+                    pmanip->SetLocalToolDirection(active_manip_local_direction_);
+                    pmanip->SetIkSolver(active_manip_ik_solver_);
                 }
-                else {
-                    RAVELOG_VERBOSE_FORMAT("failed to restore active manipulator %s coordinate system", _pManipActive->GetName());
+                else 
+				{
+                    RAVELOG_VERBOSE_FORMAT("failed to restore active manipulator %s coordinate system",
+						active_manipulator_->GetName());
                 }
             }
-            else {
-                RobotBase::ManipulatorPtr pmanip = probot->GetManipulator(_pManipActive->GetName());
-                if( !!pmanip ) {
-                    pmanip->SetLocalToolTransform(_tActiveManipLocalTool);
-                    pmanip->SetLocalToolDirection(_vActiveManipLocalDirection);
-                    if( !!_pActiveManipIkSolver ) {
-                        IkSolverBasePtr pnewsolver = RaveCreateIkSolver(probot->GetEnv(), _pActiveManipIkSolver->GetXMLId());
-                        pnewsolver->Clone(_pActiveManipIkSolver, 0);
+            else 
+			{
+                RobotBase::ManipulatorPtr pmanip = probot->GetManipulator(active_manipulator_->GetName());
+                if( !!pmanip )
+				{
+                    pmanip->SetLocalToolTransform(active_manip_local_tool_transform_);
+                    pmanip->SetLocalToolDirection(active_manip_local_direction_);
+                    if( !!active_manip_ik_solver_ ) 
+					{
+                        IkSolverBasePtr pnewsolver = RaveCreateIkSolver(probot->GetEnv(), active_manip_ik_solver_->GetXMLId());
+                        pnewsolver->Clone(active_manip_ik_solver_, 0);
                         pmanip->SetIkSolver(pnewsolver);
                     }
-                    else {
+                    else 
+					{
                         pmanip->SetIkSolver(IkSolverBasePtr());
                     }
                 }
             }
         }
     }
-    if( options_ & Save_ManipulatorsToolTransform ) {
-        if( probot == _probot ) {
+    if( options_ & Save_ManipulatorsToolTransform ) 
+	{
+        if( probot == robot_ ) 
+		{
             std::vector<RobotBase::ManipulatorPtr> vmanips = probot->GetManipulators();
-            if(vmanips.size() == _vtManipsLocalTool.size()) {
-                for(int imanip = 0; imanip < (int)vmanips.size(); ++imanip) {
+            if(vmanips.size() == manips_local_tool_vector_.size()) 
+			{
+                for(int imanip = 0; imanip < (int)vmanips.size(); ++imanip)
+				{
                     RobotBase::ManipulatorPtr pmanip = vmanips[imanip];
-                    if( !!pmanip ) {
-                        pmanip->SetLocalToolTransform(_vtManipsLocalTool.at(imanip));
-                        pmanip->SetLocalToolDirection(_vvManipsLocalDirection.at(imanip));
-                        pmanip->SetIkSolver(_vpManipsIkSolver.at(imanip));
+                    if( !!pmanip )
+					{
+                        pmanip->SetLocalToolTransform(manips_local_tool_vector_.at(imanip));
+                        pmanip->SetLocalToolDirection(manips_local_direction_vector_.at(imanip));
+                        pmanip->SetIkSolver(manips_ik_solver_vector_.at(imanip));
                     }
                 }
             }
-            else {
-                RAVELOG_WARN(str(boost::format("failed to restore manipulators tool transform because the number of saved manipulators %i is different from the number of current manipulators %i\n")%_vtManipsLocalTool.size()%vmanips.size()));
+            else 
+			{
+                RAVELOG_WARN(str(boost::format("failed to restore manipulators tool transform \
+                because the number of saved manipulators %i is different from the number of current manipulators %i\n")
+					%manips_local_tool_vector_.size()%vmanips.size()));
             }
         }
     }

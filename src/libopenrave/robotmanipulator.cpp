@@ -155,22 +155,27 @@ std::pair<Vector,Vector> RobotBase::Manipulator::GetVelocity() const
 
 IkSolverBasePtr RobotBase::Manipulator::GetIkSolver() const
 {
-    if( !!ik_solver_ || info_.ik_solver_xml_id_.size() == 0 ) {
+    if( !!ik_solver_ || info_.ik_solver_xml_id_.size() == 0 ) 
+	{
         return ik_solver_;
     }
 
     // initialize ik solver
-    try {
-        if( info_.ik_solver_xml_id_.size() > 0 ) {
+    try 
+	{
+        if( info_.ik_solver_xml_id_.size() > 0 ) 
+		{
             RobotBasePtr probot(robot_);
             ik_solver_ = RaveCreateIkSolver(probot->GetEnv(), info_.ik_solver_xml_id_);
-            if( !!ik_solver_ ) {
+            if( !!ik_solver_ )
+			{
                 // note that ik solvers might look at the manipulator hashes for verification
                 ik_solver_->Init(shared_from_this());
             }
         }
     }
-    catch(const std::exception& e) {
+    catch(const std::exception& e) 
+	{
         RAVELOG_WARN(str(boost::format("failed to init ik solver: %s\n")%e.what()));
         ik_solver_.reset();
     }
@@ -179,20 +184,25 @@ IkSolverBasePtr RobotBase::Manipulator::GetIkSolver() const
 
 bool RobotBase::Manipulator::SetIkSolver(IkSolverBasePtr iksolver)
 {
-    if( !iksolver ) {
+    if( !iksolver ) 
+	{
         ik_solver_.reset();
         return true;
     }
 
-    if( iksolver->GetXMLId().size() == 0 ) {
-        RAVELOG_WARN(str(boost::format("robot %s manip %s IkSolver XML is not initialized\n")%GetRobot()->GetName()%GetName()));
+    if( iksolver->GetXMLId().size() == 0 )
+	{
+        RAVELOG_WARN(str(boost::format("robot %s manip %s IkSolver XML is not initialized\n")
+			%GetRobot()->GetName()%GetName()));
     }
-    if( iksolver == ik_solver_ && info_.ik_solver_xml_id_ == iksolver->GetXMLId() ) {
+    if( iksolver == ik_solver_ && info_.ik_solver_xml_id_ == iksolver->GetXMLId() )
+	{
         return true;
     }
 
     // only call the changed message if something changed
-    if( iksolver->Init(shared_from_this()) ) {
+    if( iksolver->Init(shared_from_this()) )
+	{
         ik_solver_ = iksolver;
         info_.ik_solver_xml_id_ = iksolver->GetXMLId();
         GetRobot()->_PostprocessChangedParameters(Prop_RobotManipulatorSolver);
@@ -1196,8 +1206,8 @@ bool RobotBase::Manipulator::CheckEndEffectorCollision(const IkParameterization&
         return false;
     }
     else {
-        if( (ikreturn._action&IKRA_RejectSelfCollision) != IKRA_RejectSelfCollision && (ikreturn._action&IKRA_RejectEnvCollision) != IKRA_RejectEnvCollision ) {
-            RAVELOG_VERBOSE_FORMAT("ik solution not found due to non-collision reasons (0x%x), returning true anway...", ikreturn._action);
+        if( (ikreturn.action_&IKRA_RejectSelfCollision) != IKRA_RejectSelfCollision && (ikreturn.action_&IKRA_RejectEnvCollision) != IKRA_RejectEnvCollision ) {
+            RAVELOG_VERBOSE_FORMAT("ik solution not found due to non-collision reasons (0x%x), returning true anway...", ikreturn.action_);
             // is this a good idea?
         }
         if( !!report ) {
@@ -1299,8 +1309,8 @@ bool RobotBase::Manipulator::CheckEndEffectorSelfCollision(const IkParameterizat
         return false;
     }
     else {
-        if( (ikreturn._action&IKRA_RejectSelfCollision) != IKRA_RejectSelfCollision && (ikreturn._action&IKRA_RejectEnvCollision) != IKRA_RejectEnvCollision ) {
-            RAVELOG_VERBOSE_FORMAT("ik solution not found due to non-collision reasons (0x%x), returning true anway...", ikreturn._action);
+        if( (ikreturn.action_&IKRA_RejectSelfCollision) != IKRA_RejectSelfCollision && (ikreturn.action_&IKRA_RejectEnvCollision) != IKRA_RejectEnvCollision ) {
+            RAVELOG_VERBOSE_FORMAT("ik solution not found due to non-collision reasons (0x%x), returning true anway...", ikreturn.action_);
             // is this a good idea?
         }
         if( !!report ) {

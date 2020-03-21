@@ -720,6 +720,7 @@ public:
     public:
         RobotStateSaver(RobotBasePtr probot, int options = Save_LinkTransformation 
 			| Save_LinkEnable | Save_ActiveDOF | Save_ActiveManipulator);
+
         virtual ~RobotStateSaver();
 
         /// \brief restore the state
@@ -734,18 +735,18 @@ public:
         virtual void Release();
 
     protected:
-        RobotBasePtr _probot;
-        std::vector<int> vactivedofs;
-        int affinedofs;
-        Vector rotationaxis;
-        ManipulatorPtr _pManipActive;
-        Transform _tActiveManipLocalTool;
-        Vector _vActiveManipLocalDirection;
-        IkSolverBasePtr _pActiveManipIkSolver;
-        std::vector<Transform> _vtManipsLocalTool;
-        std::vector<Vector> _vvManipsLocalDirection;
-        std::vector<IkSolverBasePtr> _vpManipsIkSolver;
-        std::vector<uint8_t> _vConnectedBodyActiveStates; //!< GetConnectedBodyActiveStates
+        RobotBasePtr robot_;
+        std::vector<int> active_dof_indices_;
+        int affine_dofs_;
+        Vector affine_rotation_axis_;
+        ManipulatorPtr active_manipulator_;
+        Transform active_manip_local_tool_transform_;
+        Vector active_manip_local_direction_;
+        IkSolverBasePtr active_manip_ik_solver_;
+        std::vector<Transform> manips_local_tool_vector_;
+        std::vector<Vector> manips_local_direction_vector_;
+        std::vector<IkSolverBasePtr> manips_ik_solver_vector_;
+        std::vector<uint8_t> connected_body_active_states_vector_; //!< GetConnectedBodyActiveStates
     private:
         virtual void _RestoreRobot(std::shared_ptr<RobotBase> robot);
     };

@@ -630,7 +630,7 @@ private:
         // allocate memory for the structur and the internal state vectors
         void* pmemory = _pNodesPool->malloc();
         NodePtr node = new (pmemory) Node(refnode->rrtparent, refnode->q, _dof);
-        node->_userdata = refnode->_userdata;
+        node->user_data_ = refnode->user_data_;
 #ifdef _DEBUG
         node->id = GetNewStaticId();
 #endif

@@ -19,7 +19,7 @@
 
 namespace OpenRAVE {
 
-KinBody::KinBodyStateSaver::KinBodyStateSaver(KinBodyPtr pbody, int options) : kinbody_(pbody), options_(options), _bRestoreOnDestructor(true)
+KinBody::KinBodyStateSaver::KinBodyStateSaver(KinBodyPtr pbody, int options) : kinbody_(pbody), options_(options), is_restore_on_destructor_(true)
 {
     if( options_ & Save_LinkTransformation ) {
         kinbody_->GetLinkTransformations(link_transforms_vector_, _vdoflastsetvalues);
@@ -52,7 +52,7 @@ KinBody::KinBodyStateSaver::KinBodyStateSaver(KinBodyPtr pbody, int options) : k
 
 KinBody::KinBodyStateSaver::~KinBodyStateSaver()
 {
-    if( _bRestoreOnDestructor && !!kinbody_ && kinbody_->GetEnvironmentId() != 0 ) {
+    if( is_restore_on_destructor_ && !!kinbody_ && kinbody_->GetEnvironmentId() != 0 ) {
         _RestoreKinBody(kinbody_);
     }
 }
@@ -69,7 +69,7 @@ void KinBody::KinBodyStateSaver::Release()
 
 void KinBody::KinBodyStateSaver::SetRestoreOnDestructor(bool restore)
 {
-    _bRestoreOnDestructor = restore;
+    is_restore_on_destructor_ = restore;
 }
 
 void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)

@@ -3444,7 +3444,7 @@ bool ManipulatorIKGoalSampler::Sample(std::vector<dReal>& vgoal)
         vgoal.resize(0);
         return false;
     }
-    vgoal.swap(ikreturn->_vsolution); // won't be using the ik return anymore
+    vgoal.swap(ikreturn->solution_); // won't be using the ik return anymore
     return true;
 }
 
@@ -3539,7 +3539,7 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
                                             break;
                                         }
                                         else {
-                                            RAVELOG_VERBOSE_FORMAT("jitter succeed position, but ik failed: 0x%.8x", ikreturnjittered->_action);
+                                            RAVELOG_VERBOSE_FORMAT("jitter succeed position, but ik failed: 0x%.8x", ikreturnjittered->action_);
                                         }
                                     }
                                 }
@@ -3573,7 +3573,7 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
                                             break;
                                         }
                                         else {
-                                            RAVELOG_VERBOSE_FORMAT("jitter succed position, but ik failed: 0x%.8x", ikreturnjittered->_action);
+                                            RAVELOG_VERBOSE_FORMAT("jitter succed position, but ik failed: 0x%.8x", ikreturnjittered->action_);
                                         }
                                     }
                                 }

@@ -843,7 +843,7 @@ protected:
                     // get a valid transformation
                     tGoalEndEffector.SetTranslationDirection5D(RAY(tgoal.trans,tgoal.rotate(pmanip->GetLocalToolDirection())));
                     if( !pmanip->FindIKSolution(tGoalEndEffector,IKFO_CheckEnvCollisions, ikreturn) ) {
-                        RAVELOG_DEBUG(str(boost::format("grasp %d: ik 5d failed reason 0x%x")%igrasp%ikreturn->_action));
+                        RAVELOG_DEBUG(str(boost::format("grasp %d: ik 5d failed reason 0x%x")%igrasp%ikreturn->action_));
                         continue; // failed
                     }
                     vFinalGripperValues = _vFinalGripperValues;

@@ -21,40 +21,40 @@ namespace OpenRAVE {
 bool IkReturn::Append(const IkReturn& r)
 {
     bool bclashing = false;
-    if( !!r._userdata ) {
-        if( !!_userdata ) {
-            RAVELOG_WARN("IkReturn already has _userdata set, but overwriting anyway\n");
+    if( !!r.user_data_ ) {
+        if( !!user_data_ ) {
+            RAVELOG_WARN("IkReturn already has user_data_ set, but overwriting anyway\n");
             bclashing = true;
         }
-        _userdata = r._userdata;
+        user_data_ = r.user_data_;
     }
-    if( _mapdata.size() == 0 ) {
-        _mapdata = r._mapdata;
+    if( custom_data_.size() == 0 ) {
+        custom_data_ = r.custom_data_;
     }
     else {
-        FOREACHC(itr,r._mapdata) {
-            if( !_mapdata.insert(*itr).second ) {
+        FOREACHC(itr,r.custom_data_) {
+            if( !custom_data_.insert(*itr).second ) {
                 // actually this is pretty normal if a previous iksolution failed during the filters and it left old data...
-                //RAVELOG_WARN(str(boost::format("IkReturn _mapdata %s overwritten")%itr->first));
+                //RAVELOG_WARN(str(boost::format("IkReturn custom_data_ %s overwritten")%itr->first));
                 bclashing = true;
             }
         }
     }
-    if( r._vsolution.size() > 0 ) {
-        if( _vsolution.size() > 0 ) {
-            RAVELOG_WARN("IkReturn already has _vsolution set, but overwriting anyway\n");
+    if( r.solution_.size() > 0 ) {
+        if( solution_.size() > 0 ) {
+            RAVELOG_WARN("IkReturn already has solution_ set, but overwriting anyway\n");
             bclashing = true;
         }
-        _vsolution = r._vsolution;
+        solution_ = r.solution_;
     }
     return bclashing;
 }
 
 void IkReturn::Clear()
 {
-    _mapdata.clear();
-    _userdata.reset();
-    _vsolution.resize(0);
+    custom_data_.clear();
+    user_data_.reset();
+    solution_.resize(0);
     //_reports.resize(0); // TODO
 }
 
@@ -108,12 +108,12 @@ bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dRea
         return Solve(param,q0,filteroptions,std::shared_ptr< vector<dReal> >());
     }
     ikreturn->Clear();
-    std::shared_ptr< vector<dReal> > psolution(&ikreturn->_vsolution, utils::null_deleter());
+    std::shared_ptr< vector<dReal> > psolution(&ikreturn->solution_, utils::null_deleter());
     if( !Solve(param,q0,filteroptions,psolution) ) {
-        ikreturn->_action = IKRA_Reject;
+        ikreturn->action_ = IKRA_Reject;
         return false;
     }
-    ikreturn->_action = IKRA_Success;
+    ikreturn->action_ = IKRA_Success;
     return true;
 }
 
@@ -127,8 +127,8 @@ bool IkSolverBase::SolveAll(const IkParameterization& param, int filteroptions, 
     ikreturns.resize(vsolutions.size());
     for(size_t i = 0; i < ikreturns.size(); ++i) {
         ikreturns[i].reset(new IkReturn(IKRA_Success));
-        ikreturns[i]->_vsolution = vsolutions[i];
-        ikreturns[i]->_action = IKRA_Success;
+        ikreturns[i]->solution_ = vsolutions[i];
+        ikreturns[i]->action_ = IKRA_Success;
     }
     return vsolutions.size() > 0;
 }
@@ -139,12 +139,12 @@ bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dRea
         return Solve(param,q0,vFreeParameters,filteroptions,std::shared_ptr< vector<dReal> >());
     }
     ikreturn->Clear();
-    std::shared_ptr< vector<dReal> > psolution(&ikreturn->_vsolution, utils::null_deleter());
+    std::shared_ptr< vector<dReal> > psolution(&ikreturn->solution_, utils::null_deleter());
     if( !Solve(param,q0,vFreeParameters,filteroptions,psolution) ) {
-        ikreturn->_action = IKRA_Reject;
+        ikreturn->action_ = IKRA_Reject;
         return false;
     }
-    ikreturn->_action = IKRA_Success;
+    ikreturn->action_ = IKRA_Success;
     return true;
 }
 
@@ -158,8 +158,8 @@ bool IkSolverBase::SolveAll(const IkParameterization& param, const std::vector<d
     ikreturns.resize(vsolutions.size());
     for(size_t i = 0; i < ikreturns.size(); ++i) {
         ikreturns[i].reset(new IkReturn(IKRA_Success));
-        ikreturns[i]->_vsolution = vsolutions[i];
-        ikreturns[i]->_action = IKRA_Success;
+        ikreturns[i]->solution_ = vsolutions[i];
+        ikreturns[i]->action_ = IKRA_Success;
     }
     return vsolutions.size() > 0;
 }
@@ -217,7 +217,7 @@ IkReturnAction IkSolverBase::_CallFilters(std::vector<dReal>& solution, RobotBas
         if( !!pitdata && pitdata->_priority >= minpriority && pitdata->_priority <= maxpriority) {
             IkReturn ret = pitdata->_filterfn(solution,manipulator,param);
             if( ret != IKRA_Success ) {
-                return ret._action; // just return the action
+                return ret.action_; // just return the action
             }
             if( vtestsolution.size() > 0 ) {
                 // check that the robot is set to solution
@@ -255,7 +255,7 @@ IkReturnAction IkSolverBase::_CallFilters(std::vector<dReal>& solution, RobotBas
         }
     }
     if( !!filterreturn ) {
-        filterreturn->_action = IKRA_Success;
+        filterreturn->action_ = IKRA_Success;
     }
     return IKRA_Success;
 }

@@ -22,7 +22,8 @@
 #ifndef OPENRAVE_IKSOLVER_H
 #define OPENRAVE_IKSOLVER_H
 
-namespace OpenRAVE {
+namespace OpenRAVE
+{
 
 /// \brief Controls what information gets validated when searching for an inverse kinematics solution.
 ///
@@ -64,42 +65,40 @@ enum IkSolverPriority
     IKSP_MaxPriority = 0x7fffffff,
 };
 
-/// \deprecated (12/04/29)
-static const IkReturnAction IKFR_Success RAVE_DEPRECATED = IKRA_Success;
-static const IkReturnAction IKFR_Reject RAVE_DEPRECATED = IKRA_Reject;
-static const IkReturnAction IKFR_Quit RAVE_DEPRECATED = IKRA_Quit;
-typedef IkReturnAction IkFilterReturn RAVE_DEPRECATED;
-
 class OPENRAVE_API IkReturn
 {
 public:
-    IkReturn(IkReturnAction action) : _action(action) {
+    IkReturn(IkReturnAction action) 
+		: action_(action)
+	{
     }
 
-    inline bool operator != (IkReturnAction action) const {
-        return _action != action;
+    inline bool operator != (IkReturnAction action) const 
+	{
+        return action_ != action;
     }
-    inline bool operator == (IkReturnAction action) const {
-        return _action == action;
+    inline bool operator == (IkReturnAction action) const 
+	{
+        return action_ == action;
     }
 
     /// \brief appends the data of one IkReturn to this structure
     ///
-    /// _action is untouched, _vsolution is overridden if non-empty
+    /// action_ is untouched, solution_ is overridden if non-empty
     /// \return If data clashes, will output text and return false
     bool Append(const IkReturn& r);
 
-    /// \brief clears the data, leaves the _action unchanged
+    /// \brief clears the data, leaves the action_ unchanged
     ///
     /// if _preport is set, will call Reset on it.
     void Clear();
 
     typedef std::map<std::string, std::vector<dReal> > CustomData;
-    IkReturnAction _action;
-    std::vector< dReal > _vsolution; //!< the solution
-    CustomData _mapdata; //!< name/value pairs for custom data computed in the filters. Cascading filters using the same name will overwrite this until the last executed filter (with lowest priority).
-    UserDataPtr _userdata; //!< if the name/value pairs are not enough, can further use a pointer to custom data. Cascading filters with valid _userdata pointers will overwrite this until the last executed filter (with lowest priority).
-    //std::vector<CollisionReport> _reports; //!< all the reports that are written with the collision information if ik failed due to collisions. Only valid if _action has IKRA_RejectSelfCollision or IKRA_RejectEnvCollision set. (TODO)
+    IkReturnAction action_;
+    std::vector< dReal > solution_; //!< the solution
+    CustomData custom_data_; //!< name/value pairs for custom data computed in the filters. Cascading filters using the same name will overwrite this until the last executed filter (with lowest priority).
+    UserDataPtr user_data_; //!< if the name/value pairs are not enough, can further use a pointer to custom data. Cascading filters with valid user_data_ pointers will overwrite this until the last executed filter (with lowest priority).
+    //std::vector<CollisionReport> _reports; //!< all the reports that are written with the collision information if ik failed due to collisions. Only valid if action_ has IKRA_RejectSelfCollision or IKRA_RejectEnvCollision set. (TODO)
 };
 
 /** \brief <b>[interface]</b> Base class for all Inverse Kinematic solvers. <b>If not specified, method is not multi-thread safe.</b> See \ref arch_iksolver.

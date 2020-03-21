@@ -58,37 +58,37 @@ PyIkReturn::PyIkReturn(IkReturnPtr pret) : _ret(*pret) {
 PyIkReturn::PyIkReturn(IkReturnAction action) : _ret(action) {
 }
 IkReturnAction PyIkReturn::GetAction() {
-    return _ret._action;
+    return _ret.action_;
 }
 object PyIkReturn::GetSolution() {
-    return toPyArray(_ret._vsolution);
+    return toPyArray(_ret.solution_);
 }
 object PyIkReturn::GetUserData() {
-    return openravepy::GetUserData(_ret._userdata);
+    return openravepy::GetUserData(_ret.user_data_);
 }
 object PyIkReturn::GetMapData(const std::string& key) {
-    IkReturn::CustomData::const_iterator it = _ret._mapdata.find(key);
-    if( it == _ret._mapdata.end() ) {
+    IkReturn::CustomData::const_iterator it = _ret.custom_data_.find(key);
+    if( it == _ret.custom_data_.end() ) {
         return py::none_();
     }
     return toPyArray(it->second);
 }
 object PyIkReturn::GetMapDataDict() {
     py::dict odata;
-    FOREACHC(it,_ret._mapdata) {
+    FOREACHC(it,_ret.custom_data_) {
         odata[it->first] = toPyArray(it->second);
     }
     return odata;
 }
 
 void PyIkReturn::SetUserData(PyUserData pdata) {
-    _ret._userdata = pdata._handle;
+    _ret.user_data_ = pdata._handle;
 }
 void PyIkReturn::SetSolution(object osolution) {
-    _ret._vsolution = ExtractArray<dReal>(osolution);
+    _ret.solution_ = ExtractArray<dReal>(osolution);
 }
 void PyIkReturn::SetMapKeyValue(const std::string& key, object ovalues) {
-    _ret._mapdata[key] = ExtractArray<dReal>(ovalues);
+    _ret.custom_data_[key] = ExtractArray<dReal>(ovalues);
 }
 
 typedef std::shared_ptr<PyIkReturn> PyIkReturnPtr;
@@ -107,13 +107,13 @@ IkReturn PyIkSolverBase::_CallCustomFilter(object fncallback, PyEnvironmentBaseP
     }
     IkReturn ikfr(IKRA_Success);
     if( IS_PYTHONOBJECT_NONE(res) ) {
-        ikfr._action = IKRA_Reject;
+        ikfr.action_ = IKRA_Reject;
     }
     else {
         if( !openravepy::ExtractIkReturn(res,ikfr) ) {
             extract_<IkReturnAction> ikfra(res);
             if( ikfra.check() ) {
-                ikfr._action = (IkReturnAction)ikfra;
+                ikfr.action_ = (IkReturnAction)ikfra;
             }
             else {
                 errmsg = "failed to convert return type of filter to IkReturn";
@@ -340,14 +340,14 @@ void init_openravepy_iksolver()
         scope_ ikreturn = class_<PyIkReturn, PyIkReturnPtr>("IkReturn", DOXY_CLASS(IkReturn), no_init)
                                  .def(init<IkReturnAction>(py::args("action")))
 #endif
-                         .def("GetAction",&PyIkReturn::GetAction, "Retuns IkReturn::_action")
-                         .def("GetSolution",&PyIkReturn::GetSolution, "Retuns IkReturn::_vsolution")
-                         .def("GetUserData",&PyIkReturn::GetUserData, "Retuns IkReturn::_userdata")
+                         .def("GetAction",&PyIkReturn::GetAction, "Retuns IkReturn::action_")
+                         .def("GetSolution",&PyIkReturn::GetSolution, "Retuns IkReturn::solution_")
+                         .def("GetUserData",&PyIkReturn::GetUserData, "Retuns IkReturn::user_data_")
                          .def("GetMapData",&PyIkReturn::GetMapData, PY_ARGS("key") "Indexes into the map and returns an array of numbers. If key doesn't exist, returns None")
-                         .def("GetMapDataDict",&PyIkReturn::GetMapDataDict, "Returns a dictionary copy for IkReturn::_mapdata")
-                         .def("SetUserData",&PyIkReturn::SetUserData,PY_ARGS("data") "Set IKReturn::_userdata")
-                         .def("SetSolution",&PyIkReturn::SetSolution,PY_ARGS("solution") "Set IKReturn::_vsolution")
-                         .def("SetMapKeyValue",&PyIkReturn::SetMapKeyValue,PY_ARGS("key", "value") "Adds key/value pair to IKReturn::_mapdata")
+                         .def("GetMapDataDict",&PyIkReturn::GetMapDataDict, "Returns a dictionary copy for IkReturn::custom_data_")
+                         .def("SetUserData",&PyIkReturn::SetUserData,PY_ARGS("data") "Set IKReturn::user_data_")
+                         .def("SetSolution",&PyIkReturn::SetSolution,PY_ARGS("solution") "Set IKReturn::solution_")
+                         .def("SetMapKeyValue",&PyIkReturn::SetMapKeyValue,PY_ARGS("key", "value") "Adds key/value pair to IKReturn::custom_data_")
         ;
     }
 

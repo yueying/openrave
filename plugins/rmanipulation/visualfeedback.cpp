@@ -312,12 +312,12 @@ public:
             Transform tmanipgoal = t*_vf->_tToManip;
             if( !_vf->_pmanip->FindIKSolution(tmanipgoal,IKFO_CheckEnvCollisions, _ikreturn) ) {
                 if( bOutputError ) {
-                    errormsg = str(boost::format("{\"type\":\"ikfailed\", \"action\":\"0x%x\"}")%_ikreturn->_action);
+                    errormsg = str(boost::format("{\"type\":\"ikfailed\", \"action\":\"0x%x\"}")%_ikreturn->action_);
                 }
-                RAVELOG_VERBOSE_FORMAT("no valid ik 0x%.8x", _ikreturn->_action);
+                RAVELOG_VERBOSE_FORMAT("no valid ik 0x%.8x", _ikreturn->action_);
                 return false;
             }
-            _vsolution.swap(_ikreturn->_vsolution); // for now swap until this->_vsolution is removed
+            _vsolution.swap(_ikreturn->solution_); // for now swap until this->_vsolution is removed
 
             // convert the solution into active dofs
             _vf->_robot->GetActiveDOFValues(pNewSample);
