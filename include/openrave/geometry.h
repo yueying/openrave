@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -197,25 +197,39 @@ class RaveVector
 public:
     T x, y, z, w;
 
-    RaveVector() : x(0), y(0), z(0), w(0) {
+    RaveVector() 
+		: x(0), y(0), z(0), w(0) 
+	{
     }
 
-    RaveVector(T x, T y, T z) : x(x), y(y), z(z), w(0) {
+    RaveVector(T x, T y, T z) : x(x), y(y), z(z), w(0) 
+	{
     }
-    RaveVector(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {
+
+    RaveVector(T x, T y, T z, T w)
+		: x(x), y(y), z(z), w(w)
+	{
     }
-    template<typename U> RaveVector(const RaveVector<U> &vec) : x((T)vec.x), y((T)vec.y), z((T)vec.z), w((T)vec.w) {
+
+    template<typename U> 
+	RaveVector(const RaveVector<U> &vec)
+		: x((T)vec.x), y((T)vec.y), z((T)vec.z), w((T)vec.w)
+	{
     }
 
     /// note, it only copes 3 values!
-    template<typename U> RaveVector(const U* pf) {
+    template<typename U> 
+	RaveVector(const U* pf) 
+	{
         MATH_ASSERT(pf != NULL); x = (T)pf[0]; y = (T)pf[1]; z = (T)pf[2]; w = 0;
     }
 
-    T operator[] (int i) const {
+    T operator[] (int i) const 
+	{
         return (&x)[i];
     }
-    T& operator[] (int i) {
+    T& operator[] (int i) 
+	{
         return (&x)[i];
     }
 

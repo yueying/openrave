@@ -119,19 +119,26 @@ public:
         \param param The paramterization that IK was called with. This is in the manipulator base link's coordinate system (which is not necessarily the world coordinate system).
         \return \ref IkReturn outputs the action to take for the current ik solution and any custom parameters the filter should pass to the user.
      */
-    typedef boost::function<IkReturn(std::vector<dReal>&, RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFilterCallbackFn;
+    typedef boost::function<IkReturn(std::vector<dReal>&, 
+		RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFilterCallbackFn;
 
     /** \brief gets called when an ik solution is accepted.
      */
-    typedef boost::function<void (IkReturnPtr, RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFinishCallbackFn;
+    typedef boost::function<void (IkReturnPtr, 
+		RobotBase::ManipulatorConstPtr, const IkParameterization&)> IkFinishCallbackFn;
 
-    IkSolverBase(EnvironmentBasePtr penv) : InterfaceBase(PT_InverseKinematicsSolver, penv) {
+    IkSolverBase(EnvironmentBasePtr penv) 
+		: InterfaceBase(PT_InverseKinematicsSolver, penv)
+	{
     }
-    virtual ~IkSolverBase() {
+
+    virtual ~IkSolverBase() 
+	{
     }
 
     /// return the static interface type this class points to (used for safe casting)
-    static inline InterfaceType GetInterfaceTypeStatic() {
+    static inline InterfaceType GetInterfaceTypeStatic() 
+	{
         return PT_InverseKinematicsSolver;
     }
 
@@ -158,15 +165,6 @@ public:
      */
     virtual UserDataPtr RegisterFinishCallback(const IkFinishCallbackFn& finishfn);
 
-    /// \deprecated (11/09/21)
-    virtual void SetCustomFilter(const IkFilterCallbackFn& filterfn) RAVE_DEPRECATED
-    {
-        RAVELOG_WARN("IkSolverBase::SetCustomFilter is deprecated, have to use handle=AddCustomFilter. This call will will leak memory\n");
-        if( __listRegisteredFilters.size() > 0 ) {
-            RAVELOG_WARN("IkSolverBase::SetCustomFilter is deprecated, deleting all current filters!\n");
-        }
-        new UserDataPtr(RegisterCustomFilter(0,filterfn));
-    }
 
     /// \brief Number of free parameters defining the null solution space.
     ///
@@ -195,7 +193,8 @@ public:
         \param[out] solution [optional] Holds the IK solution
         \return true if solution is found
      */
-    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, int filteroptions, std::shared_ptr< std::vector<dReal> > solution = std::shared_ptr< std::vector<dReal> >()) = 0;
+    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, 
+		int filteroptions, std::shared_ptr< std::vector<dReal> > solution = std::shared_ptr< std::vector<dReal> >()) = 0;
 
     /** \brief Return a joint configuration for the given end effector transform.
 
@@ -216,10 +215,6 @@ public:
      */
     virtual bool SolveAll(const IkParameterization& param, int filteroptions, std::vector< std::vector<dReal> >& solutions) = 0;
 
-    /// \deprecated (12/05/01)
-    virtual bool Solve(const IkParameterization& param, int filteroptions, std::vector< std::vector<dReal> >& solutions) RAVE_DEPRECATED {
-        return SolveAll(param,filteroptions,solutions);
-    }
 
     /** \brief Return all joint configurations for the given end effector transform.
 
@@ -240,7 +235,9 @@ public:
         \param[out] solution [optional] Holds the IK solution, must be of size RobotBase::Manipulator::_vecarmjoints
         \return true if solution is found
      */
-    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, const std::vector<dReal>& vFreeParameters, int filteroptions, std::shared_ptr< std::vector<dReal> > solution=std::shared_ptr< std::vector<dReal> >()) = 0;
+    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, 
+		const std::vector<dReal>& vFreeParameters, int filteroptions, std::shared_ptr< std::vector<dReal> > solution
+		=std::shared_ptr< std::vector<dReal> >()) = 0;
 
     /** Return a joint configuration for the given end effector transform.
 
@@ -252,7 +249,8 @@ public:
         \param[out] ikreturn Holds all the ik output data (including ik solutions) from the many processes involved in solving ik.
         \return true if solution is found
      */
-    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, const std::vector<dReal>& vFreeParameters, int filteroptions, IkReturnPtr ikreturn);
+    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& q0, 
+		const std::vector<dReal>& vFreeParameters, int filteroptions, IkReturnPtr ikreturn);
 
     /** \brief Return all joint configurations for the given end effector transform.
 
@@ -263,12 +261,9 @@ public:
         \param[out] solutions All solutions within a reasonable discretization level of the free parameters.
         \return true at least one solution is found
      */
-    virtual bool SolveAll(const IkParameterization& param, const std::vector<dReal>& vFreeParameters, int filteroptions, std::vector< std::vector<dReal> >& solutions) = 0;
+    virtual bool SolveAll(const IkParameterization& param, 
+		const std::vector<dReal>& vFreeParameters, int filteroptions, std::vector< std::vector<dReal> >& solutions) = 0;
 
-    /// \deprecated (12/05/01)
-    virtual bool Solve(const IkParameterization& param, const std::vector<dReal>& vFreeParameters, int filteroptions, std::vector< std::vector<dReal> >& solutions) RAVE_DEPRECATED {
-        return SolveAll(param,vFreeParameters,filteroptions,solutions);
-    }
 
     /** \brief Return all joint configurations for the given end effector transform.
 
@@ -279,7 +274,8 @@ public:
         \param[out] ikreturns Holds all the ik output data (including ik solutions) from the many processes involved in solving ik.
         \return true at least one solution is found
      */
-    virtual bool SolveAll(const IkParameterization& param, const std::vector<dReal>& vFreeParameters, int filteroptions, std::vector<IkReturnPtr>& ikreturns);
+    virtual bool SolveAll(const IkParameterization& param, const std::vector<dReal>& vFreeParameters,
+		int filteroptions, std::vector<IkReturnPtr>& ikreturns);
 
     /// \brief returns true if the solver supports a particular ik parameterization as input.
     virtual bool Supports(IkParameterizationType iktype) const OPENRAVE_DUMMY_IMPLEMENTATION;
@@ -296,20 +292,26 @@ public:
         \param maxpriority the maximum inclusive priority to consider
         \return \ref IkReturn outputs the action to take for the current ik solution and any custom parameters the filter should pass to the user.
      */
-    virtual IkReturnAction CallFilters(const IkParameterization& param, IkReturnPtr ikreturn=IkReturnPtr(), int32_t minpriority=IKSP_MinPriority, int32_t maxpriority=IKSP_MaxPriority) OPENRAVE_DUMMY_IMPLEMENTATION;
+    virtual IkReturnAction CallFilters(const IkParameterization& param, 
+		IkReturnPtr ikreturn=IkReturnPtr(), 
+		int32_t minpriority=IKSP_MinPriority, int32_t maxpriority=IKSP_MaxPriority) OPENRAVE_DUMMY_IMPLEMENTATION;
 
     /// \brief returns the kinematics structure hash this ik solver is encoded to. Checked with \ref RobotBase::Manipulator::GetKinematicsStructureHash()
     virtual const std::string& GetKinematicsStructureHash() const OPENRAVE_DUMMY_IMPLEMENTATION;
     
 protected:
-    inline IkSolverBasePtr shared_iksolver() {
+    inline IkSolverBasePtr shared_iksolver() 
+	{
         return std::static_pointer_cast<IkSolverBase>(shared_from_this());
     }
-    inline IkSolverBaseConstPtr shared_iksolver_const() const {
+    inline IkSolverBaseConstPtr shared_iksolver_const() const 
+	{
         return std::static_pointer_cast<IkSolverBase const>(shared_from_this());
     }
 
-    virtual IkReturnAction _CallFilters(std::vector<dReal>& solution, RobotBase::ManipulatorPtr manipulator, const IkParameterization& param, IkReturnPtr ikreturn=IkReturnPtr(), int32_t minpriority=IKSP_MinPriority, int32_t maxpriority=IKSP_MaxPriority);
+    virtual IkReturnAction _CallFilters(std::vector<dReal>& solution, 
+		RobotBase::ManipulatorPtr manipulator, const IkParameterization& param,
+		IkReturnPtr ikreturn=IkReturnPtr(), int32_t minpriority=IKSP_MinPriority, int32_t maxpriority=IKSP_MaxPriority);
 
     /// \brief returns true if there's registered filters within the priority range (inclusive)
     virtual bool _HasFilterInRange(int32_t minpriority, int32_t maxpriority) const;
@@ -317,12 +319,13 @@ protected:
     virtual void _CallFinishCallbacks(IkReturnPtr, RobotBase::ManipulatorConstPtr, const IkParameterization &);
 
 private:
-    virtual const char* GetHash() const {
+    virtual const char* GetHash() const 
+	{
         return OPENRAVE_IKSOLVER_HASH;
     }
 
-    std::list<UserDataWeakPtr> __listRegisteredFilters; //!< internally managed filters
-    std::list<UserDataWeakPtr> __listRegisteredFinishCallbacks; //!< internally managed callbacks
+    std::list<UserDataWeakPtr> registered_filters_; //!< internally managed filters
+    std::list<UserDataWeakPtr> registered_finish_callbacks_; //!< internally managed callbacks
 
     friend class CustomIkSolverFilterData;
     friend class IkSolverFinishCallbackData;
