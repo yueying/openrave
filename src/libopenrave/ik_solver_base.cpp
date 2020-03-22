@@ -314,9 +314,9 @@ bool IkSolverBase::_HasFilterInRange(int32_t minpriority, int32_t maxpriority) c
 void IkSolverBase::_CallFinishCallbacks(IkReturnPtr ikreturn, 
 	RobotBase::ManipulatorConstPtr pmanip, const IkParameterization& ikparam)
 {
-    FOREACH(it, registered_finish_callbacks_) 
+    for(auto& it: registered_finish_callbacks_) 
 	{
-        IkSolverFinishCallbackDataPtr pitdata = std::dynamic_pointer_cast<IkSolverFinishCallbackData>(it->lock());
+        IkSolverFinishCallbackDataPtr pitdata = std::dynamic_pointer_cast<IkSolverFinishCallbackData>(it.lock());
         if( !!pitdata ) 
 		{
             pitdata->_finishfn(ikreturn, pmanip, ikparam);

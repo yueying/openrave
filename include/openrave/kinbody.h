@@ -1488,7 +1488,7 @@ namespace OpenRAVE
 			//@{
 			int dof_index_;                   //!< the degree of freedom index in the body's DOF array, does not index in KinBody::joints_vector_!
 			int joint_index_;                 //!< the joint index into KinBody::joints_vector_
-			std::array<dReal, 3> _vcircularlowerlimit, _vcircularupperlimit;         //!< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
+			std::array<dReal, 3> circular_lower_limit_, circular_upper_limit_;         //!< for circular joints, describes where the identification happens. this is set internally in _ComputeInternalInformation
 
 			KinBodyWeakPtr _parent;               //!< body that joint belong to
 			std::array<LinkPtr, 2> attached_bodies_array_;         //!< attached bodies. The link in [0] is computed first in the hierarchy before the other body.
@@ -2225,7 +2225,8 @@ namespace OpenRAVE
 			\param hessian DOFx3xDOF matrix such that numpy.dot(dq,numpy.dot(hessian,dq)) is the expected second-order delta translation
 			\param dofindices the dof indices to compute the hessian for. If empty, will compute for all the dofs
 		 */
-		virtual void ComputeHessianTranslation(int linkindex, const Vector& position, std::vector<dReal>& hessian, const std::vector<int>& dofindices = std::vector<int>()) const;
+		virtual void ComputeHessianTranslation(int linkindex, const Vector& position, 
+			std::vector<dReal>& hessian, const std::vector<int>& dofindices = std::vector<int>()) const;
 
 		/** \brief Computes the DOFx3xDOF hessian of the rotation represented as angle-axis
 
@@ -2579,7 +2580,7 @@ namespace OpenRAVE
 		/// \brief constructors declared protected so that user always goes through environment to create bodies
 		KinBody(InterfaceType type, EnvironmentBasePtr penv);
 
-		/// \brief **internal use only** Releases and grabs the body inside the grabbed structure from _vGrabbedBodies.
+		/// \brief **internal use only** Releases and grabs the body inside the grabbed structure from grabbed_bodies_.
 		virtual void _Regrab(UserDataPtr pgrabbed);
 
 		virtual void SetManageData(ManageDataPtr pdata)
@@ -2667,7 +2668,7 @@ namespace OpenRAVE
 		std::vector< std::pair<std::string, std::string> > _vForcedAdjacentLinks; //!< internally stores forced adjacent links
 		std::list<KinBodyWeakPtr> attached_bodies_list_; //!< list of bodies that are directly attached to this body (can have duplicates)
 
-		std::vector<UserDataPtr> _vGrabbedBodies; //!< vector of grabbed bodies
+		std::vector<UserDataPtr> grabbed_bodies_; //!< vector of grabbed bodies
 
 		mutable std::vector<std::list<UserDataWeakPtr> > _vlistRegisteredCallbacks; //!< callbacks to call when particular properties of the body change. _vlistRegisteredCallbacks[index] is the list of change callbacks where 1<<index is part of KinBodyProperty, this makes it easy to find out if any particular bits have callbacks. The registration/de-registration of the lists can happen at any point and does not modify the kinbody state exposed to the user, hence it is mutable.
 

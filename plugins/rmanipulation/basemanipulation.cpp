@@ -26,10 +26,6 @@ public:
         The planners use analytical inverse kinematics and search based techniques.\
         Most of the MoveX commands by default execute the plan on the current robot by calling :meth:`.RobotBase.GetController().SetPath`. \
         This can be disabled by adding 'execute 0' to the command line";
-        RegisterCommand("GrabBody",boost::bind(&BaseManipulation::GrabBody,this,_1,_2),
-                        "Robot calls ::Grab on a body with its current manipulator");
-        RegisterCommand("ReleaseAll",boost::bind(&BaseManipulation::ReleaseAll,this,_1,_2),
-                        "Releases all grabbed bodies (RobotBase::ReleaseAllGrabbed).");
         RegisterCommand("MoveHandStraight",boost::bind(&BaseManipulation::MoveHandStraight,this,_1,_2),
                         "Move the active end-effector in a straight line until collision or IK fails. Parameters:\n\n\
 - steplength - the increments in workspace in which the robot tests for the next configuration.\n\n\
@@ -566,25 +562,25 @@ protected:
         RobotBase::ManipulatorConstPtr pmanip = robot_->GetActiveManipulator();
         std::list<IkParameterization> listgoals;
 
-		std::string strtrajfilename;
+		std::string trajectory_filename;
         bool is_execute = true;
         std::shared_ptr<std::ostream> output_traj_stream;
 
         Vector vconstraintaxis, vconstraintpos;
         int affinedofs = 0;
-        int nSeedIkSolutions = 8;     // no extra solutions
-        int nMaxTries = 3;     // max tries for the planner
+        int seed_ik_solutions_num = 8;     // no extra solutions
+        int max_tries_num = 3;     // max tries for the planner
 
         RRTParametersPtr params(new RRTParameters());
         params->_minimumgoalpaths = _minimumgoalpaths;
         params->max_iterations_ = 4000;
-        int nMaxJitterIterations = 1000;
+        int max_jitter_iterations = 1000;
         // constraint stuff
         std::array<double,6> vconstraintfreedoms = { { 0,0,0,0,0,0}};
         Transform tConstraintTargetWorldFrame, tConstraintTaskFrame;
         double constrainterrorthresh=0;
         int goalsamples = 40;
-        string cmd;
+		std::string cmd;
         dReal jitter = 0.03;
         dReal jitterikparam = 0;
         dReal goalsampleprob = 0.1;
@@ -656,47 +652,60 @@ protected:
                     listgoals.push_back(IkParameterization(t));
                 }
             }
-            else if( cmd == "ikparams" ) {
+            else if( cmd == "ikparams" )
+			{
                 int num = 0;
                 sinput >> num;
-                while(num-->0) {
+                while(num-->0)
+				{
                     IkParameterization ikparam;
                     sinput >> ikparam;
                     listgoals.push_back(ikparam);
                 }
             }
-            else if( cmd == "ikparam" ) {
+            else if( cmd == "ikparam" ) 
+			{
                 IkParameterization ikparam;
                 sinput >> ikparam;
                 listgoals.push_back(ikparam);
             }
-            else if( cmd == "affinedofs" ) {
+            else if( cmd == "affinedofs" ) 
+			{
                 sinput >> affinedofs;
             }
-            else if( cmd == "maxiter" ) {
+            else if( cmd == "maxiter" )
+			{
                 sinput >> params->max_iterations_;
             }
-            else if( cmd == "maxtries" ) {
-                sinput >> nMaxTries;
+            else if( cmd == "maxtries" )
+			{
+                sinput >> max_tries_num;
             }
-            else if( cmd == "execute" ) {
+            else if( cmd == "execute" ) 
+			{
                 sinput >> is_execute;
             }
-            else if( cmd == "writetraj" ) {
-                sinput >> strtrajfilename;
+            else if( cmd == "writetraj" ) 
+			{
+                sinput >> trajectory_filename;
             }
-            else if( cmd == "seedik" ) {
-                sinput >> nSeedIkSolutions;
+            else if( cmd == "seedik" ) 
+			{
+                sinput >> seed_ik_solutions_num;
             }
-            else if( cmd == "steplength" ) {
+            else if( cmd == "steplength" ) 
+			{
                 sinput >> params->step_length_;
             }
-            else if( cmd == "constraintfreedoms" ) {
-                FOREACH(it,vconstraintfreedoms) {
-                    sinput >> *it;
+            else if( cmd == "constraintfreedoms" )
+ {
+                for(auto& it:vconstraintfreedoms)
+				{
+                    sinput >> it;
                 }
             }
-            else if( cmd == "constraintmatrix" ) {
+            else if( cmd == "constraintmatrix" ) 
+            {
                 TransformMatrix m; sinput >> m; tConstraintTargetWorldFrame = m;
             }
             else if( cmd == "constraintpose" ) {
@@ -776,12 +785,15 @@ protected:
             params->_sPostProcessingParameters = _sPostProcessingParameters;
         }
 
-        CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
+        CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),
+			GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
         if( constrainterrorthresh > 0 ) {
             RAVELOG_DEBUG("setting jacobian constraint function in planner parameters\n");
             robot_->SetActiveDOFValues(params->initial_config_vector_); // have to set the initial configuraiton!
-            std::shared_ptr<CM::GripperJacobianConstrains<double> > pconstraints(new CM::GripperJacobianConstrains<double>(robot_->GetActiveManipulator(),tConstraintTargetWorldFrame,tConstraintTaskFrame, vconstraintfreedoms,constrainterrorthresh));
+            std::shared_ptr<CM::GripperJacobianConstrains<double> > pconstraints(new CM::GripperJacobianConstrains<double>
+				(robot_->GetActiveManipulator(),tConstraintTargetWorldFrame,tConstraintTaskFrame, 
+					vconstraintfreedoms,constrainterrorthresh));
             pconstraints->_distmetricfn = params->_distmetricfn;
             params->_neighstatefn = boost::bind(&CM::GripperJacobianConstrains<double>::RetractionConstraint,pconstraints,_1,_2);
             // use linear interpolation!
@@ -795,16 +807,17 @@ protected:
 
         robot_->SetActiveDOFs(pmanip->GetArmIndices(), 0);
 
-        vector<dReal> vgoal;
+        std::vector<dReal> vgoal;
         const bool searchfreeparameters = vfreevalues.empty();
-        planningutils::ManipulatorIKGoalSampler goalsampler(pmanip, listgoals,goalsamples,nGoalMaxTries, 1, searchfreeparameters, IKFO_CheckEnvCollisions, vfreevalues);
+        planningutils::ManipulatorIKGoalSampler goalsampler(pmanip, listgoals,
+			goalsamples,nGoalMaxTries, 1, searchfreeparameters, IKFO_CheckEnvCollisions, vfreevalues);
         goalsampler.SetJitter(jitterikparam);
-        params->goal_config_vector_.reserve(nSeedIkSolutions*robot_->GetActiveDOF());
-        while(nSeedIkSolutions > 0) {
+        params->goal_config_vector_.reserve(seed_ik_solutions_num*robot_->GetActiveDOF());
+        while(seed_ik_solutions_num > 0) {
             if( goalsampler.Sample(vgoal) ) {
                 if(constrainterrorthresh > 0 ) {
                     robot_->SetActiveDOFValues(vgoal);
-                    switch( planningutils::JitterActiveDOF(robot_,nMaxJitterIterations,jitter,params->_neighstatefn) ) {
+                    switch( planningutils::JitterActiveDOF(robot_,max_jitter_iterations,jitter,params->_neighstatefn) ) {
                     case 0:
                         RAVELOG_DEBUG("constraint function failed\n");
                         continue;
@@ -814,10 +827,10 @@ protected:
                     }
                 }
                 params->goal_config_vector_.insert(params->goal_config_vector_.end(), vgoal.begin(), vgoal.end());
-                --nSeedIkSolutions;
+                --seed_ik_solutions_num;
             }
             else {
-                --nSeedIkSolutions;
+                --seed_ik_solutions_num;
             }
         }
         goalsampler.SetSamplingProb(goalsampleprob);
@@ -833,7 +846,7 @@ protected:
 
         vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
         // jitter again for initial collision
-        switch( planningutils::JitterActiveDOF(robot_,nMaxJitterIterations,jitter,constrainterrorthresh > 0 ? params->_neighstatefn : PlannerBase::PlannerParameters::NeighStateFn()) ) {
+        switch( planningutils::JitterActiveDOF(robot_,max_jitter_iterations,jitter,constrainterrorthresh > 0 ? params->_neighstatefn : PlannerBase::PlannerParameters::NeighStateFn()) ) {
         case 0:
             RAVELOG_WARN("jitter failed for initial\n");
             return false;
@@ -854,7 +867,7 @@ protected:
         TrajectoryBasePtr ptraj = RaveCreateTrajectory(GetEnv(),"");
         RAVELOG_DEBUG("starting planning\n");
 
-        for(int iter = 0; iter < nMaxTries; ++iter) {
+        for(int iter = 0; iter < max_tries_num; ++iter) {
             if( !rrtplanner->InitPlan(robot_, params) ) {
                 RAVELOG_ERROR("InitPlan failed\n");
                 return false;
@@ -893,20 +906,20 @@ protected:
             }
         }
 
-        CM::SetActiveTrajectory(robot_, ptraj, is_execute, strtrajfilename, output_traj_stream,_fMaxVelMult);
+        CM::SetActiveTrajectory(robot_, ptraj, is_execute, trajectory_filename, output_traj_stream,_fMaxVelMult);
         sout << "1";
         return true;
     }
 
-    bool MoveUnsyncJoints(ostream& sout, istream& sinput)
+    bool MoveUnsyncJoints(std::ostream& sout, std::istream& sinput)
     {
-        string strplanner = "BasicRRT";
-        string strsavetraj;
-        string cmd;
-        vector<int> vhandjoints;
-        vector<dReal> vhandgoal;
+		std::string strplanner = "BasicRRT";
+		std::string strsavetraj;
+		std::string cmd;
+		std::vector<int> vhandjoints;
+		std::vector<dReal> vhandgoal;
         bool bExecute = true;
-        std::shared_ptr<ostream> pOutputTrajStream;
+        std::shared_ptr<std::ostream> pOutputTrajStream;
         int nMaxTries=1;
         int maxdivision=10;
         int nMaxJitterIterations = 1000;
@@ -921,7 +934,7 @@ protected:
                 sinput >> strsavetraj;
             }
             else if( cmd == "outputtraj" ) {
-                pOutputTrajStream = std::shared_ptr<ostream>(&sout,utils::null_deleter());
+                pOutputTrajStream = std::shared_ptr<std::ostream>(&sout,utils::null_deleter());
             }
             else if( cmd == "handjoints" ) {
                 int dof = 0;
@@ -985,7 +998,7 @@ protected:
         bool bExecuted = CM::SetActiveTrajectory(robot_, ptraj, bExecute, strsavetraj, pOutputTrajStream,_fMaxVelMult);
         sout << (int)bExecuted << " ";
         sout << (utils::GetMilliTime()-starttime)/1000.0f << " ";
-        vector<dReal> q;
+		std::vector<dReal> q;
         ptraj->GetWaypoint(-1,q,robot_->GetActiveConfigurationSpecification());
         FOREACH(it, q) {
             sout << *it << " ";
@@ -993,12 +1006,12 @@ protected:
         return true;
     }
 
-    bool JitterActive(ostream& sout, istream& sinput)
+    bool JitterActive(std::ostream& sout, std::istream& sinput)
     {
         RAVELOG_DEBUG("Starting JitterActive...\n");
         bool bExecute = true, bOutputFinal=false;
-        std::shared_ptr<ostream> pOutputTrajStream;
-        string cmd;
+        std::shared_ptr<std::ostream> pOutputTrajStream;
+		std::string cmd;
         int nMaxJitterIterations=5000;
         dReal fJitter=0.03f;
         while(!sinput.eof()) {
@@ -1062,65 +1075,18 @@ protected:
         return true;
     }
 
-    bool GrabBody(ostream& sout, istream& sinput)
-    {
-        RAVELOG_WARN("BaseManipulation GrabBody command is deprecated. Use Robot::Grab (11/03/07)\n");
-        KinBodyPtr ptarget;
-
-        string cmd;
-        while(!sinput.eof()) {
-            sinput >> cmd;
-            if( !sinput ) {
-                break;
-            }
-            std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
-
-            if( cmd == "name" ) {
-                string name;
-                sinput >> name;
-                ptarget = GetEnv()->GetKinBody(name);
-            }
-            else {
-                break;
-            }
-
-            if( !sinput ) {
-                RAVELOG_ERROR(str(boost::format("failed processing command %s\n")%cmd));
-                return false;
-            }
-        }
-
-        if(!ptarget) {
-            RAVELOG_ERROR("ERROR Manipulation::GrabBody - Invalid body name.\n");
-            return false;
-        }
-
-        RAVELOG_DEBUG(str(boost::format("robot %s:%s grabbing body %s...\n")%robot_->GetName()%robot_->GetActiveManipulator()->GetEndEffector()->GetName()%ptarget->GetName()));
-        robot_->Grab(ptarget);
-        return true;
-    }
-
-    bool ReleaseAll(ostream& sout, istream& sinput)
-    {
-        RAVELOG_WARN("BaseManipulation ReleaseAll command is deprecated. Use Robot::ReleaseAllGrabbed (11/03/07)\n");
-        if( !!robot_ ) {
-            RAVELOG_DEBUG("Releasing all bodies\n");
-            robot_->ReleaseAllGrabbed();
-        }
-        return true;
-    }
-
 protected:
-    bool SetMinimumGoalPathsCommand(ostream& sout, istream& sinput)
+    bool SetMinimumGoalPathsCommand(std::ostream& sout, std::istream& sinput)
     {
         sinput >> _minimumgoalpaths;
         BOOST_ASSERT(_minimumgoalpaths>=0);
         return !!sinput;
     }
 
-    bool SetPostProcessingCommand(ostream& sout, istream& sinput)
+    bool SetPostProcessingCommand(std::ostream& sout, std::istream& sinput)
     {
-        if( !getline(sinput, _sPostProcessingParameters) ) {
+        if( !getline(sinput, _sPostProcessingParameters) ) 
+		{
             return false;
         }
         return !!sinput;

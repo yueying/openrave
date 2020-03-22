@@ -21,10 +21,10 @@ namespace OpenRAVE
 	void Grabbed::ProcessCollidingLinks(const std::set<int>& setRobotLinksToIgnore)
 	{
 		_setRobotLinksToIgnore = setRobotLinksToIgnore;
-		_listNonCollidingLinks.clear();
+		non_colliding_links_.clear();
 		_mapLinkIsNonColliding.clear();
-		KinBodyPtr pgrabbedbody(_pgrabbedbody);
-		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
+		KinBodyPtr pgrabbedbody(grabbed_body_);
+		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(link_robot_->GetParent());
 		EnvironmentBasePtr penv = pbody->GetEnv();
 		CollisionCheckerBasePtr pchecker = pbody->GetSelfCollisionChecker();
 		if (!pchecker) {
@@ -60,10 +60,10 @@ namespace OpenRAVE
 			//uint64_t starttime1 = utils::GetMicroTime();
 
 			std::vector<KinBody::LinkPtr > vbodyattachedlinks;
-			FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
+			FOREACHC(itgrabbed, pbody->grabbed_bodies_) {
 				std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
-				bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
-				KinBodyPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
+				bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->link_robot_) != _vattachedlinks.end();
+				KinBodyPtr pothergrabbedbody = pgrabbed->grabbed_body_.lock();
 				if (!pothergrabbedbody) {
 					RAVELOG_WARN_FORMAT("grabbed body on %s has already been released. ignoring.", pbody->GetName());
 					continue;
@@ -93,8 +93,8 @@ namespace OpenRAVE
 		if (pgrabbedbody->IsEnabled()) {
 			FOREACH(itnoncolliding, _mapLinkIsNonColliding) {
 				if (itnoncolliding->second && itnoncolliding->first->IsEnabled()) {
-					//RAVELOG_VERBOSE(str(boost::format("non-colliding link %s for grabbed body %s")%(*itlink)->GetName()%pgrabbedbody->GetName()));
-					_listNonCollidingLinks.push_back(itnoncolliding->first);
+					//RAVELOG_VERBOSE(str(boost::format("non-colliding link %s for grabbed body %s")%(*itlink)->GetName()%grabbed_body->GetName()));
+					non_colliding_links_.push_back(itnoncolliding->first);
 				}
 			}
 		}
@@ -102,12 +102,12 @@ namespace OpenRAVE
 
 	void Grabbed::AddMoreIgnoreLinks(const std::set<int>& setRobotLinksToIgnore)
 	{
-		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
+		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(link_robot_->GetParent());
 		FOREACHC(itignoreindex, setRobotLinksToIgnore) {
 			_setRobotLinksToIgnore.insert(*itignoreindex);
 			KinBody::LinkPtr plink = pbody->GetLinks().at(*itignoreindex);
 			_mapLinkIsNonColliding[plink] = 0;
-			_listNonCollidingLinks.remove(plink);
+			non_colliding_links_.remove(plink);
 		}
 	}
 
@@ -123,34 +123,39 @@ namespace OpenRAVE
 
 	void Grabbed::UpdateCollidingLinks()
 	{
-		KinBodyPtr pbody = RaveInterfaceCast<KinBody>(_plinkrobot->GetParent());
-		if (!pbody) {
+		KinBodyPtr body = RaveInterfaceCast<KinBody>(link_robot_->GetParent());
+		if (!body) 
+		{
 			return;
 		}
-		EnvironmentBasePtr penv = pbody->GetEnv();
-		KinBodyConstPtr pgrabbedbody(_pgrabbedbody);
-		if (!pgrabbedbody || !pgrabbedbody->IsEnabled()) {
-			_listNonCollidingLinks.clear();
+		EnvironmentBasePtr env = body->GetEnv();
+		KinBodyConstPtr grabbed_body(grabbed_body_);
+		if (!grabbed_body || !grabbed_body->IsEnabled()) 
+		{
+			non_colliding_links_.clear();
 			return;
 		}
 
 		CollisionOptionsStateSaverPtr colsaver;
-		CollisionCheckerBasePtr pchecker = pbody->GetSelfCollisionChecker();
-		if (!pchecker) {
-			pchecker = penv->GetCollisionChecker();
+		CollisionCheckerBasePtr checker = body->GetSelfCollisionChecker();
+		if (!checker) 
+		{
+			checker = env->GetCollisionChecker();
 		}
 
 		std::map<KinBody::LinkConstPtr, int>::iterator itnoncolliding;
 		std::vector<KinBody::LinkPtr > vbodyattachedlinks;
-		FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
+		FOREACHC(itgrabbed, body->grabbed_bodies_) 
+		{
 			std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
-			bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->_plinkrobot) != _vattachedlinks.end();
-			KinBodyPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
-			if (!pothergrabbedbody) {
-				RAVELOG_WARN_FORMAT("grabbed body on %s has already been destroyed, ignoring.", pbody->GetName());
+			bool bsamelink = find(_vattachedlinks.begin(), _vattachedlinks.end(), pgrabbed->link_robot_) != _vattachedlinks.end();
+			KinBodyPtr pothergrabbedbody = pgrabbed->grabbed_body_.lock();
+			if (!pothergrabbedbody) 
+			{
+				RAVELOG_WARN_FORMAT("grabbed body on %s has already been destroyed, ignoring.", body->GetName());
 				continue;
 			}
-			if (pothergrabbedbody != pgrabbedbody && pothergrabbedbody->GetLinks().size() > 0) {
+			if (pothergrabbedbody != grabbed_body && pothergrabbedbody->GetLinks().size() > 0) {
 				if (bsamelink) {
 					pothergrabbedbody->GetLinks().at(0)->GetRigidlyAttachedLinks(vbodyattachedlinks);
 				}
@@ -165,13 +170,13 @@ namespace OpenRAVE
 							// new body?
 							if (!colsaver) {
 								// have to reset the collision options
-								colsaver.reset(new CollisionOptionsStateSaver(pchecker, 0));
+								colsaver.reset(new CollisionOptionsStateSaver(checker, 0));
 							}
 							if (!othergrabbedbodysaver) {
 								othergrabbedbodysaver.reset(new KinBody::KinBodyStateSaver(pothergrabbedbody, KinBody::Save_LinkEnable));
 								pothergrabbedbody->Enable(true);
 							}
-							_mapLinkIsNonColliding[*itgrabbedlink] = !pchecker->CheckCollision(KinBody::LinkConstPtr(*itgrabbedlink), pgrabbedbody);
+							_mapLinkIsNonColliding[*itgrabbedlink] = !checker->CheckCollision(KinBody::LinkConstPtr(*itgrabbedlink), grabbed_body);
 						}
 					}
 				}
@@ -179,18 +184,18 @@ namespace OpenRAVE
 		}
 
 		std::set<KinBodyConstPtr> _setgrabbed;
-		FOREACHC(itgrabbed, pbody->_vGrabbedBodies) {
+		FOREACHC(itgrabbed, body->grabbed_bodies_) {
 			std::shared_ptr<Grabbed const> pgrabbed = std::dynamic_pointer_cast<Grabbed const>(*itgrabbed);
-			KinBodyConstPtr pothergrabbedbody = pgrabbed->_pgrabbedbody.lock();
+			KinBodyConstPtr pothergrabbedbody = pgrabbed->grabbed_body_.lock();
 			if (!!pothergrabbedbody) {
 				_setgrabbed.insert(pothergrabbedbody);
 			}
 			else {
-				RAVELOG_WARN_FORMAT("grabbed body on %s has already been destroyed, ignoring.", pbody->GetName());
+				RAVELOG_WARN_FORMAT("grabbed body on %s has already been destroyed, ignoring.", body->GetName());
 			}
 		}
 
-		_listNonCollidingLinks.clear();
+		non_colliding_links_.clear();
 		itnoncolliding = _mapLinkIsNonColliding.begin();
 		while (itnoncolliding != _mapLinkIsNonColliding.end()) {
 			KinBodyPtr noncollidingparent = itnoncolliding->first->GetParent(true);
@@ -198,7 +203,7 @@ namespace OpenRAVE
 				_mapLinkIsNonColliding.erase(itnoncolliding++);
 				continue;
 			}
-			if (noncollidingparent != pbody) {
+			if (noncollidingparent != body) {
 				// check if body is currently being grabbed
 				if (_setgrabbed.find(noncollidingparent) == _setgrabbed.end()) {
 					_mapLinkIsNonColliding.erase(itnoncolliding++);
@@ -207,7 +212,7 @@ namespace OpenRAVE
 			}
 
 			if (itnoncolliding->second && itnoncolliding->first->IsEnabled()) {
-				_listNonCollidingLinks.push_back(itnoncolliding->first);
+				non_colliding_links_.push_back(itnoncolliding->first);
 			}
 			++itnoncolliding;
 		}

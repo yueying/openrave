@@ -1029,8 +1029,8 @@ void KinBody::Joint::_ComputeInternalInformation(LinkPtr plink0, LinkPtr plink1,
     _tinvRight = _tRight.inverse();
     _tinvLeft = _tLeft.inverse();
 
-    _vcircularlowerlimit = info_.lower_limit_vector_;
-    _vcircularupperlimit = info_.upper_limit_vector_;
+    circular_lower_limit_ = info_.lower_limit_vector_;
+    circular_upper_limit_ = info_.upper_limit_vector_;
     for(int i = 0; i < GetDOF(); ++i) {
         if( IsCircular(i) ) {
             // can rotate forever, so don't limit it. Unfortunately if numbers are too big precision will start getting lost
@@ -1393,7 +1393,7 @@ void KinBody::Joint::SubtractValues(std::vector<dReal>& q1, const std::vector<dR
 {
     for(int i = 0; i < GetDOF(); ++i) {
         if( IsCircular(i) ) {
-            q1.at(i) = utils::NormalizeCircularAngle(q1.at(i)-q2.at(i),_vcircularlowerlimit.at(i),_vcircularupperlimit.at(i));
+            q1.at(i) = utils::NormalizeCircularAngle(q1.at(i)-q2.at(i),circular_lower_limit_.at(i),circular_upper_limit_.at(i));
         }
         else {
             q1.at(i) -= q2.at(i);
@@ -1403,10 +1403,12 @@ void KinBody::Joint::SubtractValues(std::vector<dReal>& q1, const std::vector<dR
 
 dReal KinBody::Joint::SubtractValue(dReal value1, dReal value2, int iaxis) const
 {
-    if( IsCircular(iaxis) ) {
-        return utils::NormalizeCircularAngle(value1-value2,_vcircularlowerlimit.at(iaxis),_vcircularupperlimit.at(iaxis));
+    if( IsCircular(iaxis) ) 
+	{
+        return utils::NormalizeCircularAngle(value1-value2,circular_lower_limit_.at(iaxis),circular_upper_limit_.at(iaxis));
     }
-    else {
+    else 
+	{
         return value1-value2;
     }
 }

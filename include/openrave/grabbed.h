@@ -26,21 +26,21 @@ namespace OpenRAVE
 	class Grabbed : public UserData, public std::enable_shared_from_this<Grabbed>
 	{
 	public:
-		Grabbed(KinBodyPtr pgrabbedbody, KinBody::LinkPtr plinkrobot) 
-			: _pgrabbedbody(pgrabbedbody), _plinkrobot(plinkrobot) 
+		Grabbed(KinBodyPtr grabbed_body, KinBody::LinkPtr link_robot) 
+			: grabbed_body_(grabbed_body), link_robot_(link_robot) 
 		{
-			_enablecallback = pgrabbedbody->RegisterChangeCallback(KinBody::Prop_LinkEnable,
+			enable_callback_ = grabbed_body->RegisterChangeCallback(KinBody::Prop_LinkEnable,
 				boost::bind(&Grabbed::UpdateCollidingLinks, this));
-			_plinkrobot->GetRigidlyAttachedLinks(_vattachedlinks);
+			link_robot_->GetRigidlyAttachedLinks(_vattachedlinks);
 		}
 		virtual ~Grabbed()
 		{
 		}
 
-		KinBodyWeakPtr _pgrabbedbody;         //!< the grabbed body
-		KinBody::LinkPtr _plinkrobot;         //!< robot link that is grabbing the body
-		std::list<KinBody::LinkConstPtr> _listNonCollidingLinks;         //!< links that are not colliding with the grabbed body at the time of Grab
-		Transform _troot;         //!< root transform (of first link of body) relative to plinkrobot's transform. In other words, pbody->GetTransform() == plinkrobot->GetTransform()*troot
+		KinBodyWeakPtr grabbed_body_;         //!< the grabbed body
+		KinBody::LinkPtr link_robot_;         //!< robot link that is grabbing the body
+		std::list<KinBody::LinkConstPtr> non_colliding_links_;         //!< links that are not colliding with the grabbed body at the time of Grab
+		Transform _troot;         //!< root transform (of first link of body) relative to link_robot's transform. In other words, pbody->GetTransform() == link_robot->GetTransform()*troot
 		std::set<int> _setRobotLinksToIgnore; //!< original links of the robot to force ignoring
 
 		/// \brief check collision with all links to see which are valid.
@@ -50,7 +50,8 @@ namespace OpenRAVE
 		/// \param setRobotLinksToIgnore indices of the robot links to always ignore, in other words remove from non-colliding list
 		void ProcessCollidingLinks(const std::set<int>& setRobotLinksToIgnore);
 
-		inline const std::vector<KinBody::LinkPtr>& GetRigidlyAttachedLinks() const {
+		inline const std::vector<KinBody::LinkPtr>& GetRigidlyAttachedLinks() const 
+		{
 			return _vattachedlinks;
 		}
 
@@ -66,7 +67,7 @@ namespace OpenRAVE
 
 	private:
 		std::vector<KinBody::LinkPtr> _vattachedlinks;
-		UserDataPtr _enablecallback; //!< callback for grabbed body when it is enabled/disabled
+		UserDataPtr enable_callback_; //!< callback for grabbed body when it is enabled/disabled
 
 		std::map<KinBody::LinkConstPtr, int> _mapLinkIsNonColliding; // the collision state for each link at the time the body was grabbed.
 	};

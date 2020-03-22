@@ -311,15 +311,19 @@ namespace OpenRAVE
 		{
 			T range = max - min;
 			BOOST_ASSERT(range > 0);
-			if (theta < min) {
+			if (theta < min) 
+			{
 				theta += range;
-				while (theta < min) {
+				while (theta < min) 
+				{
 					theta += range;
 				}
 			}
-			else if (theta > max) {
+			else if (theta > max)
+			{
 				theta -= range;
-				while (theta > max) {
+				while (theta > max) 
+				{
 					theta -= range;
 				}
 			}

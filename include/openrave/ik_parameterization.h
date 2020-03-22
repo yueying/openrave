@@ -94,7 +94,7 @@ namespace OpenRAVE
 	class OPENRAVE_API IkParameterization
 	{
 	public:
-		IkParameterization() : _type(IKP_None)
+		IkParameterization() : type_(IKP_None)
 		{
 		}
 		/// \brief sets a 6D transform parameterization
@@ -110,21 +110,21 @@ namespace OpenRAVE
 		/// \brief set a custom parameterization using a transform as the source of the data. Not all types are supported with this method.
 		IkParameterization(const Transform &t, IkParameterizationType type)
 		{
-			_type = type;
-			switch (_type)
+			type_ = type;
+			switch (type_)
 			{
 			case IKP_Transform6D: SetTransform6D(t); break;
 			case IKP_Rotation3D: SetRotation3D(t.rot); break;
 			case IKP_Translation3D: SetTranslation3D(t.trans); break;
 			case IKP_Lookat3D: SetLookat3D(t.trans); break;
 			default:
-				throw OpenRAVEException(str(boost::format("IkParameterization constructor does not support type 0x%x") % _type));
+				throw OpenRAVEException(str(boost::format("IkParameterization constructor does not support type 0x%x") % type_));
 			}
 		}
 
 		inline IkParameterizationType GetType() const
 		{
-			return _type;
+			return type_;
 		}
 
 		/// \brief returns a string version of \ref GetType
@@ -138,7 +138,7 @@ namespace OpenRAVE
 		/// \brief Returns the minimum degree of freedoms required for the IK type. Does \b not count custom data.
 		inline int GetDOF() const
 		{
-			return (_type >> 28) & 0xf;
+			return (type_ >> 28) & 0xf;
 		}
 
 		/// \brief Returns the number of values used to represent the parameterization ( >= dof ). Does \b not count custom data.
@@ -158,219 +158,219 @@ namespace OpenRAVE
 		/// \brief Returns the number of values used to represent the parameterization ( >= dof ). Does \b not count custom data.
 		inline int GetNumberOfValues() const
 		{
-			return (_type >> 24) & 0xf;
+			return (type_ >> 24) & 0xf;
 		}
 
 		inline void SetTransform6D(const Transform& t)
 		{
-			_type = IKP_Transform6D; _transform = t;
+			type_ = IKP_Transform6D; transform_ = t;
 		}
 
 		inline void SetTransform6DVelocity(const Transform& t)
 		{
-			_type = IKP_Transform6DVelocity; _transform = t;
+			type_ = IKP_Transform6DVelocity; transform_ = t;
 		}
 
 		inline void SetRotation3D(const Vector& quaternion) 
 		{
-			_type = IKP_Rotation3D; _transform.rot = quaternion;
+			type_ = IKP_Rotation3D; transform_.rot = quaternion;
 		}
 
 		inline void SetTranslation3D(const Vector& trans) 
 		{
-			_type = IKP_Translation3D; _transform.trans = trans;
+			type_ = IKP_Translation3D; transform_.trans = trans;
 		}
 
 		inline void SetDirection3D(const Vector& dir) 
 		{
-			_type = IKP_Direction3D; _transform.rot = dir;
+			type_ = IKP_Direction3D; transform_.rot = dir;
 		}
 
 		inline void SetRay4D(const RAY& ray) 
 		{
-			_type = IKP_Ray4D; _transform.trans = ray.pos; _transform.rot = ray.dir;
+			type_ = IKP_Ray4D; transform_.trans = ray.pos; transform_.rot = ray.dir;
 		}
 
 		inline void SetLookat3D(const Vector& trans) 
 		{
-			_type = IKP_Lookat3D; _transform.trans = trans;
+			type_ = IKP_Lookat3D; transform_.trans = trans;
 		}
 
 		/// \brief the ray direction is not used for IK, however it is needed in order to compute the error
 		inline void SetLookat3D(const RAY& ray) 
 		{
-			_type = IKP_Lookat3D; _transform.trans = ray.pos; _transform.rot = ray.dir;
+			type_ = IKP_Lookat3D; transform_.trans = ray.pos; transform_.rot = ray.dir;
 		}
 
 		inline void SetTranslationDirection5D(const RAY& ray) 
 		{
-			_type = IKP_TranslationDirection5D; _transform.trans = ray.pos; _transform.rot = ray.dir;
+			type_ = IKP_TranslationDirection5D; transform_.trans = ray.pos; transform_.rot = ray.dir;
 		}
 
 		inline void SetTranslationXY2D(const Vector& trans)
 		{
-			_type = IKP_TranslationXY2D; 
-			_transform.trans.x = trans.x; 
-			_transform.trans.y = trans.y; 
-			_transform.trans.z = 0; 
-			_transform.trans.w = 0;
+			type_ = IKP_TranslationXY2D; 
+			transform_.trans.x = trans.x; 
+			transform_.trans.y = trans.y; 
+			transform_.trans.z = 0; 
+			transform_.trans.w = 0;
 		}
 
 		inline void SetTranslationXYOrientation3D(const Vector& trans)
 		{
-			_type = IKP_TranslationXYOrientation3D; 
-			_transform.trans.x = trans.x; 
-			_transform.trans.y = trans.y; 
-			_transform.trans.z = trans.z; 
-			_transform.trans.w = 0;
+			type_ = IKP_TranslationXYOrientation3D; 
+			transform_.trans.x = trans.x; 
+			transform_.trans.y = trans.y; 
+			transform_.trans.z = trans.z; 
+			transform_.trans.w = 0;
 		}
 
 		inline void SetTranslationLocalGlobal6D(const Vector& localtrans, const Vector& trans)
 		{
-			_type = IKP_TranslationLocalGlobal6D; 
-			_transform.rot.x = localtrans.x; 
-			_transform.rot.y = localtrans.y; 
-			_transform.rot.z = localtrans.z; 
-			_transform.rot.w = 0; 
-			_transform.trans.x = trans.x; 
-			_transform.trans.y = trans.y; 
-			_transform.trans.z = trans.z; 
-			_transform.trans.w = 0;
+			type_ = IKP_TranslationLocalGlobal6D; 
+			transform_.rot.x = localtrans.x; 
+			transform_.rot.y = localtrans.y; 
+			transform_.rot.z = localtrans.z; 
+			transform_.rot.w = 0; 
+			transform_.trans.x = trans.x; 
+			transform_.trans.y = trans.y; 
+			transform_.trans.z = trans.z; 
+			transform_.trans.w = 0;
 		}
 
 		inline void SetTranslationXAxisAngle4D(const Vector& trans, dReal angle) 
 		{
-			_type = IKP_TranslationXAxisAngle4D;
-			_transform.trans = trans;
-			_transform.rot.x = angle;
+			type_ = IKP_TranslationXAxisAngle4D;
+			transform_.trans = trans;
+			transform_.rot.x = angle;
 		}
 
 		inline void SetTranslationYAxisAngle4D(const Vector& trans, dReal angle) 
 		{
-			_type = IKP_TranslationYAxisAngle4D;
-			_transform.trans = trans;
-			_transform.rot.x = angle;
+			type_ = IKP_TranslationYAxisAngle4D;
+			transform_.trans = trans;
+			transform_.rot.x = angle;
 		}
 
 		inline void SetTranslationZAxisAngle4D(const Vector& trans, dReal angle)
 		{
-			_type = IKP_TranslationZAxisAngle4D;
-			_transform.trans = trans;
-			_transform.rot.x = angle;
+			type_ = IKP_TranslationZAxisAngle4D;
+			transform_.trans = trans;
+			transform_.rot.x = angle;
 		}
 
 		inline void SetTranslationXAxisAngleZNorm4D(const Vector& trans, dReal angle) 
 		{
-			_type = IKP_TranslationXAxisAngleZNorm4D;
-			_transform.trans = trans;
-			_transform.rot.x = angle;
+			type_ = IKP_TranslationXAxisAngleZNorm4D;
+			transform_.trans = trans;
+			transform_.rot.x = angle;
 		}
 
 		inline void SetTranslationYAxisAngleXNorm4D(const Vector& trans, dReal angle) 
 		{
-			_type = IKP_TranslationYAxisAngleXNorm4D;
-			_transform.trans = trans;
-			_transform.rot.x = angle;
+			type_ = IKP_TranslationYAxisAngleXNorm4D;
+			transform_.trans = trans;
+			transform_.rot.x = angle;
 		}
 
 		inline void SetTranslationZAxisAngleYNorm4D(const Vector& trans, dReal angle) 
 		{
-			_type = IKP_TranslationZAxisAngleYNorm4D;
-			_transform.trans = trans;
-			_transform.rot.x = angle;
+			type_ = IKP_TranslationZAxisAngleYNorm4D;
+			transform_.trans = trans;
+			transform_.rot.x = angle;
 		}
 
 		inline const Transform& GetTransform6D() const 
 		{
-			return _transform;
+			return transform_;
 		}
 
 		inline const Vector& GetRotation3D() const 
 		{
-			return _transform.rot;
+			return transform_.rot;
 		}
 
 		inline const Vector& GetTranslation3D() const 
 		{
-			return _transform.trans;
+			return transform_.trans;
 		}
 
 		inline const Vector& GetDirection3D() const 
 		{
-			return _transform.rot;
+			return transform_.rot;
 		}
 
 		inline const RAY GetRay4D() const 
 		{
-			return RAY(_transform.trans, _transform.rot);
+			return RAY(transform_.trans, transform_.rot);
 		}
 
 		inline const Vector& GetLookat3D() const
 		{
-			return _transform.trans;
+			return transform_.trans;
 		}
 
 		inline const Vector& GetLookat3DDirection() const 
 		{
-			return _transform.rot;
+			return transform_.rot;
 		}
 
 		inline const RAY GetTranslationDirection5D() const 
 		{
-			return RAY(_transform.trans, _transform.rot);
+			return RAY(transform_.trans, transform_.rot);
 		}
 
 		inline const Vector& GetTranslationXY2D() const 
 		{
-			return _transform.trans;
+			return transform_.trans;
 		}
 
 		inline const Vector& GetTranslationXYOrientation3D() const 
 		{
-			return _transform.trans;
+			return transform_.trans;
 		}
 
 		inline std::pair<Vector, Vector> GetTranslationLocalGlobal6D() const
 		{
-			return std::make_pair(_transform.rot, _transform.trans);
+			return std::make_pair(transform_.rot, transform_.trans);
 		}
 
 		inline std::pair<Vector, dReal> GetTranslationXAxisAngle4D() const
 		{
-			return std::make_pair(_transform.trans, _transform.rot.x);
+			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
 		inline std::pair<Vector, dReal> GetTranslationYAxisAngle4D() const 
 		{
-			return std::make_pair(_transform.trans, _transform.rot.x);
+			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
 		inline std::pair<Vector, dReal> GetTranslationZAxisAngle4D() const 
 		{
-			return std::make_pair(_transform.trans, _transform.rot.x);
+			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
 		inline std::pair<Vector, dReal> GetTranslationXAxisAngleZNorm4D() const 
 		{
-			return std::make_pair(_transform.trans, _transform.rot.x);
+			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
 		inline std::pair<Vector, dReal> GetTranslationYAxisAngleXNorm4D() const 
 		{
-			return std::make_pair(_transform.trans, _transform.rot.x);
+			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
 		inline std::pair<Vector, dReal> GetTranslationZAxisAngleYNorm4D() const 
 		{
-			return std::make_pair(_transform.trans, _transform.rot.x);
+			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
 		/// \brief Computes the distance squared between two IK parmaeterizations.
 		inline dReal ComputeDistanceSqr(const IkParameterization& ikparam) const
 		{
 			const dReal anglemult = 0.4;     // this is a hack that should be removed....
-			BOOST_ASSERT(_type == ikparam.GetType());
-			switch (_type) 
+			BOOST_ASSERT(type_ == ikparam.GetType());
+			switch (type_) 
 			{
 			case IKP_Transform6D: 
 			{
@@ -496,59 +496,72 @@ namespace OpenRAVE
 		/// \brief Computes the translational distance squared between two IK parmaeterizations.
 		inline dReal ComputeTransDistanceSqr(const IkParameterization& ikparam) const
 		{
-			BOOST_ASSERT(_type == ikparam.GetType());
-			switch (_type) {
-			case IKP_Transform6D: {
+			BOOST_ASSERT(type_ == ikparam.GetType());
+			switch (type_) 
+			{
+			case IKP_Transform6D:
+			{
 				return (GetTransform6D().trans - ikparam.GetTransform6D().trans).lengthsqr3();
 			}
 			case IKP_Translation3D:
 				return (GetTranslation3D() - ikparam.GetTranslation3D()).lengthsqr3();
-			case IKP_Ray4D: {
+			case IKP_Ray4D: 
+			{
 				Vector pos0 = GetRay4D().pos - GetRay4D().dir*GetRay4D().dir.dot(GetRay4D().pos);
 				Vector pos1 = ikparam.GetRay4D().pos - ikparam.GetRay4D().dir*ikparam.GetRay4D().dir.dot(ikparam.GetRay4D().pos);
 				return (pos0 - pos1).lengthsqr3();
 			}
-			case IKP_TranslationDirection5D: {
+			case IKP_TranslationDirection5D:
+			{
 				return (GetTranslationDirection5D().pos - ikparam.GetTranslationDirection5D().pos).lengthsqr3();
 			}
-			case IKP_TranslationXY2D: {
+			case IKP_TranslationXY2D:
+			{
 				return (GetTranslationXY2D() - ikparam.GetTranslationXY2D()).lengthsqr2();
 			}
-			case IKP_TranslationXYOrientation3D: {
+			case IKP_TranslationXYOrientation3D: 
+			{
 				Vector v0 = GetTranslationXYOrientation3D();
 				Vector v1 = ikparam.GetTranslationXYOrientation3D();
 				return (v0 - v1).lengthsqr2();
 			}
-			case IKP_TranslationLocalGlobal6D: {
+			case IKP_TranslationLocalGlobal6D: 
+			{
 				std::pair<Vector, Vector> p0 = GetTranslationLocalGlobal6D(), p1 = ikparam.GetTranslationLocalGlobal6D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationXAxisAngle4D: {
+			case IKP_TranslationXAxisAngle4D: 
+			{
 				std::pair<Vector, dReal> p0 = GetTranslationXAxisAngle4D(), p1 = ikparam.GetTranslationXAxisAngle4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationYAxisAngle4D: {
+			case IKP_TranslationYAxisAngle4D: 
+			{
 				std::pair<Vector, dReal> p0 = GetTranslationYAxisAngle4D(), p1 = ikparam.GetTranslationYAxisAngle4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationZAxisAngle4D: {
+			case IKP_TranslationZAxisAngle4D:
+			{
 				std::pair<Vector, dReal> p0 = GetTranslationZAxisAngle4D(), p1 = ikparam.GetTranslationZAxisAngle4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationXAxisAngleZNorm4D: {
+			case IKP_TranslationXAxisAngleZNorm4D: 
+			{
 				std::pair<Vector, dReal> p0 = GetTranslationXAxisAngleZNorm4D(), p1 = ikparam.GetTranslationXAxisAngleZNorm4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationYAxisAngleXNorm4D: {
+			case IKP_TranslationYAxisAngleXNorm4D: 
+			{
 				std::pair<Vector, dReal> p0 = GetTranslationYAxisAngleXNorm4D(), p1 = ikparam.GetTranslationYAxisAngleXNorm4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationZAxisAngleYNorm4D: {
+			case IKP_TranslationZAxisAngleYNorm4D: 
+			{
 				std::pair<Vector, dReal> p0 = GetTranslationZAxisAngleYNorm4D(), p1 = ikparam.GetTranslationZAxisAngleYNorm4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
 			default:
-				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", _type, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", type_, ORE_InvalidArguments);
 			}
 			return 1e30;
 		}
@@ -556,43 +569,52 @@ namespace OpenRAVE
 		/// \brief Computes the rotational distance squared between two IK parmaeterizations.
 		inline dReal ComputeRotDistanceSqr(const IkParameterization& ikparam) const
 		{
-			BOOST_ASSERT(_type == ikparam.GetType());
-			switch (_type) {
-			case IKP_Transform6D: {
+			BOOST_ASSERT(type_ == ikparam.GetType());
+			switch (type_) 
+			{
+			case IKP_Transform6D: 
+			{
 				Transform t0 = GetTransform6D(), t1 = ikparam.GetTransform6D();
 				dReal fcos = RaveFabs(t0.rot.dot(t1.rot));
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Rotation3D: {
+			case IKP_Rotation3D: 
+			{
 				dReal fcos = RaveFabs(GetRotation3D().dot(ikparam.GetRotation3D()));
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Direction3D: {
+			case IKP_Direction3D: 
+			{
 				dReal fcos = GetDirection3D().dot(ikparam.GetDirection3D());
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Ray4D: {
+			case IKP_Ray4D: 
+			{
 				dReal fcos = GetRay4D().dir.dot(ikparam.GetRay4D().dir);
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Lookat3D: {
+			case IKP_Lookat3D: 
+			{
 				Vector v = GetLookat3D() - ikparam.GetLookat3D();
 				dReal s = v.dot3(ikparam.GetLookat3DDirection());
-				if (s >= -1) {     // ikparam's lookat is always 1 beyond the origin, this is just the convention for testing...
+				if (s >= -1) 
+				{     // ikparam's lookat is always 1 beyond the origin, this is just the convention for testing...
 					v -= s * ikparam.GetLookat3DDirection();
 				}
 				return v.lengthsqr3();
 			}
-			case IKP_TranslationDirection5D: {
+			case IKP_TranslationDirection5D: 
+			{
 				dReal fcos = GetTranslationDirection5D().dir.dot(ikparam.GetTranslationDirection5D().dir);
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_TranslationXYOrientation3D: {
+			case IKP_TranslationXYOrientation3D:
+			{
 				Vector v0 = GetTranslationXYOrientation3D();
 				Vector v1 = ikparam.GetTranslationXYOrientation3D();
 				dReal anglediff = v0.z - v1.z;
@@ -649,7 +671,7 @@ namespace OpenRAVE
 				return anglediff * anglediff;
 			}
 			default:
-				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", _type, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", type_, ORE_InvalidArguments);
 			}
 			return 1e30;
 		}
@@ -661,69 +683,69 @@ namespace OpenRAVE
 		/// Don't normalize quaternions since it could hold velocity data.
 		inline void GetValues(std::vector<dReal>::iterator itvalues) const
 		{
-			switch (_type & ~IKP_VelocityDataBit) {
+			switch (type_ & ~IKP_VelocityDataBit) {
 			case IKP_Transform6D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.rot.y;
-				*itvalues++ = _transform.rot.z;
-				*itvalues++ = _transform.rot.w;
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.rot.y;
+				*itvalues++ = transform_.rot.z;
+				*itvalues++ = transform_.rot.w;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_Rotation3D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.rot.y;
-				*itvalues++ = _transform.rot.z;
-				*itvalues++ = _transform.rot.w;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.rot.y;
+				*itvalues++ = transform_.rot.z;
+				*itvalues++ = transform_.rot.w;
 				break;
 			case IKP_Translation3D:
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_Direction3D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.rot.y;
-				*itvalues++ = _transform.rot.z;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.rot.y;
+				*itvalues++ = transform_.rot.z;
 				break;
 			case IKP_Ray4D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.rot.y;
-				*itvalues++ = _transform.rot.z;
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.rot.y;
+				*itvalues++ = transform_.rot.z;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_Lookat3D:
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_TranslationDirection5D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.rot.y;
-				*itvalues++ = _transform.rot.z;
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.rot.y;
+				*itvalues++ = transform_.rot.z;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_TranslationXY2D:
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
 				break;
 			case IKP_TranslationXYOrientation3D:
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_TranslationLocalGlobal6D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.rot.y;
-				*itvalues++ = _transform.rot.z;
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.rot.y;
+				*itvalues++ = transform_.rot.z;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			case IKP_TranslationXAxisAngle4D:
 			case IKP_TranslationYAxisAngle4D:
@@ -731,13 +753,13 @@ namespace OpenRAVE
 			case IKP_TranslationXAxisAngleZNorm4D:
 			case IKP_TranslationYAxisAngleXNorm4D:
 			case IKP_TranslationZAxisAngleYNorm4D:
-				*itvalues++ = _transform.rot.x;
-				*itvalues++ = _transform.trans.x;
-				*itvalues++ = _transform.trans.y;
-				*itvalues++ = _transform.trans.z;
+				*itvalues++ = transform_.rot.x;
+				*itvalues++ = transform_.trans.x;
+				*itvalues++ = transform_.trans.y;
+				*itvalues++ = transform_.trans.z;
 				break;
 			default:
-				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", _type, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", type_, ORE_InvalidArguments);
 			}
 		}
 
@@ -746,70 +768,70 @@ namespace OpenRAVE
 		/// Function does not handle custom data. Don't normalize quaternions since it could hold velocity data.
 		inline void SetValues(std::vector<dReal>::const_iterator itvalues, IkParameterizationType iktype)
 		{
-			_type = iktype;
-			switch (_type & ~IKP_VelocityDataBit) {
+			type_ = iktype;
+			switch (type_ & ~IKP_VelocityDataBit) {
 			case IKP_Transform6D:
-				_transform.rot.x = *itvalues++;
-				_transform.rot.y = *itvalues++;
-				_transform.rot.z = *itvalues++;
-				_transform.rot.w = *itvalues++;
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.rot.y = *itvalues++;
+				transform_.rot.z = *itvalues++;
+				transform_.rot.w = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_Rotation3D:
-				_transform.rot.x = *itvalues++;
-				_transform.rot.y = *itvalues++;
-				_transform.rot.z = *itvalues++;
-				_transform.rot.w = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.rot.y = *itvalues++;
+				transform_.rot.z = *itvalues++;
+				transform_.rot.w = *itvalues++;
 				break;
 			case IKP_Translation3D:
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_Direction3D:
-				_transform.rot.x = *itvalues++;
-				_transform.rot.y = *itvalues++;
-				_transform.rot.z = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.rot.y = *itvalues++;
+				transform_.rot.z = *itvalues++;
 				break;
 			case IKP_Ray4D:
-				_transform.rot.x = *itvalues++;
-				_transform.rot.y = *itvalues++;
-				_transform.rot.z = *itvalues++;
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.rot.y = *itvalues++;
+				transform_.rot.z = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_Lookat3D:
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_TranslationDirection5D:
-				_transform.rot.x = *itvalues++;
-				_transform.rot.y = *itvalues++;
-				_transform.rot.z = *itvalues++;
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.rot.y = *itvalues++;
+				transform_.rot.z = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_TranslationXY2D:
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
 				break;
 			case IKP_TranslationXYOrientation3D:
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_TranslationLocalGlobal6D:
-				_transform.rot.x = *itvalues++;
-				_transform.rot.y = *itvalues++;
-				_transform.rot.z = *itvalues++;
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.rot.y = *itvalues++;
+				transform_.rot.z = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			case IKP_TranslationXAxisAngle4D:
 			case IKP_TranslationYAxisAngle4D:
@@ -817,13 +839,13 @@ namespace OpenRAVE
 			case IKP_TranslationXAxisAngleZNorm4D:
 			case IKP_TranslationYAxisAngleXNorm4D:
 			case IKP_TranslationZAxisAngleYNorm4D:
-				_transform.rot.x = *itvalues++;
-				_transform.trans.x = *itvalues++;
-				_transform.trans.y = *itvalues++;
-				_transform.trans.z = *itvalues++;
+				transform_.rot.x = *itvalues++;
+				transform_.trans.x = *itvalues++;
+				transform_.trans.y = *itvalues++;
+				transform_.trans.z = *itvalues++;
 				break;
 			default:
-				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", _type, ORE_InvalidArguments);
+				throw OPENRAVE_EXCEPTION_FORMAT("does not support parameterization 0x%x", type_, ORE_InvalidArguments);
 			}
 		}
 
@@ -837,7 +859,7 @@ namespace OpenRAVE
 			The custom data is serialized along with the rest of the parameters and can also be part of a configuration specification under the "ikparam_values" anotation.
 			The custom data name can have meta-tags for the type of transformation the data undergos when \ref MultiplyTransform is called. For example, if the user wants to have an extra 3 values that represent "direction", then the direction has to be rotated along with all the data or coordinate systems can get lost. The anotations are specified by putting:
 
-			\b _transform=%s_
+			\b transform_=%s_
 
 			somewhere in the string. The %s can be: \b direction, \b point, \b quat, \b ikparam
 
@@ -851,7 +873,7 @@ namespace OpenRAVE
 		{
 			OPENRAVE_ASSERT_OP_FORMAT0(name.size(), > , 0, "name is empty", ORE_InvalidArguments);
 			OPENRAVE_ASSERT_OP_FORMAT0(std::count_if(name.begin(), name.end(), _IsValidCharInName), == , (int)name.size(), "name has invalid characters", ORE_InvalidArguments);
-			_mapCustomData[name] = values;
+			custom_data_map_[name] = values;
 		}
 
 		/// \brief sets named custom data in the ik parameterization (\see SetCustomValues)
@@ -859,15 +881,15 @@ namespace OpenRAVE
 		{
 			OPENRAVE_ASSERT_OP_FORMAT0(name.size(), > , 0, "name is empty", ORE_InvalidArguments);
 			OPENRAVE_ASSERT_OP_FORMAT0(std::count_if(name.begin(), name.end(), _IsValidCharInName), == , (int)name.size(), "name has invalid characters", ORE_InvalidArguments);
-			_mapCustomData[name].resize(1);
-			_mapCustomData[name][0] = value;
+			custom_data_map_[name].resize(1);
+			custom_data_map_[name][0] = value;
 		}
 
 		/// \brief gets custom data if it exists, returns false if it doesn't
 		inline bool GetCustomValues(const std::string& name, std::vector<dReal>& values) const
 		{
-			std::map<std::string, std::vector<dReal> >::const_iterator it = _mapCustomData.find(name);
-			if (it == _mapCustomData.end()) 
+			std::map<std::string, std::vector<dReal> >::const_iterator it = custom_data_map_.find(name);
+			if (it == custom_data_map_.end()) 
 			{
 				return false;
 			}
@@ -875,11 +897,11 @@ namespace OpenRAVE
 			return true;
 		}
 
-		/// \brief returns the first element of a custom value. If _mapCustomData does not have 'name' and is not > 0, then will return defaultValue
+		/// \brief returns the first element of a custom value. If custom_data_map_ does not have 'name' and is not > 0, then will return defaultValue
 		inline dReal GetCustomValue(const std::string& name, dReal defaultValue) const
 		{
-			std::map<std::string, std::vector<dReal> >::const_iterator it = _mapCustomData.find(name);
-			if (it != _mapCustomData.end() && it->second.size() > 0) 
+			std::map<std::string, std::vector<dReal> >::const_iterator it = custom_data_map_.find(name);
+			if (it != custom_data_map_.end() && it->second.size() > 0) 
 			{
 				return it->second[0];
 			}
@@ -889,7 +911,7 @@ namespace OpenRAVE
 		/// \brief returns a const reference of the custom data key/value pairs
 		inline const std::map<std::string, std::vector<dReal> >& GetCustomDataMap() const
 		{
-			return _mapCustomData;
+			return custom_data_map_;
 		}
 
 		/// \brief clears custom data
@@ -900,12 +922,12 @@ namespace OpenRAVE
 		{
 			if (name.size() > 0) 
 			{
-				return _mapCustomData.erase(name) > 0;
+				return custom_data_map_.erase(name) > 0;
 			}
 			else 
 			{
-				size_t num = _mapCustomData.size();
-				_mapCustomData.clear();
+				size_t num = custom_data_map_.size();
+				custom_data_map_.clear();
 				return num;
 			}
 		}
@@ -923,50 +945,50 @@ namespace OpenRAVE
 		inline IkParameterization& MultiplyTransform(const Transform& t) {
 			switch (GetType()) {
 			case IKP_Transform6D:
-				_transform = t * _transform;
+				transform_ = t * transform_;
 				break;
 			case IKP_Transform6DVelocity:
-				_transform.trans = t.rotate(_transform.trans);
-				_transform.rot = quatMultiply(t.rot, _transform.rot);
+				transform_.trans = t.rotate(transform_.trans);
+				transform_.rot = quatMultiply(t.rot, transform_.rot);
 				break;
 			case IKP_Rotation3D:
 			case IKP_Rotation3DVelocity:
-				_transform.rot = quatMultiply(t.rot, _transform.rot);
+				transform_.rot = quatMultiply(t.rot, transform_.rot);
 				break;
 			case IKP_Translation3D:
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				break;
 			case IKP_Translation3DVelocity:
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				break;
 			case IKP_Direction3D:
 			case IKP_Direction3DVelocity:
-				_transform.rot = t.rotate(_transform.rot);
+				transform_.rot = t.rotate(transform_.rot);
 				break;
 			case IKP_Ray4D:
-				_transform.trans = t * _transform.trans;
-				_transform.rot = t.rotate(_transform.rot);
+				transform_.trans = t * transform_.trans;
+				transform_.rot = t.rotate(transform_.rot);
 				break;
 			case IKP_Ray4DVelocity:
-				_transform.trans = t.rotate(_transform.trans);
-				_transform.rot = t.rotate(_transform.rot);
+				transform_.trans = t.rotate(transform_.trans);
+				transform_.rot = t.rotate(transform_.rot);
 				break;
 			case IKP_Lookat3D:
 				SetLookat3D(RAY(t*GetLookat3D(), t.rotate(GetLookat3DDirection())));
 				break;
 			case IKP_TranslationDirection5D:
-				_transform.trans = t * _transform.trans;
-				_transform.rot = t.rotate(_transform.rot);
+				transform_.trans = t * transform_.trans;
+				transform_.rot = t.rotate(transform_.rot);
 				break;
 			case IKP_TranslationDirection5DVelocity:
-				_transform.trans = t.rotate(_transform.trans);
-				_transform.rot = t.rotate(_transform.rot);
+				transform_.trans = t.rotate(transform_.trans);
+				transform_.rot = t.rotate(transform_.rot);
 				break;
 			case IKP_TranslationXY2D:
 				SetTranslationXY2D(t*GetTranslationXY2D());
 				break;
 			case IKP_TranslationXY2DVelocity:
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				break;
 			case IKP_TranslationXYOrientation3D: {
 				Vector v = GetTranslationXYOrientation3D();
@@ -979,87 +1001,87 @@ namespace OpenRAVE
 			case IKP_TranslationXYOrientation3DVelocity: {
 				Vector v = GetTranslationXYOrientation3D();
 				Vector voldtrans(v.x, v.y, 0);
-				_transform.trans = t.rotate(voldtrans);
-				_transform.trans.z = quatRotate(t.rot, Vector(0, 0, v.z)).z;
+				transform_.trans = t.rotate(voldtrans);
+				transform_.trans.z = quatRotate(t.rot, Vector(0, 0, v.z)).z;
 				break;
 			}
 			case IKP_TranslationLocalGlobal6D:
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				break;
 			case IKP_TranslationLocalGlobal6DVelocity:
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				break;
 			case IKP_TranslationXAxisAngle4D: {
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				// do not support rotations
 				break;
 			}
 			case IKP_TranslationXAxisAngle4DVelocity: {
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				// do not support rotations
 				break;
 			}
 			case IKP_TranslationYAxisAngle4D: {
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				// do not support rotations
 				break;
 			}
 			case IKP_TranslationYAxisAngle4DVelocity: {
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				// do not support rotations
 				break;
 			}
 			case IKP_TranslationZAxisAngle4D: {
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				// do not support rotations
 				break;
 			}
 			case IKP_TranslationZAxisAngle4DVelocity: {
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				// do not support rotations
 				break;
 			}
 
 			case IKP_TranslationXAxisAngleZNorm4D: {
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				// only support rotation along z-axis
-				_transform.rot.x -= normalizeAxisRotation(Vector(0, 0, 1), t.rot).first;
+				transform_.rot.x -= normalizeAxisRotation(Vector(0, 0, 1), t.rot).first;
 				break;
 			}
 			case IKP_TranslationXAxisAngleZNorm4DVelocity: {
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				// only support rotation along z-axis
-				_transform.rot.x = quatRotate(t.rot, Vector(0, 0, _transform.rot.x)).z;
+				transform_.rot.x = quatRotate(t.rot, Vector(0, 0, transform_.rot.x)).z;
 				break;
 			}
 			case IKP_TranslationYAxisAngleXNorm4D: {
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				// only support rotation along x-axis
-				_transform.rot.x -= normalizeAxisRotation(Vector(1, 0, 0), t.rot).first;
+				transform_.rot.x -= normalizeAxisRotation(Vector(1, 0, 0), t.rot).first;
 				break;
 			}
 			case IKP_TranslationYAxisAngleXNorm4DVelocity: {
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				// only support rotation along x-axis
-				_transform.rot.x = quatRotate(t.rot, Vector(_transform.rot.x, 0, 0)).x;
+				transform_.rot.x = quatRotate(t.rot, Vector(transform_.rot.x, 0, 0)).x;
 				break;
 			}
 			case IKP_TranslationZAxisAngleYNorm4D: {
-				_transform.trans = t * _transform.trans;
+				transform_.trans = t * transform_.trans;
 				// only support rotation along y-axis
-				_transform.rot.x -= normalizeAxisRotation(Vector(0, 1, 0), t.rot).first;
+				transform_.rot.x -= normalizeAxisRotation(Vector(0, 1, 0), t.rot).first;
 				break;
 			}
 			case IKP_TranslationZAxisAngleYNorm4DVelocity: {
-				_transform.trans = t.rotate(_transform.trans);
+				transform_.trans = t.rotate(transform_.trans);
 				// only support rotation along y-axis
-				_transform.rot.x = quatRotate(t.rot, Vector(0, _transform.rot.x, 0)).y;
+				transform_.rot.x = quatRotate(t.rot, Vector(0, transform_.rot.x, 0)).y;
 				break;
 			}
 			default:
 				throw OpenRAVEException(str(boost::format("parameterization 0x%x does not support left-transform") % GetType()));
 			}
-			for (std::map<std::string, std::vector<dReal> >::iterator it = _mapCustomData.begin(); it != _mapCustomData.end(); ++it) {
+			for (std::map<std::string, std::vector<dReal> >::iterator it = custom_data_map_.begin(); it != custom_data_map_.end(); ++it) {
 				_MultiplyTransform(t, it->first, it->second);
 			}
 			return *this;
@@ -1079,53 +1101,53 @@ namespace OpenRAVE
 		inline IkParameterization& MultiplyTransformRight(const Transform& t) {
 			switch (GetType()) {
 			case IKP_Transform6D:
-				_transform *= t;
+				transform_ *= t;
 				break;
 				//        case IKP_Transform6DVelocity:
-				//            _transform.trans = t.rotate(_transform.trans);
-				//            _transform.rot = quatMultiply(t.rot,_transform.rot);
+				//            transform_.trans = t.rotate(transform_.trans);
+				//            transform_.rot = quatMultiply(t.rot,transform_.rot);
 				//            break;
 			case IKP_Rotation3D:
 				//        case IKP_Rotation3DVelocity:
-				_transform.rot = quatMultiply(_transform.rot, t.rot);
+				transform_.rot = quatMultiply(transform_.rot, t.rot);
 				break;
 			case IKP_Translation3D:
-				_transform.trans = _transform.trans + t.trans;
+				transform_.trans = transform_.trans + t.trans;
 				break;
 				//        case IKP_Translation3DVelocity:
-				//            _transform.trans = t.rotate(_transform.trans);
+				//            transform_.trans = t.rotate(transform_.trans);
 				//            break;
 			case IKP_Direction3D:
 				//        case IKP_Direction3DVelocity:
-				_transform.rot = quatRotate(quatMultiply(quatRotateDirection(Vector(0, 0, 1), _transform.rot), t.rot), Vector(0, 0, 1));
+				transform_.rot = quatRotate(quatMultiply(quatRotateDirection(Vector(0, 0, 1), transform_.rot), t.rot), Vector(0, 0, 1));
 				break;
 				//        case IKP_Ray4D:
-				//            _transform.trans = t * _transform.trans;
-				//            _transform.rot = t.rotate(_transform.rot);
+				//            transform_.trans = t * transform_.trans;
+				//            transform_.rot = t.rotate(transform_.rot);
 				//            break;
 				//        case IKP_Ray4DVelocity:
-				//            _transform.trans = t.rotate(_transform.trans);
-				//            _transform.rot = t.rotate(_transform.rot);
+				//            transform_.trans = t.rotate(transform_.trans);
+				//            transform_.rot = t.rotate(transform_.rot);
 				//            break;
 			case IKP_Lookat3D:
 				SetLookat3D(GetLookat3D() + t.trans);
 				break;
 			case IKP_TranslationDirection5D: {
-				Vector qorig = quatRotateDirection(Vector(0, 0, 1), _transform.rot);
+				Vector qorig = quatRotateDirection(Vector(0, 0, 1), transform_.rot);
 				Vector q = quatMultiply(qorig, t.rot);
-				_transform.trans += quatRotate(qorig, t.trans);
-				_transform.rot = quatRotate(q, Vector(0, 0, 1));
+				transform_.trans += quatRotate(qorig, t.trans);
+				transform_.rot = quatRotate(q, Vector(0, 0, 1));
 				break;
 			}
 											 //        case IKP_TranslationDirection5DVelocity:
-											 //            _transform.trans = t.rotate(_transform.trans);
-											 //            _transform.rot = t.rotate(_transform.rot);
+											 //            transform_.trans = t.rotate(transform_.trans);
+											 //            transform_.rot = t.rotate(transform_.rot);
 											 //            break;
 			case IKP_TranslationXY2D:
 				SetTranslationXY2D(GetTranslationXY2D() + t.trans);
 				break;
 				//        case IKP_TranslationXY2DVelocity:
-				//            _transform.trans = t.rotate(_transform.trans);
+				//            transform_.trans = t.rotate(transform_.trans);
 				//            break;
 			case IKP_TranslationXYOrientation3D: {
 				Vector v = GetTranslationXYOrientation3D();
@@ -1139,89 +1161,89 @@ namespace OpenRAVE
 												 //        case IKP_TranslationXYOrientation3DVelocity: {
 												 //            Vector v = GetTranslationXYOrientation3D();
 												 //            Vector voldtrans(v.x,v.y,0);
-												 //            _transform.trans = t.rotate(voldtrans);
-												 //            _transform.trans.z = quatRotate(t.rot,Vector(0,0,v.z)).z;
+												 //            transform_.trans = t.rotate(voldtrans);
+												 //            transform_.trans.z = quatRotate(t.rot,Vector(0,0,v.z)).z;
 												 //            break;
 												 //        }
 			case IKP_TranslationLocalGlobal6D:
-				_transform.trans = _transform.trans + t.trans;
+				transform_.trans = transform_.trans + t.trans;
 				break;
 				//        case IKP_TranslationLocalGlobal6DVelocity:
-				//            _transform.trans = t.rotate(_transform.trans);
+				//            transform_.trans = t.rotate(transform_.trans);
 				//            break;
 				//        case IKP_TranslationXAxisAngle4D: {
-				//            _transform.trans = t*_transform.trans;
+				//            transform_.trans = t*transform_.trans;
 				//            // do not support rotations
 				//            break;
 				//        }
 				//        case IKP_TranslationXAxisAngle4DVelocity: {
-				//            _transform.trans = t.rotate(_transform.trans);
+				//            transform_.trans = t.rotate(transform_.trans);
 				//            // do not support rotations
 				//            break;
 				//        }
 				//        case IKP_TranslationYAxisAngle4D: {
-				//            _transform.trans = t*_transform.trans;
+				//            transform_.trans = t*transform_.trans;
 				//            // do not support rotations
 				//            break;
 				//        }
 				//        case IKP_TranslationYAxisAngle4DVelocity: {
-				//            _transform.trans = t.rotate(_transform.trans);
+				//            transform_.trans = t.rotate(transform_.trans);
 				//            // do not support rotations
 				//            break;
 				//        }
 				//        case IKP_TranslationZAxisAngle4D: {
-				//            _transform.trans = t*_transform.trans;
+				//            transform_.trans = t*transform_.trans;
 				//            // do not support rotations
 				//            break;
 				//        }
 				//        case IKP_TranslationZAxisAngle4DVelocity: {
-				//            _transform.trans = t.rotate(_transform.trans);
+				//            transform_.trans = t.rotate(transform_.trans);
 				//            // do not support rotations
 				//            break;
 				//        }
 			case IKP_TranslationXAxisAngleZNorm4D: {
-				Vector q = quatFromAxisAngle(Vector(0, 0, 1), _transform.rot.x);
-				_transform.trans += quatRotate(q, t.trans);
+				Vector q = quatFromAxisAngle(Vector(0, 0, 1), transform_.rot.x);
+				transform_.trans += quatRotate(q, t.trans);
 				// only support rotation along z-axis
-				_transform.rot.x -= normalizeAxisRotation(Vector(0, 0, 1), t.rot).first;
+				transform_.rot.x -= normalizeAxisRotation(Vector(0, 0, 1), t.rot).first;
 				break;
 			}
 												   //        case IKP_TranslationXAxisAngleZNorm4DVelocity: {
-												   //            _transform.trans = t.rotate(_transform.trans);
+												   //            transform_.trans = t.rotate(transform_.trans);
 												   //            // only support rotation along z-axis
-												   //            _transform.rot.x = quatRotate(t.rot,Vector(0,0,_transform.rot.x)).z;
+												   //            transform_.rot.x = quatRotate(t.rot,Vector(0,0,transform_.rot.x)).z;
 												   //            break;
 												   //        }
 			case IKP_TranslationYAxisAngleXNorm4D: {
-				Vector q = quatFromAxisAngle(Vector(1, 0, 0), _transform.rot.x);
-				_transform.trans += quatRotate(q, t.trans);
+				Vector q = quatFromAxisAngle(Vector(1, 0, 0), transform_.rot.x);
+				transform_.trans += quatRotate(q, t.trans);
 				// only support rotation along x-axis
-				_transform.rot.x -= normalizeAxisRotation(Vector(1, 0, 0), t.rot).first;
+				transform_.rot.x -= normalizeAxisRotation(Vector(1, 0, 0), t.rot).first;
 				break;
 			}
 												   //        case IKP_TranslationYAxisAngleXNorm4DVelocity: {
-												   //            _transform.trans = t.rotate(_transform.trans);
+												   //            transform_.trans = t.rotate(transform_.trans);
 												   //            // only support rotation along x-axis
-												   //            _transform.rot.x = quatRotate(t.rot,Vector(_transform.rot.x,0,0)).x;
+												   //            transform_.rot.x = quatRotate(t.rot,Vector(transform_.rot.x,0,0)).x;
 												   //            break;
 												   //        }
 			case IKP_TranslationZAxisAngleYNorm4D: {
-				Vector q = quatFromAxisAngle(Vector(0, 1, 0), _transform.rot.x);
-				_transform.trans += quatRotate(q, t.trans);
+				Vector q = quatFromAxisAngle(Vector(0, 1, 0), transform_.rot.x);
+				transform_.trans += quatRotate(q, t.trans);
 				// only support rotation along y-axis
-				_transform.rot.x -= normalizeAxisRotation(Vector(0, 1, 0), t.rot).first;
+				transform_.rot.x -= normalizeAxisRotation(Vector(0, 1, 0), t.rot).first;
 				break;
 			}
 												   //        case IKP_TranslationZAxisAngleYNorm4DVelocity: {
-												   //            _transform.trans = t.rotate(_transform.trans);
+												   //            transform_.trans = t.rotate(transform_.trans);
 												   //            // only support rotation along y-axis
-												   //            _transform.rot.x = quatRotate(t.rot,Vector(0,_transform.rot.x,0)).y;
+												   //            transform_.rot.x = quatRotate(t.rot,Vector(0,transform_.rot.x,0)).y;
 												   //            break;
 												   //        }
 			default:
 				throw OpenRAVEException(str(boost::format("parameterization 0x%x does not support right-transforms") % GetType()));
 			}
-			for (std::map<std::string, std::vector<dReal> >::iterator it = _mapCustomData.begin(); it != _mapCustomData.end(); ++it) {
+			for (std::map<std::string, std::vector<dReal> >::iterator it = custom_data_map_.begin(); it != custom_data_map_.end(); ++it) {
 				_MultiplyTransformRight(t, it->first, it->second);
 			}
 			return *this;
@@ -1233,10 +1255,11 @@ namespace OpenRAVE
 			return iknew;
 		}
 
-		inline void Swap(IkParameterization& r) {
-			std::swap(_transform, r._transform);
-			std::swap(_type, r._type);
-			_mapCustomData.swap(r._mapCustomData);
+		inline void Swap(IkParameterization& r)
+		{
+			std::swap(transform_, r.transform_);
+			std::swap(type_, r.type_);
+			custom_data_map_.swap(r.custom_data_map_);
 		}
 
 		void SerializeJSON(rapidjson::Value& rIkParameterization, 
@@ -1245,9 +1268,11 @@ namespace OpenRAVE
 		void DeserializeJSON(const rapidjson::Value& rIkParameterization, dReal fUnitScale);
 
 	protected:
-		inline static bool _IsValidCharInName(char c) {
+		inline static bool _IsValidCharInName(char c) 
+		{
 			return c < 0 || c >= 33;
 		}
+
 		inline static void _MultiplyTransform(const Transform& t, const std::string& name, std::vector<dReal>& values)
 		{
 			size_t startoffset = name.find("_transform=");
@@ -1348,9 +1373,9 @@ namespace OpenRAVE
 			}
 		}
 
-		Transform _transform;
-		IkParameterizationType _type;
-		std::map<std::string, std::vector<dReal> > _mapCustomData;
+		Transform transform_;
+		IkParameterizationType type_;
+		std::map<std::string, std::vector<dReal> > custom_data_map_;
 
 		friend IkParameterization operator* (const Transform &t, const IkParameterization &ikparam);
 		friend OPENRAVE_API std::ostream& operator<<(std::ostream& O, const IkParameterization &ikparam);
@@ -1436,9 +1461,9 @@ namespace OpenRAVE
 			// internal MultiplyTransform supports more types
 			return IkParameterization(ikparam).MultiplyTransform(t);
 		}
-		local._mapCustomData = ikparam._mapCustomData;
-		for (std::map<std::string, std::vector<dReal> >::iterator it = local._mapCustomData.begin();
-			it != local._mapCustomData.end(); ++it)
+		local.custom_data_map_ = ikparam.custom_data_map_;
+		for (std::map<std::string, std::vector<dReal> >::iterator it = local.custom_data_map_.begin();
+			it != local.custom_data_map_.end(); ++it)
 		{
 			IkParameterization::_MultiplyTransform(t, it->first, it->second);
 		}
@@ -1451,12 +1476,12 @@ namespace OpenRAVE
 	// define inline functions
 	const std::string& IkParameterization::GetName() const
 	{
-		std::map<IkParameterizationType, std::string>::const_iterator it = RaveGetIkParameterizationMap().find(_type);
+		std::map<IkParameterizationType, std::string>::const_iterator it = RaveGetIkParameterizationMap().find(type_);
 		if (it != RaveGetIkParameterizationMap().end())
 		{
 			return it->second;
 		}
-		throw OpenRAVEException(str(boost::format("IkParameterization iktype 0x%x not supported") % _type));
+		throw OpenRAVEException(str(boost::format("IkParameterization iktype 0x%x not supported") % type_));
 	}
 }
 

@@ -406,8 +406,8 @@ void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot
 
 RobotBase::RobotBase(EnvironmentBasePtr penv) : KinBody(PT_Robot, penv)
 {
-    _nAffineDOFs = 0;
-    _nActiveDOF = -1;
+    affine_dofs_ = 0;
+    active_dof_ = -1;
     vActvAffineRotationAxis = Vector(0,0,1);
 
     //set limits for the affine DOFs
@@ -449,7 +449,7 @@ void RobotBase::Destroy()
     manipulators_vector_.clear();
     attached_sensors_vector_.clear();
     connected_bodies_vector_.clear();
-    _nActiveDOF = 0;
+    active_dof_ = 0;
     active_dof_indices_vector_.resize(0);
     all_dof_indices_vector_.resize(0);
     SetController(ControllerBasePtr(),std::vector<int>(),0);
@@ -728,12 +728,12 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
         active_dof_indices_vector_ = vJointIndices;
     }
 
-    if( _nAffineDOFs != nAffineDOFBitmask ) {
+    if( affine_dofs_ != nAffineDOFBitmask ) {
         bactivedofchanged = true;
-        _nAffineDOFs = nAffineDOFBitmask;
+        affine_dofs_ = nAffineDOFBitmask;
     }
 
-    _nActiveDOF = vJointIndices.size() + RaveGetAffineDOF(_nAffineDOFs);
+    active_dof_ = vJointIndices.size() + RaveGetAffineDOF(affine_dofs_);
 
     if( bactivedofchanged ) {
         // do not initialize interpolation, since it implies a motion sampling strategy
@@ -766,17 +766,17 @@ void RobotBase::SetActiveDOFs(const std::vector<int>& vJointIndices, int nAffine
 
 void RobotBase::SetActiveDOFValues(const std::vector<dReal>& values, uint32_t bCheckLimits)
 {
-    if(_nActiveDOF < 0) {
+    if(active_dof_ < 0) {
         SetDOFValues(values,bCheckLimits);
         return;
     }
     OPENRAVE_ASSERT_OP_FORMAT((int)values.size(),>=,GetActiveDOF(), "not enough values %d<%d",values.size()%GetActiveDOF(),ORE_InvalidArguments);
 
     Transform t;
-    if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
+    if( (int)active_dof_indices_vector_.size() < active_dof_ ) {
         t = GetTransform();
-        RaveGetTransformFromAffineDOFValues(t, values.begin()+active_dof_indices_vector_.size(),_nAffineDOFs,vActvAffineRotationAxis);
-        if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+        RaveGetTransformFromAffineDOFValues(t, values.begin()+active_dof_indices_vector_.size(),affine_dofs_,vActvAffineRotationAxis);
+        if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
             t.rot = quatMultiply(_vRotationQuatLimitStart, t.rot);
         }
         if( active_dof_indices_vector_.size() == 0 ) {
@@ -789,7 +789,7 @@ void RobotBase::SetActiveDOFValues(const std::vector<dReal>& values, uint32_t bC
         for(size_t i = 0; i < active_dof_indices_vector_.size(); ++i) {
             _vTempRobotJoints[active_dof_indices_vector_[i]] = values[i];
         }
-        if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
+        if( (int)active_dof_indices_vector_.size() < active_dof_ ) {
             SetDOFValues(_vTempRobotJoints, t, bCheckLimits);
         }
         else {
@@ -800,7 +800,7 @@ void RobotBase::SetActiveDOFValues(const std::vector<dReal>& values, uint32_t bC
 
 void RobotBase::GetActiveDOFValues(std::vector<dReal>& values) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFValues(values);
         return;
     }
@@ -817,43 +817,43 @@ void RobotBase::GetActiveDOFValues(std::vector<dReal>& values) const
         }
     }
 
-    if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+    if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
         return;
     }
     Transform t = GetTransform();
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         t.rot = quatMultiply(quatInverse(_vRotationQuatLimitStart), t.rot);
     }
-    RaveGetAffineDOFValuesFromTransform(itvalues,t,_nAffineDOFs,vActvAffineRotationAxis);
+    RaveGetAffineDOFValuesFromTransform(itvalues,t,affine_dofs_,vActvAffineRotationAxis);
 }
 
 void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uint32_t bCheckLimits)
 {
-    if(_nActiveDOF < 0) {
+    if(active_dof_ < 0) {
         SetDOFVelocities(velocities,true);
         return;
     }
     OPENRAVE_ASSERT_OP_FORMAT((int)velocities.size(),>=,GetActiveDOF(), "not enough values %d<%d",velocities.size()%GetActiveDOF(),ORE_InvalidArguments);
 
     Vector linearvel, angularvel;
-    if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
+    if( (int)active_dof_indices_vector_.size() < active_dof_ ) {
         // first set the affine transformation of the first link before setting joints
         const dReal* pAffineValues = &velocities[active_dof_indices_vector_.size()];
 
         links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
-        if( _nAffineDOFs & OpenRAVE::DOF_X ) linearvel.x = *pAffineValues++;
-        if( _nAffineDOFs & OpenRAVE::DOF_Y ) linearvel.y = *pAffineValues++;
-        if( _nAffineDOFs & OpenRAVE::DOF_Z ) linearvel.z = *pAffineValues++;
-        if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+        if( affine_dofs_ & OpenRAVE::DOF_X ) linearvel.x = *pAffineValues++;
+        if( affine_dofs_ & OpenRAVE::DOF_Y ) linearvel.y = *pAffineValues++;
+        if( affine_dofs_ & OpenRAVE::DOF_Z ) linearvel.z = *pAffineValues++;
+        if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
             angularvel = vActvAffineRotationAxis * *pAffineValues++;
         }
-        else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+        else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
             angularvel.x = *pAffineValues++;
             angularvel.y = *pAffineValues++;
             angularvel.z = *pAffineValues++;
         }
-        else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+        else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
             throw OPENRAVE_EXCEPTION_FORMAT0(_tr("quaternions not supported"),ORE_InvalidArguments);
         }
 
@@ -868,7 +868,7 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
         FOREACHC(it, active_dof_indices_vector_) {
             _vTempRobotJoints[*it] = *itvel++;
         }
-        if( (int)active_dof_indices_vector_.size() < _nActiveDOF ) {
+        if( (int)active_dof_indices_vector_.size() < active_dof_ ) {
             SetDOFVelocities(_vTempRobotJoints,linearvel,angularvel,bCheckLimits);
         }
         else {
@@ -879,7 +879,7 @@ void RobotBase::SetActiveDOFVelocities(const std::vector<dReal>& velocities, uin
 
 void RobotBase::GetActiveDOFVelocities(std::vector<dReal>& velocities) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFVelocities(velocities);
         return;
     }
@@ -895,25 +895,25 @@ void RobotBase::GetActiveDOFVelocities(std::vector<dReal>& velocities) const
         }
     }
 
-    if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+    if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
         return;
     }
     Vector linearvel, angularvel;
     links_vector_.at(0)->GetVelocity(linearvel, angularvel);
 
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) *pVelocities++ = linearvel.x;
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) *pVelocities++ = linearvel.y;
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) *pVelocities++ = linearvel.z;
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+    if( affine_dofs_ & OpenRAVE::DOF_X ) *pVelocities++ = linearvel.x;
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) *pVelocities++ = linearvel.y;
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) *pVelocities++ = linearvel.z;
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
 
         *pVelocities++ = vActvAffineRotationAxis.dot3(angularvel);
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
         *pVelocities++ = angularvel.x;
         *pVelocities++ = angularvel.y;
         *pVelocities++ = angularvel.z;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         throw OPENRAVE_EXCEPTION_FORMAT0(_tr("quaternions not supported"),ORE_InvalidArguments);
     }
 }
@@ -929,8 +929,8 @@ void RobotBase::GetActiveDOFLimits(std::vector<dReal>& lower, std::vector<dReal>
     dReal* pUpperLimit = &upper[0];
     vector<dReal> alllower,allupper;
 
-    if( _nAffineDOFs == 0 ) {
-        if( _nActiveDOF < 0 ) {
+    if( affine_dofs_ == 0 ) {
+        if( active_dof_ < 0 ) {
             GetDOFLimits(lower,upper);
             return;
         }
@@ -951,24 +951,24 @@ void RobotBase::GetActiveDOFLimits(std::vector<dReal>& lower, std::vector<dReal>
             }
         }
 
-        if( _nAffineDOFs & OpenRAVE::DOF_X ) {
+        if( affine_dofs_ & OpenRAVE::DOF_X ) {
             *pLowerLimit++ = _vTranslationLowerLimits.x;
             *pUpperLimit++ = _vTranslationUpperLimits.x;
         }
-        if( _nAffineDOFs & OpenRAVE::DOF_Y ) {
+        if( affine_dofs_ & OpenRAVE::DOF_Y ) {
             *pLowerLimit++ = _vTranslationLowerLimits.y;
             *pUpperLimit++ = _vTranslationUpperLimits.y;
         }
-        if( _nAffineDOFs & OpenRAVE::DOF_Z ) {
+        if( affine_dofs_ & OpenRAVE::DOF_Z ) {
             *pLowerLimit++ = _vTranslationLowerLimits.z;
             *pUpperLimit++ = _vTranslationUpperLimits.z;
         }
 
-        if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+        if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
             *pLowerLimit++ = _vRotationAxisLowerLimits.x;
             *pUpperLimit++ = _vRotationAxisUpperLimits.x;
         }
-        else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+        else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
             *pLowerLimit++ = _vRotation3DLowerLimits.x;
             *pLowerLimit++ = _vRotation3DLowerLimits.y;
             *pLowerLimit++ = _vRotation3DLowerLimits.z;
@@ -976,7 +976,7 @@ void RobotBase::GetActiveDOFLimits(std::vector<dReal>& lower, std::vector<dReal>
             *pUpperLimit++ = _vRotation3DUpperLimits.y;
             *pUpperLimit++ = _vRotation3DUpperLimits.z;
         }
-        else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+        else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
             // this is actually difficult to do correctly...
             dReal fsin = RaveSin(_fQuatLimitMaxAngle);
             *pLowerLimit++ = RaveCos(_fQuatLimitMaxAngle);
@@ -993,7 +993,7 @@ void RobotBase::GetActiveDOFLimits(std::vector<dReal>& lower, std::vector<dReal>
 
 void RobotBase::GetActiveDOFResolutions(std::vector<dReal>& resolution) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFResolutions(resolution);
         return;
     }
@@ -1009,23 +1009,23 @@ void RobotBase::GetActiveDOFResolutions(std::vector<dReal>& resolution) const
         *pResolution++ = _vTempRobotJoints[*it];
     }
     // set some default limits
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) {
+    if( affine_dofs_ & OpenRAVE::DOF_X ) {
         *pResolution++ = _vTranslationResolutions.x;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) {
         *pResolution++ = _vTranslationResolutions.y;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) { *pResolution++ = _vTranslationResolutions.z; }
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) { *pResolution++ = _vTranslationResolutions.z; }
 
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
         *pResolution++ = _vRotationAxisResolutions.x;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
         *pResolution++ = _vRotation3DResolutions.x;
         *pResolution++ = _vRotation3DResolutions.y;
         *pResolution++ = _vRotation3DResolutions.z;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         *pResolution++ = _fQuatLimitMaxAngle;
         *pResolution++ = _fQuatLimitMaxAngle;
         *pResolution++ = _fQuatLimitMaxAngle;
@@ -1035,7 +1035,7 @@ void RobotBase::GetActiveDOFResolutions(std::vector<dReal>& resolution) const
 
 void RobotBase::GetActiveDOFWeights(std::vector<dReal>& weights) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFWeights(weights);
         return;
     }
@@ -1051,17 +1051,17 @@ void RobotBase::GetActiveDOFWeights(std::vector<dReal>& weights) const
         *pweight++ = _vTempRobotJoints[*it];
     }
     // set some default limits
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) { *pweight++ = _vTranslationWeights.x; }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) { *pweight++ = _vTranslationWeights.y; }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) { *pweight++ = _vTranslationWeights.z; }
+    if( affine_dofs_ & OpenRAVE::DOF_X ) { *pweight++ = _vTranslationWeights.x; }
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) { *pweight++ = _vTranslationWeights.y; }
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) { *pweight++ = _vTranslationWeights.z; }
 
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) { *pweight++ = _vRotationAxisWeights.x; }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) { *pweight++ = _vRotationAxisWeights.x; }
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
         *pweight++ = _vRotation3DWeights.x;
         *pweight++ = _vRotation3DWeights.y;
         *pweight++ = _vRotation3DWeights.z;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         *pweight++ = _fQuatAngleWeight;
         *pweight++ = _fQuatAngleWeight;
         *pweight++ = _fQuatAngleWeight;
@@ -1072,7 +1072,7 @@ void RobotBase::GetActiveDOFWeights(std::vector<dReal>& weights) const
 void RobotBase::GetActiveDOFVelocityLimits(std::vector<dReal>& maxvel) const
 {
     std::vector<dReal> dummy;
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFVelocityLimits(dummy,maxvel);
         return;
     }
@@ -1086,17 +1086,17 @@ void RobotBase::GetActiveDOFVelocityLimits(std::vector<dReal>& maxvel) const
     FOREACHC(it, active_dof_indices_vector_) {
         *pMaxVel++ = _vTempRobotJoints[*it];
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) { *pMaxVel++ = _vTranslationMaxVels.x; }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) { *pMaxVel++ = _vTranslationMaxVels.y; }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) { *pMaxVel++ = _vTranslationMaxVels.z; }
+    if( affine_dofs_ & OpenRAVE::DOF_X ) { *pMaxVel++ = _vTranslationMaxVels.x; }
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) { *pMaxVel++ = _vTranslationMaxVels.y; }
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) { *pMaxVel++ = _vTranslationMaxVels.z; }
 
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) { *pMaxVel++ = _vRotationAxisMaxVels.x; }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) { *pMaxVel++ = _vRotationAxisMaxVels.x; }
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
         *pMaxVel++ = _vRotation3DMaxVels.x;
         *pMaxVel++ = _vRotation3DMaxVels.y;
         *pMaxVel++ = _vRotation3DMaxVels.z;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         *pMaxVel++ = _fQuatMaxAngleVelocity;
         *pMaxVel++ = _fQuatMaxAngleVelocity;
         *pMaxVel++ = _fQuatMaxAngleVelocity;
@@ -1106,7 +1106,7 @@ void RobotBase::GetActiveDOFVelocityLimits(std::vector<dReal>& maxvel) const
 
 void RobotBase::GetActiveDOFAccelerationLimits(std::vector<dReal>& maxaccel) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFAccelerationLimits(maxaccel);
         return;
     }
@@ -1120,17 +1120,17 @@ void RobotBase::GetActiveDOFAccelerationLimits(std::vector<dReal>& maxaccel) con
     FOREACHC(it, active_dof_indices_vector_) {
         *pMaxAccel++ = _vTempRobotJoints[*it];
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) { *pMaxAccel++ = _vTranslationMaxVels.x; } // wrong
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) { *pMaxAccel++ = _vTranslationMaxVels.y; } // wrong
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) { *pMaxAccel++ = _vTranslationMaxVels.z; } // wrong
+    if( affine_dofs_ & OpenRAVE::DOF_X ) { *pMaxAccel++ = _vTranslationMaxVels.x; } // wrong
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) { *pMaxAccel++ = _vTranslationMaxVels.y; } // wrong
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) { *pMaxAccel++ = _vTranslationMaxVels.z; } // wrong
 
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) { *pMaxAccel++ = _vRotationAxisMaxVels.x; } // wrong
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) { *pMaxAccel++ = _vRotationAxisMaxVels.x; } // wrong
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
         *pMaxAccel++ = _vRotation3DMaxVels.x; // wrong
         *pMaxAccel++ = _vRotation3DMaxVels.y; // wrong
         *pMaxAccel++ = _vRotation3DMaxVels.z; // wrong
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         *pMaxAccel++ = _fQuatMaxAngleVelocity; // wrong
         *pMaxAccel++ = _fQuatMaxAngleVelocity; // wrong
         *pMaxAccel++ = _fQuatMaxAngleVelocity; // wrong
@@ -1140,7 +1140,7 @@ void RobotBase::GetActiveDOFAccelerationLimits(std::vector<dReal>& maxaccel) con
 
 void RobotBase::GetActiveDOFJerkLimits(std::vector<dReal>& maxjerk) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFJerkLimits(maxjerk);
         return;
     }
@@ -1158,7 +1158,7 @@ void RobotBase::GetActiveDOFJerkLimits(std::vector<dReal>& maxjerk) const
 
 void RobotBase::GetActiveDOFHardVelocityLimits(std::vector<dReal>& maxvel) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFHardVelocityLimits(maxvel);
         return;
     }
@@ -1176,7 +1176,7 @@ void RobotBase::GetActiveDOFHardVelocityLimits(std::vector<dReal>& maxvel) const
 
 void RobotBase::GetActiveDOFHardAccelerationLimits(std::vector<dReal>& maxaccel) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFHardAccelerationLimits(maxaccel);
         return;
     }
@@ -1194,7 +1194,7 @@ void RobotBase::GetActiveDOFHardAccelerationLimits(std::vector<dReal>& maxaccel)
 
 void RobotBase::GetActiveDOFHardJerkLimits(std::vector<dReal>& maxjerk) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         GetDOFHardJerkLimits(maxjerk);
         return;
     }
@@ -1212,7 +1212,8 @@ void RobotBase::GetActiveDOFHardJerkLimits(std::vector<dReal>& maxjerk) const
 
 void RobotBase::SubtractActiveDOFValues(std::vector<dReal>& q1, const std::vector<dReal>& q2) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) 
+	{
         SubtractDOFValues(q1,q2);
         return;
     }
@@ -1220,48 +1221,59 @@ void RobotBase::SubtractActiveDOFValues(std::vector<dReal>& q1, const std::vecto
     OPENRAVE_ASSERT_OP(q1.size(),==,q2.size());
     OPENRAVE_ASSERT_OP(q1.size(), >=, active_dof_indices_vector_.size());
     size_t index = 0;
-    if (is_all_joints_1dof_and_no_circular_) {
-        for (size_t i = 0; i < active_dof_indices_vector_.size(); ++i) {
+    if (is_all_joints_1dof_and_no_circular_)
+	{
+        for (size_t i = 0; i < active_dof_indices_vector_.size(); ++i) 
+		{
             q1[i] -= q2[i];
         }
         index = active_dof_indices_vector_.size();
     }
-    else {
+    else 
+	{
         // go through all active joints
-        for(; index < active_dof_indices_vector_.size(); ++index) {
+        for(; index < active_dof_indices_vector_.size(); ++index)
+		{
             // We already did range check above
-            JointConstPtr pjoint = GetJointFromDOFIndex(active_dof_indices_vector_[index]);
-            q1[index] = pjoint->SubtractValue(q1[index],q2[index],active_dof_indices_vector_[index]-pjoint->GetDOFIndex());
+            JointConstPtr joint = GetJointFromDOFIndex(active_dof_indices_vector_[index]);
+            q1[index] = joint->SubtractValue(q1[index],q2[index],active_dof_indices_vector_[index]-joint->GetDOFIndex());
         }
     }
 
-    if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+    if( affine_dofs_ == OpenRAVE::DOF_NoTransform )
+	{
         return;
     }
 
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) {
+    if( affine_dofs_ & OpenRAVE::DOF_X )
+	{
         q1.at(index) -= q2.at(index);
         index++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Y )
+	{
         q1.at(index) -= q2.at(index);
         index++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Z )
+	{
         q1.at(index) -= q2.at(index);
         index++;
     }
 
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis )
+	{
         q1.at(index) = utils::SubtractCircularAngle(q1.at(index),q2.at(index));
         index++;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D )
+	{
         q1.at(index) -= q2.at(index); index++;
         q1.at(index) -= q2.at(index); index++;
         q1.at(index) -= q2.at(index); index++;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat )
+	{
         // would like to do q2^-1 q1, but that might break rest of planners...?
         q1.at(index) -= q2.at(index); index++;
         q1.at(index) -= q2.at(index); index++;
@@ -1272,7 +1284,7 @@ void RobotBase::SubtractActiveDOFValues(std::vector<dReal>& q1, const std::vecto
 
 const std::vector<int>& RobotBase::GetActiveDOFIndices() const
 {
-    return _nActiveDOF < 0 ? all_dof_indices_vector_ : active_dof_indices_vector_;
+    return active_dof_ < 0 ? all_dof_indices_vector_ : active_dof_indices_vector_;
 }
 
 ConfigurationSpecification RobotBase::GetActiveConfigurationSpecification(const std::string& interpolation) const
@@ -1289,7 +1301,7 @@ ConfigurationSpecification RobotBase::GetActiveConfigurationSpecification(const 
 
 void RobotBase::CalculateActiveJacobian(int index, const Vector& offset, vector<dReal>& vjacobian) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         CalculateJacobian(index, offset, vjacobian);
         return;
     }
@@ -1297,7 +1309,7 @@ void RobotBase::CalculateActiveJacobian(int index, const Vector& offset, vector<
     int dofstride = GetActiveDOF();
     vjacobian.resize(3*dofstride);
     if( active_dof_indices_vector_.size() != 0 ) {
-        if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+        if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
             ComputeJacobianTranslation(index, offset, vjacobian, active_dof_indices_vector_);
             return;
         }
@@ -1309,36 +1321,36 @@ void RobotBase::CalculateActiveJacobian(int index, const Vector& offset, vector<
         }
     }
 
-    if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+    if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
         return;
     }
     size_t ind = active_dof_indices_vector_.size();
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) {
+    if( affine_dofs_ & OpenRAVE::DOF_X ) {
         vjacobian[ind] = 1;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 1;
         vjacobian[2*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 1;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
         Vector vj = vActvAffineRotationAxis.cross(offset-GetTransform().trans);
         vjacobian[ind] = vj.x;
         vjacobian[dofstride+ind] = vj.y;
         vjacobian[2*dofstride+ind] = vj.z;
         ind++;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
         // have to take the partial derivative dT/dA of the axis*angle representation with respect to the transformation it induces
         // can introduce converting to quaternions in the middle, then by chain rule,  dT/dA = dT/tQ * dQ/dA
         // for questions on derivation email rdiankov@cs.cmu.edu
@@ -1380,7 +1392,7 @@ void RobotBase::CalculateActiveJacobian(int index, const Vector& offset, vector<
         }
         ind += 3;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
         Transform t; t.identity(); t.rot = quatInverse(_vRotationQuatLimitStart);
         t = t * GetTransform();
         // note: qw, qx, qy, qz here follow the standard quaternion convention, not the openrave one
@@ -1408,7 +1420,7 @@ void RobotBase::CalculateActiveJacobian(int index, const Vector& offset, vector<
 
 void RobotBase::CalculateActiveJacobian(int linkindex, const Vector& offset, boost::multi_array<dReal,2>& mjacobian) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         CalculateJacobian(linkindex, offset, mjacobian);
         return;
     }
@@ -1425,7 +1437,7 @@ void RobotBase::CalculateActiveJacobian(int linkindex, const Vector& offset, boo
 
 void RobotBase::CalculateActiveRotationJacobian(int index, const Vector& q, std::vector<dReal>& vjacobian) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         CalculateRotationJacobian(index, q, vjacobian);
         return;
     }
@@ -1442,33 +1454,33 @@ void RobotBase::CalculateActiveRotationJacobian(int index, const Vector& q, std:
         }
     }
 
-    if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+    if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
         return;
     }
 
     size_t ind = active_dof_indices_vector_.size();
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) {
+    if( affine_dofs_ & OpenRAVE::DOF_X ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         vjacobian[3*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         vjacobian[3*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         vjacobian[3*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
         const Vector& v = vActvAffineRotationAxis;
         vjacobian[ind] = dReal(0.5)*(-q.y*v.x - q.z*v.y - q.w*v.z);
         vjacobian[dofstride+ind] = dReal(0.5)*(q.x*v.x - q.z*v.z + q.w*v.y);
@@ -1476,19 +1488,19 @@ void RobotBase::CalculateActiveRotationJacobian(int index, const Vector& q, std:
         vjacobian[3*dofstride+ind] = dReal(0.5)*(q.x*v.z - q.y*v.y + q.z*v.x);
         ind++;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s rotation 3d not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s rotation 3d not supported, affine=%d"),GetName()%affine_dofs_,ORE_NotImplemented);
         ind += 3;
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s quaternion not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s quaternion not supported, affine=%d"),GetName()%affine_dofs_,ORE_NotImplemented);
         ind += 4;
     }
 }
 
 void RobotBase::CalculateActiveRotationJacobian(int linkindex, const Vector& q, boost::multi_array<dReal,2>& mjacobian) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         CalculateRotationJacobian(linkindex, q, mjacobian);
         return;
     }
@@ -1505,7 +1517,7 @@ void RobotBase::CalculateActiveRotationJacobian(int linkindex, const Vector& q, 
 
 void RobotBase::CalculateActiveAngularVelocityJacobian(int index, std::vector<dReal>& vjacobian) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         ComputeJacobianAxisAngle(index, vjacobian);
         return;
     }
@@ -1513,7 +1525,7 @@ void RobotBase::CalculateActiveAngularVelocityJacobian(int index, std::vector<dR
     int dofstride = GetActiveDOF();
     vjacobian.resize(3*dofstride);
     if( active_dof_indices_vector_.size() != 0 ) {
-        if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+        if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
             ComputeJacobianAxisAngle(index, vjacobian, active_dof_indices_vector_);
             return;
         }
@@ -1525,40 +1537,40 @@ void RobotBase::CalculateActiveAngularVelocityJacobian(int index, std::vector<dR
         }
     }
 
-    if( _nAffineDOFs == OpenRAVE::DOF_NoTransform ) {
+    if( affine_dofs_ == OpenRAVE::DOF_NoTransform ) {
         return;
     }
     size_t ind = active_dof_indices_vector_.size();
-    if( _nAffineDOFs & OpenRAVE::DOF_X ) {
+    if( affine_dofs_ & OpenRAVE::DOF_X ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Y ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Y ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_Z ) {
+    if( affine_dofs_ & OpenRAVE::DOF_Z ) {
         vjacobian[ind] = 0;
         vjacobian[dofstride+ind] = 0;
         vjacobian[2*dofstride+ind] = 0;
         ind++;
     }
-    if( _nAffineDOFs & OpenRAVE::DOF_RotationAxis ) {
+    if( affine_dofs_ & OpenRAVE::DOF_RotationAxis ) {
         const Vector& v = vActvAffineRotationAxis;
         vjacobian[ind] = v.x;
         vjacobian[dofstride+ind] = v.y;
         vjacobian[2*dofstride+ind] = v.z;
 
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_Rotation3D ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s rotation 3d not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+    else if( affine_dofs_ & OpenRAVE::DOF_Rotation3D ) {
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s rotation 3d not supported, affine=%d"),GetName()%affine_dofs_,ORE_NotImplemented);
     }
-    else if( _nAffineDOFs & OpenRAVE::DOF_RotationQuat ) {
-        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s quaternion not supported, affine=%d"),GetName()%_nAffineDOFs,ORE_NotImplemented);
+    else if( affine_dofs_ & OpenRAVE::DOF_RotationQuat ) {
+        throw OPENRAVE_EXCEPTION_FORMAT(_tr("robot %s quaternion not supported, affine=%d"),GetName()%affine_dofs_,ORE_NotImplemented);
 
         // most likely wrong
         Transform t; t.rot = quatInverse(_vRotationQuatLimitStart);
@@ -1582,7 +1594,7 @@ void RobotBase::CalculateActiveAngularVelocityJacobian(int index, std::vector<dR
 
 void RobotBase::CalculateActiveAngularVelocityJacobian(int linkindex, boost::multi_array<dReal,2>& mjacobian) const
 {
-    if( _nActiveDOF < 0 ) {
+    if( active_dof_ < 0 ) {
         CalculateAngularVelocityJacobian(linkindex, mjacobian);
         return;
     }
@@ -1864,7 +1876,7 @@ void RobotBase::_ComputeInternalInformation()
         ConfigurationSpecification::Group group;
         stringstream ss;
         ss << "joint_values " << GetName();
-        if( _nActiveDOF >= 0 ) {
+        if( active_dof_ >= 0 ) {
             // use active_dof_indices_vector_
             FOREACHC(it,active_dof_indices_vector_) {
                 ss << " " << *it;
@@ -2040,8 +2052,8 @@ void RobotBase::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     active_spec_ = r->active_spec_;
     all_dof_indices_vector_ = r->all_dof_indices_vector_;
     vActvAffineRotationAxis = r->vActvAffineRotationAxis;
-    _nActiveDOF = r->_nActiveDOF;
-    _nAffineDOFs = r->_nAffineDOFs;
+    active_dof_ = r->active_dof_;
+    affine_dofs_ = r->affine_dofs_;
 
     _vTranslationLowerLimits = r->_vTranslationLowerLimits;
     _vTranslationUpperLimits = r->_vTranslationUpperLimits;

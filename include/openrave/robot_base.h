@@ -848,11 +848,11 @@ public:
     virtual void SetActiveDOFs(const std::vector<int>& dofindices, int affine, const Vector& rotationaxis);
     virtual int GetActiveDOF() const
     {
-        return _nActiveDOF >= 0 ? _nActiveDOF : GetDOF();
+        return active_dof_ >= 0 ? active_dof_ : GetDOF();
     }
     virtual int GetAffineDOF() const
     {
-        return _nAffineDOFs;
+        return affine_dofs_;
     }
 
     /// \deprecated (11/10/07)
@@ -1190,8 +1190,8 @@ protected:
 
     std::vector<int> active_dof_indices_vector_, all_dof_indices_vector_;
     Vector vActvAffineRotationAxis;
-    int _nActiveDOF; //!< Active degrees of freedom; if -1, use robot dofs
-    int _nAffineDOFs; //!< dofs describe what affine transformations are allowed
+    int active_dof_; //!< Active degrees of freedom; if -1, use robot dofs
+    int affine_dofs_; //!< dofs describe what affine transformations are allowed
 
     Vector _vTranslationLowerLimits, _vTranslationUpperLimits, _vTranslationMaxVels, _vTranslationResolutions, _vTranslationWeights;
     /// the xyz components are used if the rotation axis is solely about X,Y,or Z; otherwise the W component is used.

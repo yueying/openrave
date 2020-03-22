@@ -69,13 +69,13 @@ namespace OpenRAVE
 
 	std::ostream& operator<<(std::ostream& O, const IkParameterization &ikparam)
 	{
-		int type = ikparam._type;
+		int type = ikparam.type_;
 		BOOST_ASSERT(!(type & IKP_CustomDataBit));
-		if (ikparam._mapCustomData.size() > 0) {
+		if (ikparam.custom_data_map_.size() > 0) {
 			type |= IKP_CustomDataBit;
 		}
 		O << type << " ";
-		switch (ikparam._type & ~IKP_VelocityDataBit) {
+		switch (ikparam.type_ & ~IKP_VelocityDataBit) {
 		case IKP_Transform6D:
 			O << ikparam.GetTransform6D();
 			break;
@@ -155,9 +155,9 @@ namespace OpenRAVE
 		default:
 			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
 		}
-		if (ikparam._mapCustomData.size() > 0) {
-			O << ikparam._mapCustomData.size() << " ";
-			FOREACHC(it, ikparam._mapCustomData) {
+		if (ikparam.custom_data_map_.size() > 0) {
+			O << ikparam.custom_data_map_.size() << " ";
+			FOREACHC(it, ikparam.custom_data_map_) {
 				O << it->first << " " << it->second.size() << " ";
 				FOREACHC(itvalue, it->second) {
 					O << *itvalue << " ";
@@ -171,19 +171,19 @@ namespace OpenRAVE
 	{
 		int type = IKP_None;
 		I >> type;
-		ikparam._type = static_cast<IkParameterizationType>(type&~IKP_CustomDataBit);
-		switch (ikparam._type) {
+		ikparam.type_ = static_cast<IkParameterizationType>(type&~IKP_CustomDataBit);
+		switch (ikparam.type_) {
 		case IKP_Transform6D: {
 			Transform t; I >> t;
 			ikparam.SetTransform6D(t);
 			break;
 		}
 		case IKP_Transform6DVelocity:
-			I >> ikparam._transform;
+			I >> ikparam.transform_;
 			break;
 		case IKP_Rotation3D: { Vector v; I >> v; ikparam.SetRotation3D(v); break; }
 		case IKP_Rotation3DVelocity:
-			I >> ikparam._transform.rot;
+			I >> ikparam.transform_.rot;
 			break;
 		case IKP_Translation3D: {
 			Vector v;
@@ -194,27 +194,27 @@ namespace OpenRAVE
 		case IKP_Lookat3DVelocity:
 		case IKP_Translation3DVelocity:
 		case IKP_TranslationXYOrientation3DVelocity:
-			I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
+			I >> ikparam.transform_.trans.x >> ikparam.transform_.trans.y >> ikparam.transform_.trans.z;
 			break;
 		case IKP_Direction3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetDirection3D(v); break; }
 		case IKP_Direction3DVelocity:
-			I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
+			I >> ikparam.transform_.rot.x >> ikparam.transform_.rot.y >> ikparam.transform_.rot.z;
 			break;
 		case IKP_Ray4D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetRay4D(r); break; }
 		case IKP_Ray4DVelocity:
 		case IKP_TranslationDirection5DVelocity:
-			I >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z;
+			I >> ikparam.transform_.trans.x >> ikparam.transform_.trans.y >> ikparam.transform_.trans.z >> ikparam.transform_.rot.x >> ikparam.transform_.rot.y >> ikparam.transform_.rot.z;
 			break;
 		case IKP_Lookat3D: { Vector v; I >> v.x >> v.y >> v.z; ikparam.SetLookat3D(v); break; }
 		case IKP_TranslationDirection5D: { RAY r; I >> r.dir.x >> r.dir.y >> r.dir.z >> r.pos.x >> r.pos.y >> r.pos.z; ikparam.SetTranslationDirection5D(r); break; }
 		case IKP_TranslationXY2D: { Vector v; I >> v.y >> v.y; ikparam.SetTranslationXY2D(v); break; }
 		case IKP_TranslationXY2DVelocity:
-			I >> ikparam._transform.trans.x >> ikparam._transform.trans.y;
+			I >> ikparam.transform_.trans.x >> ikparam.transform_.trans.y;
 			break;
 		case IKP_TranslationXYOrientation3D: { Vector v; I >> v.y >> v.y >> v.z; ikparam.SetTranslationXYOrientation3D(v); break; }
 		case IKP_TranslationLocalGlobal6D: { Vector localtrans, trans; I >> localtrans.x >> localtrans.y >> localtrans.z >> trans.x >> trans.y >> trans.z; ikparam.SetTranslationLocalGlobal6D(localtrans, trans); break; }
 		case IKP_TranslationLocalGlobal6DVelocity:
-			I >> ikparam._transform.rot.x >> ikparam._transform.rot.y >> ikparam._transform.rot.z >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
+			I >> ikparam.transform_.rot.x >> ikparam.transform_.rot.y >> ikparam.transform_.rot.z >> ikparam.transform_.trans.x >> ikparam.transform_.trans.y >> ikparam.transform_.trans.z;
 			break;
 		case IKP_TranslationXAxisAngle4D: {
 			Vector trans; dReal angle = 0;
@@ -258,12 +258,12 @@ namespace OpenRAVE
 		case IKP_TranslationXAxisAngleZNorm4DVelocity:
 		case IKP_TranslationYAxisAngleXNorm4DVelocity:
 		case IKP_TranslationZAxisAngleYNorm4DVelocity:
-			I >> ikparam._transform.rot.x >> ikparam._transform.trans.x >> ikparam._transform.trans.y >> ikparam._transform.trans.z;
+			I >> ikparam.transform_.rot.x >> ikparam.transform_.trans.x >> ikparam.transform_.trans.y >> ikparam.transform_.trans.z;
 			break;
 		default:
 			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), ikparam.GetType(), ORE_InvalidArguments);
 		}
-		ikparam._mapCustomData.clear();
+		ikparam.custom_data_map_.clear();
 		if (type & IKP_CustomDataBit) {
 			size_t numcustom = 0, numvalues = 0;
 			std::string name;
@@ -276,7 +276,7 @@ namespace OpenRAVE
 				if (!I) {
 					return I;
 				}
-				std::vector<dReal>& v = ikparam._mapCustomData[name];
+				std::vector<dReal>& v = ikparam.custom_data_map_[name];
 				v.resize(numvalues);
 				for (size_t j = 0; j < v.size(); ++j) {
 					I >> v[j];
@@ -297,40 +297,40 @@ namespace OpenRAVE
 	{
 		rIkParameterization.SetObject();
 		openravejson::SetJsonValueByKey(rIkParameterization, "type", GetName(), alloc);
-		switch (_type) {
+		switch (type_) {
 		case IKP_Transform6D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_Rotation3D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
 			break;
 		case IKP_Translation3D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_Direction3D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
 			break;
 		case IKP_Ray4D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_Lookat3D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_TranslationDirection5D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_TranslationXY2D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_TranslationXYOrientation3D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_TranslationLocalGlobal6D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		case IKP_TranslationXAxisAngle4D:
 		case IKP_TranslationYAxisAngle4D:
@@ -338,15 +338,15 @@ namespace OpenRAVE
 		case IKP_TranslationXAxisAngleZNorm4D:
 		case IKP_TranslationYAxisAngleXNorm4D:
 		case IKP_TranslationZAxisAngleYNorm4D:
-			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", _transform.rot, alloc);
-			openravejson::SetJsonValueByKey(rIkParameterization, "translate", _transform.trans*fUnitScale, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "rotate", transform_.rot, alloc);
+			openravejson::SetJsonValueByKey(rIkParameterization, "translate", transform_.trans*fUnitScale, alloc);
 			break;
 		default:
 			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization %s"), GetName(), ORE_InvalidArguments);
 		}
-		if (_mapCustomData.size() > 0) {
-			// TODO have to scale _mapCustomData by fUnitScale
-			openravejson::SetJsonValueByKey(rIkParameterization, "customData", _mapCustomData, alloc);
+		if (custom_data_map_.size() > 0) {
+			// TODO have to scale custom_data_map_ by fUnitScale
+			openravejson::SetJsonValueByKey(rIkParameterization, "customData", custom_data_map_, alloc);
 		}
 	}
 
@@ -355,66 +355,66 @@ namespace OpenRAVE
 		if (!rIkParameterization.IsObject()) {
 			throw openravejson::OpenRAVEJSONException("Cannot load value of non-object to IkParameterization.", openravejson::ORJE_InvalidArguments);
 		}
-		_type = IKP_None;
+		type_ = IKP_None;
 		if (rIkParameterization.HasMember("type")) {
 			const char* ptype = rIkParameterization["type"].GetString();
 			if (!!ptype) {
 				const std::map<IkParameterizationType, std::string>::const_iterator itend = RaveGetIkParameterizationMap().end();
 				for (std::map<IkParameterizationType, std::string>::const_iterator it = RaveGetIkParameterizationMap().begin(); it != itend; ++it) {
 					if (strcmp(ptype, it->second.c_str()) == 0) {
-						_type = it->first;
+						type_ = it->first;
 						break;
 					}
 				}
 			}
 		}
-		switch (_type) {
+		switch (type_) {
 		case IKP_Transform6D:
 		case IKP_Transform6DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_Rotation3D:
 		case IKP_Rotation3DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
 			break;
 		case IKP_Translation3D:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_Translation3DVelocity:
 		case IKP_TranslationXYOrientation3DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_Direction3D:
 		case IKP_Direction3DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
 			break;
 		case IKP_Ray4D:
 		case IKP_Ray4DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_TranslationDirection5D:
 		case IKP_TranslationDirection5DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_Lookat3D:
 		case IKP_Lookat3DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_TranslationXY2D:
 		case IKP_TranslationXY2DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_TranslationXYOrientation3D:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_TranslationLocalGlobal6D:
 		case IKP_TranslationLocalGlobal6DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		case IKP_TranslationXAxisAngle4D:
 		case IKP_TranslationXAxisAngle4DVelocity:
@@ -428,17 +428,17 @@ namespace OpenRAVE
 		case IKP_TranslationYAxisAngleXNorm4DVelocity:
 		case IKP_TranslationZAxisAngleYNorm4D:
 		case IKP_TranslationZAxisAngleYNorm4DVelocity:
-			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", _transform.rot);
-			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", _transform.trans);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "rotate", transform_.rot);
+			openravejson::LoadJsonValueByKey(rIkParameterization, "translate", transform_.trans);
 			break;
 		default:
-			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), _type, ORE_InvalidArguments);
+			throw OPENRAVE_EXCEPTION_FORMAT(_tr("does not support parameterization 0x%x"), type_, ORE_InvalidArguments);
 		}
-		_transform.trans *= fUnitScale;
+		transform_.trans *= fUnitScale;
 
-		_mapCustomData.clear();
-		openravejson::LoadJsonValueByKey(rIkParameterization, "customData", _mapCustomData);
-		// TODO have to scale _mapCustomData by fUnitScale
+		custom_data_map_.clear();
+		openravejson::LoadJsonValueByKey(rIkParameterization, "customData", custom_data_map_);
+		// TODO have to scale custom_data_map_ by fUnitScale
 	}
 
 

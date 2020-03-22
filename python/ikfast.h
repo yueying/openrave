@@ -194,22 +194,26 @@ template <typename T>
 class IkSolution : public IkSolutionBase<T>
 {
 public:
-    IkSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree) {
+    IkSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree) 
+	{
         _vbasesol = vinfos;
         _vfree = vfree;
     }
 
-    IkSolution() {
+    IkSolution() 
+	{
     }
 
     // IkSolution(const std::vector<T>& v, uint32_t nvars) {
     //   this->SetSolution(v, nvars);
     // }
 
-    void SetSolution(const T v[], uint32_t nvars) {
+    void SetSolution(const T v[], uint32_t nvars)
+	{
         _vbasesol.clear();
         _vbasesol.resize(nvars);
-        for(uint32_t i = 0; i < nvars; i++) {
+        for(uint32_t i = 0; i < nvars; i++) 
+		{
             _vbasesol[i].foffset = v[i];
         }
     }
@@ -225,15 +229,18 @@ public:
         }
     }
 
-    virtual void GetSolution(std::vector<T>& solution, const std::vector<T>& freevalues) const {
+    virtual void GetSolution(std::vector<T>& solution, const std::vector<T>& freevalues) const 
+	{
         solution.resize(GetDOF());
         GetSolution(&solution.at(0), freevalues.size() > 0 ? &freevalues.at(0) : NULL);
     }
 
-    virtual const std::vector<int>& GetFree() const {
+    virtual const std::vector<int>& GetFree() const
+	{
         return _vfree;
     }
-    virtual const int GetDOF() const {
+    virtual const int GetDOF() const 
+	{
         return static_cast<int>(_vbasesol.size());
     }
 
@@ -289,21 +296,26 @@ public:
         return _vbasesol[i];
     }
 
-    void SetFree(std::vector<int> vfree) {
+    void SetFree(std::vector<int> vfree) 
+	{
         _vfree = std::move(vfree);
     }
 
-    bool HasFreeIndices() const {
+    bool HasFreeIndices() const 
+	{
         return !_vfree.empty();
     }
 
-    void ResetFreeIndices() {
-        for (size_t i = 0; i < _vbasesol.size(); ++i) {
+    void ResetFreeIndices() 
+	{
+        for (size_t i = 0; i < _vbasesol.size(); ++i) 
+		{
             _vbasesol[i].freeind = _vbasesol[i].indices[4] = -1;
         }
     }
 
-    virtual void Print() const {
+    virtual void Print() const 
+	{
         std::cout << std::setprecision(16);
         for (size_t i = 0; i < _vbasesol.size(); ++i) {
             std::cout << i << ": ";
