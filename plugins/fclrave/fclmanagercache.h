@@ -221,11 +221,14 @@ public:
     {
         _tmpbuffer.resize(0);
         std::vector<CollisionObjectPtr> vcolobjs;
-        FOREACH(itbody, vbodies) {
+        FOREACH(itbody, vbodies) 
+		{
             int bodyid = (*itbody)->GetEnvironmentId();
-            if( _setExcludeBodyIds.count(bodyid) == 0 ) {
+            if( _setExcludeBodyIds.count(bodyid) == 0 ) 
+			{
                 std::map<int, KinBodyCache>::iterator it = mapCachedBodies.find(bodyid);
-                if( it == mapCachedBodies.end() ) {
+                if( it == mapCachedBodies.end() )
+				{
                     FCLSpace::KinBodyInfoPtr pinfo = _fclspace.GetInfo(**itbody);
                     _linkEnableStates.resize((*itbody)->GetLinks().size()); //!< links that are currently inside the manager
                     std::fill(_linkEnableStates.begin(), _linkEnableStates.end(), 0);

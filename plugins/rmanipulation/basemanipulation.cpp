@@ -708,7 +708,8 @@ protected:
             {
                 TransformMatrix m; sinput >> m; tConstraintTargetWorldFrame = m;
             }
-            else if( cmd == "constraintpose" ) {
+            else if( cmd == "constraintpose" ) 
+			{
                 sinput >> tConstraintTargetWorldFrame;
             }
             else if( cmd == "constrainttaskmatrix" ) {

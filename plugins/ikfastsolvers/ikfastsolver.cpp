@@ -38,35 +38,35 @@ public:
 
 public:
     IkFastSolver(EnvironmentBasePtr penv, std::istream& sinput,
-		std::shared_ptr<ikfast::IkFastFunctions<IkReal> > ikfunctions,
-		const vector<dReal>& vfreeinc, dReal ikthreshold=1e-4) 
+		std::shared_ptr<ikfast::IkFastFunctions<IkReal> > ik_functions,
+		const std::vector<dReal>& vfreeinc, dReal ikthreshold=1e-4) 
 		: IkSolverBase(penv), 
-		ik_functions_(ikfunctions),
+		ik_functions_(ik_functions),
 		free_increments_(vfreeinc), 
 		ik_threshold_(ikthreshold) 
 	{
-        OPENRAVE_ASSERT_OP(ikfunctions->_GetIkRealSize(),==,sizeof(IkReal));
+        OPENRAVE_ASSERT_OP(ik_functions->_GetIkRealSize(),==,sizeof(IkReal));
 
-        _bEmptyTransform6D = false;
-        std::stringstream sversion(ikfunctions->_GetIkFastVersion());
+        is_empty_transform_6d_ = false;
+        std::stringstream sversion(ik_functions->_GetIkFastVersion());
         uint32_t ikfastversion = 0;
         sversion >> std::hex >> ikfastversion;
         if( ikfastversion & 0x10000000 ) 
 		{
-            _bEmptyTransform6D = true;
+            is_empty_transform_6d_ = true;
         }
 
-        _fRefineWithJacobianInverseAllowedError = -1;
-        free_params_.resize(ikfunctions->_GetNumFreeParameters());
-        _fFreeIncRevolute = PI/8; // arbitrary
-        _fFreeIncPrismaticNum = 10.0; // arbitrary
+        refine_with_jacobian_inverse_allowed_error_ = -1;
+        free_params_.resize(ik_functions->_GetNumFreeParameters());
+        free_increase_revolute_ = PI/8; // arbitrary
+        free_increase_prismatic_ = 10.0; // arbitrary
         for(size_t i = 0; i < free_params_.size(); ++i) 
 		{
-            free_params_[i] = ikfunctions->_GetFreeIndices()[i];
+            free_params_[i] = ik_functions->_GetFreeIndices()[i];
         }
-        total_dof_ = ikfunctions->_GetNumJoints();
-        ik_type_ = static_cast<IkParameterizationType>(ikfunctions->_GetIkType());
-        kinematics_hash_ = ikfunctions->_GetKinematicsHash();
+        total_dof_ = ik_functions->_GetNumJoints();
+        ik_type_ = static_cast<IkParameterizationType>(ik_functions->_GetIkType());
+        kinematics_hash_ = ik_functions->_GetKinematicsHash();
         description_ = ":Interface Author: Rosen Diankov\n\n \
         An OpenRAVE wrapper for the ikfast generated files.\n \
         If 6D IK is used, will check if the end effector and other independent links are in collision before manipulator link collisions.\
@@ -137,14 +137,14 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
 #endif
     }
 
-    void _SetJacobianRefine(dReal f, int nMaxIterations)
+    void _SetJacobianRefine(dReal f, int max_iterations)
     {
 #ifdef OPENRAVE_HAS_LAPACK
-        _fRefineWithJacobianInverseAllowedError = f;
-        _jacobinvsolver.SetErrorThresh(_fRefineWithJacobianInverseAllowedError);
-        if( nMaxIterations >= 0 ) 
+        refine_with_jacobian_inverse_allowed_error_ = f;
+        jacobinvsolver_.SetErrorThresh(refine_with_jacobian_inverse_allowed_error_);
+        if( max_iterations >= 0 ) 
 		{
-            _jacobinvsolver.SetMaxIterations(nMaxIterations);
+            jacobinvsolver_.SetMaxIterations(max_iterations);
         }
 #endif
     }
@@ -156,26 +156,30 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
         return !!sinput;
     }
 
-    bool _SetDefaultIncrementsCommand(ostream& sout, istream& sinput)
+    bool _SetDefaultIncrementsCommand(std::ostream& sout, std::istream& sinput)
     {
-        dReal fFreeIncRevolute=0.1, fFreeIncPrismaticNum=100;
-        sinput >> fFreeIncRevolute >> fFreeIncPrismaticNum >> _fFreeIncRevolute >> _fFreeIncPrismaticNum;
+        dReal free_increment_revolute=0.1, fFreeIncPrismaticNum=100;
+        sinput >> free_increment_revolute >> fFreeIncPrismaticNum >> free_increase_revolute_ >> free_increase_prismatic_;
         free_increments_.resize(free_params_.size());
-        for(size_t i = 0; i < free_increments_.size(); ++i) {
-            if( free_revolute_types_.at(i) ) {
-                free_increments_[i] = fFreeIncRevolute;
+        for(size_t i = 0; i < free_increments_.size(); ++i) 
+		{
+            if( free_revolute_types_.at(i) ) 
+			{
+                free_increments_[i] = free_increment_revolute;
             }
-            else {
+            else 
+			{
                 free_increments_[i] = (upper_limit_.at(free_params_[i])-lower_limit_.at(free_params_[i]))/fFreeIncPrismaticNum;
             }
         }
-        //RAVELOG_VERBOSE(str(boost::format("SetFreeIncrements: %f %f %f %f")%fFreeIncRevolute%fFreeIncPrismaticNum%_fFreeIncRevolute%_fFreeIncPrismaticNum));
+        //RAVELOG_VERBOSE(str(boost::format("SetFreeIncrements: %f %f %f %f")%free_increment_revolute%fFreeIncPrismaticNum%free_increase_revolute_%free_increase_prismatic_));
         return !!sinput;
     }
 
     bool _SetFreeIncrementsCommand(std::ostream& sout, std::istream& sinput)
     {
-        if( free_increments_.size() == 0 ) {
+        if( free_increments_.size() == 0 ) 
+		{
             return true;
         }
         for(auto it: free_increments_) 
@@ -187,17 +191,18 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
 
     bool _GetFreeIndicesCommand(std::ostream& sout, std::istream& sinput)
     {
-        FOREACHC(it, free_params_)
+        for(auto& it: free_params_)
 		{
-            sout << *it << " ";
+            sout << it << " ";
         }
         return true;
     }
 
-    bool _GetFreeIncrementsCommand(ostream& sout, istream& sinput)
+    bool _GetFreeIncrementsCommand(std::ostream& sout, std::istream& sinput)
     {
-        FOREACHC(it, free_increments_) {
-            sout << *it << " ";
+        for(auto& it: free_increments_) 
+		{
+            sout << it << " ";
         }
         return true;
     }
@@ -205,7 +210,7 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
     bool _GetJacobianRefineCommand(std::ostream& sout, std::istream& sinput)
     {
 #ifdef OPENRAVE_HAS_LAPACK
-        sout << _jacobinvsolver.GetErrorThresh() << " " << _jacobinvsolver.GetMaxIterations();
+        sout << jacobinvsolver_.GetErrorThresh() << " " << jacobinvsolver_.GetMaxIterations();
         return true;
 #else
         return false;
@@ -451,7 +456,7 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
 #ifdef OPENRAVE_HAS_LAPACK
         if( !!manip ) 
 		{
-            _jacobinvsolver.Init(*manip);
+            jacobinvsolver_.Init(*manip);
         }
 #endif
 
@@ -761,16 +766,18 @@ protected:
     }
 
     virtual bool SolveAll(const IkParameterization& param,
-		const std::vector<dReal>& vFreeParameters, 
+		const std::vector<dReal>& free_parameters, 
 		int filteroptions, std::vector< std::vector<dReal> >& qSolutions)
     {
         std::vector<IkReturnPtr> vikreturns;
         qSolutions.resize(0);
-        if( !SolveAll(param,vFreeParameters,filteroptions,vikreturns) ) {
+        if( !SolveAll(param,free_parameters,filteroptions,vikreturns) )
+		{
             return false;
         }
         qSolutions.resize(vikreturns.size());
-        for(size_t i = 0; i < vikreturns.size(); ++i) {
+        for(size_t i = 0; i < vikreturns.size(); ++i) 
+		{
             qSolutions[i] = vikreturns[i]->solution_;
         }
         return qSolutions.size()>0;
@@ -804,29 +811,34 @@ protected:
         return retaction == IKRA_Success;
     }
 
-    virtual bool SolveAll(const IkParameterization& rawparam, int filteroptions, std::vector<IkReturnPtr>& vikreturns)
+    virtual bool SolveAll(const IkParameterization& raw_param, int filter_options, std::vector<IkReturnPtr>& ik_returns)
     {
-        vikreturns.resize(0);
+        ik_returns.resize(0);
         IkParameterization ikparamdummy;
-        const IkParameterization& param = _ConvertIkParameterization(rawparam, ikparamdummy);
-        RobotBase::ManipulatorPtr pmanip(manipulator_);
-        RobotBasePtr probot = pmanip->GetRobot();
-        RobotBase::RobotStateSaver saver(probot);
-        probot->SetActiveDOFs(pmanip->GetArmIndices());
+        const IkParameterization& param = _ConvertIkParameterization(raw_param, ikparamdummy);
+        RobotBase::ManipulatorPtr manip(manipulator_);
+        RobotBasePtr robot = manip->GetRobot();
+        RobotBase::RobotStateSaver saver(robot);
+        robot->SetActiveDOFs(manip->GetArmIndices());
         std::vector<IkReal> vfree(free_params_.size());
-        StateCheckEndEffector stateCheck(probot,child_links_,independent_links_,filteroptions);
-        CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
-        IkReturnAction retaction = ComposeSolution(free_params_, vfree, 0, vector<dReal>(), boost::bind(&IkFastSolver::_SolveAll,shared_solver(), param,boost::ref(vfree),filteroptions,boost::ref(vikreturns), boost::ref(stateCheck)), free_increments_);
-        if( retaction & IKRA_Quit ) {
+        StateCheckEndEffector state_check(robot,child_links_,independent_links_,filter_options);
+        CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),
+			GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
+        IkReturnAction retaction = ComposeSolution(free_params_,
+			vfree, 0, std::vector<dReal>(), boost::bind(&IkFastSolver::_SolveAll,shared_solver(),
+				param,boost::ref(vfree),filter_options,boost::ref(ik_returns), boost::ref(state_check)), free_increments_);
+        if( retaction & IKRA_Quit ) 
+		{
             return false;
         }
-        _SortSolutions(probot, vikreturns);
-        return vikreturns.size()>0;
+        _SortSolutions(robot, ik_returns);
+        return ik_returns.size()>0;
     }
 
     virtual bool Solve(const IkParameterization& rawparam, 
 		const std::vector<dReal>& q0, 
-		const std::vector<dReal>& free_parameters, int filteroptions, IkReturnPtr ikreturn)
+		const std::vector<dReal>& free_parameters, 
+		int filteroptions, IkReturnPtr ikreturn)
     {
         IkParameterization ikparamdummy;
         const IkParameterization& param = _ConvertIkParameterization(rawparam, ikparamdummy);
@@ -950,8 +962,8 @@ protected:
         _vfreeparamscales = r->_vfreeparamscales;
         ik_functions_ = r->ik_functions_; // probably not necessary, but not setting it here could create inconsistency problems later on
         free_increments_ = r->free_increments_;
-        _fFreeIncRevolute = r->_fFreeIncRevolute;
-        _fFreeIncPrismaticNum = r->_fFreeIncPrismaticNum;
+        free_increase_revolute_ = r->free_increase_revolute_;
+        free_increase_prismatic_ = r->free_increase_prismatic_;
         total_dof_ = r->total_dof_;
         lower_limit_ = r->lower_limit_;
         upper_limit_ = r->upper_limit_;
@@ -966,15 +978,15 @@ protected:
         _numBacktraceLinksForSelfCollisionWithFree = r->_numBacktraceLinksForSelfCollisionWithFree;
         ik_threshold_ = r->ik_threshold_;
 #ifdef OPENRAVE_HAS_LAPACK
-        _SetJacobianRefine(r->_fRefineWithJacobianInverseAllowedError, r->_jacobinvsolver._nMaxIterations);
+        _SetJacobianRefine(r->refine_with_jacobian_inverse_allowed_error_, r->jacobinvsolver_.max_iterations_);
 #endif
 
-        _bEmptyTransform6D = r->_bEmptyTransform6D;
+        is_empty_transform_6d_ = r->is_empty_transform_6d_;
     }
 
 protected:
     IkReturnAction ComposeSolution(const std::vector<int>& vfreeparams, 
-		vector<IkReal>& vfree, int freeindex, const vector<dReal>& q0,
+		std::vector<IkReal>& vfree, int freeindex, const std::vector<dReal>& q0,
 		const boost::function<IkReturnAction()>& fn, const std::vector<dReal>& vFreeInc)
     {
         if( freeindex >= (int)vfreeparams.size()) 
@@ -988,7 +1000,8 @@ protected:
         dReal lowerChecked = startphi; // lowest value checked
         dReal upperChecked = startphi; // uppermost value checked
         int isJointRevolute = joint_revolute_types_.at(vfreeparams.at(freeindex));
-        if( isJointRevolute == 2 ) {
+        if( isJointRevolute == 2 )
+		{
             startphi = utils::NormalizeCircularAngle(startphi, -PI, PI);
             lowerphi = startphi-PI;
             upperphi = startphi+PI;
@@ -1092,7 +1105,7 @@ protected:
             case IKP_Transform6D: 
 			{
                 TransformMatrix t = param.GetTransform6D();
-                if( _bEmptyTransform6D ) 
+                if( is_empty_transform_6d_ ) 
 				{
                     t = t * local_tool_transform.inverse();
                 }
@@ -1253,7 +1266,7 @@ protected:
 		const std::vector<IkReal>& vfree, 
 		const Transform& local_tool_transform, ikfast::IkSolutionList<IkReal>& solutions)
     {
-        RobotBase::ManipulatorPtr pmanip = manipulator_.lock();
+        RobotBase::ManipulatorPtr manip = manipulator_.lock();
         try 
 		{
             switch(param.GetType()) 
@@ -1261,7 +1274,7 @@ protected:
             case IKP_Transform6D: 
 			{
                 TransformMatrix t = param.GetTransform6D();
-                if( _bEmptyTransform6D ) 
+                if( is_empty_transform_6d_ ) 
 				{
                     t = t * local_tool_transform.inverse();
                 }
@@ -1269,9 +1282,9 @@ protected:
                 IkReal eerot[9] = {(IkReal)t.m[0],(IkReal)t.m[1],(IkReal)t.m[2],
 					(IkReal)t.m[4],(IkReal)t.m[5],(IkReal)t.m[6],
 					(IkReal)t.m[8],(IkReal)t.m[9],(IkReal)t.m[10]};
-//                RobotBase::ManipulatorPtr pmanip(manipulator_);
-//                std::stringstream ss; ss << pmanip->GetRobot()->GetName() 
-//				   << ":" << pmanip->GetName() << " ./ik " << std::setprecision(17);
+//                RobotBase::ManipulatorPtr manip(manipulator_);
+//                std::stringstream ss; ss << manip->GetRobot()->GetName() 
+//				   << ":" << manip->GetName() << " ./ik " << std::setprecision(17);
 //                ss << eerot[0]  << " " << eerot[1]  << " " << eerot[2]  << " " 
 //				   << eetrans[0]  << " " << eerot[3]  << " " << eerot[4]  << " " 
 //				   << eerot[5]  << " " << eetrans[1]  << " " << eerot[6]  << " " 
@@ -1282,22 +1295,23 @@ protected:
 //                }
 //                ss << std::endl;
 
-                bool bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
-                if( !bret ) {
+                bool bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
+                if( !bret ) 
+				{
 #ifdef OPENRAVE_HAS_LAPACK
-                    if( _fRefineWithJacobianInverseAllowedError > 0 ) 
+                    if( refine_with_jacobian_inverse_allowed_error_ > 0 ) 
 					{
                         // since will be refining, can add a little error to see if IK gets recomputed
                         eetrans[0] += 0.001;
                         eetrans[1] += 0.001;
                         eetrans[2] += 0.001;
-                        bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                        bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
                         if( !bret ) 
 						{
                             eetrans[0] -= 0.002;
                             eetrans[1] -= 0.002;
                             eetrans[2] -= 0.002;
-                            bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                            bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
                         }
                         RAVELOG_VERBOSE("ik failed, trying with slight jitter, ret=%d", (int)bret);
                     }
@@ -1313,7 +1327,7 @@ protected:
                 IkReal eerot[9] = {(IkReal)t.m[0],(IkReal)t.m[1],(IkReal)t.m[2],
 					(IkReal)t.m[4],(IkReal)t.m[5],(IkReal)t.m[6],
 					(IkReal)t.m[8],(IkReal)t.m[9],(IkReal)t.m[10]};
-                return ik_functions_->_ComputeIk2(NULL, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(NULL, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_Translation3D: 
 			{
@@ -1326,13 +1340,13 @@ protected:
                 //                }
                 //                ss << endl;
                 //                RAVELOG_INFO(ss.str());
-                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_Direction3D: 
 			{
                 Vector v = param.GetDirection3D();
                 IkReal eerot[9] = {(IkReal)v.x, (IkReal)v.y, (IkReal)v.z, 0,0,0,0,0,0};
-                return ik_functions_->_ComputeIk2(NULL, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(NULL, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_Ray4D: 
 			{
@@ -1340,7 +1354,7 @@ protected:
                 IkReal eetrans[3] = {(IkReal)r.pos.x, (IkReal)r.pos.y, (IkReal)r.pos.z};
                 IkReal eerot[9] = {(IkReal)r.dir.x, (IkReal)r.dir.y, (IkReal)r.dir.z, 0,0,0,0,0,0};
                 //RAVELOG_INFO("ray: %f %f %f %f %f %f\n",eerot[0],eerot[1],eerot[2],eetrans[0],eetrans[1],eetrans[2]);
-                if( !ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip) ) 
+                if( !ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip) ) 
 				{
                     return false;
                 }
@@ -1350,17 +1364,19 @@ protected:
 			{
                 Vector v = param.GetLookat3D();
                 IkReal eetrans[3] = {(IkReal)v.x, (IkReal)v.y, (IkReal)v.z};
-                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationDirection5D: 
 			{
                 RAY r = param.GetTranslationDirection5D();
                 IkReal eetrans[3] = {(IkReal)r.pos.x, (IkReal)r.pos.y, (IkReal)r.pos.z};
                 IkReal eerot[9] = {(IkReal)r.dir.x, (IkReal)r.dir.y, (IkReal)r.dir.z, 0,0,0,0,0,0};
-                bool bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
-                if( !bret ) {
+                bool bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
+                if( !bret ) 
+				{
 #ifdef OPENRAVE_HAS_LAPACK
-                    if( _fRefineWithJacobianInverseAllowedError > 0 ) {
+                    if( refine_with_jacobian_inverse_allowed_error_ > 0 ) 
+					{
                         // since will be refining, can add a little error to see if IK gets recomputed
                         eerot[0] = r.dir.x+0.01;
                         eerot[1] = r.dir.y+0.01;
@@ -1369,8 +1385,9 @@ protected:
                         eerot[0] /= fnorm;
                         eerot[1] /= fnorm;
                         eerot[2] /= fnorm;
-                        bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
-                        if( !bret ) {
+                        bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
+                        if( !bret )
+						{
                             eerot[0] = r.dir.x-0.01;
                             eerot[1] = r.dir.y-0.01;
                             eerot[2] = r.dir.z-0.01;
@@ -1378,8 +1395,9 @@ protected:
                             eerot[0] /= fnorm;
                             eerot[1] /= fnorm;
                             eerot[2] /= fnorm;
-                            bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
-                            if( !bret ) {
+                            bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
+                            if( !bret ) 
+							{
                                 eerot[0] = r.dir.x-0.04;
                                 eerot[1] = r.dir.y-0.04;
                                 eerot[2] = r.dir.z;
@@ -1387,8 +1405,9 @@ protected:
                                 eerot[0] /= fnorm;
                                 eerot[1] /= fnorm;
                                 eerot[2] /= fnorm;
-                                bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
-                                if( !bret ) {
+                                bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
+                                if( !bret )
+								{
                                     eerot[0] = r.dir.x+0.04;
                                     eerot[1] = r.dir.y+0.04;
                                     eerot[2] = r.dir.z;
@@ -1396,7 +1415,7 @@ protected:
                                     eerot[0] /= fnorm;
                                     eerot[1] /= fnorm;
                                     eerot[2] /= fnorm;
-                                    bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                                    bret = ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
                                 }
                             }
                         }
@@ -1410,60 +1429,60 @@ protected:
             case IKP_TranslationXY2D: {
                 Vector v = param.GetTranslationXY2D();
                 IkReal eetrans[3] = {(IkReal)v.x, (IkReal)v.y, 0};
-                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationXYOrientation3D: {
                 //Vector v = param.GetTranslationXYOrientation3D();
 //                IkReal eetrans[3] = {v.x, v.y,v.z};
-//                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+//                return ik_functions_->_ComputeIk2(eetrans, NULL, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
                 //std::pair<Vector,dReal> p = param.GetTranslationXAxisAngleZNorm4D();
                 Vector v = param.GetTranslationXYOrientation3D();
                 IkReal eetrans[3] = {(IkReal)v.x, (IkReal)v.y, 0};
                 IkReal eerot[9] = {(IkReal)v.z, 0, 0, 0, 0, 0, 0, 0, 0};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationLocalGlobal6D: {
                 std::pair<Vector,Vector> p = param.GetTranslationLocalGlobal6D();
                 IkReal eetrans[3] = {(IkReal)p.second.x, (IkReal)p.second.y, (IkReal)p.second.z};
                 IkReal eerot[9] = {(IkReal)p.first.x, 0, 0, 0, (IkReal)p.first.y, 0, 0, 0, (IkReal)p.first.z};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationXAxisAngle4D: {
                 std::pair<Vector,dReal> p = param.GetTranslationXAxisAngle4D();
                 IkReal eetrans[3] = {(IkReal)p.first.x, (IkReal)p.first.y, (IkReal)p.first.z};
                 IkReal eerot[9] = {(IkReal)p.second, 0, 0, 0, 0, 0, 0, 0, 0};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationYAxisAngle4D: {
                 std::pair<Vector,dReal> p = param.GetTranslationYAxisAngle4D();
                 IkReal eetrans[3] = {(IkReal)p.first.x, (IkReal)p.first.y, (IkReal)p.first.z};
                 IkReal eerot[9] = {(IkReal)p.second, 0, 0, 0, 0, 0, 0, 0, 0};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationZAxisAngle4D: {
                 std::pair<Vector,dReal> p = param.GetTranslationZAxisAngle4D();
                 IkReal eetrans[3] = {(IkReal)p.first.x, (IkReal)p.first.y, (IkReal)p.first.z};
                 IkReal eerot[9] = {(IkReal)p.second, 0, 0, 0, 0, 0, 0, 0, 0};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationXAxisAngleZNorm4D: {
                 std::pair<Vector,dReal> p = param.GetTranslationXAxisAngleZNorm4D();
                 IkReal eetrans[3] = {(IkReal)p.first.x, (IkReal)p.first.y, (IkReal)p.first.z};
                 IkReal eerot[9] = {(IkReal)p.second, 0, 0, 0, 0, 0, 0, 0, 0};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationYAxisAngleXNorm4D: {
                 std::pair<Vector,dReal> p = param.GetTranslationYAxisAngleXNorm4D();
                 IkReal eetrans[3] = {(IkReal)p.first.x, (IkReal)p.first.y, (IkReal)p.first.z};
                 IkReal eerot[9] = {(IkReal)p.second, 0, 0, 0, 0, 0, 0, 0, 0};
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             case IKP_TranslationZAxisAngleYNorm4D: {
                 std::pair<Vector,dReal> p = param.GetTranslationZAxisAngleYNorm4D();
                 IkReal eetrans[3] = {(IkReal)p.first.x, (IkReal)p.first.y, (IkReal)p.first.z};
                 IkReal eerot[9] = {(IkReal)p.second, 0, 0, 0, 0, 0, 0, 0, 0};
                 //TODO Code review! using NULL fails crash the slave for hashimoto, &vfree[0] works normally. I don't know why!
-                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &pmanip);
+                return ik_functions_->_ComputeIk2(eetrans, eerot, vfree.size()>0 ? &vfree[0] : NULL, solutions, &manip);
             }
             default:
                 BOOST_ASSERT(0);
@@ -1596,12 +1615,12 @@ protected:
 #ifdef OPENRAVE_HAS_LAPACK
         IkParameterization paramnew = manip.GetIkParameterization(param,false);
         dReal ikworkspacedist = param.ComputeDistanceSqr(paramnew);
-        if( _fRefineWithJacobianInverseAllowedError > 0 && ikworkspacedist > _fRefineWithJacobianInverseAllowedError*_fRefineWithJacobianInverseAllowedError ) {
+        if( refine_with_jacobian_inverse_allowed_error_ > 0 && ikworkspacedist > refine_with_jacobian_inverse_allowed_error_*refine_with_jacobian_inverse_allowed_error_ ) {
             if( param.GetType() == IKP_Transform6D ) { // only 6d supported for now
-                int ret = _jacobinvsolver.ComputeSolution(param.GetTransform6D(), manip, vsolution, bIgnoreJointLimits);
+                int ret = jacobinvsolver_.ComputeSolution(param.GetTransform6D(), manip, vsolution, bIgnoreJointLimits);
                 if( ret == 2 ) {
                     RAVELOG_VERBOSE("did not converge, try to prioritize translation at least\n");
-                    ret = _jacobinvsolver.ComputeSolutionTranslation(param.GetTransform6D(), manip, vsolution, bIgnoreJointLimits);
+                    ret = jacobinvsolver_.ComputeSolutionTranslation(param.GetTransform6D(), manip, vsolution, bIgnoreJointLimits);
                 }
                 if( ret == 0 ) {
                     stringstream ss; ss << std::setprecision(std::numeric_limits<OpenRAVE::dReal>::digits10+1);
@@ -1610,7 +1629,7 @@ protected:
                         ss << *it << ",";
                     }
                     ss << "]";
-                    RAVELOG_WARN_FORMAT("failed to refine solution lasterror=%f, %s", RaveSqrt(_jacobinvsolver._lasterror2)%ss.str());
+                    RAVELOG_WARN_FORMAT("failed to refine solution lasterror=%f, %s", RaveSqrt(jacobinvsolver_._lasterror2)%ss.str());
                 }
             }
             else if( param.GetType() == IKP_TranslationDirection5D ) { // only 6d supported for now
@@ -1624,10 +1643,10 @@ protected:
                 tgoal.rot = quatMultiply(quatFromAxisAngle(param.GetTranslationDirection5D().dir, frotanglegoal - frotangle0), tgoal.rot);
 
                 tgoal.trans = param.GetTranslationDirection5D().pos;
-                int ret = _jacobinvsolver.ComputeSolution(tgoal, manip, vsolution, bIgnoreJointLimits);
+                int ret = jacobinvsolver_.ComputeSolution(tgoal, manip, vsolution, bIgnoreJointLimits);
                 if( ret == 2 ) {
                     RAVELOG_VERBOSE("did not converge, try to prioritize translation at least\n");
-                    ret = _jacobinvsolver.ComputeSolutionTranslation(tgoal, manip, vsolution, bIgnoreJointLimits);
+                    ret = jacobinvsolver_.ComputeSolutionTranslation(tgoal, manip, vsolution, bIgnoreJointLimits);
                 }
                 if( ret == 0 ) {
                     stringstream ss; ss << std::setprecision(std::numeric_limits<OpenRAVE::dReal>::digits10+1);
@@ -1636,7 +1655,7 @@ protected:
                         ss << *it << ",";
                     }
                     ss << "]";
-                    RAVELOG_WARN_FORMAT("failed to refine solution lasterror=%f, %s", RaveSqrt(_jacobinvsolver._lasterror2)%ss.str());
+                    RAVELOG_WARN_FORMAT("failed to refine solution lasterror=%f, %s", RaveSqrt(jacobinvsolver_._lasterror2)%ss.str());
                 }
             }
         }
@@ -2099,7 +2118,7 @@ protected:
     }
 
     IkReturnAction _SolveAll(const IkParameterization& param, const std::vector<IkReal>& vfree,
-		int filteroptions, std::vector<IkReturnPtr>& vikreturns, StateCheckEndEffector& stateCheck)
+		int filteroptions, std::vector<IkReturnPtr>& ik_returns, StateCheckEndEffector& state_check)
     {
         RobotBase::ManipulatorPtr manip(manipulator_);
         RobotBasePtr robot = manip->GetRobot();
@@ -2122,7 +2141,7 @@ protected:
                     IkReturnAction retaction = ComposeSolution(iksol.GetFree(), vsolfree, 0, std::vector<dReal>(),
 						boost::bind(&IkFastSolver::_ValidateSolutionAll,shared_solver(), 
 							boost::ref(param), boost::ref(iksol), boost::ref(vsolfree), 
-							filteroptions, boost::ref(sol), boost::ref(vikreturns), boost::ref(stateCheck))
+							filteroptions, boost::ref(sol), boost::ref(ik_returns), boost::ref(state_check))
 						, vFreeInc);
                     if( retaction & IKRA_Quit) 
 					{
@@ -2132,7 +2151,7 @@ protected:
                 else
 				{
                     IkReturnAction retaction = _ValidateSolutionAll(param, iksol, std::vector<IkReal>(), 
-						filteroptions, sol, vikreturns, stateCheck);
+						filteroptions, sol, ik_returns, state_check);
                     if( retaction & IKRA_Quit )
 					{
                         return retaction;
@@ -2230,15 +2249,18 @@ protected:
                 nSameStateRepeatCount++;
                 _nSameStateRepeatCount = nSameStateRepeatCount;
                 retactionall |= retaction;
-                if( retactionall & IKRA_Quit ) {
+                if( retactionall & IKRA_Quit )
+				{
                     return static_cast<IkReturnAction>(retactionall|IKRA_RejectCustomFilter);
                 }
-                else if( retaction == IKRA_Success ) {
+                else if( retaction == IKRA_Success )
+				{
                     localret->solution_.swap(itravesol->first);
                     listlocalikreturns.emplace_back(localret,  paramnew);
                 }
             }
-            if( listlocalikreturns.size() == 0 ) {
+            if( listlocalikreturns.size() == 0 )
+			{
                 return static_cast<IkReturnAction>(retactionall|IKRA_RejectCustomFilter);
             }
         }
@@ -2687,11 +2709,11 @@ protected:
         std::vector<dReal> vFreeInc(vindices.size());
         for(size_t i = 0; i < vindices.size(); ++i) {
             if( joint_revolute_types_.at(vindices[i]) ) {
-                vFreeInc[i] = _fFreeIncRevolute;
+                vFreeInc[i] = free_increase_revolute_;
             }
             else {
                 // get the range of the axis and divide by 16..?
-                vFreeInc[i] = (upper_limit_.at(i)-lower_limit_.at(i))/_fFreeIncPrismaticNum;
+                vFreeInc[i] = (upper_limit_.at(i)-lower_limit_.at(i))/free_increase_prismatic_;
             }
         }
         return vFreeInc;
@@ -2767,8 +2789,8 @@ protected:
     std::vector<int> child_link_indices_; //!< indices of the links at child_links_
     std::shared_ptr<ikfast::IkFastFunctions<IkReal> > ik_functions_;
     std::vector<dReal> free_increments_;//!< default increment for each free joint
-    dReal _fFreeIncRevolute; //!< default increment for revolute joints
-    dReal _fFreeIncPrismaticNum; //!< default number of segments to divide a free slider axis
+    dReal free_increase_revolute_; //!< default increment for revolute joints
+    dReal free_increase_prismatic_; //!< default number of segments to divide a free slider axis
     int total_dof_;
     std::vector<dReal> lower_limit_, upper_limit_, middle_limit_;
     std::vector<int> joint_big_range_indices_; //!< indices into lower_limit_/upper_limit_ of joints that are revolute, not circular, and have ranges > 360
@@ -2777,10 +2799,10 @@ protected:
     std::string kinematics_hash_;
     int _numBacktraceLinksForSelfCollisionWithNonMoving, _numBacktraceLinksForSelfCollisionWithFree; //!< when pruning self collisions, the number of links to look at. If the tip of the manip self collides with the base, then can safely quit the IK. this is used purely for optimization purposes and by default it is mostly disabled. For more complex robots with a lot of joints, can use these parameters to speed up searching for IK.
     dReal ik_threshold_; //!< workspace distance threshold sanity checking between desired workspace goal and the workspace position with the returned ik values.
-    dReal _fRefineWithJacobianInverseAllowedError; //!< if > 0, then use jacobian inverse numerical method to refine the results until workspace error drops down this much. By default it is disabled (=-1)
+    dReal refine_with_jacobian_inverse_allowed_error_; //!< if > 0, then use jacobian inverse numerical method to refine the results until workspace error drops down this much. By default it is disabled (=-1)
 
 #ifdef OPENRAVE_HAS_LAPACK
-    ikfastsolvers::JacobianInverseSolver<double> _jacobinvsolver; //!< jacobian inverse solver if _fRefineWithJacobianInverseAllowedError is > 0
+    ikfastsolvers::JacobianInverseSolver<double> jacobinvsolver_; //!< jacobian inverse solver if refine_with_jacobian_inverse_allowed_error_ is > 0
 #endif
 
     //@{
@@ -2789,7 +2811,7 @@ protected:
     int _nSameStateRepeatCount;
     //@}
 
-    bool _bEmptyTransform6D; //!< if true, then the iksolver has been built with identity of the manipulator transform. Only valid for Transform6D IKs.
+    bool is_empty_transform_6d_; //!< if true, then the iksolver has been built with identity of the manipulator transform. Only valid for Transform6D IKs.
 
 };
 

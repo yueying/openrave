@@ -255,9 +255,13 @@ private:
     /// and one that is executed on the main worker thread to avoid multithreading data synchronization issues
     struct RAVENETWORKFN
     {
-        RAVENETWORKFN() : bReturnResult(false) {
+        RAVENETWORKFN() : bReturnResult(false) 
+		{
         }
-        RAVENETWORKFN(const OpenRaveNetworkFn& socket, const OpenRaveWorkerFn& worker, bool bReturnResult) : fnSocketThread(socket), fnWorker(worker), bReturnResult(bReturnResult) {
+        RAVENETWORKFN(const OpenRaveNetworkFn& socket,
+			const OpenRaveWorkerFn& worker, bool bReturnResult) 
+			: fnSocketThread(socket), fnWorker(worker), bReturnResult(bReturnResult) 
+		{
         }
 
         OpenRaveNetworkFn fnSocketThread;
@@ -269,8 +273,8 @@ public:
     SimpleTextServer(EnvironmentBasePtr penv) : ModuleBase(penv) {
         _nIdIndex = 1;
         _nNextFigureId = 1;
-        _bWorking = false;
-        bDestroying = false;
+        is_working_ = false;
+        is_destroying_ = false;
         description_=":Interface Author: Rosen Diankov\n\nSimple text-based server using sockets.";
         mapNetworkFns["body_checkcollision"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCheckCollision, this, _1, _2, _3), OpenRaveWorkerFn(), true);
         mapNetworkFns["body_getjoints"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orBodyGetJointValues, this,_1, _2, _3), OpenRaveWorkerFn(), true);
@@ -287,7 +291,7 @@ public:
         mapNetworkFns["createrobot"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCreateRobot,this,_1,_2,_3), OpenRaveWorkerFn(), true);
         mapNetworkFns["createbody"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCreateKinBody,this,_1,_2,_3), OpenRaveWorkerFn(), true);
         mapNetworkFns["createmodule"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvCreateModule,this,_1,_2,_3), boost::bind(&SimpleTextServer::worEnvCreateModule,this,_1,_2), true);
-        mapNetworkFns["env_dstrprob"] = RAVENETWORKFN(OpenRaveNetworkFn(), boost::bind(&SimpleTextServer::worEnvDestroyProblem,this,_1,_2), false);
+        mapNetworkFns["env_dstrprob"] = RAVENETWORKFN(OpenRaveNetworkFn(), boost::bind(&SimpleTextServer::worEnvDestroyModule,this,_1,_2), false);
         mapNetworkFns["env_getbodies"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvGetBodies,this,_1,_2,_3), OpenRaveWorkerFn(), true);
         mapNetworkFns["env_getrobots"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvGetRobots,this,_1,_2,_3), OpenRaveWorkerFn(), true);
         mapNetworkFns["env_getbody"] = RAVENETWORKFN(boost::bind(&SimpleTextServer::orEnvGetBody,this,_1,_2,_3), OpenRaveWorkerFn(), true);
@@ -324,15 +328,16 @@ public:
             RAVELOG_DEBUG("logging network to %s.txt\n",logfilename.c_str());
     }
 
-    virtual ~SimpleTextServer() {
+    virtual ~SimpleTextServer() 
+	{
         Destroy();
     }
 
     virtual int main(const std::string& cmd)
     {
-        _nPort = 4765;
-        stringstream ss(cmd);
-        ss >> _nPort;
+        port_num_ = 4765;
+        std::stringstream ss(cmd);
+        ss >> port_num_;
 
         Destroy();
 
@@ -341,7 +346,8 @@ public:
         WSADATA wsaData;
 
         wVersionRequested = MAKEWORD(1,1);
-        if (WSAStartup(wVersionRequested, &wsaData) != 0) {
+        if (WSAStartup(wVersionRequested, &wsaData) != 0) 
+		{
             RAVELOG_ERROR("Failed to start win socket\n");
             return -1;
         }
@@ -351,28 +357,31 @@ public:
         server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
         server_address.sin_family = AF_INET;
         server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        server_address.sin_port = htons(_nPort);
+        server_address.sin_port = htons(port_num_);
         server_len = sizeof(server_address);
 
         // this allows to immediately reconnect to OpenRave
         // when the program crashed and is rerun immediately
         int yes = 1;
         int err = setsockopt(server_sockfd, SOL_SOCKET,SO_REUSEADDR, (const char*)&yes, sizeof(int));
-        if( err ) {
+        if( err ) 
+		{
             RAVELOG_ERROR("failed to set socket option, err=%d\n", err);
             perror("failed to set socket options\n");
             return -1;
         }
 
         err = ::bind(server_sockfd, (struct sockaddr *)&server_address, server_len);
-        if( err ) {
-            RAVELOG_ERROR("failed to bind server to port %d, error=%d\n", _nPort, err);
+        if( err )
+		{
+            RAVELOG_ERROR("failed to bind server to port %d, error=%d\n", port_num_, err);
             return -1;
         }
 
         err = ::listen(server_sockfd, 16);
-        if( err ) {
-            RAVELOG_ERROR("failed to listen to server port %d, error=%d\n", _nPort, err);
+        if( err )
+		{
+            RAVELOG_ERROR("failed to listen to server port %d, error=%d\n", port_num_, err);
             return -1;
         }
 
@@ -401,10 +410,10 @@ public:
 #endif
 #endif
 
-        RAVELOG_DEBUG("text server listening on port %d\n",_nPort);
-        _servthread.reset(new boost::thread(boost::bind(&SimpleTextServer::_listen_threadcb,this)));
-        _workerthread.reset(new boost::thread(boost::bind(&SimpleTextServer::_worker_threadcb,this)));
-        bInitThread = true;
+        RAVELOG_DEBUG("text server listening on port %d\n",port_num_);
+        service_thread_.reset(new boost::thread(boost::bind(&SimpleTextServer::_listen_threadcb,this)));
+        worker_thread_.reset(new boost::thread(boost::bind(&SimpleTextServer::_worker_threadcb,this)));
+        is_init_thread_ = true;
         return 0;
     }
 
@@ -413,22 +422,24 @@ public:
         Reset();
 
         {
-            boost::mutex::scoped_lock lock(_mutexWorker);     // need lock to keep multiple threads out of Destroy
-            if( bDestroying ) {
+            boost::mutex::scoped_lock lock(mutex_worker_);     // need lock to keep multiple threads out of Destroy
+            if( is_destroying_ )
+			{
                 return;
             }
-            bDestroying = true;
+            is_destroying_ = true;
             _mapFigureIds.clear();
-            _mapModules.clear();
+            modules_map_.clear();
         }
 
-        if( bInitThread ) {
-            bCloseThread = true;
+        if( is_init_thread_ )
+		{
+            is_close_thread_ = true;
             _condWorker.notify_all();
-            if( !!_servthread ) {
-                _servthread->join();
+            if( !!service_thread_ ) {
+                service_thread_->join();
             }
-            _servthread.reset();
+            service_thread_.reset();
 
             FOREACH(it, _listReadThreads) {
                 _condWorker.notify_all();
@@ -436,54 +447,57 @@ public:
             }
             _listReadThreads.clear();
             _condHasWork.notify_all();
-            if( !!_workerthread ) {
-                _workerthread->join();
+            if( !!worker_thread_ ) {
+                worker_thread_->join();
             }
-            _workerthread.reset();
+            worker_thread_.reset();
 
-            bCloseThread = false;
-            bInitThread = false;
+            is_close_thread_ = false;
+            is_init_thread_ = false;
 
             CLOSESOCKET(server_sockfd); server_sockfd = 0;
         }
 
-        bDestroying = false;
+        is_destroying_ = false;
     }
 
     virtual void Reset()
     {
         {
-            boost::mutex::scoped_lock lock(_mutexWorker);
+            boost::mutex::scoped_lock lock(mutex_worker_);
             listWorkers.clear();
             _mapFigureIds.clear();
         }
 
         // wait for worker thread to stop
-        while(_bWorking) {
+        while(is_working_) {
             _condWorker.notify_all();
             usleep(1000);
         }
     }
 
-    virtual bool SimulationStep(dReal fElapsedTime)
+    virtual bool SimulationStep(dReal elapsed_time)
     {
         return false;
     }
 
 private:
 
-    inline std::shared_ptr<SimpleTextServer> shared_server() {
+    inline std::shared_ptr<SimpleTextServer> shared_server() 
+	{
         return std::static_pointer_cast<SimpleTextServer>(shared_from_this());
     }
-    inline std::shared_ptr<SimpleTextServer const> shared_server_const() const {
+    inline std::shared_ptr<SimpleTextServer const> shared_server_const() const 
+	{
         return std::static_pointer_cast<SimpleTextServer const>(shared_from_this());
     }
 
     // called from threads other than the main worker to wait until
     void _SyncWithWorkerThread()
     {
-        boost::mutex::scoped_lock lock(_mutexWorker);
-        while((listWorkers.size() > 0 || _bWorking) && !bCloseThread) {
+        boost::mutex::scoped_lock lock(mutex_worker_);
+        while((listWorkers.size() > 0 || is_working_) && !is_close_thread_) 
+		{
             _condHasWork.notify_all();
             _condWorker.wait(lock);
         }
@@ -491,19 +505,19 @@ private:
 
     void ScheduleWorker(const boost::function<void()>& fn)
     {
-        boost::mutex::scoped_lock lock(_mutexWorker);
+        boost::mutex::scoped_lock lock(mutex_worker_);
         listWorkers.push_back(fn);
         _condHasWork.notify_all();
     }
 
     void _worker_threadcb()
     {
-        list<boost::function<void()> > listlocalworkers;
-        while(!bCloseThread) {
+        std::list<boost::function<void()> > listlocalworkers;
+        while(!is_close_thread_) {
             {
-                boost::mutex::scoped_lock lock(_mutexWorker);
+                boost::mutex::scoped_lock lock(mutex_worker_);
                 _condHasWork.wait(lock);
-                if( bCloseThread ) {
+                if( is_close_thread_ ) {
                     break;
                 }
                 if( listWorkers.size() == 0 ) {
@@ -511,7 +525,7 @@ private:
                     continue;
                 }
 
-                *(volatile bool*)&_bWorking = true;
+                *(volatile bool*)&is_working_ = true;
                 listlocalworkers.swap(listWorkers);
             }
 
@@ -529,7 +543,7 @@ private:
             }
             listlocalworkers.clear();
 
-            *(volatile bool*)&_bWorking = false;
+            *(volatile bool*)&is_working_ = false;
             _condWorker.notify_all();
         }
     }
@@ -538,7 +552,7 @@ private:
     {
         SocketPtr psocket(new Socket());
 
-        while(!bCloseThread) {
+        while(!is_close_thread_) {
 
             // finally initialize the socket
             if( !psocket->Accept(server_sockfd) ) {
@@ -557,28 +571,33 @@ private:
     void _read_threadcb(SocketPtr psocket)
     {
         RAVELOG_VERBOSE("started new server connection\n");
-        string cmd, line;
-        stringstream sout;
-        while(!bCloseThread) {
-            if( psocket->ReadLine(line) && line.length() ) {
+        std::string cmd, line;
+		std::stringstream sout;
+        while(!is_close_thread_) 
+		{
+            if( psocket->ReadLine(line) && line.length() )
+			{
 
-                if( !!flog &&( GetEnv()->GetDebugLevel()>0) ) {
+                if( !!flog &&( GetEnv()->GetDebugLevel()>0) ) 
+				{
                     static int index=0;
                     flog << index++ << ": " << line << endl;
                 }
 
-                std::shared_ptr<istream> is(new stringstream(line));
+                std::shared_ptr<std::istream> is(new std::stringstream(line));
                 *is >> cmd;
-                if( !*is ) {
+                if( !*is ) 
+				{
                     RAVELOG_ERROR("Failed to get command\n");
                     psocket->SendData("error\n",1);
                     continue;
                 }
                 std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
-                stringstream::streampos inputpos = is->tellg();
+				std::stringstream::streampos inputpos = is->tellg();
 
-                map<string, RAVENETWORKFN>::iterator itfn = mapNetworkFns.find(cmd);
-                if( itfn != mapNetworkFns.end() ) {
+                std::map<std::string, RAVENETWORKFN>::iterator itfn = mapNetworkFns.find(cmd);
+                if( itfn != mapNetworkFns.end() )
+				{
                     bool bCallWorker = true;
                     std::shared_ptr<void> pdata;
 
@@ -642,18 +661,18 @@ private:
         RAVELOG_VERBOSE("Closing socket connection\n");
     }
 
-    int _nPort;     //!< port used for listening to incoming connections
+    int port_num_;     //!< port used for listening to incoming connections
 
-    std::shared_ptr<boost::thread> _servthread, _workerthread;
+    std::shared_ptr<boost::thread> service_thread_, worker_thread_;
     list<std::shared_ptr<boost::thread> > _listReadThreads;
 
-    boost::mutex _mutexWorker;
+    boost::mutex mutex_worker_;
     boost::condition _condWorker;
     boost::condition _condHasWork;
 
-    bool bInitThread;
-    bool bCloseThread;
-    bool bDestroying;
+    bool is_init_thread_;
+    bool is_close_thread_;
+    bool is_destroying_;
 
     struct sockaddr_in server_address;
     int server_sockfd, server_len;
@@ -664,11 +683,11 @@ private:
     map<string, RAVENETWORKFN> mapNetworkFns;
 
     int _nIdIndex;
-    map<int, ModuleBasePtr > _mapModules;
+    map<int, ModuleBasePtr > modules_map_;
     map<int, GraphHandlePtr> _mapFigureIds;
     int _nNextFigureId;
 
-    bool _bWorking;     //!< worker thread processing current work items
+    bool is_working_;     //!< worker thread processing current work items
 
 protected:
     // all the server functions
@@ -676,7 +695,8 @@ protected:
     {
         int index=0;
         is >> index;
-        if( !is ) {
+        if( !is ) 
+		{
             return KinBodyPtr();
         }
         return GetEnv()->GetBodyFromEnvironmentId(index);
@@ -686,38 +706,46 @@ protected:
     {
         int index=0;
         is >> index;
-        if( !is ) {
+        if( !is ) 
+		{
             return RobotBasePtr();
         }
         KinBodyPtr pbody = GetEnv()->GetBodyFromEnvironmentId(index);
-        if( !pbody || !pbody->IsRobot() ) {
+        if( !pbody || !pbody->IsRobot() ) 
+		{
             return RobotBasePtr();
         }
         return RaveInterfaceCast<RobotBase>(pbody);
     }
 
     /// orRender - Render the new OpenRAVE scene
-    bool worRender(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
+    bool worRender(std::shared_ptr<std::istream> is, std::shared_ptr<void> pdata)
     {
-        string cmd;
-        while(1) {
+        std::string cmd;
+        while(1) 
+		{
             *is >> cmd;
-            if( !*is ) {
+            if( !*is ) 
+			{
                 break;
             }
             std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
-            if( cmd == "start" ) {
+            if( cmd == "start" ) 
+			{
                 GetEnv()->GetViewer()->SetEnvironmentSync(true);
             }
-            else if( cmd == "stop" ) {
+            else if( cmd == "stop" ) 
+			{
                 GetEnv()->GetViewer()->SetEnvironmentSync(false);
             }
-            else {
+            else 
+			{
                 RAVELOG_WARN("unknown render command: %s\n", cmd.c_str());
             }
 
-            if( is->fail() || !*is ) {
+            if( is->fail() || !*is )
+			{
                 break;
             }
         }
@@ -726,13 +754,14 @@ protected:
     }
 
     /// orEnvSetOptions - Set physics simulation parameters,
-    bool orEnvSetOptions(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orEnvSetOptions(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
-        string cmd;
+		std::string cmd;
         is >> cmd;
         std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
-        if( cmd == "quit" ) {
+        if( cmd == "quit" ) 
+		{
             GetEnv()->Reset();
             // call exit in a different thread
             new boost::thread(_CallExit);
@@ -744,97 +773,119 @@ protected:
     {
         exit(0);
     }
-    bool worSetOptions(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
+
+    bool worSetOptions(std::shared_ptr<std::istream> is, std::shared_ptr<void> pdata)
     {
-        string cmd;
-        while(1) {
+		std::string cmd;
+        while(1) 
+		{
             *is >> cmd;
-            if( !*is ) {
+            if( !*is )
+			{
                 break;
             }
             std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
-            if( cmd == "physics" ) {
-                string name;
+            if( cmd == "physics" ) 
+			{
+				std::string name;
                 *is >> name;
-                if( !*is  ||(name.size() == 0) ) {
+                if( !*is  ||(name.size() == 0) )
+				{
                     RAVELOG_DEBUG("resetting physics engine\n");
                     GetEnv()->SetPhysicsEngine(PhysicsEngineBasePtr());
                 }
-                else {
+                else 
+				{
                     PhysicsEngineBasePtr pnewengine = RaveCreatePhysicsEngine(GetEnv(),name);
 
-                    if( !!pnewengine ) {
+                    if( !!pnewengine )
+					{
                         RAVELOG_DEBUG("setting physics engine to %s\n",name.c_str());
                         GetEnv()->SetPhysicsEngine(pnewengine);
                     }
                 }
             }
-            else if( cmd == "collision" ) {
-                string name;
+            else if( cmd == "collision" ) 
+			{
+				std::string name;
                 *is >> name;
-                if( !*is  ||(name.size() == 0) ) {
+                if( !*is  ||(name.size() == 0) ) 
+				{
                     RAVELOG_DEBUG("resetting collision checker\n");
                     GetEnv()->SetCollisionChecker(CollisionCheckerBasePtr());
                 }
-                else {
+                else 
+				{
                     CollisionCheckerBasePtr p = RaveCreateCollisionChecker(GetEnv(),name);
 
-                    if( !!p ) {
+                    if( !!p ) 
+					{
                         RAVELOG_DEBUG("setting collision checker to %s\n",name.c_str());
                         GetEnv()->SetCollisionChecker(p);
                     }
                 }
             }
-            else if( cmd == "simulation" ) {
-                string simcmd;
+            else if( cmd == "simulation" ) 
+			{
+				std::string simcmd;
                 *is >> simcmd;
                 std::transform(simcmd.begin(), simcmd.end(), simcmd.begin(), ::tolower);
 
-                if(( simcmd == "start") ||( simcmd == "on") ) {
+                if(( simcmd == "start") ||( simcmd == "on") )
+				{
                     dReal fdeltatime = 0.01f;
                     *is >> fdeltatime;
                     RAVELOG_DEBUG(str(boost::format("starting simulation loop, timestep=%f")%fdeltatime));
                     GetEnv()->StartSimulation(fdeltatime);
                 }
-                else {
+                else 
+				{
                     RAVELOG_DEBUG("stopping simulation loop\n");
                     GetEnv()->StopSimulation();
                 }
             }
-            else if( cmd == "debug" ) {
+            else if( cmd == "debug" )
+			{
                 int level = GetEnv()->GetDebugLevel();
                 *is >> level;
                 GetEnv()->SetDebugLevel((DebugLevel)level);
             }
-            else if( cmd == "gravity" ) {
+            else if( cmd == "gravity" ) 
+			{
                 Vector vgravity;
                 *is >> vgravity.x >> vgravity.y >> vgravity.z;
-                if( !!*is ) {
+                if( !!*is ) 
+				{
                     RAVELOG_DEBUG("set gravity (%f,%f,%f)\n", vgravity.x,vgravity.y,vgravity.z);
                     GetEnv()->GetPhysicsEngine()->SetGravity(vgravity);
                 }
             }
-            else if( cmd == "quit" ) {
+            else if( cmd == "quit" )
+			{
                 //GetEnv()->Reset();
                 exit(0);
             }
-            else if( cmd == "selfcollision" ) {
-                string newcmd;
+            else if( cmd == "selfcollision" )
+			{
+				std::string newcmd;
                 *is >> newcmd;
                 std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
-                if( newcmd == "on" ) {
+                if( newcmd == "on" ) 
+				{
                     GetEnv()->GetPhysicsEngine()->SetPhysicsOptions(OpenRAVE::PEO_SelfCollisions);
                     RAVELOG_DEBUG("set self collisions to on\n");
                 }
-                else {
+                else 
+				{
                     GetEnv()->GetPhysicsEngine()->SetPhysicsOptions(GetEnv()->GetPhysicsEngine()->GetPhysicsOptions()&~OpenRAVE::PEO_SelfCollisions);
                     RAVELOG_DEBUG("set self collisions to off\n");
                 }
             }
 
-            if( is->eof() || !*is ) {
+            if( is->eof() || !*is )
+			{
                 break;
             }
         }
@@ -843,22 +894,25 @@ protected:
     }
 
     /// orEnvSetOptions - Set physics simulation parameters,
-    bool orEnvLoadScene(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orEnvLoadScene(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
-        bool bClearScene=false;
-        string filename;
-        is >> filename >> bClearScene;
-        if( !is ||( filename.size() == 0) ) {
+        bool is_clear_scene=false;
+		std::string filename;
+        is >> filename >> is_clear_scene;
+        if( !is ||( filename.size() == 0) ) 
+		{
             RAVELOG_DEBUG("resetting scene\n");
-            _mapModules.clear();
+            modules_map_.clear();
             GetEnv()->Reset();
             return true;
         }
-        else {
-            if( bClearScene ) {
+        else 
+		{
+            if( is_clear_scene )
+			{
                 RAVELOG_VERBOSE("resetting scene\n");
                 GetEnv()->Reset();
-                _mapModules.clear();
+                modules_map_.clear();
                 RAVELOG_VERBOSE("resetting destroying\n");
             }
 
@@ -870,20 +924,23 @@ protected:
     }
 
     /// robot = orEnvCreateRobot(name, xmlfile) - create a specific robot, return a robot handle (a robot is also a kinbody)
-    bool orEnvCreateRobot(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orEnvCreateRobot(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
-        string robotname, xmlfile, robottype;
+		std::string robotname, xmlfile, robottype;
         is >> robotname >> xmlfile >> robottype;
-        if( !is ) {
+        if( !is ) 
+		{
             return false;
         }
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
         RobotBasePtr robot = RaveCreateRobot(GetEnv(),robottype);
-        if( !robot ) {
+        if( !robot ) 
+		{
             return false;
         }
         robot = GetEnv()->ReadRobotURI(robot,xmlfile,AttributesList());
-        if( !robot ) {
+        if( !robot )
+		{
             return false;
         }
         robot->SetName(robotname);
@@ -892,12 +949,13 @@ protected:
         return true;
     }
 
-    bool orEnvCreateModule(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orEnvCreateModule(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
-        string problemname;
+		std::string module_name;
         bool bDestroyDuplicates = true;
-        is >> bDestroyDuplicates >> problemname;
-        if( !is ) {
+        is >> bDestroyDuplicates >> module_name;
+        if( !is ) 
+		{
             return false;
         }
         std::string strargs((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
@@ -905,63 +963,69 @@ protected:
 
         if( bDestroyDuplicates ) {
             // if there's a duplicate problem instance, delete it
-            map<int, ModuleBasePtr >::iterator itprob = _mapModules.begin();
-            while(itprob != _mapModules.end()) {
-                if( itprob->second->GetXMLId() == problemname ) {
-                    RAVELOG_DEBUG("deleting duplicate problem %s\n", problemname.c_str());
+			std::map<int, ModuleBasePtr >::iterator itprob = modules_map_.begin();
+            while(itprob != modules_map_.end()) {
+                if( itprob->second->GetXMLId() == module_name ) {
+                    RAVELOG_DEBUG("deleting duplicate problem %s\n", module_name.c_str());
                     if( !GetEnv()->Remove(itprob->second) ) {
-                        RAVELOG_WARN("environment failed to remove duplicate problem %s\n", problemname.c_str());
+                        RAVELOG_WARN("environment failed to remove duplicate problem %s\n", module_name.c_str());
                     }
-                    _mapModules.erase(itprob++);
+                    modules_map_.erase(itprob++);
                 }
                 else ++itprob;
             }
         }
 
-        ModuleBasePtr prob = RaveCreateModule(GetEnv(),problemname);
+        ModuleBasePtr prob = RaveCreateModule(GetEnv(),module_name);
         if( !prob ) {
-            RAVELOG_ERROR("Cannot find module: %s\n", problemname.c_str());
+            RAVELOG_ERROR("Cannot find module: %s\n", module_name.c_str());
             return false;
         }
 
         pdata.reset(new pair<ModuleBasePtr,string>(prob,strargs));
-        _mapModules[_nIdIndex] = prob;
+        modules_map_[_nIdIndex] = prob;
         os << _nIdIndex++;
         return true;
     }
 
-    bool worEnvCreateModule(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
+    bool worEnvCreateModule(std::shared_ptr<std::istream> is, std::shared_ptr<void> pdata)
     {
-        GetEnv()->Add(std::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->first, true, std::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->second);
+        GetEnv()->Add(std::static_pointer_cast< std::pair<ModuleBasePtr, std::string> >(pdata)->first, 
+			true, std::static_pointer_cast<std::pair<ModuleBasePtr, std::string> >(pdata)->second);
         return true;
     }
 
-    bool worEnvDestroyProblem(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
+    bool worEnvDestroyModule(std::shared_ptr<std::istream> is, std::shared_ptr<void> pdata)
     {
         int index = 0;
         *is >> index;
-        if( !*is ) {
+        if( !*is )
+		{
             return false;
         }
-        map<int, ModuleBasePtr >::iterator it = _mapModules.find(index);
-        if( it != _mapModules.end() ) {
-            if( !GetEnv()->Remove(it->second) ) {
-                RAVELOG_WARN("orEnvDestroyProblem: failed to remove problem from environment\n");
+		std::map<int, ModuleBasePtr >::iterator it = modules_map_.find(index);
+        if( it != modules_map_.end() )
+		{
+            if( !GetEnv()->Remove(it->second) )
+			{
+                RAVELOG_WARN("worEnvDestroyModule: failed to remove module from environment\n");
             }
-            _mapModules.erase(it);
+            modules_map_.erase(it);
         }
-        else {
-            RAVELOG_WARN("orEnvDestroyProblem: cannot find problem with id %d\n", index);
+        else
+		{
+            RAVELOG_WARN("worEnvDestroyModule: cannot find module with id %d\n", index);
         }
         return true;
     }
 
     /// body = orEnvCreateKinBody(name, xmlfile) - create a specific kinbody
-    bool orEnvCreateKinBody(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orEnvCreateKinBody(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
-        string bodyname, xmlfile;
+		std::string bodyname, xmlfile;
         is >> bodyname >> xmlfile;
-        if( !is ) {
+        if( !is ) 
+		{
             return false;
         }
 
@@ -969,7 +1033,8 @@ protected:
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
         KinBodyPtr body = GetEnv()->ReadKinBodyURI(KinBodyPtr(),xmlfile,list<pair<string,string> >());
 
-        if( !body ) {
+        if( !body )
+		{
             return false;
         }
         body->SetName(bodyname);
@@ -1129,27 +1194,30 @@ protected:
         return true;
     }
 
-    bool orRobotControllerSend(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orRobotControllerSend(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
         RobotBasePtr probot = orMacroGetRobot(is);
-        if( !probot || !probot->GetController() ) {
+        if( !probot || !probot->GetController() ) 
+		{
             return false;
         }
         // the next word should be the command
-        if( probot->GetController()->SendCommand(os,is) ) {
+        if( probot->GetController()->SendCommand(os,is) ) 
+		{
             return true;
         }
         return false;
     }
 
-    bool orRobotSensorSend(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orRobotSensorSend(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
-        RobotBasePtr probot = orMacroGetRobot(is);
-        if( !probot ) {
+        RobotBasePtr robot = orMacroGetRobot(is);
+        if( !robot ) 
+		{
             return false;
         }
         int sensorindex = 0;
@@ -1157,13 +1225,13 @@ protected:
         if( !is ) {
             return false;
         }
-        if(( sensorindex < 0) ||( sensorindex >= (int)probot->GetAttachedSensors().size()) ) {
+        if(( sensorindex < 0) ||( sensorindex >= (int)robot->GetAttachedSensors().size()) ) {
             return false;
         }
-        return probot->GetAttachedSensors().at(sensorindex)->GetSensor()->SendCommand(os,is);
+        return robot->GetAttachedSensors().at(sensorindex)->GetSensor()->SendCommand(os,is);
     }
 
-    bool orRobotSensorConfigure(istream& is, ostream& os, std::shared_ptr<void>& pdata)
+    bool orRobotSensorConfigure(std::istream& is, std::ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1739,17 +1807,21 @@ protected:
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
         RobotBasePtr probot = orMacroGetRobot(is);
-        if( !probot ) {
+        if( !probot ) 
+		{
             return false;
         }
         os << probot->GetAttachedSensors().size() << " ";
-        FOREACHC(itsensor, probot->GetAttachedSensors()) {
+        FOREACHC(itsensor, probot->GetAttachedSensors()) 
+		{
             os << (*itsensor)->GetName().size() << " " << (*itsensor)->GetName() << " ";
 
-            if( !(*itsensor)->GetAttachingLink() ) {
+            if( !(*itsensor)->GetAttachingLink() )
+			{
                 os << "-1 ";
             }
-            else {
+            else
+			{
                 os << (*itsensor)->GetAttachingLink()->GetIndex() << " ";
             }
             os << TransformMatrix((*itsensor)->GetRelativeTransform()) << " ";
@@ -2237,7 +2309,7 @@ protected:
                     if( --timeout == 0 )
                         break;
                 }
-                if( bCloseThread ) {
+                if( is_close_thread_ ) {
                     return false;
                 }
             }
@@ -2269,8 +2341,8 @@ protected:
         //EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
 
         if( problemid > 0 ) {
-            map<int, ModuleBasePtr >::iterator it = _mapModules.find(problemid);
-            if( it == _mapModules.end() ) {
+            map<int, ModuleBasePtr >::iterator it = modules_map_.find(problemid);
+            if( it == modules_map_.end() ) {
                 RAVELOG_WARN("failed to find problem %d\n", problemid);
                 return false;
             }

@@ -3457,10 +3457,12 @@ IkReturnPtr ManipulatorIKGoalSampler::Sample()
 {
     std::vector<dReal> vindex;
     _pindexsampler->SampleSequence(vindex,1,IT_OpenEnd);
-    if( vindex.at(0) > _fsampleprob ) {
+    if( vindex.at(0) > _fsampleprob ) 
+	{
         return IkReturnPtr();
     }
-    if( _vikreturns.size() > 0 ) {
+    if( _vikreturns.size() > 0 ) 
+	{
         IkReturnPtr ikreturnlocal = _vikreturns.back();
         _vikreturns.pop_back();
         _listreturnedsamples.push_back(_tempikindex);

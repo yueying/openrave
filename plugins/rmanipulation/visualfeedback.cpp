@@ -522,18 +522,21 @@ private:
     class GoalSampleFunction
     {
 public:
-        GoalSampleFunction(std::shared_ptr<VisualFeedback> vf, const vector<Transform>& visibilitytransforms) : _vconstraint(vf), _fSampleGoalProb(1.0f), _vf(vf), _visibilitytransforms(visibilitytransforms)
+        GoalSampleFunction(std::shared_ptr<VisualFeedback> vf, const std::vector<Transform>& visibilitytransforms)
+			: _vconstraint(vf), _fSampleGoalProb(1.0f), _vf(vf), _visibilitytransforms(visibilitytransforms)
         {
             RAVELOG_DEBUG(str(boost::format("have %d detection extents hypotheses\n")%_visibilitytransforms.size()));
             _ttarget = _vf->_targetlink->GetTransform();
             _sphereperms.PermuteStart(_visibilitytransforms.size());
         }
-        virtual ~GoalSampleFunction() {
+        virtual ~GoalSampleFunction() 
+		{
         }
 
-        virtual bool Sample(vector<dReal>& pNewSample)
+        virtual bool Sample(std::vector<dReal>& pNewSample)
         {
-            if( RaveRandomFloat() > _fSampleGoalProb ) {
+            if( RaveRandomFloat() > _fSampleGoalProb )
+			{
                 return false;
             }
             RobotBase::RobotStateSaver state(_vf->_robot);
@@ -550,7 +553,7 @@ public:
             return false;
         }
 
-        bool SampleWithParameters(int isample, vector<dReal>& pNewSample, bool bOutputError, std::string& errormsg)
+        bool SampleWithParameters(int isample, std::vector<dReal>& pNewSample, bool bOutputError, std::string& errormsg)
         {
             TransformMatrix tcamera = _ttarget*_visibilitytransforms.at(isample);
             return _vconstraint.SampleWithCamera(tcamera,pNewSample, bOutputError, errormsg);

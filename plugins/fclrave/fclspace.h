@@ -216,16 +216,16 @@ public:
     void DestroyEnvironment()
     {
         RAVELOG_VERBOSE_FORMAT("destroying fcl collision environment (env %d) (userdatakey %s)", environment_->GetId()%user_data_key_);
-        FOREACH(itbody, _setInitializedBodies)
+        FOREACH(itbody, initialized_bodies_)
 		{
             KinBodyInfoPtr pinfo = GetInfo(**itbody);
             if( !!pinfo ) {
                 pinfo->Reset();
             }
         }
-        _currentpinfo.clear();
+        current_kinbody_info_.clear();
         _cachedpinfo.clear();
-        _setInitializedBodies.clear();
+        initialized_bodies_.clear();
     }
 
     KinBodyInfoPtr InitKinBody(KinBodyConstPtr kinbody, 
@@ -350,10 +350,10 @@ public:
 
         BOOST_ASSERT(kinbody->GetEnvironmentId() != 0);
         if( bSetToCurrentPInfo ) {
-            _currentpinfo[kinbody->GetEnvironmentId()] = kinbody_info;
+            current_kinbody_info_[kinbody->GetEnvironmentId()] = kinbody_info;
         }
         //_cachedpinfo[kinbody->GetEnvironmentId()] what to do with the cache?
-        _setInitializedBodies.insert(kinbody);
+        initialized_bodies_.insert(kinbody);
 
         //Do I really need to synchronize anything at that point ?
         _Synchronize(*kinbody_info, *kinbody);
@@ -380,7 +380,7 @@ public:
     {
         // should always do this since bodies can have different geometry groups set
         _geometrygroup = groupname;
-        FOREACHC(itbody, _setInitializedBodies) {
+        FOREACHC(itbody, initialized_bodies_) {
             SetBodyGeometryGroup(*itbody, groupname);
         }
     }
@@ -417,7 +417,7 @@ public:
         else {
             RAVELOG_VERBOSE_FORMAT("env=%d, switching to geometry %s for kinbody %s (id = %d)", environment_->GetId()%groupname%pbody->GetName()%pbody->GetEnvironmentId());
             // Set the current info to use the KinBodyInfoPtr associated to groupname
-            _currentpinfo[pbody->GetEnvironmentId()] = pinfo;
+            current_kinbody_info_[pbody->GetEnvironmentId()] = pinfo;
 
             // Revoke the information inside the cache so that a potentially outdated object does not survive
             _cachedpinfo[(pbody)->GetEnvironmentId()].erase(groupname);
@@ -484,7 +484,7 @@ public:
 
         // reinitialize all the KinBodyInfo
 
-        FOREACH(itbody, _setInitializedBodies) {
+        FOREACH(itbody, initialized_bodies_) {
             KinBodyInfoPtr pinfo = GetInfo(**itbody);
             pinfo->geometry_update_stamp_++;
             InitKinBody(*itbody, pinfo);
@@ -500,8 +500,9 @@ public:
     void Synchronize()
     {
         // We synchronize only the initialized bodies, which differs from oderave
-        FOREACH(itbody, _setInitializedBodies) {
-            Synchronize(**itbody);
+        for(auto& itbody: initialized_bodies_) 
+		{
+            Synchronize(*itbody);
         }
     }
 
@@ -535,14 +536,17 @@ public:
 
     KinBodyInfoPtr GetInfo(const KinBody &body) const
     {
-        int envId = body.GetEnvironmentId();
-        if ( envId == 0 ) {
-            RAVELOG_WARN_FORMAT("env=%d, body %s has invalid environment id 0", body.GetEnv()->GetId()%body.GetName());
+        int env_id = body.GetEnvironmentId();
+        if ( env_id == 0 ) 
+		{
+            RAVELOG_WARN_FORMAT("env=%d, body %s has invalid environment id 0",
+				body.GetEnv()->GetId()%body.GetName());
             return KinBodyInfoPtr();
         }
 
-        std::map< int, KinBodyInfoPtr >::const_iterator it = _currentpinfo.find(envId);
-        if( it == _currentpinfo.end() ) {
+        std::map< int, KinBodyInfoPtr >::const_iterator it = current_kinbody_info_.find(env_id);
+        if( it == current_kinbody_info_.end() )
+		{
             return KinBodyInfoPtr();
         }
         return it->second;
@@ -552,21 +556,21 @@ public:
     void RemoveUserData(KinBodyConstPtr pbody) {
         if( !!pbody ) {
             RAVELOG_VERBOSE(str(boost::format("FCL User data removed from env %d (userdatakey %s) : %s") % environment_->GetId() % user_data_key_ % pbody->GetName()));
-            _setInitializedBodies.erase(pbody);
+            initialized_bodies_.erase(pbody);
             KinBodyInfoPtr pinfo = GetInfo(*pbody);
             if( !!pinfo ) {
                 pinfo->Reset();
             }
             BOOST_ASSERT(pbody->GetEnvironmentId() != 0);
 
-            _currentpinfo.erase(pbody->GetEnvironmentId());
+            current_kinbody_info_.erase(pbody->GetEnvironmentId());
             _cachedpinfo.erase(pbody->GetEnvironmentId());
         }
     }
 
 
     const std::set<KinBodyConstPtr>& GetEnvBodies() const {
-        return _setInitializedBodies;
+        return initialized_bodies_;
     }
 
     inline CollisionObjectPtr GetLinkBV(const KinBody::Link &link) {
@@ -701,19 +705,19 @@ private:
         //KinBodyPtr pbody = info.GetBody();
         if( info.last_stamp_ != body.GetUpdateStamp()) 
 		{
-            std::vector<Transform> vtrans;
-            body.GetLinkTransformations(vtrans);
+            std::vector<Transform> link_trans;
+            body.GetLinkTransformations(link_trans);
             info.last_stamp_ = body.GetUpdateStamp();
             BOOST_ASSERT( body.GetLinks().size() == info.vlinks.size() );
-            BOOST_ASSERT( vtrans.size() == info.vlinks.size() );
-            for(size_t i = 0; i < vtrans.size(); ++i) 
+            BOOST_ASSERT( link_trans.size() == info.vlinks.size() );
+            for(size_t i = 0; i < link_trans.size(); ++i) 
 			{
                 CollisionObjectPtr pcoll = info.vlinks[i]->linkBV.second;
                 if( !pcoll ) 
 				{
                     continue;
                 }
-                Transform pose = vtrans[i] * info.vlinks[i]->linkBV.first;
+                Transform pose = link_trans[i] * info.vlinks[i]->linkBV.first;
                 fcl::Vector3<dReal> newPosition = ConvertVectorToFCL(pose.trans);
                 fcl::Quaternion<dReal> newOrientation = ConvertQuaternionToFCL(pose.rot);
 
@@ -726,7 +730,7 @@ private:
                 FOREACHC(itgeomcoll, info.vlinks[i]->geometries_vector_)
 				{
                     CollisionObjectPtr pcoll = (*itgeomcoll).second;
-                    Transform pose = vtrans[i] * (*itgeomcoll).first;
+                    Transform pose = link_trans[i] * (*itgeomcoll).first;
                     fcl::Vector3<dReal> newPosition = ConvertVectorToFCL(pose.trans);
                     fcl::Quaternion<dReal> newOrientation = ConvertQuaternionToFCL(pose.rot);
 
@@ -769,10 +773,10 @@ private:
     {
         KinBodyInfoPtr pinfo = _pinfo.lock();
         KinBodyPtr pbody = pinfo->GetBody();
-        KinBodyInfoPtr pcurrentinfo = _currentpinfo[pbody->GetEnvironmentId()];
+        KinBodyInfoPtr pcurrentinfo = current_kinbody_info_[pbody->GetEnvironmentId()];
 
         if( !!pinfo && pinfo == pcurrentinfo ) {//pinfo->_geometrygroup.size() == 0 ) {
-            // pinfo is current set to the current one, so should InitKinBody into _currentpinfo
+            // pinfo is current set to the current one, so should InitKinBody into current_kinbody_info_
             //RAVELOG_VERBOSE_FORMAT("env=%d, resetting current geometry for kinbody %s geometry_update_stamp_=%d, (key %s, self=%d)", environment_->GetId()%pbody->GetName()%pinfo->geometry_update_stamp_%user_data_key_%is_self_collision_checker_);
             pinfo->geometry_update_stamp_++;
             KinBodyInfoRemover remover(boost::bind(&FCLSpace::RemoveUserData, this, pbody)); // protect
@@ -787,7 +791,7 @@ private:
         KinBodyInfoPtr pinfo = _pinfo.lock();
         KinBodyPtr pbody = pinfo->GetBody();
 
-        //KinBodyInfoPtr pcurrentinfo = _currentpinfo[pbody->GetEnvironmentId()];
+        //KinBodyInfoPtr pcurrentinfo = current_kinbody_info_[pbody->GetEnvironmentId()];
 
         if( !!pinfo ) {// && pinfo->_geometrygroup.size() > 0 ) {
             //RAVELOG_VERBOSE_FORMAT("env=%d, resetting geometry groups for kinbody %s, geometry_update_stamp_=%d (key %s, self=%d)", environment_->GetId()%pbody->GetName()%pinfo->geometry_update_stamp_%user_data_key_%is_self_collision_checker_);
@@ -833,9 +837,9 @@ private:
     std::string bvh_representation_;
     MeshFactory mesh_factory_;
 
-    std::set<KinBodyConstPtr> _setInitializedBodies; //!< Set of the kinbody initialized in this space
+    std::set<KinBodyConstPtr> initialized_bodies_; //!< Set of the kinbody initialized in this space
     std::map< int, std::map< std::string, KinBodyInfoPtr > > _cachedpinfo; //!< Associates to each body id and geometry group name the corresponding kinbody info if already initialized and not currently set as user data
-    std::map< int, KinBodyInfoPtr> _currentpinfo; //!< maps kinbody environment id to the kinbodyinfo struct constaining fcl objects. The key being environment id makes it easier to compare objects without getting a handle to their pointers. Whenever a KinBodyInfoPtr goes into this map, it is removed from _cachedpinfo
+    std::map< int, KinBodyInfoPtr> current_kinbody_info_; //!< maps kinbody environment id to the kinbodyinfo struct constaining fcl objects. The key being environment id makes it easier to compare objects without getting a handle to their pointers. Whenever a KinBodyInfoPtr goes into this map, it is removed from _cachedpinfo
 
     bool is_self_collision_checker_; // Currently not used
 };

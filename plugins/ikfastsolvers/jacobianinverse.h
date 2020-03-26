@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2016 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -38,9 +38,12 @@ class JacobianInverseSolver
     class ValueSaver
     {
 public:
-        ValueSaver(int *src, int *dst) : _src(src), _dst(dst) {
+        ValueSaver(int *src, int *dst) 
+			: _src(src), _dst(dst) 
+		{
         }
-        ~ValueSaver() {
+        ~ValueSaver() 
+		{
             *_dst = *_src;
         }
 private:
@@ -48,10 +51,11 @@ private:
     };
 
 public:
-    JacobianInverseSolver() {
+    JacobianInverseSolver()
+	{
         _errorthresh2 = 1e-12;
         _lastiter = -1;
-        _nMaxIterations = 100;
+        max_iterations_ = 100;
     }
 
     /// \brief initializes with the manipulator, but doesn't store it!
@@ -59,22 +63,24 @@ public:
     /// \param errorthresh the threshold of the error on the constraints
     void Init(const RobotBase::Manipulator& manip)
     {
-        RobotBasePtr probot = manip.GetRobot();
+        RobotBasePtr robot = manip.GetRobot();
 
-        _J.resize(6,probot->GetActiveDOF());
+        _J.resize(6,robot->GetActiveDOF());
         _invJJt.resize(6,6);
         _error.resize(6,1);
 
-        _J3d.resize(3,probot->GetActiveDOF());
+        _J3d.resize(3,robot->GetActiveDOF());
         _invJJt3d.resize(3,3);
         _error3d.resize(3,1);
 
         _viweights.resize(manip.GetArmIndices().size(),0);
-        for(size_t i = 0; i < _viweights.size(); ++i) {
+        for(size_t i = 0; i < _viweights.size(); ++i)
+		{
             int dof = manip.GetArmIndices().at(i);
-            dReal fweight = probot->GetJointFromDOFIndex(dof)->GetWeight(dof-probot->GetJointFromDOFIndex(dof)->GetDOFIndex());
-            if( fweight > 0 ) {
-                _viweights.at(i) = 1/fweight;
+            dReal weight = robot->GetJointFromDOFIndex(dof)->GetWeight(dof-robot->GetJointFromDOFIndex(dof)->GetDOFIndex());
+            if( weight > 0 ) 
+			{
+                _viweights.at(i) = 1/weight;
             }
             _viweights[i] = 1;
         }
@@ -85,9 +91,9 @@ public:
         _errorthresh2 = errorthresh*errorthresh;
     }
 
-    void SetMaxIterations(int nMaxIterations)
+    void SetMaxIterations(int max_iterations)
     {
-        _nMaxIterations = nMaxIterations;
+        max_iterations_ = max_iterations;
     }
 
     T GetErrorThresh() const
@@ -97,33 +103,35 @@ public:
 
     int GetMaxIterations() const
     {
-        return _nMaxIterations;
+        return max_iterations_;
     }
 
     /// \brief computes the jacobian inverse solution.
     ///
     /// robot is at the starting solution and solution should already be very close to the goal.
     /// assumes the robot's active dof is already set to the manipulator arm indices
-    /// \param tgoal the goal in the manipulator's base frame
-    /// \param vsolution output if successful
+    /// \param goal the goal in the manipulator's base frame
+    /// \param solution output if successful
     /// \return -1 if not changed, 0 if failed, 1 if changed and new succeeded in getting new position
-    int ComputeSolution(const Transform& tgoal, const RobotBase::Manipulator& manip, std::vector<dReal>& vsolution, bool bIgnoreJointLimits=false)
+    int ComputeSolution(const Transform& goal,
+		const RobotBase::Manipulator& manip, std::vector<dReal>& solution, bool is_ignore_joint_limits=false)
     {
-        _vGoalQuat = tgoal.rot;
-        _vGoalAxisAngle = axisAngleFromQuat(tgoal.rot);
-        _vGoalPosition = tgoal.trans;
+        goal_quat_ = goal.rot;
+        goal_axis_angle_ = axisAngleFromQuat(goal.rot);
+        goal_position_ = goal.trans;
 
-        RobotBasePtr probot = manip.GetRobot();
-        uint32_t checklimits = bIgnoreJointLimits ? OpenRAVE::KinBody::CLA_Nothing : OpenRAVE::KinBody::CLA_CheckLimitsSilent; // if not ignoring limits, silently clamp the values to their limits.
+        RobotBasePtr robot = manip.GetRobot();
+        uint32_t checklimits = is_ignore_joint_limits ? OpenRAVE::KinBody::CLA_Nothing : OpenRAVE::KinBody::CLA_CheckLimitsSilent; // if not ignoring limits, silently clamp the values to their limits.
 
-        KinBody::KinBodyStateSaver saver(probot, KinBody::Save_LinkTransformation);
+        KinBody::KinBodyStateSaver saver(robot, KinBody::Save_LinkTransformation);
         Transform tbase = manip.GetBase()->GetTransform();
-        Transform trobot = probot->GetTransform();
-        probot->SetTransform(tbase.inverse()*trobot); // transform so that the manip's base is at the identity and matches tgoal
+        Transform trobot = robot->GetTransform();
+        robot->SetTransform(tbase.inverse()*trobot); // transform so that the manip's base is at the identity and matches tgoal
 
         Transform tprev = manip.GetTransform();
-        T totalerror2 = _ComputeConstraintError(tprev, _error, _nMaxIterations);
-        if( totalerror2 <= _errorthresh2 ) {
+        T totalerror2 = _ComputeConstraintError(tprev, _error, max_iterations_);
+        if( totalerror2 <= _errorthresh2 ) 
+		{
             return -1;
         }
 
@@ -134,17 +142,17 @@ public:
         T besterror2 = totalerror2;
         _lasterror2 = totalerror2;
         int armdof = manip.GetArmDOF();
-        std::vector<dReal>& vbest = _cachevbest; vbest = vsolution;
-        std::vector<dReal>& vnew = _cachevnew; vnew = vsolution;
+        std::vector<dReal>& vbest = _cachevbest; vbest = solution;
+        std::vector<dReal>& vnew = _cachevnew; vnew = solution;
         bool bSuccess = false;
         int iter = 0;
         // setup a class so its destructor saves the last iter used in _lastiter
         ValueSaver valuesaver(&iter, &_lastiter);
-        for(iter = 0; iter < _nMaxIterations; ++iter) {
+        for(iter = 0; iter < max_iterations_; ++iter) {
             Transform tmanip = manip.GetTransform();
-            T totalerror2 = _ComputeConstraintError(tmanip, _error, _nMaxIterations-iter);
+            T totalerror2 = _ComputeConstraintError(tmanip, _error, max_iterations_-iter);
             //dReal ratio = totalerror2/_lasterror2;
-            //RAVELOG_VERBOSE_FORMAT("%s:%s iter=%d, totalerror %.15e (%f)", probot->GetName()%manip.GetName()%iter%RaveSqrt(totalerror2)%RaveSqrt(totalerror2/_lasterror2));
+            //RAVELOG_VERBOSE_FORMAT("%s:%s iter=%d, totalerror %.15e (%f)", robot->GetName()%manip.GetName()%iter%RaveSqrt(totalerror2)%RaveSqrt(totalerror2/_lasterror2));
             if( totalerror2 < besterror2 ) {
                 besterror2 = totalerror2;
                 vbest = vnew;
@@ -278,18 +286,18 @@ public:
                 }
             }
 
-            probot->SetActiveDOFValues(vnew, checklimits);
+            robot->SetActiveDOFValues(vnew, checklimits);
             if( checklimits == OpenRAVE::KinBody::CLA_CheckLimitsSilent ) {
-                probot->GetActiveDOFValues(vnew);
+                robot->GetActiveDOFValues(vnew);
             }
         }
 
         int retcode = 0;
         if( bSuccess || besterror2 < firsterror2 ) {
             // revert to real values
-            probot->SetActiveDOFValues(vbest, checklimits);
-            probot->GetActiveDOFValues(vsolution); // have to re-get the joint values since joint limits are involved
-            probot->SetTransform(trobot);
+            robot->SetActiveDOFValues(vbest, checklimits);
+            robot->GetActiveDOFValues(solution); // have to re-get the joint values since joint limits are involved
+            robot->SetTransform(trobot);
             saver.Release(); // finished successfully, so use the new state
             if( bSuccess || besterror2 <= 10*_errorthresh2 ) { // if close enough to error, just return as being close. user should take this in account when setting the error threshold
                 retcode = 1;
@@ -298,18 +306,19 @@ public:
                 retcode = 2;
             }
         }
-        else if( iter >= _nMaxIterations ) {
+        else if( iter >= max_iterations_ ) {
             iter = -1;
-            RAVELOG_VERBOSE_FORMAT("constraint function exceeded %d iterations, first error^2 is %.15e, final error^2 is %.15e > %.15e", _nMaxIterations%firsterror2%_lasterror2%_errorthresh2);
+            RAVELOG_VERBOSE_FORMAT("constraint function exceeded %d iterations, first error^2 is %.15e, final error^2 is %.15e > %.15e", max_iterations_%firsterror2%_lasterror2%_errorthresh2);
         }
         return retcode;
     }
 
-    int ComputeSolutionTranslation(const Transform& tgoal, const RobotBase::Manipulator& manip, std::vector<dReal>& vsolution, bool bIgnoreJointLimits=false)
+    int ComputeSolutionTranslation(const Transform& tgoal, 
+		const RobotBase::Manipulator& manip, std::vector<dReal>& vsolution, bool bIgnoreJointLimits=false)
     {
-        _vGoalQuat = tgoal.rot;
-        _vGoalAxisAngle = axisAngleFromQuat(tgoal.rot);
-        _vGoalPosition = tgoal.trans;
+        goal_quat_ = tgoal.rot;
+        goal_axis_angle_ = axisAngleFromQuat(tgoal.rot);
+        goal_position_ = tgoal.trans;
 
         RobotBasePtr probot = manip.GetRobot();
         uint32_t checklimits = bIgnoreJointLimits ? OpenRAVE::KinBody::CLA_Nothing : OpenRAVE::KinBody::CLA_CheckLimitsSilent; // if not ignoring limits, silently clamp the values to their limits.
@@ -317,10 +326,10 @@ public:
         KinBody::KinBodyStateSaver saver(probot, KinBody::Save_LinkTransformation);
         Transform tbase = manip.GetBase()->GetTransform();
         Transform trobot = probot->GetTransform();
-        probot->SetTransform(tbase.inverse()*trobot); // transform so that the manip's base is at the identity and matches tgoal
+        probot->SetTransform(tbase.inverse()*trobot); // transform so that the manip's base is at the identity and matches goal
 
         Transform tprev = manip.GetTransform();
-        T totalerror2 = _ComputeConstraintError(tprev, _error3d, _nMaxIterations, false);
+        T totalerror2 = _ComputeConstraintError(tprev, _error3d, max_iterations_, false);
         if( totalerror2 <= _errorthresh2 ) {
             return -1;
         }
@@ -338,9 +347,9 @@ public:
         int iter = 0;
         // setup a class so its destructor saves the last iter used in _lastiter
         ValueSaver valuesaver(&iter, &_lastiter);
-        for(iter = 0; iter < _nMaxIterations; ++iter) {
+        for(iter = 0; iter < max_iterations_; ++iter) {
             Transform tmanip = manip.GetTransform();
-            T totalerror2 = _ComputeConstraintError(tmanip, _error3d, _nMaxIterations-iter, false);
+            T totalerror2 = _ComputeConstraintError(tmanip, _error3d, max_iterations_-iter, false);
             //dReal ratio = totalerror2/_lasterror2;
             //RAVELOG_VERBOSE_FORMAT("%s:%s iter=%d, totalerror %.15e (%f)", probot->GetName()%manip.GetName()%iter%RaveSqrt(totalerror2)%RaveSqrt(totalerror2/_lasterror2));
             if( totalerror2 < besterror2 ) {
@@ -489,42 +498,49 @@ public:
                 retcode = 2;
             }
         }
-        else if( iter >= _nMaxIterations ) {
+        else if( iter >= max_iterations_ ) {
             iter = -1;
-            RAVELOG_VERBOSE_FORMAT("constraint function exceeded %d iterations, first error^2 is %.15e, final error^2 is %.15e > %.15e", _nMaxIterations%firsterror2%_lasterror2%_errorthresh2);
+            RAVELOG_VERBOSE_FORMAT("constraint function exceeded %d iterations, first error^2 is %.15e, final error^2 is %.15e > %.15e", max_iterations_%firsterror2%_lasterror2%_errorthresh2);
         }
         return retcode;
     }
 
-    virtual T _ComputeConstraintError(const Transform& tcur, boost::numeric::ublas::matrix<T>& error, int nMaxIterations, bool bAddRotation=true)
+    virtual T _ComputeConstraintError(const Transform& tcur, 
+		boost::numeric::ublas::matrix<T>& error, int max_iterations, bool is_add_rotation=true)
     {
         T totalerror2=0;
         int transoffset = 0;
-        if( bAddRotation ) {
-            const Vector axisangleerror = axisAngleFromQuat(quatMultiply(_vGoalQuat, quatInverse(tcur.rot)));
-            for(int i = 0; i < 3; ++i) {
+        if( is_add_rotation )
+		{
+            const Vector axisangleerror = axisAngleFromQuat(quatMultiply(goal_quat_, quatInverse(tcur.rot)));
+            for(int i = 0; i < 3; ++i)
+			{
                 error(i,0) = axisangleerror[i];
                 totalerror2 += error(i,0)*error(i,0);
             }
             transoffset += 3;
         }
 
-        for(int i = 0; i < 3; ++i) {
-            error(i+transoffset,0) = (_vGoalPosition[i]-tcur.trans[i]);
+        for(int i = 0; i < 3; ++i) 
+		{
+            error(i+transoffset,0) = (goal_position_[i]-tcur.trans[i]);
             totalerror2 += error(i+transoffset,0)*error(i+transoffset,0);
         }
 
         dReal fallowableerror2 = 0.03; // arbitrary... since solutions are close, is this step necessary?
-        if( totalerror2 > _errorthresh2 && totalerror2 > fallowableerror2+1e-7 ) {
+        if( totalerror2 > _errorthresh2 && totalerror2 > fallowableerror2+1e-7 )
+		{
             // have to reduce the error or else the jacobian will not converge to the correct place and diverge too much from the current solution
             // depending on how many iterations there is left, have to adjust the error
             T fscale = sqrt(totalerror2/fallowableerror2);
-            if( fscale > nMaxIterations ) {
-                fscale = nMaxIterations;
+            if( fscale > max_iterations ) 
+			{
+                fscale = max_iterations;
             }
             T fiscale = 1/fscale;
             RAVELOG_VERBOSE_FORMAT("fiscale=%f", fiscale);
-            for(int i = 0; i < (int)error.size1(); ++i) {
+            for(int i = 0; i < (int)error.size1(); ++i)
+			{
                 error(i,0) *= fiscale;
             }
         }
@@ -565,10 +581,10 @@ public:
     // statistics about last run
     int _lastiter;
     double _lasterror2; // error squared
-    int _nMaxIterations;
+    int max_iterations_;
 
 protected:
-    Vector _vGoalQuat, _vGoalAxisAngle, _vGoalPosition;
+    Vector goal_quat_, goal_axis_angle_, goal_position_;
     std::vector<dReal> _viweights, _vcachevalues;
     T _errorthresh2;
     std::vector<dReal> _vjacobian;

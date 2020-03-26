@@ -137,22 +137,22 @@ bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dRea
     return true;
 }
 
-bool IkSolverBase::SolveAll(const IkParameterization& param, int filteroptions, std::vector<IkReturnPtr>& ikreturns)
+bool IkSolverBase::SolveAll(const IkParameterization& param, int filter_options, std::vector<IkReturnPtr>& ik_returns)
 {
-    ikreturns.resize(0);
-    std::vector< std::vector<dReal> > vsolutions;
-    if( !SolveAll(param,filteroptions,vsolutions) ) 
+    ik_returns.resize(0);
+    std::vector< std::vector<dReal> > solutions;
+    if( !SolveAll(param,filter_options,solutions) ) 
 	{
         return false;
     }
-    ikreturns.resize(vsolutions.size());
-    for(size_t i = 0; i < ikreturns.size(); ++i) 
+    ik_returns.resize(solutions.size());
+    for(size_t i = 0; i < ik_returns.size(); ++i) 
 	{
-        ikreturns[i].reset(new IkReturn(IKRA_Success));
-        ikreturns[i]->solution_ = vsolutions[i];
-        ikreturns[i]->action_ = IKRA_Success;
+        ik_returns[i].reset(new IkReturn(IKRA_Success));
+        ik_returns[i]->solution_ = solutions[i];
+        ik_returns[i]->action_ = IKRA_Success;
     }
-    return vsolutions.size() > 0;
+    return solutions.size() > 0;
 }
 
 bool IkSolverBase::Solve(const IkParameterization& param, const std::vector<dReal>& q0, 

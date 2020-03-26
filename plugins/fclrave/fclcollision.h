@@ -141,7 +141,7 @@ public:
         collision_options_ = 0;
         // TODO : Should we put a more reasonable arbitrary value ?
         num_max_contacts_ = std::numeric_limits<int>::max();
-        _nGetEnvManagerCacheClearCount = 100000;
+        get_env_manager_cache_clear_count_ = 100000;
         description_ = ":Interface Author: Kenji Maillard\n\nFlexible Collision Library collision checker";
 
         SETUP_STATISTICS(_statistics, user_data_key_, GetEnv()->GetId());
@@ -421,7 +421,8 @@ public:
         return CheckCollision(pbody1, std::vector<KinBodyConstPtr>(), std::vector<LinkConstPtr>(), report);
     }
 
-    virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2,
+		CollisionReportPtr report = CollisionReportPtr())
     {
         START_TIMING_OPT(_statistics, "Body/Body",collision_options_,(pbody1->IsRobot() || pbody2->IsRobot()));
         if( !!report ) 
@@ -478,7 +479,8 @@ public:
         return CheckCollision(plink, std::vector<KinBodyConstPtr>(), std::vector<LinkConstPtr>(), report);
     }
 
-    virtual bool CheckCollision(LinkConstPtr plink1, LinkConstPtr plink2, CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckCollision(LinkConstPtr plink1, LinkConstPtr plink2, 
+		CollisionReportPtr report = CollisionReportPtr())
     {
         START_TIMING_OPT(_statistics, "Link/Link",collision_options_,false);
         if( !!report )
@@ -539,15 +541,18 @@ public:
         return query.is_collision_;
     }
 
-    virtual bool CheckCollision(LinkConstPtr plink, KinBodyConstPtr pbody,CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckCollision(LinkConstPtr plink, KinBodyConstPtr pbody,
+		CollisionReportPtr report = CollisionReportPtr())
     {
         START_TIMING_OPT(_statistics, "Link/Body",collision_options_,pbody->IsRobot());
 
-        if( !!report ) {
+        if( !!report ) 
+		{
             report->Reset(collision_options_);
         }
 
-        if( !plink->IsEnabled() ) {
+        if( !plink->IsEnabled() ) 
+		{
             return false;
         }
 
@@ -639,13 +644,18 @@ public:
         return query.is_collision_;
     }
 
-    virtual bool CheckCollision(KinBodyConstPtr pbody, std::vector<KinBodyConstPtr> const &vbodyexcluded, std::vector<LinkConstPtr> const &vlinkexcluded, CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckCollision(KinBodyConstPtr pbody, 
+		std::vector<KinBodyConstPtr> const &vbodyexcluded,
+		std::vector<LinkConstPtr> const &vlinkexcluded, 
+		CollisionReportPtr report = CollisionReportPtr())
     {
-        if( !!report ) {
+        if( !!report )
+		{
             report->Reset(collision_options_);
         }
 
-        if( (pbody->GetLinks().size() == 0) || !_IsEnabled(*pbody) ) {
+        if( (pbody->GetLinks().size() == 0) || !_IsEnabled(*pbody) )
+		{
             return false;
         }
 
@@ -678,13 +688,15 @@ public:
         return false; //TODO
     }
 
-    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody,
+		CollisionReportPtr report = CollisionReportPtr())
     {
         RAVELOG_WARN("fcl doesn't support Ray collisions\n");
         return false; //TODO
     }
 
-    virtual bool CheckCollision(const RAY& ray, CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckCollision(const RAY& ray,
+		CollisionReportPtr report = CollisionReportPtr())
     {
         RAVELOG_WARN("fcl doesn't support Ray collisions\n");
         return false; //TODO
@@ -740,7 +752,8 @@ public:
         return query.is_collision_;
     }
 
-    virtual bool CheckCollision(const OpenRAVE::TriMesh& trimesh, CollisionReportPtr report = CollisionReportPtr()) override
+    virtual bool CheckCollision(const OpenRAVE::TriMesh& trimesh,
+		CollisionReportPtr report = CollisionReportPtr()) override
     {
         if( !!report ) {
             report->Reset(collision_options_);
@@ -784,7 +797,8 @@ public:
         return query.is_collision_;
     }
     
-    virtual bool CheckCollision(const OpenRAVE::AABB& ab, const OpenRAVE::Transform& aabbPose, CollisionReportPtr report = CollisionReportPtr()) override
+    virtual bool CheckCollision(const OpenRAVE::AABB& ab, 
+		const OpenRAVE::Transform& aabbPose, CollisionReportPtr report = CollisionReportPtr()) override
     {
         if( !!report ) {
             report->Reset(collision_options_);
@@ -817,20 +831,26 @@ public:
         return query.is_collision_;
     }
 
-    virtual bool CheckCollision(const OpenRAVE::AABB& ab, const OpenRAVE::Transform& aabbPose, const std::vector<OpenRAVE::KinBodyConstPtr>& vIncludedBodies, OpenRAVE::CollisionReportPtr report) override
+    virtual bool CheckCollision(const OpenRAVE::AABB& ab, 
+		const OpenRAVE::Transform& aabbPose, 
+		const std::vector<OpenRAVE::KinBodyConstPtr>& included_bodies, 
+		OpenRAVE::CollisionReportPtr report) override
     {
-        if( !!report ) {
+        if( !!report ) 
+		{
             report->Reset(collision_options_);
         }
 
         fclspace_->Synchronize();
-        std::set<KinBodyConstPtr> excludedBodies;
-        FOREACH(itbody, fclspace_->GetEnvBodies()) {
-            if( find(vIncludedBodies.begin(), vIncludedBodies.end(), *itbody) == vIncludedBodies.end() ) {
-                excludedBodies.insert(*itbody);
+        std::set<KinBodyConstPtr> excluded_bodies;
+        for(auto& itbody: fclspace_->GetEnvBodies()) 
+		{
+            if( std::find(included_bodies.begin(), included_bodies.end(), itbody) == included_bodies.end() )
+			{
+                excluded_bodies.insert(itbody);
             }
         }
-        FCLCollisionManagerInstance& envManager = _GetEnvManager(excludedBodies);
+        FCLCollisionManagerInstance& envManager = _GetEnvManager(excluded_bodies);
 
         const std::vector<KinBodyConstPtr> vbodyexcluded;
         const std::vector<LinkConstPtr> vlinkexcluded;
@@ -839,7 +859,8 @@ public:
 
         FCLSpace::KinBodyInfo::LinkInfo objUserData;
 
-        CollisionGeometryPtr cboxgeom = std::make_shared<fcl::Box<dReal>>(ab.extents.x*2,ab.extents.y*2,ab.extents.z*2);
+        CollisionGeometryPtr cboxgeom = std::make_shared<fcl::Box<dReal>>
+			(ab.extents.x*2,ab.extents.y*2,ab.extents.z*2);
         fcl::CollisionObject<dReal> cboxobj(cboxgeom);
 
         fcl::Vector3<dReal> newPosition = ConvertVectorToFCL(aabbPose * ab.pos);
@@ -855,7 +876,8 @@ public:
         return query.is_collision_;
     }
     
-    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr())
+    virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody,
+		CollisionReportPtr report = CollisionReportPtr())
     {
         START_TIMING_OPT(_statistics, "BodySelf",collision_options_,pbody->IsRobot());
         if( !!report ) {
@@ -985,9 +1007,11 @@ private:
         return pcb->collision_checker_->CheckNarrowPhaseCollision(o1, o2, pcb);
     }
 
-    bool CheckNarrowPhaseCollision(fcl::CollisionObject<dReal> *o1, fcl::CollisionObject<dReal> *o2, CollisionCallbackData* pcb)
+    bool CheckNarrowPhaseCollision(fcl::CollisionObject<dReal> *o1, 
+		fcl::CollisionObject<dReal> *o2, CollisionCallbackData* pcb)
     {
-        if( pcb->is_stop_checking_ ) {
+        if( pcb->is_stop_checking_ ) 
+		{
             return true;     // don't test anymore
         }
 
@@ -1039,19 +1063,25 @@ private:
             }
         }
 
-        if( !!plink1 && !!plink2 ) {
-            if( !pcb->is_self_collision_ && plink1->GetParent()->IsAttached(*plink2->GetParent())) {
+        if( !!plink1 && !!plink2 ) 
+		{
+            if( !pcb->is_self_collision_ && plink1->GetParent()->IsAttached(*plink2->GetParent()))
+			{
                 return false;
             }
 
             LinkInfoPtr pLINK1 = fclspace_->GetLinkInfo(*plink1), pLINK2 = fclspace_->GetLinkInfo(*plink2);
 
             //RAVELOG_VERBOSE_FORMAT("env=%d, link %s:%s with %s:%s", GetEnv()->GetId()%plink1->GetParent()->GetName()%plink1->GetName()%plink2->GetParent()->GetName()%plink2->GetName());
-            FOREACH(itgeompair1, pLINK1->geometries_vector_) {
-                FOREACH(itgeompair2, pLINK2->geometries_vector_) {
-                    if( itgeompair1->second->getAABB().overlap(itgeompair2->second->getAABB()) ) {
+            FOREACH(itgeompair1, pLINK1->geometries_vector_)
+			{
+                FOREACH(itgeompair2, pLINK2->geometries_vector_)
+				{
+                    if( itgeompair1->second->getAABB().overlap(itgeompair2->second->getAABB()) ) 
+					{
                         CheckNarrowPhaseGeomCollision(itgeompair1->second.get(), itgeompair2->second.get(), pcb);
-                        if( pcb->is_stop_checking_ ) {
+                        if( pcb->is_stop_checking_ )
+						{
                             return true;
                         }
                     }
@@ -1089,14 +1119,18 @@ private:
     }
 
 
-    static bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject<dReal> *o1, fcl::CollisionObject<dReal> *o2, void *data) {
+    static bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject<dReal> *o1, 
+		fcl::CollisionObject<dReal> *o2, void *data) 
+	{
         CollisionCallbackData* pcb = static_cast<CollisionCallbackData *>(data);
         return pcb->collision_checker_->CheckNarrowPhaseGeomCollision(o1, o2, pcb);
     }
 
-    bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject<dReal> *o1, fcl::CollisionObject<dReal> *o2, CollisionCallbackData* pcb)
+    bool CheckNarrowPhaseGeomCollision(fcl::CollisionObject<dReal> *o1,
+		fcl::CollisionObject<dReal> *o2, CollisionCallbackData* pcb)
     {
-        if( pcb->is_stop_checking_ ) {
+        if( pcb->is_stop_checking_ ) 
+		{
             return true; // don't test anymore
         }
 
@@ -1348,35 +1382,41 @@ private:
         return *it->second;
     }
 
-    FCLCollisionManagerInstance& _GetEnvManager(const std::set<KinBodyConstPtr>& excludedbodies)
+    FCLCollisionManagerInstance& _GetEnvManager(const std::set<KinBodyConstPtr>& excluded_bodies)
     {
         is_parentless_collision_object_ = false;
-        std::set<int> setExcludeBodyIds; //!< any
-        FOREACH(itbody, excludedbodies) {
-            setExcludeBodyIds.insert((*itbody)->GetEnvironmentId());
+        std::set<int> exclude_body_ids; //!< any
+        for(auto& itbody: excluded_bodies) 
+		{
+            exclude_body_ids.insert(itbody->GetEnvironmentId());
         }
 
         // check the cache and cleanup any unused environments
-        if( --_nGetEnvManagerCacheClearCount < 0 ) {
+        if( --get_env_manager_cache_clear_count_ < 0 )
+		{
             uint32_t curtime = OpenRAVE::utils::GetMilliTime();
-            _nGetEnvManagerCacheClearCount = 100000;
+            get_env_manager_cache_clear_count_ = 100000;
             std::map<std::set<int>, FCLCollisionManagerInstancePtr>::iterator it = env_managers_.begin();
-            while(it != env_managers_.end()) {
-                if( (it->second->GetLastSyncTimeStamp() - curtime) > 10000 ) {
+            while(it != env_managers_.end()) 
+			{
+                if( (it->second->GetLastSyncTimeStamp() - curtime) > 10000 )
+				{
                     //RAVELOG_VERBOSE_FORMAT("env=%d erasing manager at %u", GetEnv()->GetId()%it->second->GetLastSyncTimeStamp());
                     env_managers_.erase(it++);
                 }
-                else {
+                else 
+				{
                     ++it;
                 }
             }
         }
 
-        std::map<std::set<int>, FCLCollisionManagerInstancePtr>::iterator it = env_managers_.find(setExcludeBodyIds);
-        if( it == env_managers_.end() ) {
+        std::map<std::set<int>, FCLCollisionManagerInstancePtr>::iterator it = env_managers_.find(exclude_body_ids);
+        if( it == env_managers_.end() ) 
+		{
             FCLCollisionManagerInstancePtr p(new FCLCollisionManagerInstance(*fclspace_, _CreateManager()));
-            p->InitEnvironment(excludedbodies);
-            it = env_managers_.insert(std::map<std::set<int>, FCLCollisionManagerInstancePtr>::value_type(setExcludeBodyIds, p)).first;
+            p->InitEnvironment(excluded_bodies);
+            it = env_managers_.insert(std::map<std::set<int>, FCLCollisionManagerInstancePtr>::value_type(exclude_body_ids, p)).first;
         }
         it->second->EnsureBodies(fclspace_->GetEnvBodies());
         it->second->Synchronize();
@@ -1459,7 +1499,7 @@ private:
     typedef std::map< std::pair<const void*, int>, FCLCollisionManagerInstancePtr> BODYMANAGERSMAP; //!< Maps pairs of (body, bactiveDOFs) to oits manager
     BODYMANAGERSMAP body_managers_; //!< managers for each of the individual bodies. each manager should be called with InitBodyManager. Cannot use KinBodyPtr here since that will maintain a reference to the body!
     std::map< std::set<int>, FCLCollisionManagerInstancePtr> env_managers_;
-    int _nGetEnvManagerCacheClearCount; //!< count down until cache can be cleared
+    int get_env_manager_cache_clear_count_; //!< count down until cache can be cleared
 
 #ifdef FCLRAVE_COLLISION_OBJECTS_STATISTICS
     std::map<fcl::CollisionObject*, int> _currentlyused;

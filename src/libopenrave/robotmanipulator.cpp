@@ -255,19 +255,26 @@ bool RobotBase::Manipulator::FindIKSolutions(const IkParameterization& goal, std
     return FindIKSolutions(goal, vector<dReal>(), solutions, filteroptions);
 }
 
-bool RobotBase::Manipulator::FindIKSolutions(const IkParameterization& goal, const std::vector<dReal>& vFreeParameters, std::vector<std::vector<dReal> >& solutions, int filteroptions) const
+bool RobotBase::Manipulator::FindIKSolutions(const IkParameterization& goal,
+	const std::vector<dReal>& free_parameters, 
+	std::vector<std::vector<dReal> >& solutions, int filter_options) const
 {
-    IkSolverBasePtr pIkSolver = GetIkSolver();
-    OPENRAVE_ASSERT_FORMAT(!!pIkSolver, "manipulator %s:%s does not have an IK solver set",RobotBasePtr(robot_)->GetName()%GetName(),ORE_Failed);
-    BOOST_ASSERT(pIkSolver->GetManipulator() == shared_from_this() );
-    IkParameterization localgoal;
-    if( !!base_link_ ) {
-        localgoal = base_link_->GetTransform().inverse()*goal;
+    IkSolverBasePtr ik_solver = GetIkSolver();
+    OPENRAVE_ASSERT_FORMAT(!!ik_solver, "manipulator %s:%s does not have an IK solver set",
+		RobotBasePtr(robot_)->GetName()%GetName(),ORE_Failed);
+    BOOST_ASSERT(ik_solver->GetManipulator() == shared_from_this() );
+    IkParameterization local_goal;
+    if( !!base_link_ )
+	{
+        local_goal = base_link_->GetTransform().inverse()*goal;
     }
-    else {
-        localgoal=goal;
+    else 
+	{
+        local_goal=goal;
     }
-    return vFreeParameters.size() == 0 ? pIkSolver->SolveAll(localgoal,filteroptions,solutions) : pIkSolver->SolveAll(localgoal,vFreeParameters,filteroptions,solutions);
+    return free_parameters.size() == 0
+		? ik_solver->SolveAll(local_goal,filter_options,solutions) 
+		: ik_solver->SolveAll(local_goal,free_parameters,filter_options,solutions);
 }
 
 
@@ -302,19 +309,25 @@ bool RobotBase::Manipulator::FindIKSolutions(const IkParameterization& goal, int
     return FindIKSolutions(goal, vector<dReal>(), filteroptions, vikreturns);
 }
 
-bool RobotBase::Manipulator::FindIKSolutions(const IkParameterization& goal, const std::vector<dReal>& vFreeParameters, int filteroptions, std::vector<IkReturnPtr>& vikreturns) const
+bool RobotBase::Manipulator::FindIKSolutions(const IkParameterization& goal,
+	const std::vector<dReal>& free_parameters, int filter_options, std::vector<IkReturnPtr>& ik_returns) const
 {
-    IkSolverBasePtr pIkSolver = GetIkSolver();
-    OPENRAVE_ASSERT_FORMAT(!!pIkSolver, "manipulator %s:%s does not have an IK solver set",RobotBasePtr(robot_)->GetName()%GetName(),ORE_Failed);
-    BOOST_ASSERT(pIkSolver->GetManipulator() == shared_from_this() );
-    IkParameterization localgoal;
-    if( !!base_link_ ) {
-        localgoal = base_link_->GetTransform().inverse()*goal;
+    IkSolverBasePtr ik_solver = GetIkSolver();
+    OPENRAVE_ASSERT_FORMAT(!!ik_solver, "manipulator %s:%s does not have an IK solver set",
+		RobotBasePtr(robot_)->GetName()%GetName(),ORE_Failed);
+    BOOST_ASSERT(ik_solver->GetManipulator() == shared_from_this() );
+    IkParameterization local_goal;
+    if( !!base_link_ ) 
+	{
+        local_goal = base_link_->GetTransform().inverse()*goal;
     }
-    else {
-        localgoal=goal;
+    else 
+	{
+        local_goal=goal;
     }
-    return vFreeParameters.size() == 0 ? pIkSolver->SolveAll(localgoal,filteroptions,vikreturns) : pIkSolver->SolveAll(localgoal,vFreeParameters,filteroptions,vikreturns);
+    return free_parameters.size() == 0 
+		? ik_solver->SolveAll(local_goal,filter_options,ik_returns)
+		: ik_solver->SolveAll(local_goal,free_parameters,filter_options,ik_returns);
 }
 
 IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizationType iktype, bool inworld) const
@@ -1329,7 +1342,7 @@ bool RobotBase::Manipulator::CheckEndEffectorSelfCollision(const IkParameterizat
 //    // only care about the end effector position, so disable all time consuming options. still leave the custom options in case the user wants to call some custom stuff?
 //    // is it necessary to call with IKFO_IgnoreJointLimits knowing that the robot will never reach those solutions?
 //    std::vector< std::vector<dReal> > vsolutions;
-//    if( !pIkSolver->SolveAll(localgoal, vector<dReal>(), IKFO_IgnoreSelfCollisions,vsolutions) ) {
+//    if( !ik_solver->SolveAll(local_goal, vector<dReal>(), IKFO_IgnoreSelfCollisions,vsolutions) ) {
 //        throw OPENRAVE_EXCEPTION_FORMAT(_tr("failed to find ik solution for type 0x%x"),ikparam.GetType(),ORE_InvalidArguments);
 //    }
 //    RobotStateSaver saver(probot);
