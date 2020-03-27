@@ -58,16 +58,19 @@ In order to render the ik solutions, create a new robot for every solution and m
 
 .. examplepost-block:: tutorial_iksolutions
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robot = env.GetRobots()[0]
@@ -75,8 +78,8 @@ def main(env,options):
         robot.SetActiveManipulator(options.manipname)
     newrobots = []
     for ind in range(options.maxnumber):
-        newrobot = RaveCreateRobot(env,robot.GetXMLId())
-        newrobot.Clone(robot,0)
+        newrobot = RaveCreateRobot(env, robot.GetXMLId())
+        newrobot.Clone(robot, 0)
         for link in newrobot.GetLinks():
             for geom in link.GetGeometries():
                 geom.SetTransparency(options.transparency)
@@ -93,24 +96,26 @@ def main(env,options):
         with env:
             # move the robot in a random collision-free position and call the IK
             while True:
-                lower,upper = [v[ikmodel.manip.GetArmIndices()] for v in ikmodel.robot.GetDOFLimits()]
-                robot.SetDOFValues(random.rand()*(upper-lower)+lower,ikmodel.manip.GetArmIndices()) # set random values
+                lower, upper = [v[ikmodel.manip.GetArmIndices()] for v in ikmodel.robot.GetDOFLimits()]
+                robot.SetDOFValues(random.rand() * (upper - lower) + lower,
+                                   ikmodel.manip.GetArmIndices())  # set random values
                 if not robot.CheckSelfCollision():
-                    solutions = ikmodel.manip.FindIKSolutions(ikmodel.manip.GetTransform(),IkFilterOptions.CheckEnvCollisions)
-                    if solutions is not None and len(solutions) > 0: # if found, then break
+                    solutions = ikmodel.manip.FindIKSolutions(ikmodel.manip.GetTransform(),
+                                                              IkFilterOptions.CheckEnvCollisions)
+                    if solutions is not None and len(solutions) > 0:  # if found, then break
                         break
-            
-            print('found %d solutions, rendering solutions:'%len(solutions))
+
+            print('found %d solutions, rendering solutions:' % len(solutions))
             if len(solutions) < options.maxnumber:
                 inds = list(range(len(solutions)))
             else:
-                inds = array(linspace(0,len(solutions)-1,options.maxnumber),int)
-            for i,ind in enumerate(inds):
+                inds = array(linspace(0, len(solutions) - 1, options.maxnumber), int)
+            for i, ind in enumerate(inds):
                 print(ind)
                 newrobot = newrobots[i]
-                env.Add(newrobot,True)
+                env.Add(newrobot, True)
                 newrobot.SetTransform(robot.GetTransform())
-                newrobot.SetDOFValues(solutions[ind],ikmodel.manip.GetArmIndices())
+                newrobot.SetDOFValues(solutions[ind], ikmodel.manip.GetArmIndices())
 
         env.UpdatePublishedBodies()
         print('waiting...')
@@ -120,8 +125,10 @@ def main(env,options):
             env.Remove(newrobot)
     del newrobots
 
+
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -129,18 +136,20 @@ def run(args=None):
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Shows how to generate a 6D inverse kinematics solver and use it for getting all solutions.')
+    parser = OptionParser(
+        description='Shows how to generate a 6D inverse kinematics solver and use it for getting all solutions.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/lab1.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/lab1.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--transparency',action="store",type='float',dest='transparency',default=0.8,
+    parser.add_option('--transparency', action="store", type='float', dest='transparency', default=0.8,
                       help='Transparency for every robot (default=%default)')
-    parser.add_option('--maxnumber',action="store",type='int',dest='maxnumber',default=10,
+    parser.add_option('--maxnumber', action="store", type='int', dest='maxnumber', default=10,
                       help='Max number of robots to render (default=%default)')
-    parser.add_option('--manipname',action="store",type='string',dest='manipname',default=None,
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default=None,
                       help='name of manipulator to use (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

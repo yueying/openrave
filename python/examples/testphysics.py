@@ -72,24 +72,27 @@ Take a look at the **share/openrave/data/testphysics.env.xml** for a working exa
 
 .. examplepost-block:: testphysics
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
-    from numpy import* 
+    from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     if options._physics is None:
         # no physics engine set, so set one
-        physics = RaveCreatePhysicsEngine(env,'ode')
+        physics = RaveCreatePhysicsEngine(env, 'ode')
         env.SetPhysicsEngine(physics)
     with env:
-        env.GetPhysicsEngine().SetGravity([0,0,-1])
+        env.GetPhysicsEngine().SetGravity([0, 0, -1])
         env.StopSimulation()
         env.StartSimulation(timestep=options.timestep)
         starttime = time.time()
@@ -99,20 +102,22 @@ def main(env,options):
         if numbodies < 40:
             with env:
                 body = env.ReadKinBodyXMLFile(bodynames[random.randint(len(bodynames))])
-                body.SetName('body%d'%numbodies)
+                body.SetName('body%d' % numbodies)
                 numbodies += 1
-                env.Add(body,True)
+                env.Add(body, True)
                 T = eye(4)
-                T[0:3,3] = array((-0.5,-0.5,2))+0.4*random.rand(3)
+                T[0:3, 3] = array((-0.5, -0.5, 2)) + 0.4 * random.rand(3)
                 body.SetTransform(T)
-                        
+
         time.sleep(0.4)
-        simtime = env.GetSimulationTime()*1e-6
-        realtime = time.time()-starttime
-        print('sim time: %fs, real time: %fs, diff = %fs'%(simtime,realtime,simtime-realtime))
+        simtime = env.GetSimulationTime() * 1e-6
+        realtime = time.time() - starttime
+        print('sim time: %fs, real time: %fs, diff = %fs' % (simtime, realtime, simtime - realtime))
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -122,12 +127,13 @@ def run(args=None):
     """
     parser = OptionParser(description="test physics")
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/hanoi.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/hanoi.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--timestep',action="store",type='float',dest='timestep',default=0.001,
+    parser.add_option('--timestep', action="store", type='float', dest='timestep', default=0.001,
                       help='The physics simulation time step size  (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     run()

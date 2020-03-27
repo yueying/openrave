@@ -18,16 +18,19 @@
 
 .. examplepost-block:: tutorial_iktranslation2d
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robot = env.GetRobots()[0]
@@ -42,20 +45,24 @@ def main(env,options):
     while True:
         with env:
             while True:
-                target=ikmodel.manip.GetTransform()[0:2,3]+0.5*(random.rand(2)-0.5)
-                solutions = ikmodel.manip.FindIKSolutions(IkParameterization(target,IkParameterization.Type.TranslationXY2D),IkFilterOptions.CheckEnvCollisions)
-                if solutions is not None and len(solutions) > 0: # if found, then break
+                target = ikmodel.manip.GetTransform()[0:2, 3] + 0.5 * (random.rand(2) - 0.5)
+                solutions = ikmodel.manip.FindIKSolutions(
+                    IkParameterization(target, IkParameterization.Type.TranslationXY2D),
+                    IkFilterOptions.CheckEnvCollisions)
+                if solutions is not None and len(solutions) > 0:  # if found, then break
                     break
-        h=env.plot3(array([target[0],target[1],ikmodel.manip.GetTransform()[2,3]]),10.0)
-        for i in random.permutation(len(solutions))[0:min(80,len(solutions))]:
+        h = env.plot3(array([target[0], target[1], ikmodel.manip.GetTransform()[2, 3]]), 10.0)
+        for i in random.permutation(len(solutions))[0:min(80, len(solutions))]:
             with env:
-                robot.SetDOFValues(solutions[i],ikmodel.manip.GetArmIndices())
+                robot.SetDOFValues(solutions[i], ikmodel.manip.GetArmIndices())
                 env.UpdatePublishedBodies()
             time.sleep(0.05)
-        h=None
+        h = None
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -65,12 +72,13 @@ def run(args=None):
     """
     parser = OptionParser(description='Shows how to use different IK solutions for arms with few joints.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/tridoftable.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/tridoftable.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--manipname',action="store",type='string',dest='manipname',default=None,
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default=None,
                       help='name of manipulator to use (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

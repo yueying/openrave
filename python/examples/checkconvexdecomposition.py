@@ -25,14 +25,15 @@ Uses :meth:`.ConvexDecompositionModel.testPointsInside` from :mod:`.convexdecomp
 .. examplepost-block:: checkconvexdecomposition
 
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import openravepy
 from openravepy import databases
 import numpy
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     samplingdelta = options.samplingdelta
     env.Load(options.target)
@@ -42,22 +43,25 @@ def main(env,options):
         cdmodel.autogenerate()
     ab = body.ComputeAABB()
     if samplingdelta is None:
-        samplingdelta = numpy.linalg.norm(ab.extents())/30.0
-    boxmin = ab.pos()-ab.extents()
-    boxmax = ab.pos()+ab.extents()
-    X,Y,Z = numpy.mgrid[boxmin[0]:boxmax[0]:samplingdelta,boxmin[1]:boxmax[1]:samplingdelta,boxmin[2]:boxmax[2]:samplingdelta]
-    points = numpy.c_[X.flat,Y.flat,Z.flat]
-    print('computing %d points...'%len(points))
+        samplingdelta = numpy.linalg.norm(ab.extents()) / 30.0
+    boxmin = ab.pos() - ab.extents()
+    boxmax = ab.pos() + ab.extents()
+    X, Y, Z = numpy.mgrid[boxmin[0]:boxmax[0]:samplingdelta, boxmin[1]:boxmax[1]:samplingdelta,
+              boxmin[2]:boxmax[2]:samplingdelta]
+    points = numpy.c_[X.flat, Y.flat, Z.flat]
+    print('computing %d points...' % len(points))
     inside = cdmodel.testPointsInside(points)
-    plottedpoints = points[numpy.flatnonzero(inside),:]
-    plottedpoints[:,1] += ab.extents()[1]*2
-    print('%d points are inside'%len(plottedpoints))
-    h = env.plot3(plottedpoints,2)
+    plottedpoints = points[numpy.flatnonzero(inside), :]
+    plottedpoints[:, 1] += ab.extents()[1] * 2
+    print('%d points are inside' % len(plottedpoints))
+    h = env.plot3(plottedpoints, 2)
     if not options.testmode:
         input('press any key to exit')
 
+
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -65,14 +69,16 @@ def run(args=None):
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Builds the convex decomposition of the robot and plots all the points that are tested inside of it.')
+    parser = OptionParser(
+        description='Builds the convex decomposition of the robot and plots all the points that are tested inside of it.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--target', action="store",type='string',dest='target',default='robots/barrettwam.robot.xml',
+    parser.add_option('--target', action="store", type='string', dest='target', default='robots/barrettwam.robot.xml',
                       help='Target body to load (default=%default)')
-    parser.add_option('--samplingdelta', action="store",type='float',dest='samplingdelta',default=None,
+    parser.add_option('--samplingdelta', action="store", type='float', dest='samplingdelta', default=None,
                       help='The sampling rate for the robot (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

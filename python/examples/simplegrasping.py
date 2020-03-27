@@ -24,16 +24,17 @@ This type of example is suited for object geometries that are dynamically create
 .. examplepost-block:: simplegrasping
 """
 
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
-
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robot = env.GetRobots()[0]
@@ -42,22 +43,23 @@ def main(env,options):
 
     bodies = [b for b in env.GetBodies() if not b.IsRobot() and linalg.norm(b.ComputeAABB().extents()) < 0.2]
     target = bodies[random.randint(len(bodies))]
-    print('choosing target %s'%target)
+    print('choosing target %s' % target)
 
-    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot=robot,iktype=IkParameterization.Type.Transform6D)
+    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot=robot,
+                                                                 iktype=IkParameterization.Type.Transform6D)
     if not ikmodel.load():
         ikmodel.autogenerate()
-    gmodel = databases.grasping.GraspingModel(robot,target)
+    gmodel = databases.grasping.GraspingModel(robot, target)
     if not gmodel.load():
         print('generating grasping model (one time computation)')
-        gmodel.init(friction=0.4,avoidlinks=[])
-        gmodel.generate(approachrays=gmodel.computeBoxApproachRays(delta=0.04,normalanglerange=0))
+        gmodel.init(friction=0.4, avoidlinks=[])
+        gmodel.generate(approachrays=gmodel.computeBoxApproachRays(delta=0.04, normalanglerange=0))
         gmodel.save()
 
     returnnum = 5
 
-    print('computing first %d valid grasps'%returnnum)
-    validgrasps,validindices = gmodel.computeValidGrasps(returnnum=returnnum)
+    print('computing first %d valid grasps' % returnnum)
+    validgrasps, validindices = gmodel.computeValidGrasps(returnnum=returnnum)
     for validgrasp in validgrasps:
         gmodel.showgrasp(validgrasp)
 
@@ -70,11 +72,11 @@ def main(env,options):
         try:
             gmodel.moveToPreshape(validgrasp)
             print('move robot arm to grasp')
-            Tgrasp = gmodel.getGlobalGraspTransform(validgrasp,collisionfree=True)
+            Tgrasp = gmodel.getGlobalGraspTransform(validgrasp, collisionfree=True)
             basemanip.MoveToHandPosition(matrices=[Tgrasp])
             break
         except planning_error as e:
-            print('try again: ',e)
+            print('try again: ', e)
 
     robot.WaitForController(10)
     taskmanip = openravepy.interfaces.TaskManipulation(robot)
@@ -91,11 +93,13 @@ def main(env,options):
 
     print('using the grasp iterator')
     with env:
-        for validgrasp,validindex in gmodel.validGraspIterator():
-            gmodel.showgrasp(validgrasp,useik=True,collisionfree=True,delay=0.4)
+        for validgrasp, validindex in gmodel.validGraspIterator():
+            gmodel.showgrasp(validgrasp, useik=True, collisionfree=True, delay=0.4)
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -103,14 +107,16 @@ def run(args=None):
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Shows how to use the grasping.GraspingModel to compute valid grasps for manipulation.')
+    parser = OptionParser(
+        description='Shows how to use the grasping.GraspingModel to compute valid grasps for manipulation.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene', action="store",type='string',dest='scene',default='data/wamtest1.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/wamtest1.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--manipname', action="store",type='string',dest='manipname',default=None,
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default=None,
                       help='Choose the manipulator to perform the grasping for')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

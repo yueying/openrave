@@ -16,18 +16,23 @@
 from .pyANN_int import *
 from .pyANN_int import _pyann_exception_
 
+
 class pyann_exception(Exception):
     """wrap up the C++ pyann_exception"""
-    def __init__( self, app_error ):
-        Exception.__init__( self )
+
+    def __init__(self, app_error):
+        Exception.__init__(self)
         self._pimpl = app_error
-    def __str__( self ):
+
+    def __str__(self):
         return self._pimpl.message()
+
     def __getattribute__(self, attr):
         my_pimpl = super(pyann_exception, self).__getattribute__("_pimpl")
         try:
             return getattr(my_pimpl, attr)
         except AttributeError:
-            return super(pyann_exception,self).__getattribute__(attr)
+            return super(pyann_exception, self).__getattribute__(attr)
+
 
 _pyann_exception_.py_err_class = pyann_exception

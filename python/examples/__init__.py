@@ -16,17 +16,6 @@ Execute example ``X`` using:
 Each sub-module contains a 'run' function that can be called directly with options to configure the example.
 """
 
-# tutorials showing a single functionality (simple)
-from . import tutorial_grasptransform
-from . import tutorial_ik5d
-from . import tutorial_iklookat
-from . import tutorial_iklookat_multiple
-from . import tutorial_iksolutions
-from . import tutorial_iktranslation
-from . import tutorial_iktranslation2d
-from . import tutorial_inversereachability
-from . import tutorial_plotting
-
 # examples showing complex demos
 from . import calibrationviews
 from . import checkconvexdecomposition
@@ -43,6 +32,16 @@ from . import hanoi
 from . import inversekinematicspick
 from . import movehandstraight
 from . import pr2turnlever
+# tutorials showing a single functionality (simple)
+from . import tutorial_grasptransform
+from . import tutorial_ik5d
+from . import tutorial_iklookat
+from . import tutorial_iklookat_multiple
+from . import tutorial_iksolutions
+from . import tutorial_iktranslation
+from . import tutorial_iktranslation2d
+from . import tutorial_inversereachability
+from . import tutorial_plotting
 
 try:
     from PyQt4 import QtGui, QtCore

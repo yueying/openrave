@@ -23,59 +23,63 @@ This type of example is suited for object geometries that are dynamically create
 
 .. examplepost-block:: fastgrasping
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
-
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
+
 class FastGrasping:
     class GraspingException(Exception):
-        def __init__(self,args):
-            self.args=args
+        def __init__(self, args):
+            self.args = args
 
-    def __init__(self,robot,target):
+    def __init__(self, robot, target):
         self.robot = robot
-        self.ikmodel = databases.inversekinematics.InverseKinematicsModel(robot=robot,iktype=IkParameterization.Type.Transform6D)
+        self.ikmodel = databases.inversekinematics.InverseKinematicsModel(robot=robot,
+                                                                          iktype=IkParameterization.Type.Transform6D)
         if not self.ikmodel.load():
             self.ikmodel.autogenerate()
-        self.gmodel = databases.grasping.GraspingModel(robot,target)
-        self.gmodel.init(friction=0.4,avoidlinks=[])
+        self.gmodel = databases.grasping.GraspingModel(robot, target)
+        self.gmodel.init(friction=0.4, avoidlinks=[])
 
-    def checkgraspfn(self, contacts,finalconfig,grasp,info):
+    def checkgraspfn(self, contacts, finalconfig, grasp, info):
         # check if grasp can be reached by robot
-        Tglobalgrasp = self.gmodel.getGlobalGraspTransform(grasp,collisionfree=True)
+        Tglobalgrasp = self.gmodel.getGlobalGraspTransform(grasp, collisionfree=True)
         # have to set the preshape since the current robot is at the final grasp!
         self.gmodel.setPreshape(grasp)
-        sol = self.gmodel.manip.FindIKSolution(Tglobalgrasp,True)
+        sol = self.gmodel.manip.FindIKSolution(Tglobalgrasp, True)
         if sol is not None:
             jointvalues = array(finalconfig[0])
             jointvalues[self.gmodel.manip.GetArmIndices()] = sol
-            raise self.GraspingException([grasp,jointvalues])
+            raise self.GraspingException([grasp, jointvalues])
         return True
 
     def computeGrasp(self):
-        approachrays = self.gmodel.computeBoxApproachRays(delta=0.02,normalanglerange=0.5) # rays to approach object
+        approachrays = self.gmodel.computeBoxApproachRays(delta=0.02, normalanglerange=0.5)  # rays to approach object
         standoffs = [0]
         # roll discretization
-        rolls = arange(0,2*pi,0.5*pi)
+        rolls = arange(0, 2 * pi, 0.5 * pi)
         # initial preshape for robot is the released fingers
         with self.gmodel.target:
             self.gmodel.target.Enable(False)
             taskmanip = interfaces.TaskManipulation(self.robot)
-            final,traj = taskmanip.ReleaseFingers(execute=False,outputfinal=True)
+            final, traj = taskmanip.ReleaseFingers(execute=False, outputfinal=True)
             preshapes = array([final])
         try:
-            self.gmodel.disableallbodies=False
-            self.gmodel.generate(preshapes=preshapes,standoffs=standoffs,rolls=rolls,approachrays=approachrays,checkgraspfn=self.checkgraspfn,graspingnoise=0.01)
-            return None,None # did not find anything
+            self.gmodel.disableallbodies = False
+            self.gmodel.generate(preshapes=preshapes, standoffs=standoffs, rolls=rolls, approachrays=approachrays,
+                                 checkgraspfn=self.checkgraspfn, graspingnoise=0.01)
+            return None, None  # did not find anything
         except self.GraspingException as e:
             return e.args
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robot = env.GetRobots()[0]
@@ -84,16 +88,18 @@ def main(env,options):
     # find an appropriate target
     bodies = [b for b in env.GetBodies() if not b.IsRobot() and linalg.norm(b.ComputeAABB().extents()) < 0.2]
     for body in bodies:
-        self = FastGrasping(robot,target=body)
-        grasp,jointvalues = self.computeGrasp()
+        self = FastGrasping(robot, target=body)
+        grasp, jointvalues = self.computeGrasp()
         if grasp is not None:
             print('grasp is found!')
             self.gmodel.showgrasp(grasp)
             self.robot.SetDOFValues(jointvalues)
             input('press any key')
 
+
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -101,14 +107,16 @@ def run(args=None):
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Example showing how to compute a valid grasp as fast as possible without computing a grasp set, this is used when the target objects change frequently.')
+    parser = OptionParser(
+        description='Example showing how to compute a valid grasp as fast as possible without computing a grasp set, this is used when the target objects change frequently.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene', action="store",type='string',dest='scene',default='data/wamtest1.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/wamtest1.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--manipname', action="store",type='string',dest='manipname',default=None,
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default=None,
                       help='Choose the manipulator to perform the grasping for')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

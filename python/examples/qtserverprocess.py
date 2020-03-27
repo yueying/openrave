@@ -34,37 +34,40 @@ This trajectory can be replayed using the qt-gui.
 .. examplepost-block:: qtserverprocess
 """
 
- # for python 2.5
+# for python 2.5
 __author__ = 'Daniel Kappler'
 __copyright__ = '2011 Daniel Kappler (daniel.kappler@gmail.com)'
 
-import sys, os, re, logging, signal
-from numpy import random
-from multiprocessing import Process,Pipe
-from threading import Thread
-from openravepy import *
+import logging
+import signal
+import sys
+from multiprocessing import Process, Pipe
 
 from PyQt4 import QtGui, QtCore
+from numpy import random
+from openravepy import *
 
 logger = None
 
+
 class CallbackHandler(QtCore.QThread):
-    def __init__(self,pipe,callback=None):
-        super(CallbackHandler,self).__init__()
+    def __init__(self, pipe, callback=None):
+        super(CallbackHandler, self).__init__()
         self.callback = callback
         self.pipe = pipe
 
     def run(self):
         resultValue = self.pipe.recv()
-        msg = [self.callback,resultValue]
-        self.emit(QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"),msg)
+        msg = [self.callback, resultValue]
+        self.emit(QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"), msg)
+
 
 class OpenRaveServer(object):
     '''
     classdocs
     '''
 
-    def __init__(self,pipe):
+    def __init__(self, pipe):
         '''
         Constructor
         '''
@@ -73,52 +76,51 @@ class OpenRaveServer(object):
         self.orenv = Environment()
         self._run()
 
-
     def __del__(self):
         RaveDestroy()
 
     def _run(self):
-        while(self.running):
-            (functionName,args,handleCallback) = self.pipe.recv()
-            rValue,rMessage = self.executeFunction(functionName, args)
+        while (self.running):
+            (functionName, args, handleCallback) = self.pipe.recv()
+            rValue, rMessage = self.executeFunction(functionName, args)
             if handleCallback:
-                self.pipe.send([rValue,rMessage])
+                self.pipe.send([rValue, rMessage])
 
-    def executeFunction(self,name,args):
+    def executeFunction(self, name, args):
         rValue = None
-        rMessage = "Function with "+name+" not available"
+        rMessage = "Function with " + name + " not available"
         if name in dir(self):
-            if(args is None):
-                rValue,rMessage = getattr(self,name)()
+            if (args is None):
+                rValue, rMessage = getattr(self, name)()
             else:
-                rValue,rMessage = getattr(self,name)(args)
-        return rValue,rMessage
+                rValue, rMessage = getattr(self, name)(args)
+        return rValue, rMessage
 
     def StartGui(self):
         try:
             self.orenv.SetViewer('qtcoin')
-            return True,None
-        except:
-            pass
-        return None,"Please start OpenRAVE first."
-
-    def LoadEnv(self,env):
-        try:
-            self.orenv.Reset()
-            if((env is not None) and self.orenv.Load(env) == False):
-                return None, "Could not load "+env+"."
-
-            self.robot = self.orenv.GetRobots()[0]
-            self.manip = self.robot.GetActiveManipulator()
-            return True,None
+            return True, None
         except:
             pass
         return None, "Please start OpenRAVE first."
 
-    def UpdateTrajectory(self,pos):
+    def LoadEnv(self, env):
+        try:
+            self.orenv.Reset()
+            if ((env is not None) and self.orenv.Load(env) == False):
+                return None, "Could not load " + env + "."
+
+            self.robot = self.orenv.GetRobots()[0]
+            self.manip = self.robot.GetActiveManipulator()
+            return True, None
+        except:
+            pass
+        return None, "Please start OpenRAVE first."
+
+    def UpdateTrajectory(self, pos):
         with self.orenv:
             self.robot.GetController().SetDesired(self.trajdata[pos])
-        return "Trajectory position "+str(pos),[pos,len(self.trajdata)-1]
+        return "Trajectory position " + str(pos), [pos, len(self.trajdata) - 1]
 
     def waitrobot(self):
         while not self.robot.GetController().IsDone():
@@ -132,8 +134,11 @@ class OpenRaveServer(object):
                 notFound = False
                 try:
                     Tnewgoals = []
-                    Tnewgoals.append(self.manip.GetEndEffectorTransform() +(random.rand(4,4)-0.5))
-                    data = interfaces.BaseManipulation(self.robot).MoveToHandPosition(matrices=Tnewgoals,maxiter=1000,maxtries=1,seedik=4,execute=True,outputtraj=True).split(" ")
+                    Tnewgoals.append(self.manip.GetEndEffectorTransform() + (random.rand(4, 4) - 0.5))
+                    data = interfaces.BaseManipulation(self.robot).MoveToHandPosition(matrices=Tnewgoals, maxiter=1000,
+                                                                                      maxtries=1, seedik=4,
+                                                                                      execute=True,
+                                                                                      outputtraj=True).split(" ")
                 except Exception as e:
                     notFound = True
                     logger.debug(str(e))
@@ -169,12 +174,13 @@ class OpenRaveServer(object):
         except StopIteration:
             pass
 
-        return True, [len(self.trajdata)-1,len(self.trajdata)-1]
+        return True, [len(self.trajdata) - 1, len(self.trajdata) - 1]
 
     def quit(self):
         RaveDestroy()
         self.running = False
-        return True,None
+        return True, None
+
 
 class Server(object):
     '''
@@ -198,13 +204,13 @@ class Server(object):
         '''
         Main server loop which waits for input from the qt-gui.
         '''
-        while(self.running):
-            (functionName,args,handleCallback) = self.pipeServer.recv()
+        while (self.running):
+            (functionName, args, handleCallback) = self.pipeServer.recv()
             rValue = self.executeFunction(functionName, args)
             if handleCallback:
                 self.pipeServer.send(rValue)
 
-    def executeFunction(self,name,args):
+    def executeFunction(self, name, args):
         if name == "___START_OPENRAVE_SERVER___":
             return self.StartOpenRaveGuiServer()
         if name == "___CLOSE___":
@@ -220,7 +226,7 @@ class Server(object):
     def StartOpenRaveGuiServer(self):
         if self.orgui:
             self.orgui.terminate()
-        self.orgui = Process(target=OpenRaveServer,args=(self.pipeORControl,))
+        self.orgui = Process(target=OpenRaveServer, args=(self.pipeORControl,))
         self.orgui.start()
         return True
 
@@ -231,14 +237,16 @@ class Server(object):
 
     def _StartQtGuiControl(self):
         app = QtGui.QApplication(sys.argv)
-        form = MainWindow(self.pipeQtControl,self.pipeQtServer)
+        form = MainWindow(self.pipeQtControl, self.pipeQtServer)
         form.show()
         app.exec_()
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     _fromUtf8 = lambda s: s
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -320,38 +328,47 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.teEnv.setHtml(QtGui.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Myriad Web\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Sans Serif\';\">data/wamtest1.env.xml</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "OpenRAVE Server Response", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Path to Environment file.", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbTrajectory.setText(QtGui.QApplication.translate("MainWindow", "Calc Trajectory", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbBackward.setText(QtGui.QApplication.translate("MainWindow", "step back", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbForward.setText(QtGui.QApplication.translate("MainWindow", "step forward", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbStartOpenRAVE.setText(QtGui.QApplication.translate("MainWindow", "start OpenRAVE", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbStartGui.setText(QtGui.QApplication.translate("MainWindow", "start GUI", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbLoadEnv.setText(QtGui.QApplication.translate("MainWindow", "load Env", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(
+            QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.teEnv.setHtml(QtGui.QApplication.translate("MainWindow",
+                                                        "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                        "p, li { white-space: pre-wrap; }\n"
+                                                        "</style></head><body style=\" font-family:\'Myriad Web\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Sans Serif\';\">data/wamtest1.env.xml</span></p></body></html>",
+                                                        None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "OpenRAVE Server Response", None,
+                                                        QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Path to Environment file.", None,
+                                                          QtGui.QApplication.UnicodeUTF8))
+        self.pbTrajectory.setText(
+            QtGui.QApplication.translate("MainWindow", "Calc Trajectory", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbBackward.setText(
+            QtGui.QApplication.translate("MainWindow", "step back", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbForward.setText(
+            QtGui.QApplication.translate("MainWindow", "step forward", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbStartOpenRAVE.setText(
+            QtGui.QApplication.translate("MainWindow", "start OpenRAVE", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbStartGui.setText(
+            QtGui.QApplication.translate("MainWindow", "start GUI", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbLoadEnv.setText(
+            QtGui.QApplication.translate("MainWindow", "load Env", None, QtGui.QApplication.UnicodeUTF8))
         self.pbClose.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 
-class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
+class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSignature("")
     def on_pbClose_clicked(self):
         self.closeAll()
 
-
-    def __init__(self,pipeOR,pipeServer):
-        super(MainWindow,self).__init__(None)
+    def __init__(self, pipeOR, pipeServer):
+        super(MainWindow, self).__init__(None)
         self.pipeServer = pipeServer
         self.pipeOR = pipeOR
 
-
         self.CallbackHandler = CallbackHandler(self.pipeOR)
-        self.connect(self.CallbackHandler,QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"),self.HandleCallback)
+        self.connect(self.CallbackHandler, QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"), self.HandleCallback)
         self.__index = 0
         self.setupUi(self)
 
@@ -372,7 +389,7 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
             button.setEnabled(False)
 
     def ButtonsUnlock(self):
-        for i,lock in enumerate(self.locks):
+        for i, lock in enumerate(self.locks):
             self.buttons[i].setEnabled(lock)
 
     def close(self):
@@ -403,7 +420,7 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
         self.hsTimeLine.setEnabled(False)
         self.pbForward.setEnabled(False)
         self.pbBackward.setEnabled(False)
-        self.SendToOR("LoadEnv", str(self.teEnv.toPlainText()),self.enableTrajectoryPlanning)
+        self.SendToOR("LoadEnv", str(self.teEnv.toPlainText()), self.enableTrajectoryPlanning)
 
     @QtCore.pyqtSignature("")
     def on_pbTrajectory_clicked(self):
@@ -417,25 +434,25 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
         self.ButtonsLock()
         self.updateTeOutput("Next step of the rajectory.")
         self.hsTimeLineActive = False
-        self.SendToOR("UpdateTrajectory", (self.hsTimeLine.value()+1),self.enableTrajectoryControl)
+        self.SendToOR("UpdateTrajectory", (self.hsTimeLine.value() + 1), self.enableTrajectoryControl)
 
     @QtCore.pyqtSignature("")
     def on_pbBackward_clicked(self):
         self.ButtonsLock()
         self.updateTeOutput("Previous step of the trajectory.")
         self.hsTimeLineActive = False
-        self.SendToOR("UpdateTrajectory", (self.hsTimeLine.value()-1),self.enableTrajectoryControl)
+        self.SendToOR("UpdateTrajectory", (self.hsTimeLine.value() - 1), self.enableTrajectoryControl)
 
     @QtCore.pyqtSignature("int")
-    def on_hsTimeLine_valueChanged(self,value):
+    def on_hsTimeLine_valueChanged(self, value):
         if self.hsTimeLineActive:
-            self.SendToOR("UpdateTrajectory", value,self.enableTrajectoryControl)
+            self.SendToOR("UpdateTrajectory", value, self.enableTrajectoryControl)
             self.hsTimeLine.setEnabled(False)
 
-    def enableTrajectoryPlanning(self,data):
+    def enableTrajectoryPlanning(self, data):
         self.pbTrajectory.setEnabled(True)
 
-    def enableTrajectoryControl(self,traj):
+    def enableTrajectoryControl(self, traj):
         self.ButtonsUnlock()
         self.pbForward.setEnabled(False)
         self.pbBackward.setEnabled(False)
@@ -452,65 +469,71 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
         else:
             self.updateTeOutput("ERROR: result was in the wrong format")
 
-    def updateTeOutput(self,text):
+    def updateTeOutput(self, text):
         content = str(text)
         content += "\n"
         content += str(self.teOutput.toPlainText())
         self.teOutput.setText(content)
 
-    def CallbackOR(self,args):
+    def CallbackOR(self, args):
         self.ButtonsUnlock()
 
-    def SendToServer(self,command,args=None,callback=None):
-        handleCallback=False
+    def SendToServer(self, command, args=None, callback=None):
+        handleCallback = False
         if callback:
             self.CallbackHandler.callback = callback
             self.CallbackHandler.start()
-            handleCallback=True
-        self.pipeServer.send([command,args,handleCallback])
+            handleCallback = True
+        self.pipeServer.send([command, args, handleCallback])
 
-    def SendToOR(self,command,args=None,callback=None):
-        handleCallback=False
+    def SendToOR(self, command, args=None, callback=None):
+        handleCallback = False
         if callback:
             self.CallbackHandler.callback = callback
             self.CallbackHandler.start()
-            handleCallback=True
-        self.pipeOR.send([command,args,handleCallback])
+            handleCallback = True
+        self.pipeOR.send([command, args, handleCallback])
 
-    def HandleCallback(self,msg):
-        if(len(msg) == 2):
-            if(msg[0] is not None):
+    def HandleCallback(self, msg):
+        if (len(msg) == 2):
+            if (msg[0] is not None):
                 self.updateTeOutput(msg[1][0])
                 try:
                     msg[0](msg[1][1])
                 except Exception as e:
                     logger.error(str(e))
             else:
-                self.updateTeOutput("ERROR: "+msg[1][0])
+                self.updateTeOutput("ERROR: " + msg[1][0])
             return
         logger.error("ERROR in request format")
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     global logger
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     logger = logging.getLogger('PyqtControl')
-    lhandler =logging.StreamHandler(sys.stdout)
+    lhandler = logging.StreamHandler(sys.stdout)
     lhandler.setFormatter(logging.Formatter("%(levelname)-10s:: %(filename)-20s - %(lineno)4d :: %(message)s"))
     logger.setLevel(logging.INFO)
     logger.addHandler(lhandler)
     server = Server()
 
+
 from optparse import OptionParser
+
 
 def run(args=None):
     """Command-line execution of the example.
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Pyqt example to demonstrate how openrave elements can be controlled by a qt-gui.', usage='openrave.py --example qtserverprocess [options]')
+    parser = OptionParser(
+        description='Pyqt example to demonstrate how openrave elements can be controlled by a qt-gui.',
+        usage='openrave.py --example qtserverprocess [options]')
     (options, leftargs) = parser.parse_args(args=args)
-    main(None,options)
+    main(None, options)
+
 
 if __name__ == "__main__":
     run()

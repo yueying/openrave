@@ -33,23 +33,27 @@ just insert them in the "Arguments for Example" box with space seperation.
 .. examplepost-block:: qtexampleselector
 """
 
-
- # for python 2.5
+# for python 2.5
 __author__ = 'Daniel Kappler'
 __copyright__ = '2011 Daniel Kappler (daniel.kappler@gmail.com)'
 
-import sys, os, re, logging, signal, traceback
-from multiprocessing import Process,Pipe
+import logging
+import re
+import signal
+import sys
+import traceback
+from multiprocessing import Process, Pipe
 from threading import Thread
 
 from PyQt4 import QtGui, QtCore
 
 logger = logging.getLogger('PyqtControl')
 
-#Change to main Gui Server which just inits a Qt or OpenRAVE Gui
+
+# Change to main Gui Server which just inits a Qt or OpenRAVE Gui
 class Example(Thread):
-    def __init__(self,mod,args):
-        super(Example,self).__init__()
+    def __init__(self, mod, args):
+        super(Example, self).__init__()
         self.mod = mod
         self.args = args
 
@@ -64,22 +68,23 @@ class Example(Thread):
 
 
 class CallbackHandler(QtCore.QThread):
-    def __init__(self,pipe,callback=None):
-        super(CallbackHandler,self).__init__()
+    def __init__(self, pipe, callback=None):
+        super(CallbackHandler, self).__init__()
         self.callback = callback
         self.pipe = pipe
 
     def run(self):
         resultValue = self.pipe.recv()
-        msg = [self.callback,resultValue]
-        self.emit(QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"),msg)
+        msg = [self.callback, resultValue]
+        self.emit(QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"), msg)
+
 
 class OpenRaveServer(object):
     '''
     Control server to run the benchmark in its own process.
     '''
 
-    def __init__(self,pipe):
+    def __init__(self, pipe):
         '''
         Setup the shared memory data structure model and initialize the control parts.
         '''
@@ -91,39 +96,40 @@ class OpenRaveServer(object):
         '''
         Main server loop which waits for input from the qt-gui.
         '''
-        while(self.running):
-            (functionName,args) = self.pipe.recv()
+        while (self.running):
+            (functionName, args) = self.pipe.recv()
             rValue = self.executeFunction(functionName, args)
             if (self.running):
                 self.pipe.send(rValue)
 
-    def executeFunction(self,name,args):
+    def executeFunction(self, name, args):
         try:
             if name == "___LOAD_EXAMPLE___":
-                return self.LoadExample(args[0],args[1])
+                return self.LoadExample(args[0], args[1])
             if name == "___CLOSE___":
                 try:
                     self.example.terminate()
                 except:
                     pass
-                self.running=False
+                self.running = False
                 return True
         except Exception as e:
             logger.error(str(e))
 
-        logger.info("No such function "+str(name)+" available.")
+        logger.info("No such function " + str(name) + " available.")
         return False
 
-    def LoadExample(self,fileName,args):
+    def LoadExample(self, fileName, args):
         try:
             import openravepy.examples
             mod = getattr(openravepy.examples, fileName)
-            self.example = Example(mod,args)
+            self.example = Example(mod, args)
             self.example.start()
             return True
         except Exception as e:
             logger.debug(str(e))
         return False
+
 
 class Server(object):
     '''
@@ -147,14 +153,14 @@ class Server(object):
         '''
         Main server loop which waits for input from the qt-gui.
         '''
-        while(self.running):
-            (functionName,args,handleCallback) = self.pipeServer.recv()
+        while (self.running):
+            (functionName, args, handleCallback) = self.pipeServer.recv()
             rValue = self.executeFunction(functionName, args)
             if handleCallback:
                 self.pipeServer.send(rValue)
 
-    def executeFunction(self,name,args):
-        logger.debug("server execute function "+str(name))
+    def executeFunction(self, name, args):
+        logger.debug("server execute function " + str(name))
         if name == "___START_OPENRAVE_SERVER___":
             return self.StartOpenRaveGuiServer()
         if name == "___CLOSE___":
@@ -170,7 +176,7 @@ class Server(object):
     def StartOpenRaveGuiServer(self):
         if self.orgui:
             self.orgui.terminate()
-        self.orgui = Process(target=OpenRaveServer,args=(self.pipeORControl,))
+        self.orgui = Process(target=OpenRaveServer, args=(self.pipeORControl,))
         self.orgui.start()
         return True
 
@@ -181,14 +187,16 @@ class Server(object):
 
     def _StartQtGuiControl(self):
         app = QtGui.QApplication(sys.argv)
-        form = MainWindow(self.pipeQtControl,self.pipeQtServer)
+        form = MainWindow(self.pipeQtControl, self.pipeQtServer)
         form.show()
         app.exec_()
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     _fromUtf8 = lambda s: s
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -241,27 +249,34 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.teArgs.setHtml(QtGui.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Available Examples:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Arguments for Example:", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbOR.setText(QtGui.QApplication.translate("MainWindow", "OpenRaveServer", None, QtGui.QApplication.UnicodeUTF8))
-        self.pbRun.setText(QtGui.QApplication.translate("MainWindow", "RunExample", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(
+            QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.teArgs.setHtml(QtGui.QApplication.translate("MainWindow",
+                                                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                         "p, li { white-space: pre-wrap; }\n"
+                                                         "</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                         "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>",
+                                                         None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(
+            QtGui.QApplication.translate("MainWindow", "Available Examples:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(
+            QtGui.QApplication.translate("MainWindow", "Arguments for Example:", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbOR.setText(
+            QtGui.QApplication.translate("MainWindow", "OpenRaveServer", None, QtGui.QApplication.UnicodeUTF8))
+        self.pbRun.setText(
+            QtGui.QApplication.translate("MainWindow", "RunExample", None, QtGui.QApplication.UnicodeUTF8))
         self.pbClose.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 
-class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
-    def __init__(self,pipeOR,pipeServer):
-        super(MainWindow,self).__init__(None)
+class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
+    def __init__(self, pipeOR, pipeServer):
+        super(MainWindow, self).__init__(None)
         self.pipeServer = pipeServer
         self.pipeOR = pipeOR
 
         self.CallbackHandler = CallbackHandler(self.pipeServer)
-        self.connect(self.CallbackHandler,QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"),self.HandleCallback)
+        self.connect(self.CallbackHandler, QtCore.SIGNAL("CallbackHandler(PyQt_PyObject)"), self.HandleCallback)
         self.__index = 0
         self.setupUi(self)
 
@@ -269,7 +284,7 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
         fileNames = dir(openravepy.examples)
         fileNames.sort(key=str.lower)
         for filename in fileNames:
-            if re.match("__\w*__\Z",filename):
+            if re.match("__\w*__\Z", filename):
                 continue
             self.cbExamples.addItem(QtCore.QString(filename))
 
@@ -285,7 +300,7 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
             button.setEnabled(False)
 
     def ButtonsUnlock(self):
-        for i,lock in enumerate(self.locks):
+        for i, lock in enumerate(self.locks):
             self.buttons[i].setEnabled(lock)
 
     def close(self):
@@ -305,9 +320,9 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
         self.pbRun.setEnabled(True)
         self.ButtonsLock()
         self.orRunning = False
-        self.SendToServer("___START_OPENRAVE_SERVER___",callback=self.CallbackOR)
+        self.SendToServer("___START_OPENRAVE_SERVER___", callback=self.CallbackOR)
 
-    def CallbackOR(self,args):
+    def CallbackOR(self, args):
         self.ButtonsUnlock()
 
     @QtCore.pyqtSignature("")
@@ -320,22 +335,22 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
             args = []
         else:
             args = args.split(" ")
-        self.SendToOR("___LOAD_EXAMPLE___",[str(self.cbExamples.currentText()),args])
+        self.SendToOR("___LOAD_EXAMPLE___", [str(self.cbExamples.currentText()), args])
 
-    def SendToServer(self,command,args=None,callback=None):
-        handleCallback=False
+    def SendToServer(self, command, args=None, callback=None):
+        handleCallback = False
         if callback:
             self.CallbackHandler.callback = callback
             self.CallbackHandler.start()
-            handleCallback=True
-        self.pipeServer.send([command,args,handleCallback])
+            handleCallback = True
+        self.pipeServer.send([command, args, handleCallback])
 
-    def SendToOR(self,command,args=None):
-        self.pipeOR.send([command,args])
+    def SendToOR(self, command, args=None):
+        self.pipeOR.send([command, args])
 
-    def HandleCallback(self,msg):
-        if(len(msg) == 2):
-            if(msg[0] is not None):
+    def HandleCallback(self, msg):
+        if (len(msg) == 2):
+            if (msg[0] is not None):
                 try:
                     msg[0](msg[1])
                 except Exception as e:
@@ -343,29 +358,31 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
             return
         logger.error("ERROR in request format")
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     global logger
-    lhandler =logging.StreamHandler(sys.stdout)
+    lhandler = logging.StreamHandler(sys.stdout)
     lhandler.setFormatter(logging.Formatter("%(levelname)-10s:: %(filename)-20s - %(lineno)4d :: %(message)s"))
     logger.setLevel(logging.INFO)
     logger.addHandler(lhandler)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     server = Server()
 
+
 from optparse import OptionParser
+
 
 def run(args=None):
     """Command-line execution of the example.
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Control and run the openrave python examples with a pyqt gui.', usage='openrave.py --example qtexampleselector [options]')
+    parser = OptionParser(description='Control and run the openrave python examples with a pyqt gui.',
+                          usage='openrave.py --example qtexampleselector [options]')
     (options, leftargs) = parser.parse_args(args=args)
-    main(None,options)
+    main(None, options)
 
 
 if __name__ == "__main__":
     run()
-
-

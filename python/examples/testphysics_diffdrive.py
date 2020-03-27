@@ -19,39 +19,44 @@
 
 .. examplepost-block:: testphysics_diffdrive
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     if options._physics is None:
         # no physics engine set, so set one
-        physics = RaveCreatePhysicsEngine(env,'ode')
+        physics = RaveCreatePhysicsEngine(env, 'ode')
         env.SetPhysicsEngine(physics)
 
     with env:
-        env.GetPhysicsEngine().SetGravity(array((0,0,-9.8)))
+        env.GetPhysicsEngine().SetGravity(array((0, 0, -9.8)))
         robot = env.GetRobots()[0]
-        robot.SetController(RaveCreateController(env,'odevelocity'),list(range(robot.GetDOF())),0)
+        robot.SetController(RaveCreateController(env, 'odevelocity'), list(range(robot.GetDOF())), 0)
         env.StopSimulation()
         env.StartSimulation(timestep=0.001)
 
     starttime = time.time()
     while True:
-        velocities = 4*(random.rand(robot.GetDOF())-0.5)
-        print('velocities: ',velocities)
-        robot.GetController().SendCommand('setvelocity '+' '.join(str(f) for f in velocities))
+        velocities = 4 * (random.rand(robot.GetDOF()) - 0.5)
+        print('velocities: ', velocities)
+        robot.GetController().SendCommand('setvelocity ' + ' '.join(str(f) for f in velocities))
         time.sleep(2)
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -60,11 +65,12 @@ def run(args=None):
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
     parser = OptionParser(description="test physics diff drive controller")
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/diffdrive_sample.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/diffdrive_sample.env.xml',
                       help='Scene file to load (default=%default)')
     OpenRAVEGlobalArguments.addOptions(parser)
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     run()

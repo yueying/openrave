@@ -9,33 +9,42 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License. 
-def loadstable(ver):
-    return _loadversion('_openravepy_'+ver.replace('.', '_'))
+# limitations under the License.
+
+
+from platform import system
+from sys import platform
+
+
+def load_stable(ver):
+    return _loadversion('_openravepy_' + ver.replace('.', '_'))
+
+
 def loadlatest():
     return _loadversion('_openravepy_')
+
 
 def _loadversion(targetname):
     mainpackage = __import__("openravepy", globals(), locals(), [targetname])
     global openravepy_currentversion
     openravepy_currentversion = getattr(mainpackage, targetname)
     # Let users change versions after choosing this one
-    openravepy_currentversion.loadstable = loadstable
+    openravepy_currentversion.load_stable = load_stable
     openravepy_currentversion.loadlatest = loadlatest
     return openravepy_currentversion
 
-from platform import system
-from sys import platform
+
 if platform.startswith('win') or system().lower() == 'windows':
     openravepy_currentversion = loadlatest()
 else:
     try:
-        openravepy_currentversion = loadstable(__openravepy_version__)
+        openravepy_currentversion = load_stable(__openravepy_version__)
     except (NameError, AttributeError):
         openravepy_currentversion = loadlatest()
 
 if openravepy_currentversion is not None:
     from sys import modules
+
     modules['openravepy'] = openravepy_currentversion
 
 # necessary in order to generate documentation

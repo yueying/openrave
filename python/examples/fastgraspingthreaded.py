@@ -23,11 +23,11 @@ This type of example is suited for object geometries that are dynamically create
 
 .. examplepost-block:: fastgraspingthreaded
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Atsushi Tsuda and Rosen Diankov'
 
-
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
@@ -35,69 +35,77 @@ if not __openravepy_build_doc__:
 try:
     from multiprocessing import cpu_count
 except:
-    def cpu_count(): return 1
+    def cpu_count():
+        return 1
 
 import time
 
+
 class FastGraspingThreaded:
-    def __init__(self,robot,target):
+    def __init__(self, robot, target):
         self.env = robot.GetEnv()
         self.robot = robot
         self.manip = robot.GetActiveManipulator()
-        self.ikmodel = databases.inversekinematics.InverseKinematicsModel(robot=robot,iktype=IkParameterization.Type.Transform6D)
+        self.ikmodel = databases.inversekinematics.InverseKinematicsModel(robot=robot,
+                                                                          iktype=IkParameterization.Type.Transform6D)
         if not self.ikmodel.load():
             self.ikmodel.autogenerate()
-        self.target=target
-        self.prob = RaveCreateModule(self.env,'Grasper')
-        self.env.Add(self.prob,True,self.robot.GetName())
+        self.target = target
+        self.prob = RaveCreateModule(self.env, 'Grasper')
+        self.env.Add(self.prob, True, self.robot.GetName())
         # used for maintaining compatible grasp structures
-        self.gmodel = databases.grasping.GraspingModel(self.robot,self.target)
+        self.gmodel = databases.grasping.GraspingModel(self.robot, self.target)
 
-    def callGraspThreaded(self,approachrays,standoffs,preshapes,rolls,manipulatordirections=None,target=None,transformrobot=True,onlycontacttarget=True,tightgrasp=False,graspingnoise=None,ngraspingnoiseretries=None,forceclosurethreshold=None,avoidlinks=None,collisionchecker=None,translationstepmult=None,numthreads=None,startindex=None,maxgrasps=None,checkik=False,friction=None):
+    def callGraspThreaded(self, approachrays, standoffs, preshapes, rolls, manipulatordirections=None, target=None,
+                          transformrobot=True, onlycontacttarget=True, tightgrasp=False, graspingnoise=None,
+                          ngraspingnoiseretries=None, forceclosurethreshold=None, avoidlinks=None,
+                          collisionchecker=None, translationstepmult=None, numthreads=None, startindex=None,
+                          maxgrasps=None, checkik=False, friction=None):
         """See :ref:`module-grasper-graspthreaded`
         """
         cmd = 'GraspThreaded '
 
         if target is not None:
-            cmd += 'target %s '%target.GetName()
-        cmd += 'forceclosure %d %g onlycontacttarget %d tightgrasp %d '%(forceclosurethreshold is not None,forceclosurethreshold,onlycontacttarget,tightgrasp)
+            cmd += 'target %s ' % target.GetName()
+        cmd += 'forceclosure %d %g onlycontacttarget %d tightgrasp %d ' % (
+        forceclosurethreshold is not None, forceclosurethreshold, onlycontacttarget, tightgrasp)
         if friction is not None:
-            cmd += 'friction %.15e '%friction
+            cmd += 'friction %.15e ' % friction
         if checkik is not None:
-            cmd += 'checkik %d '%checkik
+            cmd += 'checkik %d ' % checkik
         if startindex is not None:
-            cmd += 'startindex %d '%startindex
+            cmd += 'startindex %d ' % startindex
         if maxgrasps is not None:
-            cmd += 'maxgrasps %d '%maxgrasps
+            cmd += 'maxgrasps %d ' % maxgrasps
         if avoidlinks is not None:
             for link in avoidlinks:
-                cmd += 'avoidlink %s '%link.GetName()
+                cmd += 'avoidlink %s ' % link.GetName()
         if graspingnoise is not None:
-            cmd += 'graspingnoise %.15e %d '%(graspingnoise,ngraspingnoiseretries)
+            cmd += 'graspingnoise %.15e %d ' % (graspingnoise, ngraspingnoiseretries)
         if translationstepmult is not None:
-            cmd += 'translationstepmult %.15e '%translationstepmult
+            cmd += 'translationstepmult %.15e ' % translationstepmult
         if numthreads is not None:
-            cmd += 'numthreads %d '%numthreads
-        cmd += 'approachrays %d '%len(approachrays)
+            cmd += 'numthreads %d ' % numthreads
+        cmd += 'approachrays %d ' % len(approachrays)
         for f in approachrays.flat:
             cmd += str(f) + ' '
-        cmd += 'rolls %d '%len(rolls)
+        cmd += 'rolls %d ' % len(rolls)
         for f in rolls.flat:
             cmd += str(f) + ' '
-        cmd += 'standoffs %d '%len(standoffs)
+        cmd += 'standoffs %d ' % len(standoffs)
         for f in standoffs.flat:
             cmd += str(f) + ' '
-        cmd += 'preshapes %d '%len(preshapes)
+        cmd += 'preshapes %d ' % len(preshapes)
         for f in preshapes.flat:
             cmd += str(f) + ' '
-        cmd += 'manipulatordirections %d '%len(manipulatordirections)
+        cmd += 'manipulatordirections %d ' % len(manipulatordirections)
         for f in manipulatordirections.flat:
             cmd += str(f) + ' '
         res = self.prob.SendCommand(cmd)
         if res is None:
             raise planning_error('Grasp failed')
         resultgrasps = res.split()
-        resvalues=[]
+        resvalues = []
         nextid = int(resultgrasps.pop(0))
         preshapelen = len(self.robot.GetActiveManipulator().GetGripperIndices())
         for i in range(int(resultgrasps.pop(0))):
@@ -111,29 +119,36 @@ class FastGraspingThreaded:
             preshape = [float64(resultgrasps.pop(0)) for i in range(preshapelen)]
             Tfinal = matrixFromPose([float64(resultgrasps.pop(0)) for i in range(7)])
             finalshape = array([float64(resultgrasps.pop(0)) for i in range(self.robot.GetDOF())])
-            contacts_num=int(resultgrasps.pop(0))
-            contacts=[float64(resultgrasps.pop(0)) for i in range(contacts_num*6)]
-            contacts = reshape(contacts,(contacts_num,6))
-            resvalues.append([position, direction, roll, standoff, manipulatordirection, mindist, volume, preshape,Tfinal,finalshape,contacts])
+            contacts_num = int(resultgrasps.pop(0))
+            contacts = [float64(resultgrasps.pop(0)) for i in range(contacts_num * 6)]
+            contacts = reshape(contacts, (contacts_num, 6))
+            resvalues.append(
+                [position, direction, roll, standoff, manipulatordirection, mindist, volume, preshape, Tfinal,
+                 finalshape, contacts])
         return nextid, resvalues
 
     def computeGrasp(self):
         with self.env:
-            approachrays = databases.grasping.GraspingModel._computeBoxApproachRays(self.env,self.target,delta=0.02,normalanglerange=0.5) # rays to approach object
-            N=approachrays.shape[0]
+            approachrays = databases.grasping.GraspingModel._computeBoxApproachRays(self.env, self.target, delta=0.02,
+                                                                                    normalanglerange=0.5)  # rays to approach object
+            N = approachrays.shape[0]
 
             Ttarget = self.target.GetTransform()
-            gapproachrays = c_[dot(approachrays[:,0:3],transpose(Ttarget[0:3,0:3]))+tile(Ttarget[0:3,3],(N,1)),dot(approachrays[:,3:6],transpose(Ttarget[0:3,0:3]))]
-            self.approachgraphs = [self.env.plot3(points=gapproachrays[:,0:3],pointsize=5,colors=array((1,0,0))),
-                                   self.env.drawlinelist(points=reshape(c_[gapproachrays[:,0:3],gapproachrays[:,0:3]+0.005*gapproachrays[:,3:6]],(2*N,3)),linewidth=4,colors=array((1,0,0,1)))]
+            gapproachrays = c_[
+                dot(approachrays[:, 0:3], transpose(Ttarget[0:3, 0:3])) + tile(Ttarget[0:3, 3], (N, 1)), dot(
+                    approachrays[:, 3:6], transpose(Ttarget[0:3, 0:3]))]
+            self.approachgraphs = [self.env.plot3(points=gapproachrays[:, 0:3], pointsize=5, colors=array((1, 0, 0))),
+                                   self.env.drawlinelist(points=reshape(
+                                       c_[gapproachrays[:, 0:3], gapproachrays[:, 0:3] + 0.005 * gapproachrays[:, 3:6]],
+                                       (2 * N, 3)), linewidth=4, colors=array((1, 0, 0, 1)))]
 
             standoffs = array([0])
-            rolls = arange(0,2*pi,0.5*pi)
+            rolls = arange(0, 2 * pi, 0.5 * pi)
             manipulatordirections = array([self.manip.GetDirection()])
             target = self.target
             graspingnoise = 0.01
             ngraspingnoiseretries = 20
-            forceclosurethreshold=1e-9
+            forceclosurethreshold = 1e-9
             avoidlinks = []
             friction = 0.4
             numthreads = cpu_count()
@@ -142,19 +157,25 @@ class FastGraspingThreaded:
             grasps = []
             jointvalues = []
             with self.robot:
-                self.robot.SetActiveDOFs(self.manip.GetGripperIndices(),DOFAffine.X|DOFAffine.Y|DOFAffine.Z)
-                approachrays[:,3:6] = -approachrays[:,3:6]
+                self.robot.SetActiveDOFs(self.manip.GetGripperIndices(), DOFAffine.X | DOFAffine.Y | DOFAffine.Z)
+                approachrays[:, 3:6] = -approachrays[:, 3:6]
 
                 # initial preshape for robot is the released fingers
                 with self.target:
                     self.target.Enable(False)
                     taskmanip = interfaces.TaskManipulation(self.robot)
-                    final,traj = taskmanip.ReleaseFingers(execute=False,outputfinal=True)
+                    final, traj = taskmanip.ReleaseFingers(execute=False, outputfinal=True)
                     preshapes = array([final])
 
                 starttime = time.time()
-                nextid, resultgrasps = self.callGraspThreaded(approachrays,standoffs,preshapes,rolls,manipulatordirections=manipulatordirections,target=target,graspingnoise=graspingnoise,ngraspingnoiseretries=ngraspingnoiseretries,forceclosurethreshold=forceclosurethreshold,avoidlinks=avoidlinks,numthreads=numthreads,maxgrasps=maxgrasps,checkik=checkik,friction=friction)
-                totaltime = time.time()-starttime
+                nextid, resultgrasps = self.callGraspThreaded(approachrays, standoffs, preshapes, rolls,
+                                                              manipulatordirections=manipulatordirections,
+                                                              target=target, graspingnoise=graspingnoise,
+                                                              ngraspingnoiseretries=ngraspingnoiseretries,
+                                                              forceclosurethreshold=forceclosurethreshold,
+                                                              avoidlinks=avoidlinks, numthreads=numthreads,
+                                                              maxgrasps=maxgrasps, checkik=checkik, friction=friction)
+                totaltime = time.time() - starttime
                 for resultgrasp in resultgrasps:
                     grasp = zeros(self.gmodel.totaldof)
                     grasp[self.gmodel.graspindices.get('igrasppos')] = resultgrasp[0]
@@ -169,24 +190,26 @@ class FastGraspingThreaded:
                         Tlocalgrasp = eye(4)
                         self.robot.SetTransform(Tfinal)
                         Tgrasp = self.manip.GetEndEffectorTransform()
-                        Tlocalgrasp = dot(linalg.inv(self.target.GetTransform()),Tgrasp)
-                        grasp[self.gmodel.graspindices.get('igrasptrans')] = reshape(transpose(Tlocalgrasp[0:3,0:4]),12)
+                        Tlocalgrasp = dot(linalg.inv(self.target.GetTransform()), Tgrasp)
+                        grasp[self.gmodel.graspindices.get('igrasptrans')] = reshape(transpose(Tlocalgrasp[0:3, 0:4]),
+                                                                                     12)
                     grasps.append(grasp)
                     jointvalues.append(finaljointvalues)
 
                 grasps = array(grasps)
                 jointvalues = array(jointvalues)
-                print('found %d grasps in %.3fs'%(len(grasps),totaltime))
+                print('found %d grasps in %.3fs' % (len(grasps), totaltime))
                 return grasps, jointvalues
 
     def showgrasps(self, grasps, jointvalues):
-        for i,grasp in enumerate(grasps):
+        for i, grasp in enumerate(grasps):
             with self.env:
                 self.robot.SetDOFValues(jointvalues[i])
                 self.env.UpdatePublishedBodies()
                 input('press any key')
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robot = env.GetRobots()[0]
@@ -195,12 +218,14 @@ def main(env,options):
     # find an appropriate target
     bodies = [b for b in env.GetBodies() if not b.IsRobot() and linalg.norm(b.ComputeAABB().extents()) < 0.2]
     for body in bodies:
-        self = FastGraspingThreaded(robot,target=body)
+        self = FastGraspingThreaded(robot, target=body)
         grasps, jointvalues = self.computeGrasp()
         self.showgrasps(grasps, jointvalues)
 
+
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -208,14 +233,16 @@ def run(args=None):
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Example showing how to compute a valid grasp as fast as possible without computing a grasp set, this is used when the target objects change frequently.')
+    parser = OptionParser(
+        description='Example showing how to compute a valid grasp as fast as possible without computing a grasp set, this is used when the target objects change frequently.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene', action="store",type='string',dest='scene',default='data/wamtest1.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/wamtest1.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--manipname', action="store",type='string',dest='manipname',default=None,
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default=None,
                       help='Choose the manipulator to perform the grasping for')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

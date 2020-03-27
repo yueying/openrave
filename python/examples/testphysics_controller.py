@@ -18,39 +18,44 @@
 
 .. examplepost-block:: testphysics_controller
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     if options._physics is None:
         # no physics engine set, so set one
-        physics = RaveCreatePhysicsEngine(env,'ode')
+        physics = RaveCreatePhysicsEngine(env, 'ode')
         env.SetPhysicsEngine(physics)
-    physics.SetGravity(array((0,0,-9.8)))
+    physics.SetGravity(array((0, 0, -9.8)))
 
     with env:
         robot = env.GetRobots()[0]
         robot.GetLinks()[0].SetStatic(True)
-        robot.SetController(RaveCreateController(env,'odevelocity'),list(range(robot.GetDOF())),0)
+        robot.SetController(RaveCreateController(env, 'odevelocity'), list(range(robot.GetDOF())), 0)
         env.StopSimulation()
         env.StartSimulation(timestep=0.001)
 
     starttime = time.time()
     while True:
-        velocities = 0.5*(random.rand(robot.GetDOF())-0.5)
-        robot.GetController().SendCommand('setvelocity '+' '.join(str(f) for f in velocities))
+        velocities = 0.5 * (random.rand(robot.GetDOF()) - 0.5)
+        robot.GetController().SendCommand('setvelocity ' + ' '.join(str(f) for f in velocities))
         time.sleep(2.0)
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -60,10 +65,11 @@ def run(args=None):
     """
     parser = OptionParser(description="test physics")
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/hanoi.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/hanoi.env.xml',
                       help='Scene file to load (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     run()

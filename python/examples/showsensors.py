@@ -103,28 +103,31 @@ To OpenRAVE XML to attach a flash LIDAR sensor is:
 
 .. examplepost-block:: showsensors
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
-import time, threading
+import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     ienablesensor = 0
     while True:
         sensors = env.GetSensors()
-        for i,sensor in enumerate(sensors):
-            if i==ienablesensor:
+        for i, sensor in enumerate(sensors):
+            if i == ienablesensor:
                 sensor.Configure(Sensor.ConfigureCommand.PowerOn)
                 sensor.Configure(Sensor.ConfigureCommand.RenderDataOn)
             else:
                 sensor.Configure(Sensor.ConfigureCommand.PowerOff)
                 sensor.Configure(Sensor.ConfigureCommand.RenderDataOff)
-        print('showing sensor %s, try moving obstacles'%(sensors[ienablesensor].GetName()))
+        print('showing sensor %s, try moving obstacles' % (sensors[ienablesensor].GetName()))
         if sensors[ienablesensor].Supports(Sensor.Type.Laser):
             # if laser, wait for the sensor data to be updated and then print it
             olddata = sensors[ienablesensor].GetSensorData(Sensor.Type.Laser)
@@ -133,12 +136,14 @@ def main(env,options):
                 if data.stamp != olddata.stamp:
                     break
                 time.sleep(0.1)
-            print('sensor data: ',data.ranges)                        
+            print('sensor data: ', data.ranges)
         time.sleep(5)
-        ienablesensor = (ienablesensor+1)%len(sensors)
+        ienablesensor = (ienablesensor + 1) % len(sensors)
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -149,10 +154,11 @@ def run(args=None):
     parser = OptionParser(description='Displays all images of all camera sensors attached to a robot.')
     OpenRAVEGlobalArguments.addOptions(parser)
     parser.add_option('--scene',
-                      action="store",type='string',dest='scene',default='data/testwamcamera.env.xml',
+                      action="store", type='string', dest='scene', default='data/testwamcamera.env.xml',
                       help='OpenRAVE scene to load')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     run()

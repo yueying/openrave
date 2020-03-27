@@ -64,13 +64,13 @@ Class Definitions
 -----------------
 
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 __copyright__ = 'Copyright (C) 2009-2010 Rosen Diankov (rosen.diankov@gmail.com)'
 __license__ = 'Apache License, Version 2.0'
 
-import time
 import os.path
+import time
 
 if not __openravepy_build_doc__:
     from ..openravepy_int import *
@@ -85,23 +85,27 @@ from . import inversekinematics, kinematicreachability
 from .. import interfaces
 
 import logging
-log = logging.getLogger('openravepy.'+__name__.split('.',2)[-1])
+
+log = logging.getLogger('openravepy.' + __name__.split('.', 2)[-1])
+
 
 class VisibilityModel(DatabaseGenerator):
-    visibilitytransforms = None # a list of camera pose in the pattern coordinate system
-    targetlink = None # the target link object
-    targetgeomname = None # name of a geometry object inside target link to constrain the visiblity checking
-    
+    visibilitytransforms = None  # a list of camera pose in the pattern coordinate system
+    targetlink = None  # the target link object
+    targetgeomname = None  # name of a geometry object inside target link to constrain the visiblity checking
+
     class GripperVisibility:
         """Used to hide links not beloning to gripper.
 
         When 'entered' will hide all the non-gripper links in order to facilitate visiblity of the gripper
         """
-        def __init__(self,manip):
+
+        def __init__(self, manip):
 
             self.manip = manip
             self.robot = self.manip.GetRobot()
             self.hiddengeoms = []
+
         def __enter__(self):
             self.hiddengeoms = []
             with self.robot.GetEnv():
@@ -110,30 +114,34 @@ class VisibilityModel(DatabaseGenerator):
                 for link in self.robot.GetLinks():
                     if link.GetIndex() not in childlinkids:
                         for geom in link.GetGeometries():
-                            self.hiddengeoms.append((geom,geom.IsDraw()))
+                            self.hiddengeoms.append((geom, geom.IsDraw()))
                             geom.SetDraw(False)
-        def __exit__(self,type,value,traceback):
+
+        def __exit__(self, type, value, traceback):
             with self.robot.GetEnv():
-                for geom,isdraw in self.hiddengeoms:
+                for geom, isdraw in self.hiddengeoms:
                     geom.SetDraw(isdraw)
 
-    def __init__(self,robot,targetlink,sensorrobot=None,sensorname=None,maxvelmult=None, ignoresensorcollision=None, targetgeomname=None, iktype=IkParameterization.Type.Transform6D):
+    def __init__(self, robot, targetlink, sensorrobot=None, sensorname=None, maxvelmult=None,
+                 ignoresensorcollision=None, targetgeomname=None, iktype=IkParameterization.Type.Transform6D):
         """Starts a visibility model using a robot, a sensor, and a targetlink
 
         The minimum needed to be specified is the robot and a sensorname. Supports sensors that do
         not belong to the current robot in the case that a robot is holding the target with its
         manipulator. Providing the target allows visibility information to be computed.
         """
-        DatabaseGenerator.__init__(self,robot=robot)
+        DatabaseGenerator.__init__(self, robot=robot)
         self.sensorrobot = sensorrobot if sensorrobot is not None else robot
         self.targetlink = targetlink
         self.targetgeomname = targetgeomname
-        self.visualprob = interfaces.VisualFeedback(self.robot,maxvelmult=maxvelmult,ignoresensorcollision=ignoresensorcollision)
-        self.basemanip = interfaces.BaseManipulation(self.robot,maxvelmult=maxvelmult)
+        self.visualprob = interfaces.VisualFeedback(self.robot, maxvelmult=maxvelmult,
+                                                    ignoresensorcollision=ignoresensorcollision)
+        self.basemanip = interfaces.BaseManipulation(self.robot, maxvelmult=maxvelmult)
         self.convexhull = None
         self.sensorname = sensorname
         if self.sensorname is None:
-            possiblesensors = [s.GetName() for s in self.sensorrobot.GetAttachedSensors() if s.GetSensor() is not None and s.GetSensor().Supports(Sensor.Type.Camera)]
+            possiblesensors = [s.GetName() for s in self.sensorrobot.GetAttachedSensors() if
+                               s.GetSensor() is not None and s.GetSensor().Supports(Sensor.Type.Camera)]
             if len(possiblesensors) > 0:
                 self.sensorname = possiblesensors[0]
         self.manip = robot.GetActiveManipulator()
@@ -143,8 +151,9 @@ class VisibilityModel(DatabaseGenerator):
         self.preshapes = None
         self.iktype = iktype
         self.preprocess()
-    def clone(self,envother):
-        clone = DatabaseGenerator.clone(self,envother)
+
+    def clone(self, envother):
+        clone = DatabaseGenerator.clone(self, envother)
         clone.rmodel = self.rmodel.clone(envother) if not self.rmodel is None else None
         clone.preshapes = array(self.preshapes) if not self.preshapes is None else None
         clone.ikmodel = self.ikmodel.clone(envother) if not self.ikmodel is None else None
@@ -152,46 +161,56 @@ class VisibilityModel(DatabaseGenerator):
         clone.basemanip = self.basemanip.clone(envother)
         clone.preprocess()
         return clone
+
     def has(self):
         return self.visibilitytransforms is not None and len(self.visibilitytransforms) > 0
+
     def getversion(self):
         return 2
-    def getfilename(self,read=False):
-        return RaveFindDatabaseFile(os.path.join('robot.'+self.robot.GetKinematicsGeometryHash(), 'visibility.' + self.manip.GetStructureHash() + '.' + self.attachedsensor.GetStructureHash() + '.' + self.targetlink.GetParent().GetKinematicsGeometryHash()+'.pp'),read)
+
+    def getfilename(self, read=False):
+        return RaveFindDatabaseFile(os.path.join('robot.' + self.robot.GetKinematicsGeometryHash(),
+                                                 'visibility.' + self.manip.GetStructureHash() + '.' + self.attachedsensor.GetStructureHash() + '.' + self.targetlink.GetParent().GetKinematicsGeometryHash() + '.pp'),
+                                    read)
+
     def load(self):
         try:
             params = DatabaseGenerator.load(self)
             if params is None:
                 return False
-            self.visibilitytransforms,self.convexhull,self.KK,self.dims,self.preshapes = params
+            self.visibilitytransforms, self.convexhull, self.KK, self.dims, self.preshapes = params
             self.preprocess()
             return self.has()
         except e:
             return False
+
     def save(self):
-        DatabaseGenerator.save(self,(self.visibilitytransforms,self.convexhull,self.KK,self.dims,self.preshapes))
+        DatabaseGenerator.save(self, (self.visibilitytransforms, self.convexhull, self.KK, self.dims, self.preshapes))
 
     def preprocess(self):
         with self.env:
-            manipname = self.visualprob.SetCameraAndTarget(sensorname=self.sensorname,sensorrobot=self.sensorrobot,manipname=self.manipname,targetlink=self.targetlink, targetgeomname=self.targetgeomname)
-            assert(self.manipname is None or self.manipname==manipname)
+            manipname = self.visualprob.SetCameraAndTarget(sensorname=self.sensorname, sensorrobot=self.sensorrobot,
+                                                           manipname=self.manipname, targetlink=self.targetlink,
+                                                           targetgeomname=self.targetgeomname)
+            assert (self.manipname is None or self.manipname == manipname)
             self.manip = self.robot.SetActiveManipulator(manipname)
-            self.attachedsensor = [s for s in self.sensorrobot.GetAttachedSensors() if s.GetName() == self.sensorname][0]
-            self.ikmodel = inversekinematics.InverseKinematicsModel(robot=self.robot,iktype=self.iktype)
+            self.attachedsensor = [s for s in self.sensorrobot.GetAttachedSensors() if s.GetName() == self.sensorname][
+                0]
+            self.ikmodel = inversekinematics.InverseKinematicsModel(robot=self.robot, iktype=self.iktype)
             if not self.ikmodel.load():
                 self.ikmodel.autogenerate()
             if self.visibilitytransforms is not None:
                 self.visualprob.SetCameraTransforms(transforms=self.visibilitytransforms)
-    
-    def autogenerate(self,options=None,gmodel=None):
+
+    def autogenerate(self, options=None, gmodel=None):
         preshapes = None
-        sphere =None
+        sphere = None
         conedirangles = None
         if options is not None:
             if options.preshapes is not None:
-                preshapes = zeros((0,len(self.manip.GetGripperIndices())))
+                preshapes = zeros((0, len(self.manip.GetGripperIndices())))
                 for preshape in options.preshapes:
-                    preshapes = r_[preshapes,[array([float(s) for s in preshape.split()])]]
+                    preshapes = r_[preshapes, [array([float(s) for s in preshape.split()])]]
             if options.sphere is not None:
                 sphere = [float(s) for s in options.sphere.split()]
             if options.conedirangles is not None:
@@ -205,87 +224,98 @@ class VisibilityModel(DatabaseGenerator):
                 with self.targetlink.GetParent():
                     self.targetlink.GetParent().Enable(False)
                     taskmanip = interfaces.TaskManipulation(self.robot)
-                    final,traj = taskmanip.ReleaseFingers(execute=False,outputfinal=True)
+                    final, traj = taskmanip.ReleaseFingers(execute=False, outputfinal=True)
                 preshapes = array([final])
         else:
             preshapes = array(())
-        self.generate(preshapes=preshapes,sphere=sphere,conedirangles=conedirangles)
+        self.generate(preshapes=preshapes, sphere=sphere, conedirangles=conedirangles)
         self.save()
-    def generate(self,preshapes,sphere=None,conedirangles=None,localtransforms=None):
-        self.preshapes=preshapes
+
+    def generate(self, preshapes, sphere=None, conedirangles=None, localtransforms=None):
+        self.preshapes = preshapes
         self.preprocess()
         self.sensorname = self.attachedsensor.GetName()
         self.manipname = self.manip.GetName()
-        bodies = [(b,b.IsEnabled()) for b in self.env.GetBodies() if b != self.robot and b != self.targetlink.GetParent()]
+        bodies = [(b, b.IsEnabled()) for b in self.env.GetBodies() if
+                  b != self.robot and b != self.targetlink.GetParent()]
         for b in bodies:
             b[0].Enable(False)
         try:
             with self.env:
                 sensor = self.attachedsensor.GetSensor()
-                if sensor is not None: # set power to 0?
+                if sensor is not None:  # set power to 0?
                     sensorgeom = sensor.GetSensorGeometry(Sensor.Type.Camera)
                     sensordata = sensor.GetSensorData(Sensor.Type.Camera)
                     self.KK = sensorgeom.KK.K
                     self.dims = sensordata.imagedata.shape
-                        
+
                 with RobotStateSaver(self.robot):
                     # find better way of handling multiple grasps
                     if len(self.preshapes) > 0:
-                            self.robot.SetDOFValues(self.preshapes[0],self.manip.GetGripperIndices())
-                    extentsfile = os.path.join(RaveGetHomeDirectory(),'kinbody.'+self.targetlink.GetParent().GetKinematicsGeometryHash(),'visibility.txt')
+                        self.robot.SetDOFValues(self.preshapes[0], self.manip.GetGripperIndices())
+                    extentsfile = os.path.join(RaveGetHomeDirectory(),
+                                               'kinbody.' + self.targetlink.GetParent().GetKinematicsGeometryHash(),
+                                               'visibility.txt')
                     if sphere is None and os.path.isfile(extentsfile):
-                        self.visibilitytransforms = self.visualprob.ProcessVisibilityExtents(extents=loadtxt(extentsfile,float),conedirangles=conedirangles)
+                        self.visibilitytransforms = self.visualprob.ProcessVisibilityExtents(
+                            extents=loadtxt(extentsfile, float), conedirangles=conedirangles)
                     elif localtransforms is not None:
                         self.visibilitytransforms = self.visualprob.ProcessVisibilityExtents(transforms=localtransforms)
                     else:
                         if sphere is None:
-                            sphere = [3,0.1,0.15,0.2,0.25,0.3]
-                        self.visibilitytransforms = self.visualprob.ProcessVisibilityExtents(sphere=sphere,conedirangles=conedirangles)
-                print('total transforms: ',len(self.visibilitytransforms))
+                            sphere = [3, 0.1, 0.15, 0.2, 0.25, 0.3]
+                        self.visibilitytransforms = self.visualprob.ProcessVisibilityExtents(sphere=sphere,
+                                                                                             conedirangles=conedirangles)
+                print('total transforms: ', len(self.visibilitytransforms))
                 self.visualprob.SetCameraTransforms(transforms=self.visibilitytransforms)
         finally:
-            for b,enable in bodies:
+            for b, enable in bodies:
                 b.Enable(enable)
 
-    def SetCameraTransforms(self,transforms):
+    def SetCameraTransforms(self, transforms):
         """Sets the camera transforms to the visual feedback problem"""
         self.visualprob.SetCameraTransforms(transforms=transforms)
-    def showtransforms(self,options=None):
+
+    def showtransforms(self, options=None):
         if self.robot != self.sensorrobot:
-            pts = poseMultArrayT(self.sensorrobot.GetTransformPose(), InvertPoses(self.visibilitytransforms))[:,4:7]
+            pts = poseMultArrayT(self.sensorrobot.GetTransformPose(), InvertPoses(self.visibilitytransforms))[:, 4:7]
         else:
-            pts = poseMultArrayT(self.targetlink.GetParent().GetTransformPose(), self.visibilitytransforms)[:,4:7]
-        h=self.env.plot3(pts,5,colors=array([0.5,0.5,1,0.2]))
+            pts = poseMultArrayT(self.targetlink.GetParent().GetTransformPose(), self.visibilitytransforms)[:, 4:7]
+        h = self.env.plot3(pts, 5, colors=array([0.5, 0.5, 1, 0.2]))
         try:
             with RobotStateSaver(self.robot):
                 # disable all non-child links
                 for link in self.robot.GetLinks():
                     link.Enable(link in self.manip.GetChildLinks())
                 with self.GripperVisibility(self.manip):
-                    for i,pose in enumerate(self.visibilitytransforms):
+                    for i, pose in enumerate(self.visibilitytransforms):
                         with self.env:
                             if len(self.preshapes) > 0:
-                                self.robot.SetDOFValues(self.preshapes[0],self.manip.GetGripperIndices())
+                                self.robot.SetDOFValues(self.preshapes[0], self.manip.GetGripperIndices())
 
                             if self.robot != self.sensorrobot:
                                 # sensor is not attached to robot
-                                assert(self.targetlink is not None)
-                                relativepose = poseMult(poseMult(self.attachedsensor.GetTransformPose(),InvertPose(pose)), InvertPose(self.targetlink.GetParent().GetTransformPose()))
+                                assert (self.targetlink is not None)
+                                relativepose = poseMult(
+                                    poseMult(self.attachedsensor.GetTransformPose(), InvertPose(pose)),
+                                    InvertPose(self.targetlink.GetParent().GetTransformPose()))
                                 for link in self.manip.GetChildLinks():
                                     link.SetTransform(poseMult(relativepose, link.GetTransformPose()))
                             else:
-                                relativepose = poseMult(InvertPose(self.attachedsensor.GetTransformPose()),self.manip.GetTransformPose())
+                                relativepose = poseMult(InvertPose(self.attachedsensor.GetTransformPose()),
+                                                        self.manip.GetTransformPose())
                                 globalCameraPose = poseMult(self.targetlink.GetParent().GetTransformPose(), pose)
-                                grasppose = poseMult(globalCameraPose,relativepose)
-                                deltapose = poseMult(grasppose,InvertPose(self.manip.GetTransformPose()))
+                                grasppose = poseMult(globalCameraPose, relativepose)
+                                deltapose = poseMult(grasppose, InvertPose(self.manip.GetTransformPose()))
                                 for link in self.manip.GetChildLinks():
-                                    link.SetTransform(poseMult(deltapose,link.GetTransformPose()))
+                                    link.SetTransform(poseMult(deltapose, link.GetTransformPose()))
                             visibility = self.visualprob.ComputeVisibility()
                             self.env.UpdatePublishedBodies()
-                        msg='%d/%d visibility=%d, press any key to continue: '%(i,len(self.visibilitytransforms),visibility)
+                        msg = '%d/%d visibility=%d, press any key to continue: ' % (
+                        i, len(self.visibilitytransforms), visibility)
                         if options is not None and options.showimage:
-                            pilutil=__import__('scipy.misc',fromlist=['pilutil'])
-                            I=self.getCameraImage()
+                            pilutil = __import__('scipy.misc', fromlist=['pilutil'])
+                            I = self.getCameraImage()
                             print(msg)
                             pilutil.imshow(I)
                         else:
@@ -301,7 +331,7 @@ class VisibilityModel(DatabaseGenerator):
             pts = poseMult(self.sensorrobot.GetTransformPose(), InvertPose(relativepose))[4:7]
         else:
             pts = poseMult(self.targetlink.GetParent().GetTransformPose(), relativepose)[4:7]
-        h=self.env.plot3(pts,5,colors=array([0.5,0.5,1,0.2]))
+        h = self.env.plot3(pts, 5, colors=array([0.5, 0.5, 1, 0.2]))
         try:
             with RobotStateSaver(self.robot):
                 # disable all non-child links
@@ -310,27 +340,30 @@ class VisibilityModel(DatabaseGenerator):
                 with self.GripperVisibility(self.manip):
                     with self.env:
                         if len(self.preshapes) > 0:
-                            self.robot.SetDOFValues(self.preshapes[0],self.manip.GetGripperIndices())
+                            self.robot.SetDOFValues(self.preshapes[0], self.manip.GetGripperIndices())
 
                         if self.robot != self.sensorrobot:
                             # sensor is not attached to robot
-                            assert(self.targetlink is not None)
-                            linkrelativepose = poseMult(poseMult(self.attachedsensor.GetTransformPose(),InvertPose(relativepose)), InvertPose(self.targetlink.GetParent().GetTransformPose()))
+                            assert (self.targetlink is not None)
+                            linkrelativepose = poseMult(
+                                poseMult(self.attachedsensor.GetTransformPose(), InvertPose(relativepose)),
+                                InvertPose(self.targetlink.GetParent().GetTransformPose()))
                             for link in self.manip.GetChildLinks():
                                 link.SetTransform(poseMult(linkrelativepose, link.GetTransformPose()))
                         else:
-                            linkrelativepose = poseMult(InvertPose(self.attachedsensor.GetTransformPose()),self.manip.GetTransformPose())
+                            linkrelativepose = poseMult(InvertPose(self.attachedsensor.GetTransformPose()),
+                                                        self.manip.GetTransformPose())
                             globalCameraPose = poseMult(self.targetlink.GetParent().GetTransformPose(), relativepose)
                             grasppose = poseMult(globalCameraPose, linkrelativepose)
-                            deltapose = poseMult(grasppose,InvertPose(self.manip.GetTransformPose()))
+                            deltapose = poseMult(grasppose, InvertPose(self.manip.GetTransformPose()))
                             for link in self.manip.GetChildLinks():
-                                link.SetTransform(poseMult(deltapose,link.GetTransformPose()))
+                                link.SetTransform(poseMult(deltapose, link.GetTransformPose()))
                         visibility = self.visualprob.ComputeVisibility()
                         self.env.UpdatePublishedBodies()
-                    msg='visibility=%d, press any key to continue: '%(visibility)
+                    msg = 'visibility=%d, press any key to continue: ' % (visibility)
                     if options is not None and options.showimage:
-                        pilutil=__import__('scipy.misc',fromlist=['pilutil'])
-                        I=self.getCameraImage()
+                        pilutil = __import__('scipy.misc', fromlist=['pilutil'])
+                        I = self.getCameraImage()
                         print(msg)
                         pilutil.imshow(I)
                     else:
@@ -338,30 +371,31 @@ class VisibilityModel(DatabaseGenerator):
         finally:
             # have to destroy the plot handle
             h = None
-            
-    def show(self,options=None):
+
+    def show(self, options=None):
         if self.env.GetViewer() is None:
             self.env.SetViewer(RaveGetDefaultViewerType())
-            time.sleep(0.4) # give time for viewer to initialize
+            time.sleep(0.4)  # give time for viewer to initialize
         self.attachedsensor.GetSensor().Configure(Sensor.ConfigureCommand.PowerOn)
         self.attachedsensor.GetSensor().Configure(Sensor.ConfigureCommand.RenderDataOn)
         return self.showtransforms(options)
+
     def moveToPreshape(self):
         """uses a planner to safely move the hand to the preshape and returns the trajectory"""
         if len(self.preshapes) > 0:
-            preshape=self.preshapes[0]
+            preshape = self.preshapes[0]
             with self.robot:
                 self.robot.SetActiveDOFs(self.manip.GetArmIndices())
-                self.basemanip.MoveUnsyncJoints(jointvalues=preshape,jointinds=self.manip.GetGripperIndices())
-            while not self.robot.GetController().IsDone(): # busy wait
-                time.sleep(0.01)        
+                self.basemanip.MoveUnsyncJoints(jointvalues=preshape, jointinds=self.manip.GetGripperIndices())
+            while not self.robot.GetController().IsDone():  # busy wait
+                time.sleep(0.01)
             with self.robot:
                 self.robot.SetActiveDOFs(self.manip.GetGripperIndices())
                 self.basemanip.MoveActiveJoints(goal=preshape)
-            while not self.robot.GetController().IsDone(): # busy wait
+            while not self.robot.GetController().IsDone():  # busy wait
                 time.sleep(0.01)
 
-    def computeValidTransform(self,returnall=False,checkcollision=True,computevisibility=True,randomize=False):
+    def computeValidTransform(self, returnall=False, checkcollision=True, computevisibility=True, randomize=False):
         with self.robot:
             if self.manip.CheckIndependentCollision():
                 raise planning_error('robot independent links are initiallly in collision')
@@ -372,61 +406,64 @@ class VisibilityModel(DatabaseGenerator):
                 order = range(len(self.visibilitytransforms))
             for i in order:
                 pose = self.visibilitytransforms[i]
-                Trelative = dot(linalg.inv(self.attachedsensor.GetTransform()),self.manip.GetEndEffectorTransform())
-                Tcamera = dot(self.targetlink.GetParent().GetTransform(),matrixFromPose(pose))
-                Tgrasp = dot(Tcamera,Trelative)
-                s = self.manip.FindIKSolution(Tgrasp,checkcollision)
+                Trelative = dot(linalg.inv(self.attachedsensor.GetTransform()), self.manip.GetEndEffectorTransform())
+                Tcamera = dot(self.targetlink.GetParent().GetTransform(), matrixFromPose(pose))
+                Tgrasp = dot(Tcamera, Trelative)
+                s = self.manip.FindIKSolution(Tgrasp, checkcollision)
                 if s is not None:
-                    self.robot.SetDOFValues(s,self.manip.GetArmIndices())
+                    self.robot.SetDOFValues(s, self.manip.GetArmIndices())
                     if computevisibility and not self.visualprob.ComputeVisibility():
                         continue
-                    validjoints.append((s,i))
+                    validjoints.append((s, i))
                     if not returnall:
                         return validjoints
-                    print('found',len(validjoints))
+                    print('found', len(validjoints))
             return validjoints
 
-    def pruneTransformations(self,thresh=0.04,numminneighs=10,maxdist=None,translationonly=True):
+    def pruneTransformations(self, thresh=0.04, numminneighs=10, maxdist=None, translationonly=True):
         if self.rmodel is None:
             self.rmodel = kinematicreachability.ReachabilityModel(robot=self.robot)
             if not self.rmodel.load():
                 # do not autogenerate since that would force this model to depend on the reachability
                 self.rmodel = None
                 return array(visibilitytransforms)
-        kdtree=self.rmodel.ComputeNN(translationonly)
+        kdtree = self.rmodel.ComputeNN(translationonly)
         if maxdist is not None:
-            visibilitytransforms = self.visibilitytransforms[invertPoses(self.visibilitytransforms)[:,6]<maxdist]
+            visibilitytransforms = self.visibilitytransforms[invertPoses(self.visibilitytransforms)[:, 6] < maxdist]
         else:
             visibilitytransforms = self.visibilitytransforms
-        newtrans = poseMultArrayT(poseFromMatrix(dot(linalg.inv(self.manip.GetBase().GetTransform()),self.targetlink.GetParent().GetTransform())),visibilitytransforms)
+        newtrans = poseMultArrayT(poseFromMatrix(
+            dot(linalg.inv(self.manip.GetBase().GetTransform()), self.targetlink.GetParent().GetTransform())),
+                                  visibilitytransforms)
         if translationonly:
-            transdensity = kdtree.kFRSearchArray(newtrans[:,4:7],thresh**2,0,thresh*0.01)[2]
-            I=flatnonzero(transdensity>numminneighs)
+            transdensity = kdtree.kFRSearchArray(newtrans[:, 4:7], thresh ** 2, 0, thresh * 0.01)[2]
+            I = flatnonzero(transdensity > numminneighs)
             return visibilitytransforms[I[argsort(-transdensity[I])]]
         raise ValueError('not supported')
-#         Imask = GetCameraRobotMask(orenv,options.robotfile,sensorindex=options.sensorindex,gripperjoints=gripperjoints,robotjoints=robotjoints,robotjointinds=robotjointinds,rayoffset=options.rayoffset)
-#         # save as a ascii matfile
-#         numpy.savetxt(options.savefile,Imask,'%d')
-#         print 'mask saved to ' + options.savefile
-#         try:
-#             scipy.misc.pilutil.imshow(array(Imask*255,'uint8'))
-#         except:
-#             pass
 
-#     def GetCameraRobotMask(self,rayoffset=0):
-#         with self.env:
-#             inds = array(range(self.width*self.height))
-#             imagepoints = array((mod(inds,self.width),floor(inds/self.width)))
-#             camerapoints = dot(linalg.inv(self.KK), r_[imagepoints,ones((1,imagepoints.shape[1]))])
-#             Tcamera = self.attached.GetSensor().GetTransform()
-#             raydirs = dot(Tcamera[0:3,0:3], camerapoints / tile(sqrt(sum(camerapoints**2,0)),(3,1)))
-#             rays = r_[tile(Tcamera[0:3,3:4],(1,raydirs.shape[1]))+rayoffset*raydirs,100.0*raydirs]
-#             hitindices,hitpositions = self.prob.GetEnv().CheckCollisionRays(rays,self.robot,False)
-#             # gather all the rays that hit and form an image
-#             return reshape(array(hitindices,'float'),(height,width))
+    #         Imask = GetCameraRobotMask(orenv,options.robotfile,sensorindex=options.sensorindex,gripperjoints=gripperjoints,robotjoints=robotjoints,robotjointinds=robotjointinds,rayoffset=options.rayoffset)
+    #         # save as a ascii matfile
+    #         numpy.savetxt(options.savefile,Imask,'%d')
+    #         print 'mask saved to ' + options.savefile
+    #         try:
+    #             scipy.misc.pilutil.imshow(array(Imask*255,'uint8'))
+    #         except:
+    #             pass
 
-    def getCameraImage(self,delay=1.0):
-        sensor=self.attachedsensor.GetSensor()
+    #     def GetCameraRobotMask(self,rayoffset=0):
+    #         with self.env:
+    #             inds = array(range(self.width*self.height))
+    #             imagepoints = array((mod(inds,self.width),floor(inds/self.width)))
+    #             camerapoints = dot(linalg.inv(self.KK), r_[imagepoints,ones((1,imagepoints.shape[1]))])
+    #             Tcamera = self.attached.GetSensor().GetTransform()
+    #             raydirs = dot(Tcamera[0:3,0:3], camerapoints / tile(sqrt(sum(camerapoints**2,0)),(3,1)))
+    #             rays = r_[tile(Tcamera[0:3,3:4],(1,raydirs.shape[1]))+rayoffset*raydirs,100.0*raydirs]
+    #             hitindices,hitpositions = self.prob.GetEnv().CheckCollisionRays(rays,self.robot,False)
+    #             # gather all the rays that hit and form an image
+    #             return reshape(array(hitindices,'float'),(height,width))
+
+    def getCameraImage(self, delay=1.0):
+        sensor = self.attachedsensor.GetSensor()
         sensor.Configure(Sensor.ConfigureCommand.PowerOn)
         try:
             time.sleep(delay)
@@ -437,24 +474,25 @@ class VisibilityModel(DatabaseGenerator):
     @staticmethod
     def CreateOptionParser():
         parser = DatabaseGenerator.CreateOptionParser()
-        parser.description='Computes and manages the visibility transforms for a manipulator/target.'
-        parser.add_option('--target',action="store",type='string',dest='target',
+        parser.description = 'Computes and manages the visibility transforms for a manipulator/target.'
+        parser.add_option('--target', action="store", type='string', dest='target',
                           help='OpenRAVE kinbody target filename')
-        parser.add_option('--sensorname',action="store",type='string',dest='sensorname',default=None,
+        parser.add_option('--sensorname', action="store", type='string', dest='sensorname', default=None,
                           help='Name of the sensor to build visibilty model for (has to be camera). If none, takes first possible sensor.')
-        parser.add_option('--preshape', action='append', type='string',dest='preshapes',default=None,
+        parser.add_option('--preshape', action='append', type='string', dest='preshapes', default=None,
                           help='Add a preshape for the manipulator gripper joints')
-        parser.add_option('--sphere', action='store', type='string',dest='sphere',default=None,
+        parser.add_option('--sphere', action='store', type='string', dest='sphere', default=None,
                           help='Force detectability extents to be distributed around a sphere. Parameter is a string with the first value being density (3 is default) and the rest being distances')
-        parser.add_option('--conedirangle', action='append', type='string',dest='conedirangles',default=None,
+        parser.add_option('--conedirangle', action='append', type='string', dest='conedirangles', default=None,
                           help='The direction of the cone multiplied with the half-angle (radian) that the detectability extents are constrained to. Multiple cones can be provided.')
-        parser.add_option('--rayoffset',action="store",type='float',dest='rayoffset',default=0.03,
+        parser.add_option('--rayoffset', action="store", type='float', dest='rayoffset', default=0.03,
                           help='The offset to move the ray origin (prevents meaningless collisions), default is 0.03')
-        parser.add_option('--showimage',action="store_true",dest='showimage',default=False,
+        parser.add_option('--showimage', action="store_true", dest='showimage', default=False,
                           help='If set, will show the camera image when showing the models')
         return parser
+
     @staticmethod
-    def RunFromParser(Model=None,parser=None,args=None,**kwargs):
+    def RunFromParser(Model=None, parser=None, args=None, **kwargs):
         if parser is None:
             parser = VisibilityModel.CreateOptionParser()
         (options, leftargs) = parser.parse_args(args=args)
@@ -466,13 +504,14 @@ class VisibilityModel(DatabaseGenerator):
                 target.SetTransform(eye(4))
                 env.Add(target)
             if Model is None:
-                Model = lambda robot: VisibilityModel(robot=robot,target=target,sensorname=options.sensorname)
-            DatabaseGenerator.RunFromParser(env=env,Model=Model,parser=parser,args=args,**kwargs)
+                Model = lambda robot: VisibilityModel(robot=robot, target=target, sensorname=options.sensorname)
+            DatabaseGenerator.RunFromParser(env=env, Model=Model, parser=parser, args=args, **kwargs)
         finally:
             env.Destroy()
             RaveDestroy()
 
-def run(*args,**kwargs):
+
+def run(*args, **kwargs):
     """Command-line execution of the example. ``args`` specifies a list of the arguments to the script.
     """
-    VisibilityModel.RunFromParser(*args,**kwargs)
+    VisibilityModel.RunFromParser(*args, **kwargs)

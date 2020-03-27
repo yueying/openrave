@@ -24,18 +24,20 @@ Uses the :mod:`.visibiltymodel` generator and :ref:`module-visualfeedback` inter
 .. examplepost-block:: checkvisibility
 
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 __copyright__ = '2009-2010 Rosen Diankov (rosen.diankov@gmail.com)'
 __license__ = 'Apache License, Version 2.0'
 
 import time, threading
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     # initialiation
@@ -45,7 +47,7 @@ def main(env,options):
         body = env.GetKinBody('mug6')
         if body is not None:
             T = body.GetTransform()
-            T[0:3,3] = [-0.14,0.146,0.938]
+            T[0:3, 3] = [-0.14, 0.146, 0.938]
             body.SetTransform(T)
 
         vmodels = []
@@ -59,11 +61,12 @@ def main(env,options):
                 # go through all objects
                 for target in env.GetBodies():
                     # load the visibility model
-                    vmodel = databases.visibilitymodel.VisibilityModel(robot,target=target,sensorname=sensor.GetName())
+                    vmodel = databases.visibilitymodel.VisibilityModel(robot, target=target,
+                                                                       sensorname=sensor.GetName())
                     if not vmodel.load():
                         vmodel.autogenerate()
                     # set internal discretization parameters 
-                    vmodel.visualprob.SetParameter(raydensity=0.002,allowableocclusion=0.0)
+                    vmodel.visualprob.SetParameter(raydensity=0.002, allowableocclusion=0.0)
                     vmodels.append(vmodel)
                 sensors.append(sensor.GetSensor())
 
@@ -76,14 +79,19 @@ def main(env,options):
                 if vmodel.visualprob.ComputeVisibility():
                     # draw points around the object
                     ab = vmodel.target.ComputeAABB()
-                    corners = array([[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]],float64)
-                    handles.append(env.plot3(tile(ab.pos(),(8,1))+corners*tile(ab.extents(),(8,1)),10,[0,1,0]))
-                    print('%s is visible in sensor %s'%(vmodel.target.GetName(),vmodel.sensorname))
-            oldhandles = handles # replace
+                    corners = array(
+                        [[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1],
+                         [-1, -1, -1]], float64)
+                    handles.append(
+                        env.plot3(tile(ab.pos(), (8, 1)) + corners * tile(ab.extents(), (8, 1)), 10, [0, 1, 0]))
+                    print('%s is visible in sensor %s' % (vmodel.target.GetName(), vmodel.sensorname))
+            oldhandles = handles  # replace
         time.sleep(0.2)
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -94,10 +102,11 @@ def run(args=None):
     parser = OptionParser(description='Computes if an object is visibile inside the robot cameras.')
     OpenRAVEGlobalArguments.addOptions(parser)
     parser.add_option('--scene',
-                      action="store",type='string',dest='scene',default='data/testwamcamera.env.xml',
+                      action="store", type='string', dest='scene', default='data/testwamcamera.env.xml',
                       help='Scene file to load (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

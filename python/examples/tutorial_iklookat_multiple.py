@@ -18,30 +18,34 @@
 
 .. examplepost-block:: tutorial_iklookat_multiple
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
-
-import time
 import random as stdrandom
+import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
 from openravepy.misc import sequence_cross_product
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robots = env.GetRobots()
     manips = [env.GetRobot('pr2').GetManipulator('head_torso'), env.GetRobot('BarrettWAM').GetManipulator('arm')]
     ikmodels = []
-    freeindices=[None,manips[1].GetArmIndices()[:-2]]
-    for imanip,manip in enumerate(manips):
+    freeindices = [None, manips[1].GetArmIndices()[:-2]]
+    for imanip, manip in enumerate(manips):
         # generate the ik solver
         manip.GetRobot().SetActiveManipulator(manip)
-        ikmodel = databases.inversekinematics.InverseKinematicsModel(manip.GetRobot(), iktype=IkParameterization.Type.Lookat3D,freeindices=freeindices[imanip])
+        ikmodel = databases.inversekinematics.InverseKinematicsModel(manip.GetRobot(),
+                                                                     iktype=IkParameterization.Type.Lookat3D,
+                                                                     freeindices=freeindices[imanip])
         if not ikmodel.load():
             ikmodel.autogenerate()
         ikmodels.append(ikmodel)
@@ -52,12 +56,14 @@ def main(env,options):
         with env:
             # move the robot in a random collision-free position and call the IK
             while True:
-                target=ikmodel.manip.GetTransform()[0:3,3]+(random.rand(3)-0.5)
+                target = ikmodel.manip.GetTransform()[0:3, 3] + (random.rand(3) - 0.5)
                 robotsolutions = []
                 for ikmodel in ikmodels:
                     for ikmodel2 in ikmodels:
-                        ikmodel2.robot.Enable(ikmodel==ikmodel2)
-                    solutions = ikmodel.manip.FindIKSolutions(IkParameterization(target,IkParameterization.Type.Lookat3D),IkFilterOptions.CheckEnvCollisions)
+                        ikmodel2.robot.Enable(ikmodel == ikmodel2)
+                    solutions = ikmodel.manip.FindIKSolutions(
+                        IkParameterization(target, IkParameterization.Type.Lookat3D),
+                        IkFilterOptions.CheckEnvCollisions)
                     if len(solutions) == 0:
                         break
                     robotsolutions.append(solutions)
@@ -70,30 +76,35 @@ def main(env,options):
                     allsols = [sols for sols in sequence_cross_product(*robotsolutions)]
                     stdrandom.shuffle(allsols)
                     for sols in allsols:
-                        for ikmodel,sol in zip(ikmodels,sols):
-                            ikmodel.robot.SetDOFValues(sol,ikmodel.manip.GetArmIndices())
-                        if not any([ikmodel.robot.CheckSelfCollision() or env.CheckCollision(ikmodel.robot) for ikmodel in ikmodels]):
+                        for ikmodel, sol in zip(ikmodels, sols):
+                            ikmodel.robot.SetDOFValues(sol, ikmodel.manip.GetArmIndices())
+                        if not any(
+                                [ikmodel.robot.CheckSelfCollision() or env.CheckCollision(ikmodel.robot) for ikmodel in
+                                 ikmodels]):
                             goodsolutions.append(sols)
                             if len(goodsolutions) >= maxsolutions:
                                 break
-                    if len(goodsolutions) > 0: # found solutions, so break!
+                    if len(goodsolutions) > 0:  # found solutions, so break!
                         break
-                    
-        handles = [env.plot3(array([target]),20.0)]
+
+        handles = [env.plot3(array([target]), 20.0)]
         for sols in goodsolutions:
             handlerays = []
             with env:
-                for ikmodel,sol in zip(ikmodels,sols):
-                    ikmodel.robot.SetDOFValues(sol,ikmodel.manip.GetArmIndices())
+                for ikmodel, sol in zip(ikmodels, sols):
+                    ikmodel.robot.SetDOFValues(sol, ikmodel.manip.GetArmIndices())
                     T = ikmodel.manip.GetTransform()
-                    globaldir = numpy.dot(T[0:3,0:3],ikmodel.manip.GetDirection())
-                    dist = linalg.norm(T[0:3,3]-target)+0.4
-                    handlerays.append(env.drawlinelist(array([T[0:3,3], T[0:3,3]+dist*globaldir]),5,colors=[0.1,0.1,1]))
+                    globaldir = numpy.dot(T[0:3, 0:3], ikmodel.manip.GetDirection())
+                    dist = linalg.norm(T[0:3, 3] - target) + 0.4
+                    handlerays.append(
+                        env.drawlinelist(array([T[0:3, 3], T[0:3, 3] + dist * globaldir]), 5, colors=[0.1, 0.1, 1]))
                 env.UpdatePublishedBodies()
             time.sleep(0.1)
 
+
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -103,10 +114,11 @@ def run(args=None):
     """
     parser = OptionParser(description='Shows how to use different IK solutions for arms with few joints.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/pr2wam_test1.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/pr2wam_test1.env.xml',
                       help='Scene file to load (default=%default)')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

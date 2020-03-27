@@ -21,41 +21,44 @@ objects the generator relies on are used to produce a unique ID to index the dat
 $OPENRAVE_DATABASE. For example, the grasping database will combine the robot manipulator hash and
 the target object hash.
 """
-#import cPickle as pickle # for python 2.5
-import pickle # python 3.8
 import io
-from .. import openravepy_int
+import logging
+import os.path
+# import cPickle as pickle # for python 2.5
+import pickle  # python 3.8
+import time
+from os import getenv, makedirs
+
 from .. import OpenRAVEException
 from .. import metaclass
+from .. import openravepy_int
 from ..misc import OpenRAVEGlobalArguments
-import os.path
-from os import getenv, makedirs
-import time
 
-import logging
 log = logging.getLogger('openravepy.databases')
 
 try:
     import h5py
 except ImportError:
     pass
-    
+
+
 class DatabaseGenerator(metaclass.AutoReloader):
     """The base class defining the structure of the openrave database generators.
     """
-    def __init__(self,robot):
+
+    def __init__(self, robot):
         """
         :param robot: if not None, will use the robot's active manipulator
         :param manip: if not None, will the manipulator, takes precedence over robot
         """
         self.robot = robot
         self.env = self.robot.GetEnv()
-        self._databasefile = None # necessary if file handle needs to be open
+        self._databasefile = None  # necessary if file handle needs to be open
         try:
             self.manip = self.robot.GetActiveManipulator()
         except:
             self.manip = None
-            
+
     def _CloseDatabase(self):
         if self._databasefile is not None:
             try:
@@ -64,11 +67,11 @@ class DatabaseGenerator(metaclass.AutoReloader):
             except Exception as e:
                 log.warn(e)
             self._databasefile = None
-            
+
     def __del__(self):
         self._CloseDatabase()
-            
-    def clone(self,envother):
+
+    def clone(self, envother):
         """clones a database onto a different environment"""
         import copy
         clone = copy.copy(self)
@@ -76,53 +79,61 @@ class DatabaseGenerator(metaclass.AutoReloader):
         clone.robot = clone.env.GetRobot(self.robot.GetName())
         clone.manip = clone.robot.GetManipulators(self.manip.GetName())[0] if not self.manip is None else None
         return clone
+
     def has(self):
         raise NotImplementedError()
-    def getfilename(self,read=False):
+
+    def getfilename(self, read=False):
         return NotImplementedError()
+
     def load(self):
         filename = self.getfilename(True)
         if len(filename) == 0:
             return None
         try:
             with open(filename, 'r') as f:
-                modelversion,params = pickle.load(f)
+                modelversion, params = pickle.load(f)
             if modelversion == self.getversion():
                 return params
             else:
-                log.error('version is wrong %s!=%s ',modelversion,self.getversion())
+                log.error('version is wrong %s!=%s ', modelversion, self.getversion())
         except MemoryError as e:
-            log.error('%s failed: ',filename,e)
+            log.error('%s failed: ', filename, e)
         except:
             pass
         return None
+
     def getversion(self):
         return 0
-    def save(self,params):
-        filename=self.getfilename(False)
-        log.info('saving model to %s',filename)
+
+    def save(self, params):
+        filename = self.getfilename(False)
+        log.info('saving model to %s', filename)
         try:
-            makedirs(os.path.split(filename)[0])            
+            makedirs(os.path.split(filename)[0])
         except OSError:
             pass
         with io.open(filename, 'wb') as f:
-            pickle.dump((self.getversion(),params), f)
+            pickle.dump((self.getversion(), params), f)
+
     def generate(self):
         raise NotImplementedError()
-    def show(self,options=None):
+
+    def show(self, options=None):
         raise NotImplementedError()
 
     @staticmethod
     def _GetValue(value):
-        if hasattr(value,'value'):
+        if hasattr(value, 'value'):
             return value.value
         else:
             return value
-    def autogenerateparams(self,options=None):
+
+    def autogenerateparams(self, options=None):
         """Caches parameters for most commonly used robots/objects and starts the generation process for them"""
         raise NotImplementedError()
 
-    def autogenerate(self,options=None):
+    def autogenerate(self, options=None):
         self.generate(*self.autogenerateparams(options))
         self.save()
 
@@ -130,16 +141,17 @@ class DatabaseGenerator(metaclass.AutoReloader):
         """Generate producer, consumer, and gatherer functions allowing parallelization
         """
         return NotImplementedError()
-    def generate(self,*args,**kwargs):
+
+    def generate(self, *args, **kwargs):
         starttime = time.time()
-        producer,consumer,gatherer,numjobs = self.generatepcg(*args,**kwargs)
-        log.info('database %s has %d items',self.__class__.__name__.split()[-1],numjobs)
+        producer, consumer, gatherer, numjobs = self.generatepcg(*args, **kwargs)
+        log.info('database %s has %d items', self.__class__.__name__.split()[-1], numjobs)
         for work in producer():
             results = consumer(*work)
             if len(results) > 0:
                 gatherer(*results)
-        gatherer() # gather results
-        log.info('database %s finished in %fs',self.__class__.__name__,time.time()-starttime)
+        gatherer()  # gather results
+        log.info('database %s finished in %fs', self.__class__.__name__, time.time() - starttime)
 
     @staticmethod
     def CreateOptionParser(useManipulator=True):
@@ -148,49 +160,50 @@ class DatabaseGenerator(metaclass.AutoReloader):
         from optparse import OptionParser, OptionGroup
         parser = OptionParser(description='OpenRAVE Database Generator.')
         OpenRAVEGlobalArguments.addOptions(parser)
-        dbgroup = OptionGroup(parser,"OpenRAVE Database Generator General Options")
-        dbgroup.add_option('--show',action='store_true',dest='show',default=False,
+        dbgroup = OptionGroup(parser, "OpenRAVE Database Generator General Options")
+        dbgroup.add_option('--show', action='store_true', dest='show', default=False,
                            help='Graphically shows the built model')
-        dbgroup.add_option('--getfilename',action="store_true",dest='getfilename',default=False,
+        dbgroup.add_option('--getfilename', action="store_true", dest='getfilename', default=False,
                            help='If set, will return the final database filename where all data is stored')
-        dbgroup.add_option('--gethas',action="store_true",dest='gethas',default=False,
+        dbgroup.add_option('--gethas', action="store_true", dest='gethas', default=False,
                            help='If set, will exit with 0 if datafile is generated and up to date, otherwise will return a 1. This will require loading the model and checking versions, so might be a little slow.')
-        dbgroup.add_option('--robot',action='store',type='string',dest='robot',default=getenv('OPENRAVE_ROBOT',default='robots/barrettsegway.robot.xml'),
+        dbgroup.add_option('--robot', action='store', type='string', dest='robot',
+                           default=getenv('OPENRAVE_ROBOT', default='robots/barrettsegway.robot.xml'),
                            help='OpenRAVE robot to load (default=%default)')
-        dbgroup.add_option('--numthreads',action='store',type='int',dest='numthreads',default=1,
+        dbgroup.add_option('--numthreads', action='store', type='int', dest='numthreads', default=1,
                            help='number of threads to compute the database with (default=%default)')
         if useManipulator:
-            dbgroup.add_option('--manipname',action='store',type='string',dest='manipname',default=None,
+            dbgroup.add_option('--manipname', action='store', type='string', dest='manipname', default=None,
                                help='The name of the manipulator on the robot to use')
         parser.add_option_group(dbgroup)
         return parser
 
     @staticmethod
-    def InitializeFromParser(Model,parser=None,env=None,args=None,robotatts=dict(),defaultviewer=False,allowkinbody=False):
+    def InitializeFromParser(Model, parser=None, env=None, args=None, robotatts=dict(), defaultviewer=False,
+                             allowkinbody=False):
         """run the database generator from the command line using
         """
-        from numpy import eye
-        import sys
         if parser is None:
             parser = DatabaseGenerator.CreateOptionParser()
         (options, args) = parser.parse_args(args=args)
-        loadplugins=True
-        level=openravepy_int.DebugLevel.Info
+        loadplugins = True
+        level = openravepy_int.DebugLevel.Info
         if options.getfilename:
             loadplugins = False
             level = openravepy_int.DebugLevel.Fatal
         if options.gethas:
             level = openravepy_int.DebugLevel.Fatal
-        openravepy_int.RaveInitialize(loadplugins,level)
+        openravepy_int.RaveInitialize(loadplugins, level)
         OpenRAVEGlobalArguments.parseGlobal(options)
         destroyenv = False
         if env is None:
             env = openravepy_int.Environment()
             destroyenv = True
         try:
-            options.viewername=OpenRAVEGlobalArguments.parseEnvironment(options,env,defaultviewer=defaultviewer,returnviewer=True)
+            options.viewername = OpenRAVEGlobalArguments.parseEnvironment(options, env, defaultviewer=defaultviewer,
+                                                                          returnviewer=True)
             with env:
-                env.Load(options.robot,robotatts)
+                env.Load(options.robot, robotatts)
                 # TODO: if exception is raised after this point, program exits with glibc double-link list corruption. most likely something in Load?
                 if len(env.GetRobots()) > 0:
                     # get the first robot with DOF > 0
@@ -200,26 +213,26 @@ class DatabaseGenerator(metaclass.AutoReloader):
                             break
                     if robot is None or robot.GetDOF() == 0:
                         raise OpenRAVEException('there is no robot with DOF > 0', 'Assert')
-                
+
                 elif allowkinbody:
                     robot = env.GetBodies()[0]
-                assert(robot is not None)
-                if hasattr(options,'manipname') and robot.IsRobot():
+                assert (robot is not None)
+                if hasattr(options, 'manipname') and robot.IsRobot():
                     if options.manipname is None:
                         # prioritize manipulators with ik solvers
-                        for i,m in enumerate(robot.GetManipulators()):
+                        for i, m in enumerate(robot.GetManipulators()):
                             if m.GetIkSolver() is not None:
                                 robot.SetActiveManipulator(m)
                                 break
                     else:
-                        for i,m in enumerate(robot.GetManipulators()):
-                            if m.GetName()==options.manipname:
+                        for i, m in enumerate(robot.GetManipulators()):
+                            if m.GetName() == options.manipname:
                                 robot.SetActiveManipulator(m)
                                 break
             model = Model(robot=robot)
             destroyenv = False
-            return options,model
-        
+            return options, model
+
         finally:
             if destroyenv:
                 robot = None
@@ -227,26 +240,28 @@ class DatabaseGenerator(metaclass.AutoReloader):
                 env.Destroy()
 
     @staticmethod
-    def RunFromParser(Model=None,env=None,parser=None,args=None,robotatts=dict(),defaultviewer=False,allowkinbody=False,**kwargs):
+    def RunFromParser(Model=None, env=None, parser=None, args=None, robotatts=dict(), defaultviewer=False,
+                      allowkinbody=False, **kwargs):
         """run the database generator from the command line using
         """
         import sys
-        orgenv=env
+        orgenv = env
         destroyenv = orgenv is None
         env = None
         try:
-            options,model = DatabaseGenerator.InitializeFromParser(Model,parser,orgenv,args,robotatts,defaultviewer,allowkinbody)
-            env=model.env
+            options, model = DatabaseGenerator.InitializeFromParser(Model, parser, orgenv, args, robotatts,
+                                                                    defaultviewer, allowkinbody)
+            env = model.env
             if options.getfilename:
                 # prioritize first available
-                filename=model.getfilename(True)
+                filename = model.getfilename(True)
                 if len(filename) == 0:
-                    filename=model.getfilename(False)
+                    filename = model.getfilename(False)
                 print(filename)
                 openravepy_int.RaveDestroy()
                 sys.exit(0)
             if options.gethas:
-                hasmodel=model.load()
+                hasmodel = model.load()
                 if hasmodel:
                     hasmodel = os.path.isfile(model.getfilename(True))
                 print(int(hasmodel))
@@ -256,7 +271,8 @@ class DatabaseGenerator(metaclass.AutoReloader):
                 env.SetViewer(options.viewername)
             if options.show:
                 if not model.load():
-                    raise ValueError('failed to find cached model %s : %s'%(model.getfilename(True),model.getfilename(False)))
+                    raise ValueError(
+                        'failed to find cached model %s : %s' % (model.getfilename(True), model.getfilename(False)))
                 model.show(options=options)
                 return model
             model.autogenerate(options=options)
@@ -265,16 +281,18 @@ class DatabaseGenerator(metaclass.AutoReloader):
             if destroyenv and env is not None:
                 env.Destroy()
 
+
 from . import inversekinematics
 from . import grasping
 from . import convexdecomposition
 from . import linkstatistics
 from . import kinematicreachability
 from . import inversereachability
-    
+
 # python 2.5 raises 'import *' not allowed with 'from .'
 from sys import version_info
-if version_info[0:3]>=(2,6,0):
+
+if version_info[0:3] >= (2, 6, 0):
     from . import visibilitymodel
 else:
     log.warn('some openravepy.datbases cannot be used python versions < 2.6')

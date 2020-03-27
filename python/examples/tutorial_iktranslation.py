@@ -32,16 +32,19 @@ There are two different types of translation 3D IKs:
 
 .. examplepost-block:: tutorial_iktranslation
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
     robot = env.GetRobots()[0]
@@ -49,7 +52,9 @@ def main(env,options):
 
     # generate the ik solver
     iktype = IkParameterization.Type.Translation3D if not options.withlocal else IkParameterization.Type.TranslationLocalGlobal6D
-    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot, iktype=iktype,freeindices=robot.GetActiveManipulator().GetArmIndices()[3:])
+    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot, iktype=iktype,
+                                                                 freeindices=robot.GetActiveManipulator().GetArmIndices()[
+                                                                             3:])
     if not ikmodel.load():
         ikmodel.autogenerate()
 
@@ -57,7 +62,7 @@ def main(env,options):
         robot2 = env.ReadRobotXMLFile(robot.GetXMLFilename())
         env.Add(robot2)
         T = robot.GetTransform()
-        T[0,3] -= 1
+        T[0, 3] -= 1
         robot2.SetTransform(T)
         robot2.Enable(False)
         robot2.SetActiveManipulator(robot.GetActiveManipulator().GetName())
@@ -68,30 +73,33 @@ def main(env,options):
     while True:
         with env:
             while True:
-                target=ikmodel.manip.GetTransform()[0:3,3]+(random.rand(3)-0.5)
+                target = ikmodel.manip.GetTransform()[0:3, 3] + (random.rand(3) - 0.5)
                 if options.withlocal:
-                    localtarget = 0.5*(random.rand(3)-0.5)
-                    ikparam = IkParameterization([localtarget,target],IkParameterization.Type.TranslationLocalGlobal6D)
+                    localtarget = 0.5 * (random.rand(3) - 0.5)
+                    ikparam = IkParameterization([localtarget, target],
+                                                 IkParameterization.Type.TranslationLocalGlobal6D)
                 else:
                     localtarget = zeros(3)
-                    ikparam = IkParameterization(target,IkParameterization.Type.Translation3D)
-                solutions = ikmodel.manip.FindIKSolutions(ikparam,IkFilterOptions.CheckEnvCollisions)
-                if solutions is not None and len(solutions) > 0: # if found, then break
+                    ikparam = IkParameterization(target, IkParameterization.Type.Translation3D)
+                solutions = ikmodel.manip.FindIKSolutions(ikparam, IkFilterOptions.CheckEnvCollisions)
+                if solutions is not None and len(solutions) > 0:  # if found, then break
                     break
-        h=env.plot3(array([target]),10.0)
+        h = env.plot3(array([target]), 10.0)
         T2 = robot2.GetActiveManipulator().GetTransform()
-        h2=env.plot3(dot(T2[0:3,0:3],localtarget)+T2[0:3,3],15.0,[0,1,0])
-        for i in random.permutation(len(solutions))[0:min(80,len(solutions))]:
+        h2 = env.plot3(dot(T2[0:3, 0:3], localtarget) + T2[0:3, 3], 15.0, [0, 1, 0])
+        for i in random.permutation(len(solutions))[0:min(80, len(solutions))]:
             with env:
-                robot.SetDOFValues(solutions[i],ikmodel.manip.GetArmIndices())
+                robot.SetDOFValues(solutions[i], ikmodel.manip.GetArmIndices())
                 T = ikmodel.manip.GetTransform()
                 env.UpdatePublishedBodies()
             time.sleep(0.05)
-        h=None
-        h2=None
+        h = None
+        h2 = None
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -101,14 +109,15 @@ def run(args=None):
     """
     parser = OptionParser(description='Shows how to use different IK solutions for arms with few joints.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--scene',action="store",type='string',dest='scene',default='data/katanatable.env.xml',
+    parser.add_option('--scene', action="store", type='string', dest='scene', default='data/katanatable.env.xml',
                       help='Scene file to load (default=%default)')
-    parser.add_option('--manipname',action="store",type='string',dest='manipname',default='arm',
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default='arm',
                       help='name of manipulator to use (default=%default)')
-    parser.add_option('--withlocal',action="store_true",dest='withlocal',default=False,
+    parser.add_option('--withlocal', action="store_true", dest='withlocal', default=False,
                       help='If set, will use the TranslationLocalGlobal6D type to further specify the target point in the manipulator coordinate system')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()

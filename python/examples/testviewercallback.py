@@ -19,25 +19,29 @@
 
 .. examplepost-block:: testviewercallback
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
 ghandle = None
-def itemselectioncb(link,pos,org,env):
+
+
+def itemselectioncb(link, pos, org, env):
     global ghandle
-    print('in python: body ',link.GetParent().GetName(),':',link.GetName(),'at',reshape(pos,(3)))
-    ghandle = env.plot3(points=pos,pointsize=25.0,colors=array((1,0,0)))
+    print('in python: body ', link.GetParent().GetName(), ':', link.GetName(), 'at', reshape(pos, (3)))
+    ghandle = env.plot3(points=pos, pointsize=25.0, colors=array((1, 0, 0)))
     return 0
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     env.Load(options.scene)
-    handle = env.GetViewer().RegisterItemSelectionCallback(lambda link,pos,org: itemselectioncb(link,pos,org,env))
+    handle = env.GetViewer().RegisterItemSelectionCallback(lambda link, pos, org: itemselectioncb(link, pos, org, env))
     if handle is None:
         print('failed to register handle')
         sys.exit(1)
@@ -46,8 +50,10 @@ def main(env,options):
         if cmd == 'q':
             break
 
+
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -58,10 +64,11 @@ def run(args=None):
     parser = OptionParser(description='Shows how to attach a callback to a viewer to perform functions.')
     OpenRAVEGlobalArguments.addOptions(parser)
     parser.add_option('--scene',
-                      action="store",type='string',dest='scene',default='data/lab1.env.xml',
+                      action="store", type='string', dest='scene', default='data/lab1.env.xml',
                       help='OpenRAVE scene to load')
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     run()

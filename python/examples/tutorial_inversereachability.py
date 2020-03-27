@@ -317,19 +317,22 @@ Related classes
 .. examplepost-block:: tutorial_inversereachability
    
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Huan Liu'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 else:
     from numpy import inf
 
+
 class InverseReachabilityDemo:
-    def __init__(self,robot):
+    def __init__(self, robot):
         self.robot = robot
         self.env = self.robot.GetEnv()
         self.robot.SetActiveManipulator('leftarm_torso')
@@ -337,29 +340,30 @@ class InverseReachabilityDemo:
 
         # initialize robot pose
         v = self.robot.GetActiveDOFValues()
-        v[self.robot.GetJoint('l_shoulder_pan_joint').GetDOFIndex()]= 3.14/2
-        v[self.robot.GetJoint('r_shoulder_pan_joint').GetDOFIndex()] = -3.14/2
+        v[self.robot.GetJoint('l_shoulder_pan_joint').GetDOFIndex()] = 3.14 / 2
+        v[self.robot.GetJoint('r_shoulder_pan_joint').GetDOFIndex()] = -3.14 / 2
         v[self.robot.GetJoint('l_gripper_l_finger_joint').GetDOFIndex()] = .54
         self.robot.SetActiveDOFValues(v)
-    
+
         # load inverserechability database
         self.irmodel = databases.inversereachability.InverseReachabilityModel(robot=self.robot)
         starttime = time.time()
         print('loading irmodel')
-        if not self.irmodel.load():            
+        if not self.irmodel.load():
             print('do you want to generate irmodel for your robot? it might take several hours')
-            print('or you can go to http://people.csail.mit.edu/liuhuan/pr2/openrave/openrave_database/ to get the database for PR2')
+            print(
+                'or you can go to http://people.csail.mit.edu/liuhuan/pr2/openrave/openrave_database/ to get the database for PR2')
             input = input('[Y/n]')
             if input == 'y' or input == 'Y' or input == '\n' or input == '':
                 self.irmodel.autogenerate()
                 self.irmodel.load()
             else:
                 raise ValueError('')
-        print('time to load inverse-reachability model: %fs'%(time.time()-starttime))
+        print('time to load inverse-reachability model: %fs' % (time.time() - starttime))
         # make sure the robot and manipulator match the database
-        assert self.irmodel.robot == self.robot and self.irmodel.manip == self.robot.GetActiveManipulator()   
-        
-    def showPossibleBasePoses(self,Tgrasp, gripper_angle=.548,N=1):
+        assert self.irmodel.robot == self.robot and self.irmodel.manip == self.robot.GetActiveManipulator()
+
+    def showPossibleBasePoses(self, Tgrasp, gripper_angle=.548, N=1):
         """visualizes possible base poses for a grasp specified by Tgrasp and gripper_angle
         
         :param Tgrasp: 4x4 numpy.array, row major matrix, the grasp transform in global frame. equals manip.GetTransform() in the goal state
@@ -368,7 +372,7 @@ class InverseReachabilityDemo:
         """
         # setting the gripper angle
         v = self.robot.GetActiveDOFValues()
-        v[self.robot.GetJoint('l_gripper_l_finger_joint').GetDOFIndex()] = gripper_angle # l gripper
+        v[self.robot.GetJoint('l_gripper_l_finger_joint').GetDOFIndex()] = gripper_angle  # l gripper
         self.robot.SetActiveDOFValues(v)
 
         print('showing the goal grasp')
@@ -382,11 +386,11 @@ class InverseReachabilityDemo:
         #      densityfn: gaussian kernel density function taking poses of openrave quaternion type, returns probabilities
         #      samplerfn: gaussian kernel sampler function taking number of sample and weight, returns robot base poses and joint states
         #      bounds: 2x3 array, bounds of samples, [[min rotation, min x, min y],[max rotation, max x, max y]]
-        densityfn,samplerfn,bounds = self.irmodel.computeBaseDistribution(Tgrasp,logllthresh=1.8)
+        densityfn, samplerfn, bounds = self.irmodel.computeBaseDistribution(Tgrasp, logllthresh=1.8)
         if densityfn == None:
             print('the specified grasp is not reachable!')
             return
-        
+
         # Code fragment from `examples.mobilemanipulation`
         # initialize sampling parameters
         goals = []
@@ -395,50 +399,50 @@ class InverseReachabilityDemo:
         timeout = inf
         with self.robot:
             while len(goals) < N:
-                if time.time()-starttime > timeout:
+                if time.time() - starttime > timeout:
                     break
-                poses,jointstate = samplerfn(N-len(goals))
+                poses, jointstate = samplerfn(N - len(goals))
                 for pose in poses:
                     self.robot.SetTransform(pose)
                     self.robot.SetDOFValues(*jointstate)
                     # validate that base is not in collision
                     if not self.manip.CheckIndependentCollision(CollisionReport()):
-                        q = self.manip.FindIKSolution(Tgrasp,filteroptions=IkFilterOptions.CheckEnvCollisions)
+                        q = self.manip.FindIKSolution(Tgrasp, filteroptions=IkFilterOptions.CheckEnvCollisions)
                         if q is not None:
                             values = self.robot.GetDOFValues()
                             values[self.manip.GetArmIndices()] = q
-                            goals.append((Tgrasp,pose,values))
-                        elif self.manip.FindIKSolution(Tgrasp,0) is None:
+                            goals.append((Tgrasp, pose, values))
+                        elif self.manip.FindIKSolution(Tgrasp, 0) is None:
                             numfailures += 1
-        print('showing %d results'%N)
-        for ind,goal in enumerate(goals):
-            input('press ENTER to show goal %d'%ind)
-            Tgrasp,pose,values = goal
+        print('showing %d results' % N)
+        for ind, goal in enumerate(goals):
+            input('press ENTER to show goal %d' % ind)
+            Tgrasp, pose, values = goal
             self.robot.SetTransform(pose)
             self.robot.SetDOFValues(values)
 
         input('press ENTER to show all results simultaneously')
         # Code fragment from `databases.inversereachability`
         transparency = .8
-        with self.env: # save the environment state
+        with self.env:  # save the environment state
             self.env.Remove(self.robot)
             newrobots = []
             for goal in goals:
-                Tgrasp,T,values = goal
+                Tgrasp, T, values = goal
                 newrobot = self.env.ReadRobotXMLFile(self.robot.GetXMLFilename())
                 newrobot.SetName(self.robot.GetName())
                 for link in newrobot.GetLinks():
                     for geom in link.GetGeometries():
                         geom.SetTransparency(transparency)
-                self.env.Add(newrobot,True)
+                self.env.Add(newrobot, True)
                 newrobot.SetTransform(T)
                 newrobot.SetDOFValues(values)
                 newrobots.append(newrobot)
         print('overlaying all results, wait for a few seconds for the viewer to update')
         time.sleep(10)
         pause()
-    
-    def showGrasp(self,Tgrasp,angle=.548):
+
+    def showGrasp(self, Tgrasp, angle=.548):
         """visualizes a grasp transform
         
         :param Tgrasp: a 4x4 row-major matrix in numpy.array format in global frame
@@ -449,22 +453,24 @@ class InverseReachabilityDemo:
         v = probot.GetActiveDOFValues()
         v[self.robot.GetJoint('l_gripper_l_finger_joint').GetDOFIndex()] = angle
         probot.SetActiveDOFValues(v)
-        with databases.grasping.GraspingModel.GripperVisibility(pmanip): # show only the gripper
-            O_T_R = probot.GetTransform() # robot transform R in global frame O 
-            O_T_G = pmanip.GetTransform() # grasping frame G in global frame O
-            G_T_O = linalg.inv(O_T_G) # global frame O in grasping frame G
-            G_T_R = dot(G_T_O, O_T_R) # robot frame R in grasping frame G
-            O_T_G_goal = Tgrasp # final grasping frame G_goal in global frame O 
-            O_T_R_goal = dot(O_T_G_goal,G_T_R) # final robot transform R_goal in global frame O
-                            
+        with databases.grasping.GraspingModel.GripperVisibility(pmanip):  # show only the gripper
+            O_T_R = probot.GetTransform()  # robot transform R in global frame O
+            O_T_G = pmanip.GetTransform()  # grasping frame G in global frame O
+            G_T_O = linalg.inv(O_T_G)  # global frame O in grasping frame G
+            G_T_R = dot(G_T_O, O_T_R)  # robot frame R in grasping frame G
+            O_T_G_goal = Tgrasp  # final grasping frame G_goal in global frame O
+            O_T_R_goal = dot(O_T_G_goal, G_T_R)  # final robot transform R_goal in global frame O
+
             probot.SetTransform(O_T_R_goal)
             pause()
             probot.SetTransform(O_T_R)
 
+
 def pause():
     input('press ENTER to continue...')
 
-def main(env,options):
+
+def main(env, options):
     "Main example code."
     robot = env.ReadRobotXMLFile(options.robot)
     env.Add(robot)
@@ -475,24 +481,26 @@ def main(env,options):
     target = env.ReadKinBodyXMLFile(options.target)
     env.Add(target)
     # initialize target pose, for visualization and collision checking purpose only
-    O_T_Target = mat([[1,0,0,1],[0,1,0,0],[0,0,1,.9],[0,0,0,1]])
+    O_T_Target = mat([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, .9], [0, 0, 0, 1]])
     target.SetTransform(array(O_T_Target))
 
     # set up goal grasp transform
     # goal grasp transform specified in global frame, this equals manip.GetTransform() in the goal state    
-    O_T_grasp = array([[ -9.88017917e-01,  -1.54339954e-01 ,  0.00000000e+00 ,  1.06494129e+00],
-                       [  1.54339954e-01,  -9.88017917e-01 ,  0.00000000e+00 ,  5.51449812e-05],
-                       [  0.00000000e+00 ,  0.00000000e+00 ,  1.00000000e+00 ,  9.55221763e-01],
-                       [  0.00000000e+00 ,  0.00000000e+00,   0.00000000e+00  , 1.00000000e+00]])
+    O_T_grasp = array([[-9.88017917e-01, -1.54339954e-01, 0.00000000e+00, 1.06494129e+00],
+                       [1.54339954e-01, -9.88017917e-01, 0.00000000e+00, 5.51449812e-05],
+                       [0.00000000e+00, 0.00000000e+00, 1.00000000e+00, 9.55221763e-01],
+                       [0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
     gripper_angle = .1
 
     # use inversereachability dabase to find the possible robot base poses for the grasp  
     gr = InverseReachabilityDemo(robot)
-    gr.showPossibleBasePoses(O_T_grasp,gripper_angle,10)
+    gr.showPossibleBasePoses(O_T_grasp, gripper_angle, 10)
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -500,17 +508,18 @@ def run(args=None):
 
     :param args: arguments for script to parse, if not specified will use sys.argv
     """
-    parser = OptionParser(description='Move base where the robot can perform target grasp using inversereachability database.')
+    parser = OptionParser(
+        description='Move base where the robot can perform target grasp using inversereachability database.')
     OpenRAVEGlobalArguments.addOptions(parser)
-    parser.add_option('--robot',action="store",type='string',dest='robot',default='robots/pr2-beta-static.zae',
+    parser.add_option('--robot', action="store", type='string', dest='robot', default='robots/pr2-beta-static.zae',
                       help='Robot filename to use (default=%default)')
-    parser.add_option('--manipname',action="store",type='string',dest='manipname',default=None,
+    parser.add_option('--manipname', action="store", type='string', dest='manipname', default=None,
                       help='name of manipulator to use (default=%default)')
-    parser.add_option('--target',action="store",type='string',dest='target',default='data/mug2.kinbody.xml',
+    parser.add_option('--target', action="store", type='string', dest='target', default='data/mug2.kinbody.xml',
                       help='filename of the target to use (default=%default)')
-    (options, leftargs) = parser.parse_args(args=args) # use default options 
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    (options, leftargs) = parser.parse_args(args=args)  # use default options
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     run()
-    

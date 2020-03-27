@@ -18,40 +18,45 @@
 
 .. examplepost-block:: testupdatingbodies
 """
- # for python 2.5
+# for python 2.5
 __author__ = 'Rosen Diankov'
 
 import time
+
 import openravepy
+
 if not __openravepy_build_doc__:
     from openravepy import *
     from numpy import *
 
-def main(env,options):
+
+def main(env, options):
     env.Load('data/lab1.env.xml')
     robot = env.GetRobots()[0]
     manipprob = interfaces.BaseManipulation(robot)
-    
-    Tcamera = array(((0.84028,  -0.14715,   0.52179,0.930986),
-                     (0.52639,   0.45182,  -0.72026,-1.233453),
-                     (-0.12976,   0.87989,   0.45711,2.412977)))
+
+    Tcamera = array(((0.84028, -0.14715, 0.52179, 0.930986),
+                     (0.52639, 0.45182, -0.72026, -1.233453),
+                     (-0.12976, 0.87989, 0.45711, 2.412977)))
     env.GetViewer().SetCamera(Tcamera)
     env.GetViewer().EnvironmentSync()
-    
+
     print('Stopping the environment loop from updating the simulation')
     env.StopSimulation()
     print('Locking environment and starting to plan')
     with env:
-        res = manipprob.MoveManipulator(goal=[-0.75,1.24,-0.064,2.33,-1.16,-1.548,1.19])
+        res = manipprob.MoveManipulator(goal=[-0.75, 1.24, -0.064, 2.33, -1.16, -1.548, 1.19])
         print('Calling the simulation loop internally to python')
         while not robot.GetController().IsDone():
             env.StepSimulation(0.01)
-            env.UpdatePublishedBodies() # used to publish body information while environment is locked
-            time.sleep(0.1)    
+            env.UpdatePublishedBodies()  # used to publish body information while environment is locked
+            time.sleep(0.1)
     input('press any key to exit: ')
+
 
 from optparse import OptionParser
 from openravepy.misc import OpenRAVEGlobalArguments
+
 
 @openravepy.with_destroy
 def run(args=None):
@@ -62,7 +67,8 @@ def run(args=None):
     parser = OptionParser(description="test physics")
     OpenRAVEGlobalArguments.addOptions(parser)
     (options, leftargs) = parser.parse_args(args=args)
-    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options,main,defaultviewer=True)
+    OpenRAVEGlobalArguments.parseAndCreateThreadedUser(options, main, defaultviewer=True)
+
 
 if __name__ == "__main__":
     run()
