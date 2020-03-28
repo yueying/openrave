@@ -20,7 +20,8 @@
 #define NO_IMPORT_ARRAY
 #include <openravepy/openravepy_int.h>
 
-namespace openravepy {
+namespace openravepy 
+{
 using py::object;
 
 class PyEnvironmentBase : public std::enable_shared_from_this<PyEnvironmentBase>

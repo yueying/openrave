@@ -46,11 +46,6 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
-namespace numeric = py::numpy;
-#endif
 
 PyControllerBase::PyControllerBase(ControllerBasePtr pcontroller, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pcontroller, pyenv), _pcontroller(pcontroller) {
 }
@@ -143,18 +138,25 @@ object PyControllerBase::GetTorque()
     return toPyArray(torque);
 }
 
-PyMultiControllerBase::PyMultiControllerBase(MultiControllerBasePtr pmulticontroller, PyEnvironmentBasePtr pyenv) : PyControllerBase(pmulticontroller, pyenv), _pmulticontroller(pmulticontroller) {
+PyMultiControllerBase::PyMultiControllerBase(MultiControllerBasePtr pmulticontroller, PyEnvironmentBasePtr pyenv)
+	: PyControllerBase(pmulticontroller, pyenv), _pmulticontroller(pmulticontroller) 
+{
 }
-PyMultiControllerBase::~PyMultiControllerBase() {
+PyMultiControllerBase::~PyMultiControllerBase() 
+{
 }
 
-bool PyMultiControllerBase::AttachController(PyControllerBasePtr ocontroller, object odofindices, int nControlTransformation) {
+bool PyMultiControllerBase::AttachController(PyControllerBasePtr ocontroller,
+	object odofindices, int nControlTransformation) 
+{
     CHECK_POINTER(ocontroller);
     std::vector<int> dofindices = ExtractArray<int>(odofindices);
-    return _pmulticontroller->AttachController(ocontroller->GetOpenRAVEController(), dofindices, nControlTransformation);
+    return _pmulticontroller->AttachController(ocontroller->GetOpenRAVEController(),
+		dofindices, nControlTransformation);
 }
 
-void PyMultiControllerBase::RemoveController(PyControllerBasePtr ocontroller) {
+void PyMultiControllerBase::RemoveController(PyControllerBasePtr ocontroller) 
+{
     CHECK_POINTER(ocontroller);
     _pmulticontroller->RemoveController(ocontroller->GetOpenRAVEController());
 }

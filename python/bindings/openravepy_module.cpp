@@ -43,20 +43,24 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
-namespace numeric = py::numpy;
-#endif
 
-PyModuleBase::PyModuleBase(ModuleBasePtr pmodule, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pmodule, pyenv), _pmodule(pmodule) {}
-PyModuleBase::~PyModuleBase() {}
-ModuleBasePtr PyModuleBase::GetModule() { return _pmodule; }
-void PyModuleBase::Destroy() {
-    _pmodule->Destroy();
+PyModuleBase::PyModuleBase(ModuleBasePtr module, PyEnvironmentBasePtr pyenv) 
+	: PyInterfaceBase(module, pyenv), module_(module) 
+{}
+
+PyModuleBase::~PyModuleBase() 
+{}
+
+ModuleBasePtr PyModuleBase::GetModule() { return module_; }
+
+void PyModuleBase::Destroy() 
+{
+    module_->Destroy();
 }
-bool PyModuleBase::SimulationStep(dReal fElapsedTime) {
-    return _pmodule->SimulationStep(fElapsedTime);
+
+bool PyModuleBase::SimulationStep(dReal elapsed_time) 
+{
+    return module_->SimulationStep(elapsed_time);
 }
 
 ModuleBasePtr GetModule(PyModuleBasePtr pymodule)
@@ -72,7 +76,8 @@ PyInterfaceBasePtr toPyModule(ModuleBasePtr pmodule, PyEnvironmentBasePtr pyenv)
 PyModuleBasePtr RaveCreateModule(PyEnvironmentBasePtr pyenv, const std::string& name)
 {
     ModuleBasePtr p = OpenRAVE::RaveCreateModule(GetEnvironment(pyenv), name);
-    if( !p ) {
+    if( !p ) 
+	{
         return PyModuleBasePtr();
     }
     return PyModuleBasePtr(new PyModuleBase(p,pyenv));

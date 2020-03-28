@@ -55,11 +55,6 @@ using py::def;
 using py::scope;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
-namespace numeric = py::numpy;
-#endif
 
 // convert from rapidjson to python object
 object toPyObject(const rapidjson::Value& value)
@@ -184,7 +179,7 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
     else if (PyLong_Check(obj.ptr()))
     {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        value.SetInt64(PyInt_AsLong(obj.ptr()));
+        value.SetInt64(PyLong_AsLong(obj.ptr()));
 #else
         value.SetInt64(PyLong_AsLong(obj.ptr()));
 #endif
@@ -485,25 +480,28 @@ class ViewerManager
     /// \brief info about the viewer to create or that is created
     struct ViewerInfo
     {
-        EnvironmentBasePtr _penv;
-        std::string _viewername;
+        EnvironmentBasePtr env_;
+        std::string viewer_name_;
         ViewerBasePtr _pviewer; /// the created viewer
         boost::condition _cond;  ///< notify when viewer thread is done processing and has initialized _pviewer
-        bool _bShowViewer; ///< true if should show the viewer when initially created
+        bool is_show_viewer_; ///< true if should show the viewer when initially created
     };
     typedef std::shared_ptr<ViewerInfo> ViewerInfoPtr;
 public:
-    ViewerManager() {
-        _bShutdown = false;
+    ViewerManager() 
+	{
+        is_shutdown_ = false;
         _bInMain = false;
         _threadviewer.reset(new boost::thread(boost::bind(&ViewerManager::_RunViewerThread, this)));
     }
 
-    virtual ~ViewerManager() {
+    virtual ~ViewerManager()
+	{
         Destroy();
     }
 
-    static ViewerManager& GetInstance() {
+    static ViewerManager& GetInstance() 
+	{
         boost::call_once(_InitializeSingleton, _onceInitialize);
         // Return reference to object.
         return *_singleton;
@@ -512,27 +510,29 @@ public:
     /// \brief adds a viewer to the environment whose GUI thread will be managed by _RunViewerThread
     ///
     /// \param bDoNotAddIfExists if true, will not add a viewer if one already exists and is added to the manager
-    ViewerBasePtr AddViewer(EnvironmentBasePtr penv, const string &strviewer, bool bShowViewer, bool bDoNotAddIfExists=true)
+    ViewerBasePtr AddViewer(EnvironmentBasePtr penv, const std::string &strviewer, 
+		bool is_show_viewer, bool bDoNotAddIfExists=true)
     {
         ViewerBasePtr pviewer;
-        if( strviewer.size() > 0 ) {
-
-            if( bDoNotAddIfExists ) {
+        if( strviewer.size() > 0 ) 
+		{
+            if( bDoNotAddIfExists )
+			{
                 // check all existing viewers
                 boost::mutex::scoped_lock lock(_mutexViewer);
                 std::list<ViewerInfoPtr>::iterator itviewer = _listviewerinfos.begin();
                 while(itviewer != _listviewerinfos.end() ) {
-                    if( (*itviewer)->_penv == penv ) {
-                        if( (*itviewer)->_viewername == strviewer ) {
+                    if( (*itviewer)->env_ == penv ) {
+                        if( (*itviewer)->viewer_name_ == strviewer ) {
                             if( !!(*itviewer)->_pviewer ) {
-                                (*itviewer)->_pviewer->Show(bShowViewer);
+                                (*itviewer)->_pviewer->Show(is_show_viewer);
                             }
                             return (*itviewer)->_pviewer;
                         }
 
                         // should remove the viewer so can re-add a new one
                         if( !!(*itviewer)->_pviewer ) {
-                            (*itviewer)->_penv->Remove((*itviewer)->_pviewer);
+                            (*itviewer)->env_->Remove((*itviewer)->_pviewer);
                         }
                         itviewer = _listviewerinfos.erase(itviewer);
                     }
@@ -543,16 +543,16 @@ public:
             }
 
             ViewerInfoPtr pinfo(new ViewerInfo());
-            pinfo->_penv = penv;
-            pinfo->_viewername = strviewer;
-            pinfo->_bShowViewer = bShowViewer;
+            pinfo->env_ = penv;
+            pinfo->viewer_name_ = strviewer;
+            pinfo->is_show_viewer_ = is_show_viewer;
             if( _bInMain ) {
                 // create in this thread since viewer thread is already waiting on another viewer
                 pviewer = RaveCreateViewer(penv, strviewer);
                 if( !!pviewer ) {
                     penv->AddViewer(pviewer);
                     // TODO uncomment once Show posts to queue
-                    if( bShowViewer ) {
+                    if( is_show_viewer ) {
                         pviewer->Show(1);
                     }
                     pinfo->_pviewer = pviewer;
@@ -606,7 +606,7 @@ public:
             boost::mutex::scoped_lock lock(_mutexViewer);
             std::list<ViewerInfoPtr>::iterator itinfo = _listviewerinfos.begin();
             while(itinfo != _listviewerinfos.end() ) {
-                if( (*itinfo)->_penv == penv ) {
+                if( (*itinfo)->env_ == penv ) {
                     itinfo = _listviewerinfos.erase(itinfo);
                     bremoved = true;
                 }
@@ -619,7 +619,7 @@ public:
     }
 
     void Destroy() {
-        _bShutdown = true;
+        is_shutdown_ = true;
         {
             boost::mutex::scoped_lock lock(_mutexViewer);
             // have to notify everyone
@@ -638,7 +638,7 @@ public:
 protected:
     void _RunViewerThread()
     {
-        while(!_bShutdown) {
+        while(!is_shutdown_) {
             std::list<ViewerBasePtr> listviewers, listtempviewers;
             bool bShowViewer = true;
             {
@@ -656,7 +656,7 @@ protected:
                 while(itinfo != _listviewerinfos.end() ) {
                     ViewerInfoPtr pinfo = *itinfo;
                     if( !pinfo->_pviewer ) {
-                        pinfo->_pviewer = RaveCreateViewer(pinfo->_penv, pinfo->_viewername);
+                        pinfo->_pviewer = RaveCreateViewer(pinfo->env_, pinfo->viewer_name_);
                         // have to notify other thread that viewer is present before the environment lock happens! otherwise we can get into deadlock between c++ and python
                         pinfo->_cond.notify_all();
                         if( !!pinfo->_pviewer ) {
@@ -674,7 +674,7 @@ protected:
 
                     if( !!pinfo->_pviewer ) {
                         if( listviewers.size() == 0 ) {
-                            bShowViewer = pinfo->_bShowViewer;
+                            bShowViewer = pinfo->is_show_viewer_;
                         }
                         listviewers.push_back(pinfo->_pviewer);
                     }
@@ -751,7 +751,7 @@ protected:
     boost::condition _conditionViewer;
     std::list<ViewerInfoPtr> _listviewerinfos;
 
-    bool _bShutdown; ///< if true, shutdown everything
+    bool is_shutdown_; ///< if true, shutdown everything
     bool _bInMain; ///< if true, viewer thread is running a main function
 
     static boost::scoped_ptr<ViewerManager> _singleton; ///< singleton
@@ -762,13 +762,15 @@ protected:
 boost::scoped_ptr<ViewerManager> ViewerManager::_singleton(0);
 boost::once_flag ViewerManager::_onceInitialize = BOOST_ONCE_INIT;
 
-PyInterfaceBase::PyInterfaceBase(InterfaceBasePtr pbase, PyEnvironmentBasePtr pyenv) : _pbase(pbase), _pyenv(pyenv)
+PyInterfaceBase::PyInterfaceBase(InterfaceBasePtr pbase, PyEnvironmentBasePtr pyenv)
+	: _pbase(pbase), _pyenv(pyenv)
 {
     CHECK_POINTER(_pbase);
     CHECK_POINTER(_pyenv);
 }
 
-object PyInterfaceBase::GetUserData(const std::string& key) const {
+object PyInterfaceBase::GetUserData(const std::string& key) const
+{
     return openravepy::GetUserData(_pbase->GetUserData(key));
 }
 
@@ -2019,11 +2021,14 @@ object PyEnvironmentBase::drawplane(object otransform, object oextents, const bo
     vtexture[0] = _vtexture;
     std::array<size_t,3> dims = { { _vtexture.shape()[0],_vtexture.shape()[1],1}};
     vtexture.reshape(dims);
-    return toPyGraphHandle(_penv->drawplane(RaveTransform<float>(ExtractTransform(otransform)), RaveVector<float>(extract<float>(oextents[0]),extract<float>(oextents[1]),0), vtexture));
+    return toPyGraphHandle(_penv->drawplane(RaveTransform<float>(ExtractTransform(otransform)), 
+		RaveVector<float>(extract<float>(oextents[0]),extract<float>(oextents[1]),0), vtexture));
 }
-object PyEnvironmentBase::drawplane(object otransform, object oextents, const boost::multi_array<float,3>&vtexture)
+object PyEnvironmentBase::drawplane(object otransform, object oextents,
+	const boost::multi_array<float,3>&vtexture)
 {
-    return toPyGraphHandle(_penv->drawplane(RaveTransform<float>(ExtractTransform(otransform)), RaveVector<float>(extract<float>(oextents[0]),extract<float>(oextents[1]),0), vtexture));
+    return toPyGraphHandle(_penv->drawplane(RaveTransform<float>(ExtractTransform(otransform)),
+		RaveVector<float>(extract<float>(oextents[0]),extract<float>(oextents[1]),0), vtexture));
 }
 
 object PyEnvironmentBase::drawtrimesh(object opoints, object oindices, object ocolors)
@@ -2286,7 +2291,8 @@ EnvironmentBasePtr GetEnvironment(object o)
 object toPyEnvironment(object o)
 {
     extract_<PyInterfaceBasePtr> pyinterface(o);
-    if( pyinterface.check() ) {
+    if( pyinterface.check() ) 
+	{
         return py::to_object(((PyInterfaceBasePtr)pyinterface)->GetEnv());
     }
     return py::none_();
@@ -2334,7 +2340,8 @@ int RaveGetEnvironmentId(PyEnvironmentBasePtr pyenv)
 PyEnvironmentBasePtr RaveGetEnvironment(int id)
 {
     EnvironmentBasePtr penv = OpenRAVE::RaveGetEnvironment(id);
-    if( !penv ) {
+    if( !penv )
+	{
         return PyEnvironmentBasePtr();
     }
     return PyEnvironmentBasePtr(new PyEnvironmentBase(penv));
@@ -2343,7 +2350,8 @@ PyEnvironmentBasePtr RaveGetEnvironment(int id)
 PyInterfaceBasePtr RaveCreateInterface(PyEnvironmentBasePtr pyenv, InterfaceType type, const std::string& name)
 {
     InterfaceBasePtr p = OpenRAVE::RaveCreateInterface(pyenv->GetEnv(), type, name);
-    if( !p ) {
+    if( !p ) 
+	{
         return PyInterfaceBasePtr();
     }
     return PyInterfaceBasePtr(new PyInterfaceBase(p,pyenv));

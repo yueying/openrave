@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -26,7 +26,7 @@ using py::object;
 class OPENRAVEPY_API PyModuleBase : public PyInterfaceBase
 {
 protected:
-    ModuleBasePtr _pmodule;
+    ModuleBasePtr module_;
 public:
     PyModuleBase(ModuleBasePtr pmodule, PyEnvironmentBasePtr pyenv);
     virtual ~PyModuleBase();

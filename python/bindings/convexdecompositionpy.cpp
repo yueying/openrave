@@ -31,11 +31,8 @@
 #include "NvConvexDecomposition.h"
 
 namespace py = openravepy::py;
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
 namespace numeric = py::numpy;
-#endif
+
 using py::object;
 using py::extract;
 using py::handle;

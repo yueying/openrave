@@ -18,49 +18,51 @@
 #include <openravepy/openravepy_environmentbase.h>
 #include <openravepy/openravepy_sensorbase.h>
 
-namespace openravepy {
+namespace openravepy
+{
 
-using py::object;
-using py::extract;
-using py::extract_;
-using py::handle;
-using py::dict;
-using py::enum_;
-using py::class_;
-using py::init;
-using py::scope_; // py::object if USE_PYBIND11_PYTHON_BINDINGS
-using py::scope;
-using py::args;
-using py::return_value_policy;
+	using py::object;
+	using py::extract;
+	using py::extract_;
+	using py::handle;
+	using py::dict;
+	using py::enum_;
+	using py::class_;
+	using py::init;
+	using py::scope_; // py::object if USE_PYBIND11_PYTHON_BINDINGS
+	using py::scope;
+	using py::args;
+	using py::return_value_policy;
 
 #ifndef USE_PYBIND11_PYTHON_BINDINGS
-using py::no_init;
-using py::bases;
-using py::copy_const_reference;
-using py::docstring_options;
-using py::pickle_suite;
-using py::manage_new_object;
-using py::def;
+	using py::no_init;
+	using py::bases;
+	using py::copy_const_reference;
+	using py::docstring_options;
+	using py::pickle_suite;
+	using py::manage_new_object;
+	using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
-namespace numeric = py::numpy;
-#endif
 
-inline void resize_3x3(numeric::ndarray& arr) {
+inline void resize_3x3(py::numpy::ndarray& arr)
+{
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    arr.resize({3, 3});
+	arr.resize({ 3, 3 });
 #else
-    arr.reshape(py::make_tuple(3, 3));
+	arr.reshape(py::make_tuple(3, 3));
 #endif
 }
 
+
 PyCameraIntrinsics::PyCameraIntrinsics(const geometry::RaveCameraIntrinsics<float>& intrinsics)
 {
-    numeric::ndarray arr = numeric::array(py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1));
-    resize_3x3(arr);
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+	py::numpy::ndarray arr = py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1);
+#else
+	py::numpy::ndarray arr = py::numpy::array(py::make_tuple(intrinsics.fx, 0, intrinsics.cx, 0, intrinsics.fy, intrinsics.cy, 0, 0, 1));
+#endif
+	resize_3x3(arr);
     K = arr;
     distortion_model = intrinsics.distortion_model;
     distortion_coeffs = toPyArray(intrinsics.distortion_coeffs);
@@ -69,27 +71,34 @@ PyCameraIntrinsics::PyCameraIntrinsics(const geometry::RaveCameraIntrinsics<floa
 
 PyCameraIntrinsics::PyCameraIntrinsics(const geometry::RaveCameraIntrinsics<double>& intrinsics)
 {
-    numeric::ndarray arr = numeric::array(py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1));
-    resize_3x3(arr);
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+	py::numpy::ndarray arr = py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1);
+#else
+	py::numpy::ndarray arr = py::numpy::array(py::make_tuple(intrinsics.fx, 0, intrinsics.cx, 0, intrinsics.fy, intrinsics.cy, 0, 0, 1));
+#endif
+	resize_3x3(arr);
     K = arr;
     distortion_model = intrinsics.distortion_model;
     distortion_coeffs = toPyArray(intrinsics.distortion_coeffs);
     focal_length = intrinsics.focal_length;
 }
 
-PyCameraIntrinsics::~PyCameraIntrinsics() {
+PyCameraIntrinsics::~PyCameraIntrinsics() 
+{
 }
 
 SensorBase::CameraIntrinsics PyCameraIntrinsics::GetCameraIntrinsics()
 {
     SensorBase::CameraIntrinsics intrinsics;
-    if( IS_PYTHONOBJECT_NONE(K) ) {
+    if( IS_PYTHONOBJECT_NONE(K) ) 
+	{
         intrinsics.fx = 0;
         intrinsics.fy = 0;
         intrinsics.cx = 0;
         intrinsics.cy = 0;
     }
-    else {
+    else
+	{
         intrinsics.fx = py::extract<dReal>(K[0][0]);
         intrinsics.fy = py::extract<dReal>(K[1][1]);
         intrinsics.cx = py::extract<dReal>(K[0][2]);
@@ -362,8 +371,12 @@ PySensorBase::PyCameraSensorData::PyCameraSensorData(std::shared_ptr<SensorBase:
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
     {
-        numeric::ndarray arr = numeric::array(py::make_tuple(pgeom->intrinsics.fx,0,pgeom->intrinsics.cx,0,pgeom->intrinsics.fy,pgeom->intrinsics.cy,0,0,1));
-        resize_3x3(arr);
+#ifdef USE_PYBIND11_PYTHON_BINDINGS		
+		py::numpy::ndarray arr = py::make_tuple(pgeom->intrinsics.fx,0,pgeom->intrinsics.cx,0,pgeom->intrinsics.fy,pgeom->intrinsics.cy,0,0,1);
+#else
+		py::numpy::ndarray arr = py::numpy::array(py::make_tuple(pgeom->intrinsics.fx, 0, pgeom->intrinsics.cx, 0, pgeom->intrinsics.fy, pgeom->intrinsics.cy, 0, 0, 1));
+#endif
+		resize_3x3(arr);
         KK = arr;
     }
 }
@@ -399,7 +412,7 @@ PySensorBase::PyIMUSensorData::PyIMUSensorData(std::shared_ptr<SensorBase::IMUGe
     rotation = toPyVector4(pdata->rotation);
     angular_velocity = toPyVector3(pdata->angular_velocity);
     linear_acceleration = toPyVector3(pdata->linear_acceleration);
-    numeric::ndarray arr = toPyArrayN(pdata->rotation_covariance.data(), pdata->rotation_covariance.size());
+	py::numpy::ndarray arr = toPyArrayN(pdata->rotation_covariance.data(), pdata->rotation_covariance.size());
     resize_3x3(arr);
     rotation_covariance = arr;
     arr = toPyArrayN(pdata->angular_velocity_covariance.data(), pdata->angular_velocity_covariance.size());
@@ -420,7 +433,7 @@ PySensorBase::PyOdometrySensorData::PyOdometrySensorData(std::shared_ptr<SensorB
     pose = toPyArray(pdata->pose);
     linear_velocity = toPyVector3(pdata->linear_velocity);
     angular_velocity = toPyVector3(pdata->angular_velocity);
-    numeric::ndarray arr = toPyArrayN(pdata->pose_covariance.data(), pdata->pose_covariance.size());
+	py::numpy::ndarray arr = toPyArrayN(pdata->pose_covariance.data(), pdata->pose_covariance.size());
     resize_3x3(arr);
     pose_covariance = arr;
     arr = toPyArrayN(pdata->velocity_covariance.data(), pdata->velocity_covariance.size());
@@ -439,7 +452,7 @@ PySensorBase::PyOdometrySensorData::~PyOdometrySensorData() {
 PySensorBase::PyTactileSensorData::PyTactileSensorData(std::shared_ptr<SensorBase::TactileGeomData const> pgeom, std::shared_ptr<SensorBase::TactileSensorData> pdata) : PySensorData(pdata)
 {
     forces = toPyArray3(pdata->forces);
-    numeric::ndarray arr = toPyArrayN(pdata->force_covariance.data(), pdata->force_covariance.size());
+    py::numpy::ndarray arr = toPyArrayN(pdata->force_covariance.data(), pdata->force_covariance.size());
     resize_3x3(arr);
     force_covariance = arr;
     positions = toPyArray3(pgeom->positions);

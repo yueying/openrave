@@ -27,13 +27,17 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-#include <boost/shared_ptr.hpp>
+
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
-namespace pybind11 {
-namespace numeric {
-// so py::numeric::array = py::array_t<double>
-using array = ::pybind11::array_t<double>;
-} // namespace pybind11::numeric
+
+namespace pybind11 
+{
+namespace numpy 
+{
+// so py::numpy::ndarray = py::array_t<double>
+using ndarray = ::pybind11::array_t<double>;
+} // namespace pybind11::numpy
+
 template <typename T>
 inline T extract(object o) {
     return o.cast<T>();
@@ -158,7 +162,8 @@ inline py::array_t<bool> toPyArray(const std::vector<bool>& v)
 {
     py::array_t<bool> arr;
     arr.resize({(int) v.size()});
-    for(size_t i = 0; i < v.size(); ++i) {
+    for(size_t i = 0; i < v.size(); ++i) 
+	{
         arr[i] = v[i];
     }
     return arr;

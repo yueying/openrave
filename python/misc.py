@@ -37,15 +37,6 @@ import logging
 log = logging.getLogger('openravepy.' + __name__.split('.', 2)[-1])
 
 
-def mkdir_recursive(newdir):
-    log.warn('openravepy.misc.mkdir_recursive is deprecated, please use os.makedirs')
-    from os import makedirs
-    try:
-        makedirs(newdir)
-    except OSError:
-        pass
-
-
 try:
     from os.path import relpath
 except ImportError:
@@ -66,7 +57,7 @@ except ImportError:
         return curdir if not rel_list else join(*rel_list)
 
 
-def LoadTrajectoryFromFile(env, trajfile, trajtype=''):
+def load_trajectory_from_file(env, trajfile, trajtype=''):
     traj = openravepy_int.RaveCreateTrajectory(env, trajtype)
     traj.LoadFromFile(trajfile)
     return traj

@@ -45,12 +45,6 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
-namespace numeric = py::numpy;
-#endif
-
 PyIkReturn::PyIkReturn(const IkReturn& ret) : _ret(ret) {
 }
 PyIkReturn::PyIkReturn(IkReturnPtr pret) : _ret(*pret) {
