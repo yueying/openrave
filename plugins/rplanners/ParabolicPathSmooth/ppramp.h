@@ -1,10 +1,11 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 #ifndef PARABOLIC_PPRAMP_H
 #define PARABOLIC_PPRAMP_H
 
 #include "paraboliccommon.h"
 
-namespace ParabolicRampInternal {
+namespace ParabolicRampInternal 
+{
 
 /// \brief ramp with two acclerations
 class PPRamp

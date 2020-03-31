@@ -338,36 +338,45 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(IkParameterizat
 	{
         t = GetBase()->GetTransform().inverse()*t;
     }
-    switch(iktype) {
+    switch(iktype) 
+	{
     case IKP_Transform6D: ikp.SetTransform6D(t); break;
     case IKP_Rotation3D: ikp.SetRotation3D(t.rot); break;
     case IKP_Translation3D: ikp.SetTranslation3D(t.trans); break;
     case IKP_Direction3D: ikp.SetDirection3D(t.rotate(info_.direction_)); break;
-    case IKP_Ray4D: {
+    case IKP_Ray4D: 
+	{
         ikp.SetRay4D(RAY(t.trans,t.rotate(info_.direction_)));
         break;
     }
-    case IKP_Lookat3D: {
-        RAVELOG_WARN("RobotBase::Manipulator::GetIkParameterization: Lookat3D type setting goal a distance of 1 from the origin.\n");
+    case IKP_Lookat3D: 
+	{
+        RAVELOG_WARN("RobotBase::Manipulator::GetIkParameterization:\
+                      Lookat3D type setting goal a distance of 1 from the origin.\n");
         Vector vdir = t.rotate(info_.direction_);
         ikp.SetLookat3D(RAY(t.trans + vdir,vdir));
         break;
     }
-    case IKP_TranslationDirection5D: {
+    case IKP_TranslationDirection5D: 
+	{
         ikp.SetTranslationDirection5D(RAY(t.trans,t.rotate(info_.direction_)));
         break;
     }
-    case IKP_TranslationXY2D: {
+    case IKP_TranslationXY2D: 
+	{
         ikp.SetTranslationXY2D(t.trans);
         break;
     }
-    case IKP_TranslationXYOrientation3D: {
+    case IKP_TranslationXYOrientation3D: 
+	{
         //dReal zangle = -normalizeAxisRotation(Vector(0,0,1),t.rot).first;
         Vector vglobaldirection = t.rotate(info_.direction_);
-        ikp.SetTranslationXYOrientation3D(Vector(t.trans.x,t.trans.y,RaveAtan2(vglobaldirection.y,vglobaldirection.x)));
+        ikp.SetTranslationXYOrientation3D(Vector(t.trans.x,t.trans.y,
+			RaveAtan2(vglobaldirection.y,vglobaldirection.x)));
         break;
     }
-    case IKP_TranslationLocalGlobal6D: {
+    case IKP_TranslationLocalGlobal6D:
+	{
         RAVELOG_WARN("RobotBase::Manipulator::GetIkParameterization: TranslationLocalGlobal6D type setting local translation to (0,0,0).\n");
         ikp.SetTranslationLocalGlobal6D(Vector(0,0,0),t.trans);
         break;
@@ -624,10 +633,10 @@ IkParameterization RobotBase::Manipulator::GetIkParameterization(const IkParamet
     return ikp;
 }
 
-void RobotBase::Manipulator::GetChildJoints(std::vector<JointPtr>& vjoints) const
+void RobotBase::Manipulator::GetChildJoints(std::vector<JointPtr>& joints) const
 {
     RobotBasePtr probot(robot_);
-    vjoints.resize(0);
+    joints.resize(0);
     int iattlink = effector_link_->GetIndex();
     vector<uint8_t> vhasjoint(probot->GetJoints().size(),false);
     FOREACHC(itlink, probot->GetLinks()) {
@@ -649,7 +658,7 @@ void RobotBase::Manipulator::GetChildJoints(std::vector<JointPtr>& vjoints) cons
 
         FOREACHC(itjoint, probot->GetJoints()) {
             if( !(*itjoint)->IsStatic() && !vhasjoint[(*itjoint)->GetJointIndex()] && probot->DoesAffect((*itjoint)->GetJointIndex(),ilink) && !probot->DoesAffect((*itjoint)->GetJointIndex(),iattlink) ) {
-                vjoints.push_back(*itjoint);
+                joints.push_back(*itjoint);
                 vhasjoint[(*itjoint)->GetJointIndex()] = true;
             }
         }

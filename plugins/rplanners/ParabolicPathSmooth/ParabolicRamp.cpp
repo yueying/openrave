@@ -29,7 +29,7 @@
  ***************************************************************************/
 
 #include "ParabolicRamp.h"
-#include "pramp.h"
+#include "parabolic_ramp.h"
 #include "ppramp.h"
 #include "plpramp.h"
 #include <math.h>

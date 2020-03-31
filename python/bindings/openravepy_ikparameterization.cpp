@@ -47,9 +47,12 @@ using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
 
-PyIkParameterization::PyIkParameterization() {
+PyIkParameterization::PyIkParameterization() 
+{
 }
-PyIkParameterization::PyIkParameterization(const string &s) {
+
+PyIkParameterization::PyIkParameterization(const std::string &s) 
+{
     std::stringstream ss(s);
     ss >> _param;
 }
@@ -75,15 +78,21 @@ PyIkParameterization::PyIkParameterization(object o, IkParameterizationType type
     default: throw OPENRAVE_EXCEPTION_FORMAT(_tr("incorrect ik parameterization type 0x%x"), type, ORE_InvalidArguments);
     }
 }
-PyIkParameterization::PyIkParameterization(std::shared_ptr<PyIkParameterization> pyikparam) {
+PyIkParameterization::PyIkParameterization(std::shared_ptr<PyIkParameterization> pyikparam)
+{
     _param = pyikparam->_param;
 }
-PyIkParameterization::PyIkParameterization(const IkParameterization &ikparam) : _param(ikparam) {
-}
-PyIkParameterization::~PyIkParameterization() {
+
+PyIkParameterization::PyIkParameterization(const IkParameterization &ikparam) : _param(ikparam) 
+{
 }
 
-IkParameterizationType PyIkParameterization::GetType() {
+PyIkParameterization::~PyIkParameterization() 
+{
+}
+
+IkParameterizationType PyIkParameterization::GetType()
+{
     return _param.GetType();
 }
 
@@ -165,7 +174,8 @@ void PyIkParameterization::SetLookat3D(object o) {
 void PyIkParameterization::SetTranslationDirection5D(std::shared_ptr<PyRay> ray) {
     _param.SetTranslationDirection5D(ray->r);
 }
-void PyIkParameterization::SetTranslationXY2D(object o) {
+void PyIkParameterization::SetTranslationXY2D(object o) 
+{
     _param.SetTranslationXY2D(ExtractVector2(o));
 }
 void PyIkParameterization::SetTranslationXYOrientation3D(object o) {

@@ -2704,11 +2704,11 @@ protected:
     }
 
     /// \brief return incremental values for indices in the chain
-    std::vector<dReal> _GetFreeIncFromIndices(const std::vector<int>& vindices)
+    std::vector<dReal> _GetFreeIncFromIndices(const std::vector<int>& free_indices)
     {
-        std::vector<dReal> vFreeInc(vindices.size());
-        for(size_t i = 0; i < vindices.size(); ++i) {
-            if( joint_revolute_types_.at(vindices[i]) ) {
+        std::vector<dReal> vFreeInc(free_indices.size());
+        for(size_t i = 0; i < free_indices.size(); ++i) {
+            if( joint_revolute_types_.at(free_indices[i]) ) {
                 vFreeInc[i] = free_increase_revolute_;
             }
             else {
@@ -2816,14 +2816,17 @@ protected:
 };
 
 #ifdef OPENRAVE_IKFAST_FLOAT32
-IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<float> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold)
-
+IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, 
+	std::shared_ptr<ikfast::IkFastFunctions<float> > ikfunctions,
+	const vector<dReal>& vfreeinc, dReal ikthreshold)
 {
     return IkSolverBasePtr(new IkFastSolver<float>(penv,sinput,ikfunctions,vfreeinc,ikthreshold));
 }
 #endif
 
-IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, std::shared_ptr<ikfast::IkFastFunctions<double> > ikfunctions, const vector<dReal>& vfreeinc, dReal ikthreshold)
+IkSolverBasePtr CreateIkFastSolver(EnvironmentBasePtr penv, std::istream& sinput, 
+	std::shared_ptr<ikfast::IkFastFunctions<double> > ikfunctions, 
+	const vector<dReal>& vfreeinc, dReal ikthreshold)
 {
     return IkSolverBasePtr(new IkFastSolver<double>(penv,sinput,ikfunctions,vfreeinc,ikthreshold));
 }

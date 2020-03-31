@@ -109,7 +109,7 @@ using array_int = array_t<int>; // py::array_int
 } // namespace pybind11
 #define OPENRAVE_PYTHON_MODULE(X) PYBIND11_MODULE(X, m)
 #include <openravepy/map.h>
-#define PY_ARG_(x) py ::arg(x),
+#define PY_ARG_(x) py::arg(x),
 #define PY_ARGS(...) MAP(PY_ARG_, __VA_ARGS__)
 
 // is_none is not supported by older versions of python

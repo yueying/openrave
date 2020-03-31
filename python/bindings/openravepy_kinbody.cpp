@@ -1913,10 +1913,13 @@ RobotBase::GrabbedInfoPtr PyKinBody::PyGrabbedInfo::GetGrabbedInfo() const
     pinfo->grabbed_name_ = py::extract<std::string>(_grabbedname);
     pinfo->robot_link_name_ = py::extract<std::string>(_robotlinkname);
     pinfo->relative_transform_ = ExtractTransform(_trelative);
-    std::vector<int> v = ExtractArray<int>(_setRobotLinksToIgnore);
     pinfo->robot_links_to_ignore_set_.clear();
-    FOREACHC(it,v) {
+
+    if( !IS_PYTHONOBJECT_NONE(_setRobotLinksToIgnore) ) {
+        std::vector<int> v = ExtractArray<int>(_setRobotLinksToIgnore);
+        FOREACHC(it,v) {
         pinfo->robot_links_to_ignore_set_.insert(*it);
+        }
     }
 #endif
     return pinfo;

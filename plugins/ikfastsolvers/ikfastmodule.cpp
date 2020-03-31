@@ -347,15 +347,20 @@ public:
 * string robot - name of the robot to test. the active manipulator of the roobt is used.\n\n");
     }
 
-    virtual ~IkFastModule() {
+    virtual ~IkFastModule()
+	{
     }
 
     int main(const string& cmd)
     {
-        if( cmd.size() > 0 ) {
+        if( cmd.size() > 0 )
+		{
             rapidjson::Document document;  //!< contains entire rapid json document to parse parameters.
-            if (document.Parse(cmd.c_str(), cmd.size()).HasParseError()) {
-                throw OPENRAVE_EXCEPTION_FORMAT("Failed to parse cmd (offset %u): %s, data=%s", ((unsigned)document.GetErrorOffset())%(GetParseError_En(document.GetParseError()))%cmd, ORE_InvalidState);
+            if (document.Parse(cmd.c_str(), cmd.size()).HasParseError())
+			{
+                throw OPENRAVE_EXCEPTION_FORMAT("Failed to parse cmd (offset %u): %s, data=%s",
+					((unsigned)document.GetErrorOffset())%(GetParseError_En(document.GetParseError()))%cmd,
+					ORE_InvalidState);
             }
             rapidjson::Value root(document, document.GetAllocator());
             if( root.IsObject() ) {
@@ -437,7 +442,8 @@ public:
 
 #ifdef Boost_IOSTREAMS_FOUND
 
-    bool _LoadIKFastFromXMLIdCommand(const rapidjson::Value& input, rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator)
+    bool _LoadIKFastFromXMLIdCommand(const rapidjson::Value& input,
+		rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator)
     {
         if( !input.HasMember("xmlid") ) {
             return false;
@@ -653,29 +659,33 @@ public:
                 return false;
             }
 
-            string ikfastname = str(boost::format("ikfast.%s.%s.%s")%pmanip->GetInverseKinematicsStructureHash(iktype)%striktype%pmanip->GetName());
+            string ikfastname = str(boost::format("ikfast.%s.%s.%s")
+				%pmanip->GetInverseKinematicsStructureHash(iktype)%striktype%pmanip->GetName());
             std::shared_ptr<IkLibrary> lib = _AddIkLibrary(ikfastname,ikfilenamefound);
-            bool bsuccess = true;
-            if( !lib ) {
-                bsuccess = false;
+            bool is_success = true;
+            if( !lib )
+			{
+                is_success = false;
             }
-            else {
-                if( lib->GetIKType() != (int)iktype ) {
-                    bsuccess = false;
+            else 
+			{
+                if( lib->GetIKType() != (int)iktype ) 
+				{
+                    is_success = false;
                 }
                 else {
                     IkSolverBasePtr iksolver = RaveCreateIkSolver(GetEnv(),string("ikfast ")+ikfastname);
                     if( !iksolver ) {
                         RAVELOG_WARN(str(boost::format("failed to create ik solver %s!")%ikfastname));
-                        bsuccess = false;
+                        is_success = false;
                     }
                     else {
-                        bsuccess = pmanip->SetIkSolver(iksolver);
+                        is_success = pmanip->SetIkSolver(iksolver);
                     }
                 }
             }
             // if not forcing the ik, then return true as long as a valid ik solver is set
-            if( is_force_ik && !bsuccess ) {
+            if( is_force_ik && !is_success ) {
                 return false;
             }
             return !!pmanip->GetIkSolver() && pmanip->GetIkSolver()->Supports(iktype);
@@ -773,14 +783,15 @@ public:
         return true;
     }
 
-    template<typename T> bool _PerfTiming(ostream& sout, std::shared_ptr<ikfast::IkFastFunctions<T> > ikfunctions, int num, dReal maxtime)
+    template<typename T> bool _PerfTiming(std::ostream& sout, 
+		std::shared_ptr<ikfast::IkFastFunctions<T> > ikfunctions, int num, dReal maxtime)
     {
         OPENRAVE_ASSERT_OP(ikfunctions->_GetIkRealSize(),==,sizeof(T));
         BOOST_ASSERT((!!ikfunctions->_ComputeIk || !!ikfunctions->_ComputeIk2) && !!ikfunctions->_ComputeFk);
 
-        vector<uint64_t> vtimes(num);
+        std::vector<uint64_t> vtimes(num);
         ikfast::IkSolutionList<T> solutions;
-        vector<T> vjoints(ikfunctions->_GetNumJoints()), vfree(ikfunctions->_GetNumFreeParameters());
+		std::vector<T> vjoints(ikfunctions->_GetNumJoints()), vfree(ikfunctions->_GetNumFreeParameters());
         T eerot[9],eetrans[3];
         uint32_t runstarttimems = utils::GetMilliTime();
         uint32_t runmaxtimems = (uint32_t)(1000*maxtime);
@@ -818,103 +829,126 @@ public:
         return true;
     }
 
-    bool IKtest(ostream& sout, istream& sinput)
+    bool IKtest(std::ostream& sout, std::istream& sinput)
     {
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
         RAVELOG_DEBUG("Starting IKtest...\n");
-        vector<dReal> varmjointvals, values;
-        bool bInitialized=false;
-        int filteroptions = IKFO_CheckEnvCollisions;
+		std::vector<dReal> arm_joint_values, values;
+        bool is_initialized=false;
+        int filter_options = IKFO_CheckEnvCollisions;
         RobotBasePtr robot;
-        RobotBase::ManipulatorConstPtr pmanip;
+        RobotBase::ManipulatorConstPtr manip;
         IkParameterization ikparam;
-        string cmd;
-        while(!sinput.eof()) {
+		std::string cmd;
+        while(!sinput.eof())
+		{
             sinput >> cmd;
-            if( !sinput ) {
+            if( !sinput )
+			{
                 break;
             }
             std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
-            if( cmd == "matrix" ) {
-                TransformMatrix handTm;
-                sinput >> handTm;
-                ikparam.SetTransform6D(handTm);
-                bInitialized = true;
+            if( cmd == "matrix" ) 
+			{
+                TransformMatrix hand_transform_matrix;
+                sinput >> hand_transform_matrix;
+                ikparam.SetTransform6D(hand_transform_matrix);
+                is_initialized = true;
             }
-            else if( cmd == "ikparam" ) {
+            else if( cmd == "ikparam" ) 
+			{
                 sinput >> ikparam;
             }
-            else if( cmd == "armjoints" ) {
-                varmjointvals.resize(pmanip->GetArmIndices().size());
-                FOREACH(it, varmjointvals) {
-                    sinput >> *it;
+            else if( cmd == "armjoints" ) 
+			{
+                arm_joint_values.resize(manip->GetArmIndices().size());
+                for(auto& it: arm_joint_values) 
+				{
+                    sinput >> it;
                 }
             }
-            else if( cmd == "nocol" ) {
-                filteroptions = 0;
+            else if( cmd == "nocol" ) 
+			{
+                filter_options = 0;
             }
-            else if( cmd == "robot" ) {
-                string name;
+            else if( cmd == "robot" ) 
+			{
+				std::string name;
                 sinput >> name;
                 robot = GetEnv()->GetRobot(name);
-                pmanip = robot->GetActiveManipulator();
+                manip = robot->GetActiveManipulator();
             }
-            else {
+            else 
+			{
                 RAVELOG_WARN(str(boost::format("unrecognized command: %s\n")%cmd));
                 break;
             }
 
-            if( !sinput ) {
+            if( !sinput ) 
+			{
                 RAVELOG_ERROR(str(boost::format("failed processing command %s\n")%cmd));
                 return false;
             }
         }
 
-        if( !robot ) {
+        if( !robot )
+		{
             return false;
         }
         RobotBase::RobotStateSaver saver(robot);
 
-        if( !bInitialized ) {
-            ikparam = pmanip->GetIkParameterization(IKP_Transform6D);
+        if( !is_initialized ) 
+		{
+            ikparam = manip->GetIkParameterization(IKP_Transform6D);
         }
         robot->GetDOFValues(values);
 
-        for(size_t i = 0; i < varmjointvals.size(); i++) {
-            values[pmanip->GetArmIndices()[i]] = varmjointvals[i];
+        for(size_t i = 0; i < arm_joint_values.size(); i++)
+		{
+            values[manip->GetArmIndices()[i]] = arm_joint_values[i];
         }
         robot->SetDOFValues(values);
 
-        vector<dReal> q1;
-        if( !pmanip->FindIKSolution(ikparam, q1, filteroptions) ) {
+		std::vector<dReal> q1;
+        if( !manip->FindIKSolution(ikparam, q1, filter_options) ) 
+		{
             RAVELOG_WARN("No IK solution found\n");
             return false;
         }
 
-        stringstream s2;
+		std::stringstream s2;
         s2 << std::setprecision(std::numeric_limits<dReal>::digits10+1);     /// have to do this or otherwise precision gets lost
         s2 << "ik sol: ";
-        FOREACH(it, q1) {
-            s2 << *it << " ";
-            sout << *it << " ";
+        for(auto& it: q1) 
+		{
+            s2 << it << " ";
+            sout << it << " ";
         }
-        s2 << endl;
+        s2 << std::endl;
         RAVELOG_DEBUG(s2.str());
         return true;
     }
 
-    bool DebugIKFindSolution(RobotBase::ManipulatorPtr pmanip, const IkParameterization& twrist, std::vector<dReal>& viksolution, int filteroptions, std::vector<dReal>& parameters, int paramindex, dReal deltafree)
+    bool DebugIKFindSolution(RobotBase::ManipulatorPtr manip, 
+		const IkParameterization& twrist, std::vector<dReal>& viksolution,
+		int filteroptions, std::vector<dReal>& parameters, int paramindex, dReal deltafree)
     {
         // ignore boundary cases since next to limits and can fail due to limit errosr
-        for(dReal f = 0; f <= 1; f += deltafree) {
+        for(dReal f = 0; f <= 1; f += deltafree) 
+		{
             parameters[paramindex] = f;
-            if( paramindex > 0 ) {
-                if( DebugIKFindSolution(pmanip, twrist, viksolution, filteroptions, parameters, paramindex-1,deltafree) ) {
+            if( paramindex > 0 ) 
+			{
+                if( DebugIKFindSolution(manip, twrist, viksolution, 
+					filteroptions, parameters, paramindex-1,deltafree) )
+				{
                     return true;
                 }
             }
-            else {
-                if( pmanip->FindIKSolution(twrist, parameters, viksolution, filteroptions) ) {
+            else
+			{
+                if( manip->FindIKSolution(twrist, parameters, viksolution, filteroptions) ) 
+				{
                     return true;
                 }
             }
@@ -923,13 +957,18 @@ public:
         return false;
     }
 
-    void DebugIKFindSolutions(RobotBase::ManipulatorPtr pmanip, const IkParameterization& twrist, vector< vector<dReal> >& viksolutions, int filteroptions, std::vector<dReal>& parameters, int paramindex, dReal deltafree)
+    void DebugIKFindSolutions(RobotBase::ManipulatorPtr pmanip, 
+		const IkParameterization& twrist, vector< vector<dReal> >& viksolutions,
+		int filteroptions, std::vector<dReal>& parameters, int paramindex, dReal deltafree)
     {
         // ignore boundary cases since next to limits and can fail due to limit errosr
-        for(dReal f = 0; f <= 1; f += deltafree) {
+        for(dReal f = 0; f <= 1; f += deltafree)
+		{
             parameters.at(paramindex) = f;
-            if( paramindex > 0 ) {
-                DebugIKFindSolutions(pmanip, twrist, viksolutions, filteroptions, parameters, paramindex-1,deltafree);
+            if( paramindex > 0 )
+			{
+                DebugIKFindSolutions(pmanip, twrist, viksolutions, filteroptions,
+					parameters, paramindex-1,deltafree);
             }
             else {
                 vector< vector<dReal> > vtempsol;
