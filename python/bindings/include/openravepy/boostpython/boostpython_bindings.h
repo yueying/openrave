@@ -21,8 +21,10 @@
 #define OPENRAVE_HELPER_DLL_LOCAL
 #endif
 #endif
+
 #include <boost/python.hpp> // already has #include <boost/shared_ptr.hpp>
 #include <boost/python/numpy.hpp>
+
 #define OPENRAVE_PYTHON_MODULE(X) BOOST_PYTHON_MODULE(X)
 // might need a space before "::"?
 #define PY_ARGS(...) py::args(__VA_ARGS__),

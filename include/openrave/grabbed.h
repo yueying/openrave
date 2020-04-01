@@ -31,7 +31,7 @@ namespace OpenRAVE
 		{
 			enable_callback_ = grabbed_body->RegisterChangeCallback(KinBody::Prop_LinkEnable,
 				boost::bind(&Grabbed::UpdateCollidingLinks, this));
-			link_robot_->GetRigidlyAttachedLinks(_vattachedlinks);
+			link_robot_->GetRigidlyAttachedLinks(attached_links_);
 		}
 		virtual ~Grabbed()
 		{
@@ -41,7 +41,7 @@ namespace OpenRAVE
 		KinBody::LinkPtr link_robot_;         //!< robot link that is grabbing the body
 		std::list<KinBody::LinkConstPtr> non_colliding_links_;         //!< links that are not colliding with the grabbed body at the time of Grab
 		Transform _troot;         //!< root transform (of first link of body) relative to link_robot's transform. In other words, pbody->GetTransform() == link_robot->GetTransform()*troot
-		std::set<int> _setRobotLinksToIgnore; //!< original links of the robot to force ignoring
+		std::set<int> robot_links_to_ignore_; //!< original links of the robot to force ignoring
 
 		/// \brief check collision with all links to see which are valid.
 		///
@@ -52,7 +52,7 @@ namespace OpenRAVE
 
 		inline const std::vector<KinBody::LinkPtr>& GetRigidlyAttachedLinks() const 
 		{
-			return _vattachedlinks;
+			return attached_links_;
 		}
 
 		void AddMoreIgnoreLinks(const std::set<int>& setRobotLinksToIgnore);
@@ -62,14 +62,14 @@ namespace OpenRAVE
 
 		/// \brief updates the non-colliding info while reusing the cache data from _ProcessCollidingLinks
 		///
-		/// note that Regrab here is *very* dangerous since the robot could be a in a bad self-colliding state with the body. therefore, update the non-colliding state based on _mapLinkIsNonColliding
+		/// note that Regrab here is *very* dangerous since the robot could be a in a bad self-colliding state with the body. therefore, update the non-colliding state based on link_is_non_colliding_
 		void UpdateCollidingLinks();
 
 	private:
-		std::vector<KinBody::LinkPtr> _vattachedlinks;
+		std::vector<KinBody::LinkPtr> attached_links_;
 		UserDataPtr enable_callback_; //!< callback for grabbed body when it is enabled/disabled
 
-		std::map<KinBody::LinkConstPtr, int> _mapLinkIsNonColliding; // the collision state for each link at the time the body was grabbed.
+		std::map<KinBody::LinkConstPtr, int> link_is_non_colliding_; // the collision state for each link at the time the body was grabbed.
 	};
 
 	typedef std::shared_ptr<Grabbed> GrabbedPtr;

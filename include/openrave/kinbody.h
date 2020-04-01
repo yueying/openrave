@@ -454,7 +454,6 @@ namespace OpenRAVE
 
 			typedef std::shared_ptr<Geometry> GeometryPtr;
 			typedef std::shared_ptr<Geometry const> GeometryConstPtr;
-			typedef Geometry GEOMPROPERTIES RAVE_DEPRECATED;
 
 			inline const std::string& GetName() const 
 			{

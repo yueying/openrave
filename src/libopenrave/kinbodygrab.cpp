@@ -18,72 +18,82 @@
 #include <openrave/kinbody.h>
 #include <openrave/grabbed.h>
 
-namespace OpenRAVE {
-
-bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
+namespace OpenRAVE 
 {
-    OPENRAVE_ASSERT_FORMAT(!!pbody, "body %s invalid body to grab",GetName(),ORE_InvalidArguments);
-    OPENRAVE_ASSERT_FORMAT(!!plink && plink->GetParent().get() == this, "body %s grabbing link needs to be part of body",GetName(),ORE_InvalidArguments);
-    OPENRAVE_ASSERT_FORMAT(pbody.get() != this,"body %s cannot grab itself",GetName(), ORE_InvalidArguments);
+
+bool KinBody::Grab(KinBodyPtr body, LinkPtr link)
+{
+    OPENRAVE_ASSERT_FORMAT(!!body, "body %s invalid body to grab",GetName(),ORE_InvalidArguments);
+    OPENRAVE_ASSERT_FORMAT(!!link && link->GetParent().get() == this,
+		"body %s grabbing link needs to be part of body",GetName(),ORE_InvalidArguments);
+    OPENRAVE_ASSERT_FORMAT(body.get() != this,"body %s cannot grab itself",GetName(), ORE_InvalidArguments);
 
     //uint64_t starttime0 = utils::GetMicroTime();
 
     // if grabbing, check if the transforms are different. If they are, then update the transform
-    GrabbedPtr pPreviousGrabbed;
-    FOREACHC(itgrabbed, grabbed_bodies_) {
-        GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
-        if( pgrabbed->grabbed_body_.lock() == pbody ) {
-            pPreviousGrabbed = pgrabbed;
+    GrabbedPtr previous_grabbed;
+    for(auto& itgrabbed: grabbed_bodies_) 
+	{
+        GrabbedPtr grabbed = std::dynamic_pointer_cast<Grabbed>(itgrabbed);
+        if( grabbed->grabbed_body_.lock() == body ) 
+		{
+            previous_grabbed = grabbed;
             break;
         }
     }
 
     // double check since collision checkers might not support this case
-    if( pbody->HasAttached() ) {
-        if( !!pPreviousGrabbed ) {
-            RAVELOG_INFO_FORMAT("env=%d, body %s is previously grabbed by %s, so", GetEnv()->GetId()%pbody->GetName()%GetName());
+    if( body->HasAttached() ) 
+	{
+        if( !!previous_grabbed ) 
+		{
+            RAVELOG_INFO_FORMAT("env=%d, body %s is previously grabbed by %s, so", GetEnv()->GetId()%body->GetName()%GetName());
         }
-        else {
-            std::set<KinBodyPtr> setAttached;
-            pbody->GetAttached(setAttached);
+        else 
+		{
+            std::set<KinBodyPtr> set_attached;
+            body->GetAttached(set_attached);
             std::stringstream ss;
-            if( setAttached.size() > 1 ) {
-                FOREACH(itbody, setAttached) {
-                    ss << (*itbody)->GetName() << ", ";
+            if( set_attached.size() > 1 ) 
+			{
+                for(auto& itbody: set_attached)
+				{
+                    ss << itbody->GetName() << ", ";
                 }
             }
-            RAVELOG_WARN_FORMAT("env=%d, body %s trying to grab body %s with %d attached bodies [%s]", GetEnv()->GetId()%GetName()%pbody->GetName()%setAttached.size()%ss.str());
+            RAVELOG_WARN_FORMAT("env=%d, body %s trying to grab body %s with %d attached bodies [%s]",
+				GetEnv()->GetId()%GetName()%body->GetName()%set_attached.size()%ss.str());
         }
     }
 
-    Transform t = plink->GetTransform();
-    Transform tbody = pbody->GetTransform();
+    Transform t = link->GetTransform();
+    Transform tbody = body->GetTransform();
     // new body velocity is measured from body link
-    std::pair<Vector, Vector> velocity = plink->GetVelocity();
+    std::pair<Vector, Vector> velocity = link->GetVelocity();
     velocity.first += velocity.second.cross(tbody.trans - t.trans);
-    if( !!pPreviousGrabbed ) {
-        dReal disterror = TransformDistance2(t*pPreviousGrabbed->_troot, tbody);
-        if( pPreviousGrabbed->link_robot_ == plink && disterror <= g_fEpsilonLinear ) {
+    if( !!previous_grabbed ) {
+        dReal disterror = TransformDistance2(t*previous_grabbed->_troot, tbody);
+        if( previous_grabbed->link_robot_ == link && disterror <= g_fEpsilonLinear ) {
             // links and transforms are the same, so no worries
             return true;
         }
-        RAVELOG_VERBOSE_FORMAT("Body %s: body %s already grabbed, but transforms differ by %f \n", GetName()%pbody->GetName()%disterror);
-        _RemoveAttachedBody(*pbody);
-        CallOnDestruction destructigonhook(boost::bind(&RobotBase::_AttachBody,this,pbody));
-        pPreviousGrabbed->link_robot_ = plink;
-        pPreviousGrabbed->_troot = t.inverse() * tbody;
-        pPreviousGrabbed->ProcessCollidingLinks(pPreviousGrabbed->_setRobotLinksToIgnore);
-        pbody->SetVelocity(velocity.first, velocity.second);
+        RAVELOG_VERBOSE_FORMAT("Body %s: body %s already grabbed, but transforms differ by %f \n", GetName()%body->GetName()%disterror);
+        _RemoveAttachedBody(*body);
+        CallOnDestruction destructigonhook(boost::bind(&RobotBase::_AttachBody,this,body));
+        previous_grabbed->link_robot_ = link;
+        previous_grabbed->_troot = t.inverse() * tbody;
+        previous_grabbed->ProcessCollidingLinks(previous_grabbed->robot_links_to_ignore_);
+        body->SetVelocity(velocity.first, velocity.second);
         return true;
     }
 
-    GrabbedPtr pgrabbed(new Grabbed(pbody,plink));
+    GrabbedPtr pgrabbed(new Grabbed(body,link));
     pgrabbed->_troot = t.inverse() * tbody;
     //uint64_t starttime1 = utils::GetMicroTime();
-    // always ignore links that are statically attached to plink (ie assume they are always colliding with the body)
+    // always ignore links that are statically attached to link (ie assume they are always colliding with the body)
 
     std::vector<std::shared_ptr<Link> > vattachedlinks;
-    plink->GetRigidlyAttachedLinks(vattachedlinks);
+    link->GetRigidlyAttachedLinks(vattachedlinks);
     std::set<int> setBodyLinksToIgnore;
     FOREACHC(itlink, vattachedlinks) {
         setBodyLinksToIgnore.insert((*itlink)->GetIndex());
@@ -91,10 +101,10 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     if( !!self_collision_checker_ && self_collision_checker_ != GetEnv()->GetCollisionChecker() ) {
         // collision checking will not be automatically updated with environment calls, so need to do this manually
         //try {
-        self_collision_checker_->InitKinBody(pbody);
+        self_collision_checker_->InitKinBody(body);
 //        }
 //        catch (const std::exception& ex) {
-//            RAVELOG_ERROR_FORMAT("env=%d, failed in self_collision_checker_->InitKinBody for body %s: %s", GetEnv()->GetId()%pbody->GetName()%ex.what());
+//            RAVELOG_ERROR_FORMAT("env=%d, failed in self_collision_checker_->InitKinBody for body %s: %s", GetEnv()->GetId()%body->GetName()%ex.what());
 //            throw;
 //        }
     }
@@ -102,16 +112,16 @@ bool KinBody::Grab(KinBodyPtr pbody, LinkPtr plink)
     pgrabbed->ProcessCollidingLinks(setBodyLinksToIgnore);
 //    }
 //    catch(const std::exception& ex) {
-//        RAVELOG_ERROR_FORMAT("env=%d, failed in ProcessCollidingLinks for body %s: %s", GetEnv()->GetId()%pbody->GetName()%ex.what());
+//        RAVELOG_ERROR_FORMAT("env=%d, failed in ProcessCollidingLinks for body %s: %s", GetEnv()->GetId()%body->GetName()%ex.what());
 //        throw;
 //    }
 
-    pbody->SetVelocity(velocity.first, velocity.second);
+    body->SetVelocity(velocity.first, velocity.second);
     grabbed_bodies_.push_back(pgrabbed);
     //uint64_t starttime2 = utils::GetMicroTime();
     try {
         // if an exception happens in _AttachBody, have to remove from grabbed_bodies_
-        _AttachBody(pbody);
+        _AttachBody(body);
     }
     catch(...) {
         RAVELOG_ERROR_FORMAT("env=%d, failed in attach body", GetEnv()->GetId());
@@ -266,7 +276,7 @@ void KinBody::RegrabAll()
         if( !!pbody ) {
             _RemoveAttachedBody(*pbody);
             CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pbody));
-            pgrabbed->ProcessCollidingLinks(pgrabbed->_setRobotLinksToIgnore);
+            pgrabbed->ProcessCollidingLinks(pgrabbed->robot_links_to_ignore_);
         }
     }
 }
@@ -281,7 +291,7 @@ void KinBody::_Regrab(UserDataPtr _pgrabbed)
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         _RemoveAttachedBody(*pgrabbedbody);
         CallOnDestruction destructionhook(boost::bind(&RobotBase::_AttachBody,this,pgrabbedbody));
-        pgrabbed->ProcessCollidingLinks(pgrabbed->_setRobotLinksToIgnore);
+        pgrabbed->ProcessCollidingLinks(pgrabbed->robot_links_to_ignore_);
     }
 }
 
@@ -324,7 +334,7 @@ void KinBody::GetGrabbedInfo(std::vector<KinBody::GrabbedInfoPtr>& vgrabbedinfo)
             poutputinfo->grabbed_name_ = pgrabbedbody->GetName();
             poutputinfo->robot_link_name_ = pgrabbed->link_robot_->GetName();
             poutputinfo->relative_transform_ = pgrabbed->_troot;
-            poutputinfo->robot_links_to_ignore_set_ = pgrabbed->_setRobotLinksToIgnore;
+            poutputinfo->robot_links_to_ignore_set_ = pgrabbed->robot_links_to_ignore_;
             FOREACHC(itlink, links_vector_) {
                 if( find(pgrabbed->non_colliding_links_.begin(), pgrabbed->non_colliding_links_.end(), *itlink) == pgrabbed->non_colliding_links_.end() ) {
                     poutputinfo->robot_links_to_ignore_set_.insert((*itlink)->GetIndex());

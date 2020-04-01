@@ -2416,15 +2416,18 @@ OPENRAVE_PYTHON_MODULE(openravepy_int)
 {
     using namespace openravepy;
     import_array1(); // not sure if this is necessary for pybind11
+
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
 #else // USE_PYBIND11_PYTHON_BINDINGS
+
 #if BOOST_VERSION >= 103500
     docstring_options doc_options;
     doc_options.disable_cpp_signatures();
     doc_options.enable_py_signatures();
     doc_options.enable_user_defined();
 #endif
+
     //numeric::array::set_module_and_type("numpy", "ndarray");
     int_from_number<int>();
     int_from_number<uint8_t>();
