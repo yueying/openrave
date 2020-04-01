@@ -514,10 +514,12 @@ object PyCollisionCheckerBase::CheckCollisionRays(object rays, PyKinBodyPtr pbod
 {
     object shape = rays.attr("shape");
     const int num = extract<int>(shape[0]);
-    if( num == 0 ) {
-        return py::make_tuple(py::empty_array_astype<int>(), py::empty_array_astype<dReal>());
+    if( num == 0 )
+	{
+        return py::make_tuple(py::numpy::array(boost::python::list()), py::numpy::array(boost::python::list()));
     }
-    if( extract<int>(shape[1]) != 6 ) {
+    if( extract<int>(shape[1]) != 6 ) 
+	{
         throw OpenRAVEException(_tr("rays object needs to be a Nx6 vector\n"));
     }
     CollisionReport report;
@@ -533,11 +535,10 @@ object PyCollisionCheckerBase::CheckCollisionRays(object rays, PyKinBodyPtr pbod
     py::buffer_info bufcollision = pycollision.request();
     bool* pcollision = (bool*) bufcollision.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { num,6};
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
-    dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pypos);
-    PyObject* pycollision = PyArray_SimpleNew(1,dims, NPY_BOOL);
-    bool* pcollision = (bool*)PyArray_DATA((PyArrayObject*)pycollision);
+	py::numpy::ndarray pypos = py::numpy::empty(boost::python::make_tuple(num, 6), py::numpy::dtype::get_builtin<dReal>());
+	dReal* ppos = (dReal*)pypos.get_data();
+	py::numpy::ndarray pycollision = py::numpy::empty(boost::python::make_tuple(num), py::numpy::dtype::get_builtin<bool>());
+	bool* pcollision = (bool*)pycollision.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     for(int i = 0; i < num; ++i, ppos += 6) {
         std::vector<dReal> ray = ExtractArray<dReal>(rays[i]);
@@ -568,11 +569,8 @@ object PyCollisionCheckerBase::CheckCollisionRays(object rays, PyKinBodyPtr pbod
             }
         }
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
+
     return py::make_tuple(pycollision, pypos);
-#else // USE_PYBIND11_PYTHON_BINDINGS
-    return py::make_tuple(py::to_array_astype<bool>(pycollision), py::to_array_astype<dReal>(pypos));
-#endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
 bool PyCollisionCheckerBase::CheckCollision(std::shared_ptr<PyRay> pyray)

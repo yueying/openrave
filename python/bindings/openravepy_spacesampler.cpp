@@ -49,40 +49,51 @@ class PySpaceSamplerBase : public PyInterfaceBase
 protected:
     SpaceSamplerBasePtr _pspacesampler;
 public:
-    PySpaceSamplerBase(SpaceSamplerBasePtr pspacesampler, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pspacesampler, pyenv), _pspacesampler(pspacesampler) {
+    PySpaceSamplerBase(SpaceSamplerBasePtr pspacesampler, PyEnvironmentBasePtr pyenv)
+		: PyInterfaceBase(pspacesampler, pyenv), _pspacesampler(pspacesampler) 
+	{
     }
-    virtual ~PySpaceSamplerBase() {
+    virtual ~PySpaceSamplerBase() 
+	{
     }
 
-    SpaceSamplerBasePtr GetSpaceSampler() {
+    SpaceSamplerBasePtr GetSpaceSampler() 
+	{
         return _pspacesampler;
     }
 
-    void SetSeed(uint32_t seed) {
+    void SetSeed(uint32_t seed)
+	{
         _pspacesampler->SetSeed(seed);
     }
-    void SetSpaceDOF(int dof) {
+    void SetSpaceDOF(int dof)
+	{
         _pspacesampler->SetSpaceDOF(dof);
     }
-    int GetDOF() {
+    int GetDOF() 
+	{
         return _pspacesampler->GetDOF();
     }
-    int GetNumberOfValues() {
+    int GetNumberOfValues() 
+	{
         return _pspacesampler->GetNumberOfValues();
     }
 
-    bool Supports(SampleDataType type) {
+    bool Supports(SampleDataType type)
+	{
         return _pspacesampler->Supports(type);
     }
 
     object GetLimits(SampleDataType type)
     {
-        if( type == SDT_Real ) {
+        if( type == SDT_Real ) 
+		{
             std::vector<dReal> vlower, vupper;
             _pspacesampler->GetLimits(vlower,vupper);
             return py::make_tuple(toPyArray(vlower),toPyArray(vupper));
         }
-        else if( type == SDT_Uint32 ) {
+        else if( type == SDT_Uint32 )
+		{
             std::vector<uint32_t> vlower, vupper;
             _pspacesampler->GetLimits(vlower,vupper);
             return py::make_tuple(toPyArray(vlower),toPyArray(vupper));
@@ -92,7 +103,8 @@ public:
 
     object SampleSequence(SampleDataType type, size_t num, int interval = IntervalType::IT_Closed)
     {
-        if( type == SDT_Real ) {
+        if( type == SDT_Real )
+		{
             std::vector<dReal> samples;
             _pspacesampler->SampleSequence(samples,num, (IntervalType) interval);
             return toPyArray(samples);
@@ -171,17 +183,18 @@ protected:
         pyvalues.resize({(int) samples.size()/dim, dim});
         return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { npy_intp(samples.size()/dim), npy_intp(dim) };
-        PyObject *pyvalues = PyArray_SimpleNew(2, dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
-        memcpy(PyArray_DATA((PyArrayObject*)pyvalues), samples.data(), samples.size()*sizeof(samples[0]));
-        return py::to_array_astype<dReal>(pyvalues);
+		py::numpy::ndarray pyvalues = py::numpy::empty(py::make_tuple(int(samples.size() / dim), dim),
+			py::numpy::dtype::get_builtin<dReal>());
+		memcpy(pyvalues.get_data(), &samples.at(0), samples.size() * sizeof(samples[0]));
+		return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
 
     object _ReturnSamples2D(const std::vector<uint32_t>&samples)
     {
-        if( samples.empty() == 0 ) {
-            return py::empty_array_astype<uint32_t>();
+        if( samples.empty() == 0 ) 
+		{
+            return py::numpy::array(py::list());
         }
         const int dim = _pspacesampler->GetNumberOfValues();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
@@ -189,10 +202,10 @@ protected:
         pyvalues.resize({(int) samples.size()/dim, dim});
         return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { npy_intp(samples.size()/dim), npy_intp(dim) };
-        PyObject *pyvalues = PyArray_SimpleNew(2,dims, NPY_UINT32);
-        memcpy(PyArray_DATA((PyArrayObject*)pyvalues), samples.data(), samples.size()*sizeof(samples[0]));
-        return py::to_array_astype<uint32_t>(pyvalues);
+		py::numpy::ndarray pyvalues = py::numpy::empty(py::make_tuple(int(samples.size() / dim), dim), 
+			py::numpy::dtype::get_builtin<uint32_t>());
+		memcpy(pyvalues.get_data(), &samples.at(0), samples.size() * sizeof(samples[0]));
+		return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
 };

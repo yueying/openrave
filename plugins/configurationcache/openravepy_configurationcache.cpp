@@ -57,11 +57,8 @@ using py::pickle_suite;
 using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
-#else
+
 namespace numeric = py::numpy;
-#endif
 
 using openravepy::ConvertStringToUnicode;
 
@@ -210,7 +207,9 @@ OPENRAVE_PYTHON_MODULE(openravepy_configurationcache)
 {
     using namespace configurationcachepy;
 #ifndef USE_PYBIND11_PYTHON3_BINDINGS
-    import_array1(); // not sure if this is necessary for pybind11
+    //import_array1(); // not sure if this is necessary for pybind11
+	Py_Initialize();
+	py::numpy::initialize();
 #endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     m.attr("__doc__") = "The module contains configuration cache bindings for openravepy\n";

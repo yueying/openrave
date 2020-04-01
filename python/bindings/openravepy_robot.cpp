@@ -53,7 +53,7 @@ using py::def;
 
 PyManipulatorInfo::PyManipulatorInfo() {
     _tLocalTool = ReturnTransform(Transform());
-    _vChuckingDirection = py::empty_array_astype<dReal>();
+    _vChuckingDirection = py::numpy::array(py::list());
     _vdirection = toPyVector3(Vector(0,0,1));
     _vGripperJointNames = py::list();
 }
@@ -345,7 +345,7 @@ py::array_int PyRobotBase::PyManipulator::GetArmIndices() {
 object PyRobotBase::PyManipulator::GetArmDOFValues()
 {
     if( _pmanip->GetArmDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pmanip->GetArmDOFValues(values);
@@ -354,7 +354,7 @@ object PyRobotBase::PyManipulator::GetArmDOFValues()
 object PyRobotBase::PyManipulator::GetGripperDOFValues()
 {
     if( _pmanip->GetGripperDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pmanip->GetGripperDOFValues(values);
@@ -391,31 +391,38 @@ int PyRobotBase::PyManipulator::GetNumFreeParameters() const {
 object PyRobotBase::PyManipulator::GetFreeParameters() const {
     RAVELOG_WARN("Manipulator::GetFreeParameters() is deprecated\n");
     if( _pmanip->GetIkSolver()->GetNumFreeParameters() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pmanip->GetIkSolver()->GetFreeParameters(values);
     return toPyArray(values);
 }
 
-bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam, std::vector<dReal>& solution, int filteroptions, bool releasegil) const
+bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam, 
+	std::vector<dReal>& solution, int filteroptions, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
-    if( releasegil ) {
+    if( releasegil ) 
+	{
         statesaver.reset(new openravepy::PythonThreadSaver());
     }
     return _pmanip->FindIKSolution(ikparam,solution,filteroptions);
 
 }
-bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam, const std::vector<dReal>& vFreeParameters, std::vector<dReal>& solution, int filteroptions, bool releasegil) const
+bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam, 
+	const std::vector<dReal>& vFreeParameters, 
+	std::vector<dReal>& solution, int filteroptions, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
-    if( releasegil ) {
+    if( releasegil ) 
+	{
         statesaver.reset(new openravepy::PythonThreadSaver());
     }
     return _pmanip->FindIKSolution(ikparam,vFreeParameters, solution,filteroptions);
 }
-bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam, int filteroptions, IkReturn& ikreturn, bool releasegil) const
+
+bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam,
+	int filteroptions, IkReturn& ikreturn, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
     if( releasegil ) {
@@ -423,7 +430,9 @@ bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikpar
     }
     return _pmanip->FindIKSolution(ikparam,filteroptions,IkReturnPtr(&ikreturn,utils::null_deleter()));
 }
-bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam, const std::vector<dReal>& vFreeParameters, int filteroptions, IkReturn& ikreturn, bool releasegil) const
+
+bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikparam,
+	const std::vector<dReal>& vFreeParameters, int filteroptions, IkReturn& ikreturn, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
     if( releasegil ) {
@@ -432,7 +441,8 @@ bool PyRobotBase::PyManipulator::_FindIKSolution(const IkParameterization& ikpar
     return _pmanip->FindIKSolution(ikparam,vFreeParameters, filteroptions,IkReturnPtr(&ikreturn,utils::null_deleter()));
 }
 
-bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, std::vector<std::vector<dReal> >& solutions, int filteroptions, bool releasegil) const
+bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, 
+	std::vector<std::vector<dReal> >& solutions, int filteroptions, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
     if( releasegil ) {
@@ -440,7 +450,10 @@ bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikpa
     }
     return _pmanip->FindIKSolutions(ikparam,solutions,filteroptions);
 }
-bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, const std::vector<dReal>& vFreeParameters, std::vector<std::vector<dReal> >& solutions, int filteroptions, bool releasegil) const
+
+bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam,
+	const std::vector<dReal>& vFreeParameters, std::vector<std::vector<dReal> >& solutions,
+	int filteroptions, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
     if( releasegil ) {
@@ -448,7 +461,9 @@ bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikpa
     }
     return _pmanip->FindIKSolutions(ikparam,vFreeParameters,solutions,filteroptions);
 }
-bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, int filteroptions, std::vector<IkReturnPtr>& vikreturns, bool releasegil) const
+
+bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, 
+	int filteroptions, std::vector<IkReturnPtr>& vikreturns, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
     if( releasegil ) {
@@ -456,7 +471,10 @@ bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikpa
     }
     return _pmanip->FindIKSolutions(ikparam,filteroptions,vikreturns);
 }
-bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, const std::vector<dReal>& vFreeParameters, int filteroptions, std::vector<IkReturnPtr>& vikreturns, bool releasegil) const
+
+bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikparam, 
+	const std::vector<dReal>& vFreeParameters, int filteroptions, 
+	std::vector<IkReturnPtr>& vikreturns, bool releasegil) const
 {
     openravepy::PythonThreadSaverPtr statesaver;
     if( releasegil ) {
@@ -465,7 +483,8 @@ bool PyRobotBase::PyManipulator::_FindIKSolutions(const IkParameterization& ikpa
     return _pmanip->FindIKSolutions(ikparam,vFreeParameters,filteroptions,vikreturns);
 }
 
-object PyRobotBase::PyManipulator::FindIKSolution(object oparam, int filteroptions, bool ikreturn, bool releasegil) const
+object PyRobotBase::PyManipulator::FindIKSolution(object oparam, int filteroptions, 
+	bool ikreturn, bool releasegil) const
 {
     IkParameterization ikparam;
     EnvironmentMutex::scoped_lock lock(openravepy::GetEnvironment(_pyenv)->GetMutex()); // lock just in case since many users call this without locking...
@@ -500,7 +519,8 @@ object PyRobotBase::PyManipulator::FindIKSolution(object oparam, int filteroptio
     }
 }
 
-object PyRobotBase::PyManipulator::FindIKSolution(object oparam, object freeparams, int filteroptions, bool ikreturn, bool releasegil) const
+object PyRobotBase::PyManipulator::FindIKSolution(object oparam, object freeparams,
+	int filteroptions, bool ikreturn, bool releasegil) const
 {
     std::vector<dReal> vfreeparams = ExtractArray<dReal>(freeparams);
     IkParameterization ikparam;
@@ -536,19 +556,24 @@ object PyRobotBase::PyManipulator::FindIKSolution(object oparam, object freepara
     }
 }
 
-object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, int filteroptions, bool ikreturn, bool releasegil) const
+object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, int filteroptions,
+	bool ikreturn, bool releasegil) const
 {
     IkParameterization ikparam;
     EnvironmentMutex::scoped_lock lock(openravepy::GetEnvironment(_pyenv)->GetMutex()); // lock just in case since many users call this without locking...
-    if( ikreturn ) {
+    if( ikreturn ) 
+	{
         std::vector<IkReturnPtr> vikreturns;
-        if( ExtractIkParameterization(oparam,ikparam) ) {
-            if( !_FindIKSolutions(ikparam,filteroptions,vikreturns,releasegil) ) {
+        if( ExtractIkParameterization(oparam,ikparam) ) 
+		{
+            if( !_FindIKSolutions(ikparam,filteroptions,vikreturns,releasegil) )
+			{
                 return py::list();
             }
         }
         // assume transformation matrix
-        else if( !_FindIKSolutions(ExtractTransform(oparam),filteroptions,vikreturns,releasegil) ) {
+        else if( !_FindIKSolutions(ExtractTransform(oparam),filteroptions,vikreturns,releasegil) )
+		{
             return py::list();
         }
 
@@ -562,12 +587,12 @@ object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, int filteropti
         std::vector<std::vector<dReal> > vsolutions;
         if( ExtractIkParameterization(oparam,ikparam) ) {
             if( !_FindIKSolutions(ikparam,vsolutions,filteroptions,releasegil) ) {
-                return py::empty_array_astype<dReal>();
+                return py::numpy::array(py::list());
             }
         }
         // assume transformation matrix
         else if( !_FindIKSolutions(ExtractTransform(oparam),vsolutions,filteroptions,releasegil) ) {
-            return py::empty_array_astype<dReal>();
+            return py::numpy::array(py::list());
         }
 
         const size_t nSolutions = vsolutions.size();
@@ -577,20 +602,16 @@ object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, int filteropti
         py::buffer_info buf = pysolutions.request();
         dReal* ppos = (dReal*) buf.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { npy_intp(nSolutions), npy_intp(nArmIndices) };
-        PyObject *pysolutions = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
-        dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pysolutions);
+		py::tuple shape = py::make_tuple(vsolutions.size(), nArmIndices);
+		py::numpy::ndarray pysolutions = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+		dReal* ppos = (dReal*)pysolutions.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
         for(const std::vector<dReal>& solution : vsolutions) {
             BOOST_ASSERT(solution.size() == nArmIndices);
             std::copy(begin(solution), end(solution), ppos);
             ppos += nArmIndices;
         }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-        return pysolutions;
-#else // USE_PYBIND11_PYTHON_BINDINGS
-        return py::to_array_astype<dReal>(pysolutions);
-#endif // USE_PYBIND11_PYTHON_BINDINGS
+		return std::move(pysolutions);
     }
 }
 
@@ -621,12 +642,12 @@ object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, object freepar
         std::vector<std::vector<dReal> > vsolutions;
         if( ExtractIkParameterization(oparam,ikparam) ) {
             if( !_FindIKSolutions(ikparam,vfreeparams,vsolutions,filteroptions,releasegil) ) {
-                return py::empty_array_astype<dReal>();
+                return py::numpy::array(py::list());
             }
         }
         // assume transformation matrix
         else if( !_FindIKSolutions(ExtractTransform(oparam),vfreeparams, vsolutions,filteroptions,releasegil) ) {
-            return py::empty_array_astype<dReal>();
+            return py::numpy::array(py::list());
         }
 
         const size_t nSolutions = vsolutions.size();
@@ -636,20 +657,16 @@ object PyRobotBase::PyManipulator::FindIKSolutions(object oparam, object freepar
         py::buffer_info buf = pysolutions.request();
         dReal* ppos = (dReal*) buf.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { npy_intp(nSolutions), npy_intp(nArmIndices) };
-        PyObject *pysolutions = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
-        dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pysolutions);
+		py::tuple shape = py::make_tuple(vsolutions.size(), nArmIndices);
+		py::numpy::ndarray pysolutions = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+		dReal* ppos = (dReal*)pysolutions.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
         for(const std::vector<dReal>& solution : vsolutions) {
             BOOST_ASSERT(solution.size() == nArmIndices);
             std::copy(begin(solution), end(solution), ppos);
             ppos += nArmIndices;
         }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-        return pysolutions;
-#else // USE_PYBIND11_PYTHON_BINDINGS
-        return py::to_array_astype<dReal>(pysolutions);
-#endif // USE_PYBIND11_PYTHON_BINDINGS
+		return pysolutions;
     }
 }
 
@@ -778,7 +795,7 @@ object PyRobotBase::PyManipulator::CalculateJacobian()
 {
     std::vector<dReal> vjacobian;
     _pmanip->CalculateJacobian(vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = _pmanip->GetArmIndices().size();
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = _pmanip->GetArmIndices().size();
     return toPyArray(vjacobian,dims);
 }
 
@@ -786,7 +803,7 @@ object PyRobotBase::PyManipulator::CalculateRotationJacobian()
 {
     std::vector<dReal> vjacobian;
     _pmanip->CalculateRotationJacobian(vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 4; dims[1] = _pmanip->GetArmIndices().size();
+    std::vector<size_t> dims(2); dims[0] = 4; dims[1] = _pmanip->GetArmIndices().size();
     return toPyArray(vjacobian,dims);
 }
 
@@ -794,7 +811,7 @@ object PyRobotBase::PyManipulator::CalculateAngularVelocityJacobian()
 {
     std::vector<dReal> vjacobian;
     _pmanip->CalculateAngularVelocityJacobian(vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = _pmanip->GetArmIndices().size();
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = _pmanip->GetArmIndices().size();
     return toPyArray(vjacobian,dims);
 }
 
@@ -1407,7 +1424,7 @@ void PyRobotBase::SetActiveDOFValues(object values, uint32_t checklimits) const
 object PyRobotBase::GetActiveDOFValues() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFValues(values);
@@ -1417,7 +1434,7 @@ object PyRobotBase::GetActiveDOFValues() const
 object PyRobotBase::GetActiveDOFWeights() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> weights;
     _probot->GetActiveDOFWeights(weights);
@@ -1431,7 +1448,7 @@ void PyRobotBase::SetActiveDOFVelocities(object velocities, uint32_t checklimits
 object PyRobotBase::GetActiveDOFVelocities() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFVelocities(values);
@@ -1441,7 +1458,7 @@ object PyRobotBase::GetActiveDOFVelocities() const
 object PyRobotBase::GetActiveDOFLimits() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::make_tuple(py::empty_array_astype<dReal>(), py::empty_array_astype<dReal>()); // always need 2 since users can do lower, upper = GetDOFLimits()
+        return py::make_tuple(py::numpy::array(py::list()), py::numpy::array(py::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
     }
     std::vector<dReal> lower, upper;
     _probot->GetActiveDOFLimits(lower,upper);
@@ -1451,7 +1468,7 @@ object PyRobotBase::GetActiveDOFLimits() const
 object PyRobotBase::GetActiveDOFMaxVel() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFMaxVel(values);
@@ -1461,7 +1478,7 @@ object PyRobotBase::GetActiveDOFMaxVel() const
 object PyRobotBase::GetActiveDOFMaxAccel() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFMaxAccel(values);
@@ -1471,7 +1488,7 @@ object PyRobotBase::GetActiveDOFMaxAccel() const
 object PyRobotBase::GetActiveDOFMaxJerk() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFMaxJerk(values);
@@ -1481,7 +1498,7 @@ object PyRobotBase::GetActiveDOFMaxJerk() const
 object PyRobotBase::GetActiveDOFHardMaxVel() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFHardMaxVel(values);
@@ -1491,7 +1508,7 @@ object PyRobotBase::GetActiveDOFHardMaxVel() const
 object PyRobotBase::GetActiveDOFHardMaxAccel() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFHardMaxAccel(values);
@@ -1501,7 +1518,7 @@ object PyRobotBase::GetActiveDOFHardMaxAccel() const
 object PyRobotBase::GetActiveDOFHardMaxJerk() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFHardMaxJerk(values);
@@ -1511,7 +1528,7 @@ object PyRobotBase::GetActiveDOFHardMaxJerk() const
 object PyRobotBase::GetActiveDOFResolutions() const
 {
     if( _probot->GetActiveDOF() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _probot->GetActiveDOFResolutions(values);
@@ -1543,7 +1560,7 @@ object PyRobotBase::CalculateActiveJacobian(int index, object offset) const
 {
     std::vector<dReal> vjacobian;
     _probot->CalculateActiveJacobian(index,ExtractVector3(offset),vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = _probot->GetActiveDOF();
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = _probot->GetActiveDOF();
     return toPyArray(vjacobian,dims);
 }
 
@@ -1551,7 +1568,7 @@ object PyRobotBase::CalculateActiveRotationJacobian(int index, object q) const
 {
     std::vector<dReal> vjacobian;
     _probot->CalculateActiveRotationJacobian(index,ExtractVector4(q),vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 4; dims[1] = _probot->GetActiveDOF();
+    std::vector<size_t> dims(2); dims[0] = 4; dims[1] = _probot->GetActiveDOF();
     return toPyArray(vjacobian,dims);
 }
 
@@ -1559,7 +1576,7 @@ object PyRobotBase::CalculateActiveAngularVelocityJacobian(int index) const
 {
     std::vector<dReal> vjacobian;
     _probot->CalculateActiveAngularVelocityJacobian(index,vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = _probot->GetActiveDOF();
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = _probot->GetActiveDOF();
     return toPyArray(vjacobian,dims);
 }
 

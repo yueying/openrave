@@ -357,14 +357,14 @@ object toPyArray(const TransformMatrix& t)
     pvalue[15] = 1.0;
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { 4,4};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
-    pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2]; pdata[3] = t.trans.x;
-    pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
-    pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
-    pdata[12] = 0; pdata[13] = 0; pdata[14] = 0; pdata[15] = 1;
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(4, 4);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2]; pdata[3] = t.trans.x;
+	pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
+	pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
+	pdata[12] = 0; pdata[13] = 0; pdata[14] = 0; pdata[15] = 1;
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -384,12 +384,12 @@ object toPyArray(const Transform& t)
     pvalue[6] = t.trans.z;
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { 7};
-    PyObject *pyvalues = PyArray_SimpleNew(1,dims, sizeof(dReal)==8 ? NPY_DOUBLE : NPY_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA((PyArrayObject*)pyvalues);
-    pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
-    pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(7);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
+	pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -927,12 +927,15 @@ CollisionAction PyEnvironmentBase::_CollisionCallback(object fncallback, Collisi
 
 PyEnvironmentBase::PyEnvironmentBase(int options)
 {
-    if( !RaveGlobalState() ) {
+    if( !RaveGlobalState() ) 
+	{
         RaveInitialize(true);
     }
     _penv = RaveCreateEnvironment(options);
 }
-PyEnvironmentBase::PyEnvironmentBase(EnvironmentBasePtr penv) : _penv(penv) {
+PyEnvironmentBase::PyEnvironmentBase(EnvironmentBasePtr penv)
+	: _penv(penv) 
+{
 }
 
 PyEnvironmentBase::PyEnvironmentBase(const PyEnvironmentBase &pyenv)
@@ -944,10 +947,13 @@ PyEnvironmentBase::~PyEnvironmentBase()
 {
 }
 
-void PyEnvironmentBase::Reset() {
+void PyEnvironmentBase::Reset()
+{
     _penv->Reset();
 }
-void PyEnvironmentBase::Destroy() {
+
+void PyEnvironmentBase::Destroy() 
+{
     ViewerManager::GetInstance().RemoveViewersOfEnvironment(_penv);
     _penv->Destroy();
 }
@@ -1331,27 +1337,17 @@ bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPt
 object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyPtr pbody, bool bFrontFacingOnly)
 {
     object shape = rays.attr("shape");
-    const int nRays = extract<int>(shape[0]);
-    if( nRays == 0 ) {
-        return py::make_tuple(py::empty_array_astype<int>(), py::empty_array_astype<dReal>());
+    const int num = extract<int>(shape[0]);
+    if(num == 0 )
+	{
+		return py::make_tuple(py::numpy::array(py::list()), py::numpy::array(py::list()));
     }
-    if( extract<int>(shape[1]) != 6 ) {
+    if( extract<int>(shape[1]) != 6 )
+	{
         throw OpenRAVEException(_tr("rays object needs to be a Nx6 vector\n"));
     }
     CollisionReport report;
     CollisionReportPtr preport(&report,null_deleter());
-
-    PyArrayObject *pPyRays = PyArray_GETCONTIGUOUS(reinterpret_cast<PyArrayObject*>(rays.ptr()));
-    AutoPyArrayObjectDereferencer pyderef(pPyRays);
-
-    if( !PyArray_ISFLOAT(pPyRays) ) {
-        throw OpenRAVEException(_tr("rays has to be a float array\n"));
-    }
-
-    const bool isFloat = PyArray_ITEMSIZE(pPyRays) == sizeof(float); // or double
-    const float *pRaysFloat = isFloat ? reinterpret_cast<const float*>(PyArray_DATA(pPyRays)) : NULL;
-    const double *pRaysDouble = isFloat ? NULL : reinterpret_cast<const double*>(PyArray_DATA(pPyRays));
-
     RAY r;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     // position
@@ -1364,38 +1360,28 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
     py::buffer_info bufcollision = pycollision.request();
     bool* pcollision = (bool*) bufcollision.ptr;   
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { nRays,6};
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal) == sizeof(double) ? NPY_DOUBLE : NPY_FLOAT);
-    dReal* ppos = (dReal*)PyArray_DATA((PyArrayObject*)pypos);
-    std::memset(ppos, 0, nRays * sizeof(dReal));
-    PyObject* pycollision = PyArray_SimpleNew(1,dims, NPY_BOOL);
-    // numpy bool = uint8_t
-    uint8_t* pcollision = (uint8_t*)PyArray_DATA((PyArrayObject*)pycollision);
-    std::memset(pcollision, 0, nRays * sizeof(uint8_t));
+	py::tuple pypos_shape = py::make_tuple(num, 6);
+	py::numpy::ndarray pypos = py::numpy::empty(pypos_shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* ppos = (dReal*)pypos.get_data();
+	py::numpy::ndarray pycollision = py::numpy::empty(py::make_tuple(num), py::numpy::dtype::get_builtin<bool>());
+	bool* pcollision = (bool*)pycollision.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     {
         openravepy::PythonThreadSaver threadsaver;
 
-        for(int i = 0; i < nRays; ++i, ppos += 6) {
-            if (isFloat) {
-                r.pos.x = pRaysFloat[0];
-                r.pos.y = pRaysFloat[1];
-                r.pos.z = pRaysFloat[2];
-                r.dir.x = pRaysFloat[3];
-                r.dir.y = pRaysFloat[4];
-                r.dir.z = pRaysFloat[5];
-                pRaysFloat += 6;
-            } else {
-                r.pos.x = pRaysDouble[0];
-                r.pos.y = pRaysDouble[1];
-                r.pos.z = pRaysDouble[2];
-                r.dir.x = pRaysDouble[3];
-                r.dir.y = pRaysDouble[4];
-                r.dir.z = pRaysDouble[5];
-                pRaysDouble += 6;
-            }
+        for(int i = 0; i < num; ++i, ppos += 6) 
+		{
+			std::vector<dReal> ray = ExtractArray<dReal>(rays[i]);
+			r.pos.x = ray[0];
+			r.pos.y = ray[1];
+			r.pos.z = ray[2];
+			r.dir.x = ray[3];
+			r.dir.y = ray[4];
+			r.dir.z = ray[5];
 
-            const bool bCollision = pbody ? _penv->CheckCollision(r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), preport) : _penv->CheckCollision(r, preport);
+            const bool bCollision = pbody 
+				? _penv->CheckCollision(r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), preport) 
+				: _penv->CheckCollision(r, preport);
 
             if( bCollision &&( report.contacts.size() > 0) ) {
                 if( !bFrontFacingOnly ||( report.contacts[0].norm.dot3(r.dir)<0) ) {
@@ -1410,11 +1396,7 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
             }
         }
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-    return py::make_tuple(pycollision, pypos);
-#else // USE_PYBIND11_PYTHON_BINDINGS
-    return py::make_tuple(py::to_array_astype<bool>(pycollision), py::to_array_astype<dReal>(pypos));
-#endif // USE_PYBIND11_PYTHON_BINDINGS
+	return py::make_tuple(pycollision, pypos);
 }
 
 bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray)
@@ -2415,7 +2397,8 @@ py::object GetCodeStringOpenRAVEException(OpenRAVEException* p)
 OPENRAVE_PYTHON_MODULE(openravepy_int)
 {
     using namespace openravepy;
-    import_array1(); // not sure if this is necessary for pybind11
+	Py_Initialize();
+	py::numpy::initialize();
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a

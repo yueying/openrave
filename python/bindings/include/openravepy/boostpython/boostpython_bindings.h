@@ -1,7 +1,7 @@
 ﻿/// BoostPython specific bindings
 #ifndef OPENRAVE_BOOSTPYTHON_BINDINGS_H
 #define OPENRAVE_BOOSTPYTHON_BINDINGS_H
-
+#define OPENRAVE_BINDINGS_PYARRAY
 #include <boost/multi_array.hpp>
 
 #define OPENRAVEPY_API __attribute__ ((visibility ("default")))
@@ -109,22 +109,35 @@ namespace openravepy {
 #ifdef OPENRAVE_BINDINGS_PYARRAY
 
 	template <typename T>
-	inline py::numpy::ndarray toPyArrayN(const T* values, npy_intp N)
+	inline py::numpy::ndarray toPyArrayN(const T* values, size_t N)
 	{
-		py::object obj(py::handle<>((PyArray_SimpleNew(1, &N, getEnum<T>()))));
-		void *arr_data = PyArray_DATA((PyArrayObject*)obj.ptr());
-		memcpy(arr_data, values, PyArray_ITEMSIZE((PyArrayObject*)obj.ptr()) * N);
-		return py::extract<py::numpy::ndarray>(obj);
+		if (N == 0)
+		{
+			return py::numpy::array(py::list());
+		}
+		py::numpy::dtype dt = py::numpy::dtype::get_builtin<T>();
+		py::tuple shape = py::make_tuple(N);
+		py::numpy::ndarray pyarray = py::numpy::empty(shape, dt);
+		std::memcpy(pyarray.get_data(), &values[0], N * sizeof(T));
+		return pyarray;
 	}
 
 	template <typename T>
-	inline py::numpy::ndarray toPyArrayN(const T* values, std::vector<npy_intp>& dims)
+	inline py::numpy::ndarray toPyArrayN(const T* values, std::vector<size_t>& dims)
 	{
-		npy_intp total = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<npy_intp>());
-		py::object obj(py::handle<>(PyArray_SimpleNew(dims.size(), &dims[0], getEnum<T>())));
-		void *arr_data = PyArray_DATA((PyArrayObject*)obj.ptr());
-		memcpy(arr_data, values, PyArray_ITEMSIZE((PyArrayObject*)obj.ptr()) * total);
-		return py::extract<py::numpy::ndarray>(obj);
+		if (dims.empty())
+		{
+			return py::numpy::array(py::list());
+		}
+		size_t size = sizeof(T);
+		for (auto & dim : dims)
+		{
+			size *= dim;
+		}
+		py::numpy::dtype dt = py::numpy::dtype::get_builtin<T>();
+		py::numpy::ndarray pyarray = py::numpy::empty(py::tuple(dims), dt);
+		std::memcpy(pyarray.get_data(), &values[0], size);
+		return pyarray;
 	}
 
 	template <typename T>
@@ -134,7 +147,7 @@ namespace openravepy {
 	}
 
 	template <typename T>
-	inline py::numpy::ndarray toPyArray(const std::vector<T>& v, std::vector<npy_intp>& dims)
+	inline py::numpy::ndarray toPyArray(const std::vector<T>& v, std::vector<size_t>& dims)
 	{
 		if (v.empty()) {
 			return toPyArrayN((T*)nullptr, dims);
@@ -146,12 +159,6 @@ namespace openravepy {
 		BOOST_ASSERT(numel == v.size());
 		return toPyArrayN(v.data(), dims);
 	}
-
-//template <typename T, long unsigned int N>
-//inline py::numpy::ndarray toPyArray(const std::array<T, N>& v)
-//{
-//    return toPyArrayN(v.data(), N);
-//}
 
 	template <typename T, int N>
 	inline py::numpy::ndarray toPyArray(const std::array<T, N>& v)

@@ -134,9 +134,11 @@ IkSolverBasePtr PyIkSolverBase::GetIkSolver() {
 int PyIkSolverBase::GetNumFreeParameters() const {
     return _pIkSolver->GetNumFreeParameters();
 }
-object PyIkSolverBase::GetFreeParameters() const {
-    if( _pIkSolver->GetNumFreeParameters() == 0 ) {
-        return py::empty_array_astype<dReal>();
+object PyIkSolverBase::GetFreeParameters() const 
+{
+    if( _pIkSolver->GetNumFreeParameters() == 0 ) 
+	{
+		return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pIkSolver->GetFreeParameters(values);

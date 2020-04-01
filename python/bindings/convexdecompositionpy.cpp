@@ -181,7 +181,7 @@ OPENRAVE_PYTHON_MODULE(convexdecompositionpy)
 {
     import_array1();
 #ifndef USE_PYBIND11_PYTHON_BINDINGS
-    //numeric::array::set_module_and_type("numpy", "ndarray");
+	py::numpy::initialize();
     int_from_number<int>();
     float_from_number<float>();
     float_from_number<double>();
