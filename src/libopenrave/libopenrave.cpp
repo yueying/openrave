@@ -38,11 +38,9 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 
-
 #include <openrave/rave_global.h>
 #include <openrave/multi_controller_base.h>
 #include <openrave/dummy_xml_reader.h>
-
 #if OPENRAVE_LOG4CXX
 
 #include <log4cxx/layout.h>
@@ -674,7 +672,6 @@ double RaveRandomDouble(IntervalType interval)
     RaveGlobal::instance()->GetDefaultSampler()->SampleSequence(sample,1,interval);
     return double(sample.at(0));
 }
-
 
 
 

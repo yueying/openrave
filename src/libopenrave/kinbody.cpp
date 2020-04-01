@@ -4718,12 +4718,20 @@ void KinBody::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     grabbed_bodies_.resize(0);
     FOREACHC(itgrabbedref, r->grabbed_bodies_) {
         GrabbedConstPtr pgrabbedref = std::dynamic_pointer_cast<Grabbed const>(*itgrabbedref);
+        if( !pgrabbedref ) {
+            RAVELOG_WARN_FORMAT("env=%d, have uninitialized GrabbedConstPtr in _vGrabbedBodies", GetEnv()->GetId());
+            continue;
+        }
 
         KinBodyPtr pbodyref = pgrabbedref->grabbed_body_.lock();
         KinBodyPtr pgrabbedbody;
         if( !!pbodyref ) {
-            pgrabbedbody = GetEnv()->GetBodyFromEnvironmentId(pbodyref->GetEnvironmentId());
-            BOOST_ASSERT(pgrabbedbody->GetName() == pbodyref->GetName());
+            //pgrabbedbody = GetEnv()->GetBodyFromEnvironmentId(pbodyref->GetEnvironmentId());
+            pgrabbedbody = GetEnv()->GetKinBody(pbodyref->GetName());
+            if( !pgrabbedbody ) {
+                throw OPENRAVE_EXCEPTION_FORMAT(_tr("When cloning body '%s', could not find grabbed object '%s' in environmentid=%d"), GetName()%pbodyref->GetName()%pbodyref->GetEnv()->GetId(), ORE_InvalidState);
+            }
+            //BOOST_ASSERT(pgrabbedbody->GetName() == pbodyref->GetName());
 
             GrabbedPtr pgrabbed(new Grabbed(pgrabbedbody,links_vector_.at(KinBody::LinkPtr(pgrabbedref->link_robot_)->GetIndex())));
             pgrabbed->_troot = pgrabbedref->_troot;

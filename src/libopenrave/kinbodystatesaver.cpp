@@ -100,18 +100,23 @@ void KinBody::KinBodyStateSaver::_RestoreKinBody(std::shared_ptr<KinBody> pbody)
                 else {
                     // pgrabbed points to a different environment, so have to re-initialize
                     KinBodyPtr pnewbody = pbody->GetEnv()->GetBodyFromEnvironmentId(pbodygrab->GetEnvironmentId());
-                    if( pbodygrab->GetKinematicsGeometryHash() != pnewbody->GetKinematicsGeometryHash() ) {
-                        RAVELOG_WARN(str(boost::format("body %s is not similar across environments")%pbodygrab->GetName()));
+                    if( !!pnewbody ) {
+                        if( pbodygrab->GetKinematicsGeometryHash() != pnewbody->GetKinematicsGeometryHash() ) {
+                            RAVELOG_WARN_FORMAT("env=%d, body %s is not similar across environments", pbody->GetEnv()->GetId()%pbodygrab->GetName());
+                        }
+                        else {
+                        GrabbedPtr pnewgrabbed(new Grabbed(pnewbody,pbody->GetLinks().at(KinBody::LinkPtr(pgrabbed->link_robot_)->GetIndex())));
+                            pnewgrabbed->_troot = pgrabbed->_troot;
+                            pnewgrabbed->non_colliding_links_.clear();
+                            FOREACHC(itlinkref, pgrabbed->non_colliding_links_) {
+                                pnewgrabbed->non_colliding_links_.push_back(pbody->GetLinks().at((*itlinkref)->GetIndex()));
+                            }
+                            pbody->_AttachBody(pnewbody);
+                        pbody->grabbed_bodies_.push_back(pnewgrabbed);
+                        }
                     }
                     else {
-                        GrabbedPtr pnewgrabbed(new Grabbed(pnewbody,pbody->GetLinks().at(KinBody::LinkPtr(pgrabbed->link_robot_)->GetIndex())));
-                        pnewgrabbed->_troot = pgrabbed->_troot;
-                        pnewgrabbed->non_colliding_links_.clear();
-                        FOREACHC(itlinkref, pgrabbed->non_colliding_links_) {
-                            pnewgrabbed->non_colliding_links_.push_back(pbody->GetLinks().at((*itlinkref)->GetIndex()));
-                        }
-                        pbody->_AttachBody(pnewbody);
-                        pbody->grabbed_bodies_.push_back(pnewgrabbed);
+                        RAVELOG_WARN_FORMAT("env=%d, could not find body %s with id %d", pbody->GetEnv()->GetId()%pbodygrab->GetName()%pbodygrab->GetEnvironmentId());
                     }
                 }
             }

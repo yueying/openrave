@@ -17,7 +17,7 @@
 #include "libopenrave.h"
 
 #include <openrave/planningutils.h>
-
+#include <openrave/xml_readers.h>
 #include <openrave/dummy_xml_reader.h>
 #include <openrave/space_sampler_base.h>
 
@@ -62,7 +62,7 @@ std::istream& operator>>(std::istream& I, PlannerParameters& pp)
         }
 
         pp._plannerparametersdepth = 0;
-        LocalXML::ParseXMLData(pp, &vstrbuf[0], vstrbuf.size());
+        xmlreaders::ParseXMLData(pp, &vstrbuf[0], vstrbuf.size());
     }
 
     return I;
