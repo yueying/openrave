@@ -1971,29 +1971,29 @@ public:
 		{
             published_bodies_vector_.reserve(bodies_vector_.size());
         }
+        int iwritten = 0;
 
         std::vector<dReal> vdoflastsetvalues;
-        for(auto& itbody: bodies_vector_) 
-		{
-            if( itbody->hierarchy_computed_ != 2 )
-			{
+        for(int ibody = 0; ibody < (int)bodies_vector_.size(); ++ibody) {
+            const KinBodyPtr& pbody = bodies_vector_[ibody];
+            if( pbody->hierarchy_computed_ != 2 ) {
                 // skip
                 continue;
             }
 
-            published_bodies_vector_.push_back(KinBody::BodyState());
-            KinBody::BodyState& state = published_bodies_vector_.back();
-            state.pbody = itbody;
-            itbody->GetLinkTransformations(state.vectrans, vdoflastsetvalues);
-            itbody->GetLinkEnableStates(state.vLinkEnableStates);
-            itbody->GetDOFValues(state.jointvalues);
-            state.strname =itbody->GetName();
-            state.uri = itbody->GetURI();
-            state.updatestamp = itbody->GetUpdateStamp();
-            state.environmentid = itbody->GetEnvironmentId();
-            if( itbody->IsRobot() ) 
-			{
-                RobotBasePtr probot = RaveInterfaceCast<RobotBase>(itbody);
+            KinBody::BodyState& state = published_bodies_vector_[iwritten];
+            state.Reset();
+            state.pbody = pbody;
+            pbody->GetLinkTransformations(state.vectrans, vdoflastsetvalues);
+            pbody->GetLinkEnableStates(state.vLinkEnableStates);
+            pbody->GetDOFValues(state.jointvalues);
+            pbody->GetGrabbedInfo(state.vGrabbedInfos);
+            state.strname =pbody->GetName();
+            state.uri = pbody->GetURI();
+            state.updatestamp = pbody->GetUpdateStamp();
+            state.environmentid = pbody->GetEnvironmentId();
+            if( pbody->IsRobot() ) {
+                RobotBasePtr probot = RaveInterfaceCast<RobotBase>(pbody);
                 if( !!probot ) 
 				{
                     RobotBase::ManipulatorPtr pmanip = probot->GetActiveManipulator();
@@ -2005,7 +2005,11 @@ public:
                     probot->GetConnectedBodyActiveStates(state.vConnectedBodyActiveStates);
                 }
             }
-            published_bodies_vector_.push_back(state);
+            ++iwritten;
+        }
+
+        if( iwritten < published_bodies_vector_.size() ) {
+            published_bodies_vector_.resize(iwritten);
         }
     }
 

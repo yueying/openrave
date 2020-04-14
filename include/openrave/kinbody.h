@@ -1519,27 +1519,67 @@ namespace OpenRAVE
 		typedef std::shared_ptr<KinBody::Joint const> JointConstPtr;
 		typedef std::weak_ptr<KinBody::Joint> JointWeakPtr;
 
-		/// \brief Stores the state of the current body that is published in a thread safe way from the environment without requiring locking the environment.
-		class BodyState
-		{
-		public:
-			BodyState() : updatestamp(0), environmentid(0)
-			{
-			}
-			virtual ~BodyState() 
-			{
-			}
-			KinBodyPtr pbody; //!< pointer to the body. if using this, make sure the environment is locked.
-			std::vector<Transform> vectrans; //!< \see KinBody::GetLinkTransformations
-			std::vector<uint8_t> vLinkEnableStates; //!< \see KinBody::GetLinkEnableStates
-			std::vector<uint8_t> vConnectedBodyActiveStates; //!< IsActive state of ConnectedBody \see RobotBase::GetConnectedBodyActiveStates
-			std::vector<dReal> jointvalues; //!< \see KinBody::GetDOFValues
-			std::string strname;         //!< \see KinBody::GetName
-			std::string uri; //!< \see KinBody::GetURI
-			int updatestamp; //!< \see KinBody::GetUpdateStamp
-			int environmentid; //!< \see KinBody::GetEnvironmentId
-			std::string activeManipulatorName; //!< the currently active manpiulator set for the body
-			Transform activeManipulatorTransform; //!< the active manipulator's transform
+    /// \brief holds all user-set attached sensor information used to initialize the AttachedSensor class.
+    ///
+    /// This is serializable and independent of environment.
+    class OPENRAVE_API GrabbedInfo
+    {
+public:
+        /// \brief resets the info
+        inline void Reset() {
+            grabbed_name_.clear();
+            robot_link_name_.clear();
+            relative_transform_ = Transform();
+            robot_links_to_ignore_set_.clear();
+        }
+
+        std::string grabbed_name_; ///< the name of the body to grab
+        std::string robot_link_name_;  ///< the name of the body link that is grabbing the body
+        Transform relative_transform_; ///< transform of first link of body relative to _robotlinkname's transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
+        std::set<int> robot_links_to_ignore_set_; ///< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
+        virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale=1.0, int options=0) const;
+        virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale=1.0);
+    };
+    typedef std::shared_ptr<GrabbedInfo> GrabbedInfoPtr;
+    typedef std::shared_ptr<GrabbedInfo const> GrabbedInfoConstPtr;
+
+    /// \brief Stores the state of the current body that is published in a thread safe way from the environment without requiring locking the environment.
+    class BodyState
+    {
+public:
+        BodyState() : updatestamp(0), environmentid(0) {
+        }
+        virtual ~BodyState() {
+        }
+
+        /// \brief clears any previous set state
+        inline void Reset() {
+            strname.clear();
+            pbody.reset();
+            vectrans.clear();
+            vLinkEnableStates.clear();
+            vConnectedBodyActiveStates.clear();
+            jointvalues.clear();
+            uri.clear();
+            updatestamp = 0;
+            environmentid = 0;
+            activeManipulatorName.clear();
+            activeManipulatorTransform = Transform();
+            vGrabbedInfos.clear();
+        }
+
+        KinBodyPtr pbody; ///< pointer to the body. if using this, make sure the environment is locked.
+        std::string strname;         ///< \see KinBody::GetName
+        std::vector<Transform> vectrans; ///< \see KinBody::GetLinkTransformations
+        std::vector<uint8_t> vLinkEnableStates; ///< \see KinBody::GetLinkEnableStates
+        std::vector<uint8_t> vConnectedBodyActiveStates; ///< IsActive state of ConnectedBody \see RobotBase::GetConnectedBodyActiveStates
+        std::vector<dReal> jointvalues; ///< \see KinBody::GetDOFValues
+        std::string uri; ///< \see KinBody::GetURI
+        int updatestamp; ///< \see KinBody::GetUpdateStamp
+        int environmentid; ///< \see KinBody::GetEnvironmentId
+        std::string activeManipulatorName; ///< the currently active manpiulator set for the body
+        Transform activeManipulatorTransform; ///< the active manipulator's transform
+        std::vector<GrabbedInfo> vGrabbedInfos; ///< list of grabbed bodies
 		};
 		typedef std::shared_ptr<KinBody::BodyState> BodyStatePtr;
 		typedef std::shared_ptr<KinBody::BodyState const> BodyStateConstPtr;
@@ -1606,22 +1646,6 @@ namespace OpenRAVE
 			Save_ActiveManipulatorToolTransform = 0x00080000, //!< [robot only], saves the active manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
 			Save_ManipulatorsToolTransform = 0x00100000, //!< [robot only], saves every manipulator's LocalToolTransform, LocalToolDirection, and IkSolver
 		};
-
-		/// \brief holds all user-set grabbed object information used to initialize kinbody
-			///
-			/// This is serializable and independent of environment.
-		class OPENRAVE_API GrabbedInfo
-		{
-		public:
-			std::string grabbed_name_; //!< the name of the body to grab
-			std::string robot_link_name_;  //!< the name of the body link that is grabbing the body
-			Transform relative_transform_; //!< transform of first link of body relative to robot_link_name_'s transform. In other words, grabbed->GetTransform() == bodylink->GetTransform()*trelative
-			std::set<int> robot_links_to_ignore_set_; //!< links of the body to force ignoring because of pre-existing collions at the time of grabbing. Note that this changes depending on the configuration of the body and the relative position of the grabbed body.
-			virtual void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal unit_scale = 1.0, int options = 0) const;
-			virtual void DeserializeJSON(const rapidjson::Value& value, dReal unit_scale = 1.0);
-		};
-		typedef std::shared_ptr<GrabbedInfo> GrabbedInfoPtr;
-		typedef std::shared_ptr<GrabbedInfo const> GrabbedInfoConstPtr;
 
 		/// \brief Helper class to save and restore the entire kinbody state.
 		///
@@ -2543,9 +2567,15 @@ namespace OpenRAVE
 
 		/** \brief gets all grabbed bodies of the body
 
-			\param[out] vgrabbedinfo filled with the grabbed info for every body
+        \param[out] vgrabbedinfo filled with the grabbed info for every body. The pointers are newly created.
 		 */
 		virtual void GetGrabbedInfo(std::vector<GrabbedInfoPtr>& vgrabbedinfo) const;
+
+    /** \brief gets all grabbed bodies of the body
+
+        \param[out] vgrabbedinfo all the grabbed infos
+     */
+    virtual void GetGrabbedInfo(std::vector<GrabbedInfo>& vgrabbedinfo) const;
 
 		/** \brief resets the grabbed bodies of the body
 

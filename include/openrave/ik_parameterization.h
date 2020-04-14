@@ -171,81 +171,81 @@ namespace OpenRAVE
 			type_ = IKP_Transform6DVelocity; transform_ = t;
 		}
 
-		inline void SetRotation3D(const Vector& quaternion) 
+		inline void SetRotation3D(const Vector& quaternion)
 		{
 			type_ = IKP_Rotation3D; transform_.rot = quaternion;
 		}
 
-		inline void SetTranslation3D(const Vector& trans) 
+		inline void SetTranslation3D(const Vector& trans)
 		{
 			type_ = IKP_Translation3D; transform_.trans = trans;
 		}
 
-		inline void SetDirection3D(const Vector& dir) 
+		inline void SetDirection3D(const Vector& dir)
 		{
 			type_ = IKP_Direction3D; transform_.rot = dir;
 		}
 
-		inline void SetRay4D(const RAY& ray) 
+		inline void SetRay4D(const RAY& ray)
 		{
 			type_ = IKP_Ray4D; transform_.trans = ray.pos; transform_.rot = ray.dir;
 		}
 
-		inline void SetLookat3D(const Vector& trans) 
+		inline void SetLookat3D(const Vector& trans)
 		{
 			type_ = IKP_Lookat3D; transform_.trans = trans;
 		}
 
 		/// \brief the ray direction is not used for IK, however it is needed in order to compute the error
-		inline void SetLookat3D(const RAY& ray) 
+		inline void SetLookat3D(const RAY& ray)
 		{
 			type_ = IKP_Lookat3D; transform_.trans = ray.pos; transform_.rot = ray.dir;
 		}
 
-		inline void SetTranslationDirection5D(const RAY& ray) 
+		inline void SetTranslationDirection5D(const RAY& ray)
 		{
 			type_ = IKP_TranslationDirection5D; transform_.trans = ray.pos; transform_.rot = ray.dir;
 		}
 
 		inline void SetTranslationXY2D(const Vector& trans)
 		{
-			type_ = IKP_TranslationXY2D; 
-			transform_.trans.x = trans.x; 
-			transform_.trans.y = trans.y; 
-			transform_.trans.z = 0; 
+			type_ = IKP_TranslationXY2D;
+			transform_.trans.x = trans.x;
+			transform_.trans.y = trans.y;
+			transform_.trans.z = 0;
 			transform_.trans.w = 0;
 		}
 
 		inline void SetTranslationXYOrientation3D(const Vector& trans)
 		{
-			type_ = IKP_TranslationXYOrientation3D; 
-			transform_.trans.x = trans.x; 
-			transform_.trans.y = trans.y; 
-			transform_.trans.z = trans.z; 
+			type_ = IKP_TranslationXYOrientation3D;
+			transform_.trans.x = trans.x;
+			transform_.trans.y = trans.y;
+			transform_.trans.z = trans.z;
 			transform_.trans.w = 0;
 		}
 
 		inline void SetTranslationLocalGlobal6D(const Vector& localtrans, const Vector& trans)
 		{
-			type_ = IKP_TranslationLocalGlobal6D; 
-			transform_.rot.x = localtrans.x; 
-			transform_.rot.y = localtrans.y; 
-			transform_.rot.z = localtrans.z; 
-			transform_.rot.w = 0; 
-			transform_.trans.x = trans.x; 
-			transform_.trans.y = trans.y; 
-			transform_.trans.z = trans.z; 
+			type_ = IKP_TranslationLocalGlobal6D;
+			transform_.rot.x = localtrans.x;
+			transform_.rot.y = localtrans.y;
+			transform_.rot.z = localtrans.z;
+			transform_.rot.w = 0;
+			transform_.trans.x = trans.x;
+			transform_.trans.y = trans.y;
+			transform_.trans.z = trans.z;
 			transform_.trans.w = 0;
 		}
 
-		inline void SetTranslationXAxisAngle4D(const Vector& trans, dReal angle) 
+		inline void SetTranslationXAxisAngle4D(const Vector& trans, dReal angle)
 		{
 			type_ = IKP_TranslationXAxisAngle4D;
 			transform_.trans = trans;
 			transform_.rot.x = angle;
 		}
 
-		inline void SetTranslationYAxisAngle4D(const Vector& trans, dReal angle) 
+		inline void SetTranslationYAxisAngle4D(const Vector& trans, dReal angle)
 		{
 			type_ = IKP_TranslationYAxisAngle4D;
 			transform_.trans = trans;
@@ -259,48 +259,48 @@ namespace OpenRAVE
 			transform_.rot.x = angle;
 		}
 
-		inline void SetTranslationXAxisAngleZNorm4D(const Vector& trans, dReal angle) 
+		inline void SetTranslationXAxisAngleZNorm4D(const Vector& trans, dReal angle)
 		{
 			type_ = IKP_TranslationXAxisAngleZNorm4D;
 			transform_.trans = trans;
 			transform_.rot.x = angle;
 		}
 
-		inline void SetTranslationYAxisAngleXNorm4D(const Vector& trans, dReal angle) 
+		inline void SetTranslationYAxisAngleXNorm4D(const Vector& trans, dReal angle)
 		{
 			type_ = IKP_TranslationYAxisAngleXNorm4D;
 			transform_.trans = trans;
 			transform_.rot.x = angle;
 		}
 
-		inline void SetTranslationZAxisAngleYNorm4D(const Vector& trans, dReal angle) 
+		inline void SetTranslationZAxisAngleYNorm4D(const Vector& trans, dReal angle)
 		{
 			type_ = IKP_TranslationZAxisAngleYNorm4D;
 			transform_.trans = trans;
 			transform_.rot.x = angle;
 		}
 
-		inline const Transform& GetTransform6D() const 
+		inline const Transform& GetTransform6D() const
 		{
 			return transform_;
 		}
 
-		inline const Vector& GetRotation3D() const 
+		inline const Vector& GetRotation3D() const
 		{
 			return transform_.rot;
 		}
 
-		inline const Vector& GetTranslation3D() const 
+		inline const Vector& GetTranslation3D() const
 		{
 			return transform_.trans;
 		}
 
-		inline const Vector& GetDirection3D() const 
+		inline const Vector& GetDirection3D() const
 		{
 			return transform_.rot;
 		}
 
-		inline const RAY GetRay4D() const 
+		inline const RAY GetRay4D() const
 		{
 			return RAY(transform_.trans, transform_.rot);
 		}
@@ -310,22 +310,22 @@ namespace OpenRAVE
 			return transform_.trans;
 		}
 
-		inline const Vector& GetLookat3DDirection() const 
+		inline const Vector& GetLookat3DDirection() const
 		{
 			return transform_.rot;
 		}
 
-		inline const RAY GetTranslationDirection5D() const 
+		inline const RAY GetTranslationDirection5D() const
 		{
 			return RAY(transform_.trans, transform_.rot);
 		}
 
-		inline const Vector& GetTranslationXY2D() const 
+		inline const Vector& GetTranslationXY2D() const
 		{
 			return transform_.trans;
 		}
 
-		inline const Vector& GetTranslationXYOrientation3D() const 
+		inline const Vector& GetTranslationXYOrientation3D() const
 		{
 			return transform_.trans;
 		}
@@ -340,27 +340,27 @@ namespace OpenRAVE
 			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
-		inline std::pair<Vector, dReal> GetTranslationYAxisAngle4D() const 
+		inline std::pair<Vector, dReal> GetTranslationYAxisAngle4D() const
 		{
 			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
-		inline std::pair<Vector, dReal> GetTranslationZAxisAngle4D() const 
+		inline std::pair<Vector, dReal> GetTranslationZAxisAngle4D() const
 		{
 			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
-		inline std::pair<Vector, dReal> GetTranslationXAxisAngleZNorm4D() const 
+		inline std::pair<Vector, dReal> GetTranslationXAxisAngleZNorm4D() const
 		{
 			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
-		inline std::pair<Vector, dReal> GetTranslationYAxisAngleXNorm4D() const 
+		inline std::pair<Vector, dReal> GetTranslationYAxisAngleXNorm4D() const
 		{
 			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
 
-		inline std::pair<Vector, dReal> GetTranslationZAxisAngleYNorm4D() const 
+		inline std::pair<Vector, dReal> GetTranslationZAxisAngleYNorm4D() const
 		{
 			return std::make_pair(transform_.trans, transform_.rot.x);
 		}
@@ -370,9 +370,9 @@ namespace OpenRAVE
 		{
 			const dReal anglemult = 0.4;     // this is a hack that should be removed....
 			BOOST_ASSERT(type_ == ikparam.GetType());
-			switch (type_) 
+			switch (type_)
 			{
-			case IKP_Transform6D: 
+			case IKP_Transform6D:
 			{
 				Transform t0 = GetTransform6D(), t1 = ikparam.GetTransform6D();
 				dReal fcos = RaveFabs(t0.rot.dot(t1.rot));
@@ -393,7 +393,7 @@ namespace OpenRAVE
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Ray4D: 
+			case IKP_Ray4D:
 			{
 				Vector pos0 = GetRay4D().pos - GetRay4D().dir*GetRay4D().dir.dot(GetRay4D().pos);
 				Vector pos1 = ikparam.GetRay4D().pos - ikparam.GetRay4D().dir*ikparam.GetRay4D().dir.dot(ikparam.GetRay4D().pos);
@@ -405,7 +405,7 @@ namespace OpenRAVE
 			{
 				Vector v = GetLookat3D() - ikparam.GetLookat3D();
 				dReal s = v.dot3(ikparam.GetLookat3DDirection());
-				if (s >= -1) 
+				if (s >= -1)
 				{     // ikparam's lookat is always 1 beyond the origin, this is just the convention for testing...
 					v -= s * ikparam.GetLookat3DDirection();
 				}
@@ -417,11 +417,11 @@ namespace OpenRAVE
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return (GetTranslationDirection5D().pos - ikparam.GetTranslationDirection5D().pos).lengthsqr3() + anglemult * facos*facos;
 			}
-			case IKP_TranslationXY2D: 
+			case IKP_TranslationXY2D:
 			{
 				return (GetTranslationXY2D() - ikparam.GetTranslationXY2D()).lengthsqr2();
 			}
-			case IKP_TranslationXYOrientation3D: 
+			case IKP_TranslationXYOrientation3D:
 			{
 				Vector v0 = GetTranslationXYOrientation3D();
 				Vector v1 = ikparam.GetTranslationXYOrientation3D();
@@ -432,7 +432,7 @@ namespace OpenRAVE
 					while (anglediff < dReal(-PI))
 						anglediff += dReal(2 * PI);
 				}
-				else if (anglediff > dReal(PI)) 
+				else if (anglediff > dReal(PI))
 				{
 					anglediff -= dReal(2 * PI);
 					while (anglediff > dReal(PI))
@@ -445,7 +445,7 @@ namespace OpenRAVE
 				std::pair<Vector, Vector> p0 = GetTranslationLocalGlobal6D(), p1 = ikparam.GetTranslationLocalGlobal6D();
 				return (p0.first - p1.first).lengthsqr3() + (p0.second - p1.second).lengthsqr3();
 			}
-			case IKP_TranslationXAxisAngle4D: 
+			case IKP_TranslationXAxisAngle4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationXAxisAngle4D(), p1 = ikparam.GetTranslationXAxisAngle4D();
 				// dot product with axis is always in [0,pi]
@@ -461,7 +461,7 @@ namespace OpenRAVE
 				dReal angle1 = RaveFabs(NormalizeCircularAnglePrivate(p1.second, -PI, PI));
 				return (p0.first - p1.first).lengthsqr3() + (angle0 - angle1)*(angle0 - angle1);
 			}
-			case IKP_TranslationZAxisAngle4D: 
+			case IKP_TranslationZAxisAngle4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationZAxisAngle4D(), p1 = ikparam.GetTranslationZAxisAngle4D();
 				// dot product with axis is always in [0,pi]
@@ -469,13 +469,13 @@ namespace OpenRAVE
 				dReal angle1 = RaveFabs(NormalizeCircularAnglePrivate(p1.second, -PI, PI));
 				return (p0.first - p1.first).lengthsqr3() + (angle0 - angle1)*(angle0 - angle1);
 			}
-			case IKP_TranslationXAxisAngleZNorm4D: 
+			case IKP_TranslationXAxisAngleZNorm4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationXAxisAngleZNorm4D(), p1 = ikparam.GetTranslationXAxisAngleZNorm4D();
 				dReal anglediff = NormalizeCircularAnglePrivate(p0.second - p1.second, -PI, PI);
 				return (p0.first - p1.first).lengthsqr3() + anglediff * anglediff;
 			}
-			case IKP_TranslationYAxisAngleXNorm4D: 
+			case IKP_TranslationYAxisAngleXNorm4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationYAxisAngleXNorm4D(), p1 = ikparam.GetTranslationYAxisAngleXNorm4D();
 				dReal anglediff = NormalizeCircularAnglePrivate(p0.second - p1.second, -PI, PI);
@@ -497,7 +497,7 @@ namespace OpenRAVE
 		inline dReal ComputeTransDistanceSqr(const IkParameterization& ikparam) const
 		{
 			BOOST_ASSERT(type_ == ikparam.GetType());
-			switch (type_) 
+			switch (type_)
 			{
 			case IKP_Transform6D:
 			{
@@ -505,7 +505,7 @@ namespace OpenRAVE
 			}
 			case IKP_Translation3D:
 				return (GetTranslation3D() - ikparam.GetTranslation3D()).lengthsqr3();
-			case IKP_Ray4D: 
+			case IKP_Ray4D:
 			{
 				Vector pos0 = GetRay4D().pos - GetRay4D().dir*GetRay4D().dir.dot(GetRay4D().pos);
 				Vector pos1 = ikparam.GetRay4D().pos - ikparam.GetRay4D().dir*ikparam.GetRay4D().dir.dot(ikparam.GetRay4D().pos);
@@ -519,23 +519,23 @@ namespace OpenRAVE
 			{
 				return (GetTranslationXY2D() - ikparam.GetTranslationXY2D()).lengthsqr2();
 			}
-			case IKP_TranslationXYOrientation3D: 
+			case IKP_TranslationXYOrientation3D:
 			{
 				Vector v0 = GetTranslationXYOrientation3D();
 				Vector v1 = ikparam.GetTranslationXYOrientation3D();
 				return (v0 - v1).lengthsqr2();
 			}
-			case IKP_TranslationLocalGlobal6D: 
+			case IKP_TranslationLocalGlobal6D:
 			{
 				std::pair<Vector, Vector> p0 = GetTranslationLocalGlobal6D(), p1 = ikparam.GetTranslationLocalGlobal6D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationXAxisAngle4D: 
+			case IKP_TranslationXAxisAngle4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationXAxisAngle4D(), p1 = ikparam.GetTranslationXAxisAngle4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationYAxisAngle4D: 
+			case IKP_TranslationYAxisAngle4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationYAxisAngle4D(), p1 = ikparam.GetTranslationYAxisAngle4D();
 				return (p0.first - p1.first).lengthsqr3();
@@ -545,17 +545,17 @@ namespace OpenRAVE
 				std::pair<Vector, dReal> p0 = GetTranslationZAxisAngle4D(), p1 = ikparam.GetTranslationZAxisAngle4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationXAxisAngleZNorm4D: 
+			case IKP_TranslationXAxisAngleZNorm4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationXAxisAngleZNorm4D(), p1 = ikparam.GetTranslationXAxisAngleZNorm4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationYAxisAngleXNorm4D: 
+			case IKP_TranslationYAxisAngleXNorm4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationYAxisAngleXNorm4D(), p1 = ikparam.GetTranslationYAxisAngleXNorm4D();
 				return (p0.first - p1.first).lengthsqr3();
 			}
-			case IKP_TranslationZAxisAngleYNorm4D: 
+			case IKP_TranslationZAxisAngleYNorm4D:
 			{
 				std::pair<Vector, dReal> p0 = GetTranslationZAxisAngleYNorm4D(), p1 = ikparam.GetTranslationZAxisAngleYNorm4D();
 				return (p0.first - p1.first).lengthsqr3();
@@ -570,44 +570,44 @@ namespace OpenRAVE
 		inline dReal ComputeRotDistanceSqr(const IkParameterization& ikparam) const
 		{
 			BOOST_ASSERT(type_ == ikparam.GetType());
-			switch (type_) 
+			switch (type_)
 			{
-			case IKP_Transform6D: 
+			case IKP_Transform6D:
 			{
 				Transform t0 = GetTransform6D(), t1 = ikparam.GetTransform6D();
 				dReal fcos = RaveFabs(t0.rot.dot(t1.rot));
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Rotation3D: 
+			case IKP_Rotation3D:
 			{
 				dReal fcos = RaveFabs(GetRotation3D().dot(ikparam.GetRotation3D()));
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Direction3D: 
+			case IKP_Direction3D:
 			{
 				dReal fcos = GetDirection3D().dot(ikparam.GetDirection3D());
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Ray4D: 
+			case IKP_Ray4D:
 			{
 				dReal fcos = GetRay4D().dir.dot(ikparam.GetRay4D().dir);
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
 				return facos * facos;
 			}
-			case IKP_Lookat3D: 
+			case IKP_Lookat3D:
 			{
 				Vector v = GetLookat3D() - ikparam.GetLookat3D();
 				dReal s = v.dot3(ikparam.GetLookat3DDirection());
-				if (s >= -1) 
+				if (s >= -1)
 				{     // ikparam's lookat is always 1 beyond the origin, this is just the convention for testing...
 					v -= s * ikparam.GetLookat3DDirection();
 				}
 				return v.lengthsqr3();
 			}
-			case IKP_TranslationDirection5D: 
+			case IKP_TranslationDirection5D:
 			{
 				dReal fcos = GetTranslationDirection5D().dir.dot(ikparam.GetTranslationDirection5D().dir);
 				dReal facos = fcos >= 1 ? 0 : RaveAcos(fcos);
@@ -849,7 +849,7 @@ namespace OpenRAVE
 			}
 		}
 
-		inline void Set(std::vector<dReal>::const_iterator itvalues, IkParameterizationType iktype) 
+		inline void Set(std::vector<dReal>::const_iterator itvalues, IkParameterizationType iktype)
 		{
 			SetValues(itvalues, iktype);
 		}
@@ -885,11 +885,22 @@ namespace OpenRAVE
 			custom_data_map_[name][0] = value;
 		}
 
+		/// \brief sets named custom data in the ik parameterization (\see SetCustomValues)
+		inline void SetCustomValue(const std::string& name, dReal value0, dReal value1, dReal value2)
+		{
+			OPENRAVE_ASSERT_OP_FORMAT0(name.size(), > , 0, "name is empty", ORE_InvalidArguments);
+			OPENRAVE_ASSERT_OP_FORMAT0(std::count_if(name.begin(), name.end(), _IsValidCharInName), == , (int)name.size(), "name has invalid characters", ORE_InvalidArguments);
+			custom_data_map_[name].resize(3);
+			custom_data_map_[name][0] = value0;
+			custom_data_map_[name][1] = value1;
+			custom_data_map_[name][2] = value2;
+		}
+
 		/// \brief gets custom data if it exists, returns false if it doesn't
 		inline bool GetCustomValues(const std::string& name, std::vector<dReal>& values) const
 		{
 			std::map<std::string, std::vector<dReal> >::const_iterator it = custom_data_map_.find(name);
-			if (it == custom_data_map_.end()) 
+			if (it == custom_data_map_.end())
 			{
 				return false;
 			}
@@ -901,7 +912,7 @@ namespace OpenRAVE
 		inline dReal GetCustomValue(const std::string& name, dReal defaultValue) const
 		{
 			std::map<std::string, std::vector<dReal> >::const_iterator it = custom_data_map_.find(name);
-			if (it != custom_data_map_.end() && it->second.size() > 0) 
+			if (it != custom_data_map_.end() && it->second.size() > 0)
 			{
 				return it->second[0];
 			}
@@ -920,11 +931,11 @@ namespace OpenRAVE
 		/// \return number of elements erased
 		inline size_t ClearCustomValues(const std::string& name = std::string())
 		{
-			if (name.size() > 0) 
+			if (name.size() > 0)
 			{
 				return custom_data_map_.erase(name) > 0;
 			}
-			else 
+			else
 			{
 				size_t num = custom_data_map_.size();
 				custom_data_map_.clear();
@@ -932,10 +943,10 @@ namespace OpenRAVE
 			}
 		}
 
-		static ConfigurationSpecification GetConfigurationSpecification(IkParameterizationType iktype, 
+		static ConfigurationSpecification GetConfigurationSpecification(IkParameterizationType iktype,
 			const std::string& interpolation = "", const std::string& robotname = "", const std::string& manipname = "");
 
-		inline ConfigurationSpecification GetConfigurationSpecification(const std::string& interpolation = "", 
+		inline ConfigurationSpecification GetConfigurationSpecification(const std::string& interpolation = "",
 			const std::string& robotname = "", const std::string& manipname = "") const
 		{
 			return GetConfigurationSpecification(GetType(), interpolation, robotname, manipname);
@@ -1262,13 +1273,13 @@ namespace OpenRAVE
 			custom_data_map_.swap(r.custom_data_map_);
 		}
 
-		void SerializeJSON(rapidjson::Value& rIkParameterization, 
+		void SerializeJSON(rapidjson::Value& rIkParameterization,
 			rapidjson::Document::AllocatorType& alloc, dReal fUnitScale) const;
 
 		void DeserializeJSON(const rapidjson::Value& rIkParameterization, dReal fUnitScale);
 
 	protected:
-		inline static bool _IsValidCharInName(char c) 
+		inline static bool _IsValidCharInName(char c)
 		{
 			return c < 0 || c >= 33;
 		}
