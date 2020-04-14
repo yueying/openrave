@@ -86,7 +86,7 @@ namespace OpenRAVE
 					database->registered_interfaces_list_.erase(_iterator);
 				}
 			}
-
+			
 			InterfaceType type_;
 			std::string name_;
 			boost::function<InterfaceBasePtr(EnvironmentBasePtr, std::istream&)> _createfn;
@@ -506,6 +506,18 @@ namespace OpenRAVE
 			if (pOPENRAVE_PLUGINS != NULL) 
 			{
 				utils::TokenizeString(pOPENRAVE_PLUGINS, delim, vplugindirs);
+			}
+			for (int iplugindir = vplugindirs.size() - 1; iplugindir > 0; iplugindir--) 
+			{
+				int jplugindir = 0;
+				for (; jplugindir < iplugindir; jplugindir++) {
+					if (vplugindirs[iplugindir] == vplugindirs[jplugindir]) {
+						break;
+					}
+				}
+				if (jplugindir < iplugindir) {
+					vplugindirs.erase(vplugindirs.begin() + iplugindir);
+				}
 			}
 			bool is_exists = false;
 			std::string installdir = OPENRAVE_PLUGINS_INSTALL_DIR;

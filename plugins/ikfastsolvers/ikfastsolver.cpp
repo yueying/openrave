@@ -1921,16 +1921,20 @@ protected:
                     }
                     state_check.ResetCheckEndEffectorEnvCollision();
                 }
-                else if( paramnewglobal.GetType() == IKP_TranslationDirection5D ) {
+                else if( paramnewglobal.GetType() == IKP_TranslationDirection5D ) 
+				{
                     int colliding = state_check.IsCollidingEndEffector(manip->GetTransform());
-                    if( colliding == 1 ) {
+                    if( colliding == 1 ) 
+					{
                         // end effector could change depending on the solution
                         return static_cast<IkReturnAction>(retactionall|IKRA_RejectEnvCollision); // stop the search
                     }
                 }
             }
-            if( GetEnv()->CheckCollision(KinBodyConstPtr(robot), ptempreport) ) {
-                if( paramnewglobal.GetType() == IKP_TranslationDirection5D ) {
+            if( GetEnv()->CheckCollision(KinBodyConstPtr(robot), ptempreport) )
+			{
+                if( paramnewglobal.GetType() == IKP_TranslationDirection5D ) 
+				{
                     // colliding and 5d,so check if colliding with end effector. If yes, then register as part of the state_check
                     bool bIsEndEffectorCollision = false;
                     FOREACHC(itcollidingpairs, ptempreport->vLinkColliding) {

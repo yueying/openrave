@@ -3123,23 +3123,25 @@ void QtCoinViewer::_UpdateCameraTransform(float fTimeElapsed)
 	GetCamera()->orientation.getValue(axis, fangle);
 	_Tcamera.rot = quatFromAxisAngle(RaveVector<float>(axis[0], axis[1], axis[2]), fangle);
 
-	if (fTimeElapsed > 0) {
+	if (fTimeElapsed > 0) 
+	{
 		// animate the camera if necessary
-		bool bTracking = false;
+		bool is_tracking = false;
 		Transform tTrack;
 		KinBody::LinkPtr ptrackinglink = _ptrackinglink;
-		if (!!ptrackinglink) {
-			bTracking = true;
+		if (!!ptrackinglink) 
+		{
+			is_tracking = true;
 			tTrack = ptrackinglink->GetTransform()*_tTrackingLinkRelative;
 			//tTrack.trans = ptrackinglink->ComputeAABB().pos;
 		}
 		RobotBase::ManipulatorPtr ptrackingmanip = _ptrackingmanip;
 		if (!!ptrackingmanip) {
-			bTracking = true;
+			is_tracking = true;
 			tTrack = ptrackingmanip->GetTransform();
 		}
 
-		if (bTracking) {
+		if (is_tracking) {
 			RaveVector<float> vup(0, 0, 1); // up vector that camera should always be oriented to
 			RaveVector<float> vlookatdir = _Tcamera.trans - tTrack.trans;
 			vlookatdir -= vup * vup.dot3(vlookatdir);
