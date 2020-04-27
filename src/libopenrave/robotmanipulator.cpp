@@ -28,6 +28,7 @@ void RobotBase::ManipulatorInfo::SerializeJSON(rapidjson::Value& value, rapidjso
     openravejson::SetJsonValueByKey(value, "chuckingDirections", chucking_direction_vector_, allocator);
     openravejson::SetJsonValueByKey(value, "direction", direction_, allocator);
     openravejson::SetJsonValueByKey(value, "baseLinkName", base_link_name_, allocator);
+    openravejson::SetJsonValueByKey(value, "gripperid", _gripperid, allocator);
     openravejson::SetJsonValueByKey(value, "effectorLinkName", effector_link_name_, allocator);
     openravejson::SetJsonValueByKey(value, "ikSolverType", ik_solver_xml_id_, allocator);
     openravejson::SetJsonValueByKey(value, "gripperJointNames", gripper_joint_names_vector_, allocator);
@@ -43,6 +44,7 @@ void RobotBase::ManipulatorInfo::DeserializeJSON(const rapidjson::Value& value, 
     openravejson::LoadJsonValueByKey(value, "effectorLinkName", effector_link_name_);
     openravejson::LoadJsonValueByKey(value, "iksolverType", ik_solver_xml_id_);
     openravejson::LoadJsonValueByKey(value, "gripperJointNames", gripper_joint_names_vector_);
+    openravejson::LoadJsonValueByKey(value, "gripperid", _gripperid);
 }
 
 RobotBase::Manipulator::Manipulator(RobotBasePtr probot, const RobotBase::ManipulatorInfo& info) 

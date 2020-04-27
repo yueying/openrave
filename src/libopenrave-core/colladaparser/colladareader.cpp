@@ -17,6 +17,7 @@
 #include "colladacommon.h"
 #include <boost/algorithm/string.hpp>
 #include <openrave/xml_readers.h>
+#include <openrave/openravejson.h>
 #include <libxml/xmlversion.h>
 #include <openrave/openrave_macros.h>
 
@@ -274,7 +275,7 @@ namespace OpenRAVE
 		};
 
 	public:
-		ColladaReader(EnvironmentBasePtr penv, bool bResetGlobalDae = true, bool bExtractConnectedBodies = true) : _dom(NULL), environment_(penv), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0),
+		ColladaReader(EnvironmentBasePtr penv, bool bResetGlobalDae = true, bool bExtractConnectedBodies = true) : _dom(NULL), environment_(penv), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0), _nGlobalGripperInfoId(0),
 			_bResetGlobalDae(bResetGlobalDae)
 		{
 			daeErrorHandler::setErrorHandler(this);
@@ -404,7 +405,7 @@ namespace OpenRAVE
 					openrave_scheme_aliases_vector_ = std::vector<std::string>((std::istream_iterator<std::string>(ss)),
 						std::istream_iterator<std::string>());
 				}
-				else if (itatt.first == "uripassword") 
+				else if (itatt.first == "uripassword")
 				{
 					size_t passwordindex = itatt.second.find_last_of(' ');
 					if (passwordindex != std::string::npos)
@@ -415,11 +416,11 @@ namespace OpenRAVE
 						boost::trim(password);
 					}
 				}
-				else if (itatt.first == "scalegeometry") 
+				else if (itatt.first == "scalegeometry")
 				{
 
 				}
-				else if (itatt.first == "readoptions") 
+				else if (itatt.first == "readoptions")
 				{
 					std::stringstream ss(itatt.second);
 					std::list<std::string> newelts((std::istream_iterator<std::string>(ss)),
@@ -427,7 +428,7 @@ namespace OpenRAVE
 					is_read_geometry_groups_ = std::find(newelts.begin(), newelts.end(), "bind_instance_geometry")
 						!= newelts.end();
 				}
-				else 
+				else
 				{
 					//RAVELOG_WARN(str(boost::format("collada reader unprocessed attribute pair: %s:%s")%itatt->first%itatt->second));
 					if (!!dae_->getIOPlugin())
@@ -437,11 +438,11 @@ namespace OpenRAVE
 				}
 			}
 
-			if (openrave_scheme_aliases_vector_.size() == 0) 
+			if (openrave_scheme_aliases_vector_.size() == 0)
 			{
 				openrave_scheme_aliases_vector_.push_back("openrave");
 			}
-			for(auto itname: openrave_scheme_aliases_vector_)
+			for (auto itname : openrave_scheme_aliases_vector_)
 			{
 				dae_->getURIResolvers().list().prepend(new daeOpenRAVEURIResolver(*dae_, itname, this));
 			}
@@ -831,6 +832,9 @@ namespace OpenRAVE
 				FOREACH(itsensor, probot->attached_sensors_vector_) {
 					_setInitialSensors.insert(*itsensor);
 				}
+				FOREACH(itGripperInfo, probot->_vecGripperInfos) {
+					_setInitialGripperInfos.insert(*itGripperInfo);
+				}
 			}
 
 			// parse each instance kinematics scene, prioritize robots
@@ -872,7 +876,8 @@ namespace OpenRAVE
 				FOREACH(it, listPossibleBodies) {
 					if (articulatedSystemId.size() > 0) {
 						xsAnyURI articulatedSystemURI = it->first->getUrl();
-						if (articulatedSystemURI.getReferencedDocument() != _dom->getDocument() || articulatedSystemURI.fragment() != articulatedSystemId) {
+						if (articulatedSystemURI.getReferencedDocument() != _dom->getDocument()
+							|| articulatedSystemURI.fragment() != articulatedSystemId) {
 							continue;
 						}
 					}
@@ -900,6 +905,11 @@ namespace OpenRAVE
 					FOREACH(itsensor, probot->attached_sensors_vector_) {
 						if (_setInitialSensors.find(*itsensor) == _setInitialSensors.end()) {
 							(*itsensor)->info_.name_ = prefix_ + (*itsensor)->info_.name_;
+						}
+					}
+					FOREACH(itGripperInfo, probot->_vecGripperInfos) {
+						if (_setInitialGripperInfos.find(*itGripperInfo) == _setInitialGripperInfos.end()) {
+							(*itGripperInfo)->gripperid = prefix_ + (*itGripperInfo)->gripperid;
 						}
 					}
 				}
@@ -1321,6 +1331,7 @@ namespace OpenRAVE
 				ExtractRobotManipulators(probot, articulated_system->getExtra_array(), articulated_system, bindings);
 				ExtractRobotManipulators(probot, ias->getExtra_array(), articulated_system, bindings); // have to also read from the instance_articulated_system!
 				ExtractRobotAttachedSensors(probot, articulated_system, bindings);
+				ExtractRobotGripperInfos(probot, articulated_system, bindings);
 				ExtractRobotAttachedActuators(probot, articulated_system, bindings);
 				if (_bExtractConnectedBodies) {
 					ExtractRobotConnectedBodies(probot, articulated_system);
@@ -3254,7 +3265,6 @@ namespace OpenRAVE
 						RobotBase::ManipulatorInfo manipinfo;
 						manipinfo.name_ = _ConvertToOpenRAVEName(name);
 						daeElementRef pframe_origin = tec->getChild("frame_origin");
-						daeElementRef pframe_tip = tec->getChild("frame_tip");
 						if (!!pframe_origin) {
 							domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
 							if (!!pdomlink) {
@@ -3271,6 +3281,16 @@ namespace OpenRAVE
 								continue;
 							}
 						}
+
+						daeElementRef pgripperid = tec->getChild("gripperid");
+						if (!!pgripperid) {
+							manipinfo._gripperid = pgripperid->getCharData();
+						}
+						else {
+							manipinfo._gripperid.clear();
+						}
+
+						daeElementRef pframe_tip = tec->getChild("frame_tip");
 						if (!!pframe_tip) {
 							domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_tip->getAttribute("link"), as).resolve().elt);
 							if (!!pdomlink) {
@@ -3347,7 +3367,7 @@ namespace OpenRAVE
 									}
 								}
 							}
-							else if ((pmanipchild->getElementName() != string("frame_origin")) && (pmanipchild->getElementName() != string("frame_tip"))) {
+							else if ((pmanipchild->getElementName() != string("frame_origin")) && (pmanipchild->getElementName() != string("frame_tip")) && (pmanipchild->getElementName() != string("gripperid"))) {
 								RAVELOG_WARN(str(boost::format("unrecognized tag <%s> in manipulator '%s'") % pmanipchild->getElementName() % manipinfo.name_));
 							}
 						}
@@ -3444,6 +3464,40 @@ namespace OpenRAVE
 					}
 				}
 				pattachedsensor->UpdateInfo(); // need to update the info_ struct with the latest values
+			}
+		}
+
+		/// \brief Extract Sensors attached to a Robot
+		void ExtractRobotGripperInfos(RobotBasePtr probot, const domArticulated_systemRef as, const KinematicsSceneBindings& bindings)
+		{
+			for (size_t ie = 0; ie < as->getExtra_array().getCount(); ie++) {
+				domExtraRef pextra = as->getExtra_array()[ie];
+				if (!pextra->getType()) {
+					continue;
+				}
+				if (strcmp(pextra->getType(), "gripper_info") == 0) {
+					string gripperid = pextra->getAttribute("name");
+					if (gripperid.size() == 0) {
+						gripperid = str(boost::format("gripper%d") % _nGlobalGripperInfoId++);
+					}
+					domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
+					if (!!tec) {
+						RobotBase::GripperInfoPtr pGripperInfo(new RobotBase::GripperInfo());
+						pGripperInfo->gripperid = _ConvertToOpenRAVEName(gripperid);
+
+						daeElementRef pjson_data = tec->getChild("json_data");
+						if (!!pjson_data) {
+							rapidjson::Document rGripperInfo;
+							openravejson::ParseJson(rGripperInfo, pjson_data->getCharData());
+							dReal fUnitScale = 1.0;
+							pGripperInfo->DeserializeJSON(rGripperInfo, fUnitScale);
+							probot->_vecGripperInfos.push_back(pGripperInfo);
+						}
+					}
+					else {
+						RAVELOG_WARN(str(boost::format("cannot create robot %s gripperInfo %s\n") % probot->GetName() % gripperid));
+					}
+				}
 			}
 		}
 
@@ -5566,7 +5620,7 @@ namespace OpenRAVE
 		std::map<KinBody::JointPtr, std::vector<dReal> > _mapJointUnits;
 		std::map<std::string, KinBody::JointPtr> _mapJointSids;
 		string prefix_;
-		int _nGlobalSensorId, _nGlobalManipulatorId, _nGlobalIndex;
+		int _nGlobalSensorId, _nGlobalManipulatorId, _nGlobalIndex, _nGlobalGripperInfoId;
 		bool _bResetGlobalDae;  //!< Global Dae will be reset in destructor if true. have to manually reset if set to false
 		std::string _filename;
 		std::set<KinBody::LinkPtr> _setInitialLinks;
@@ -5574,6 +5628,7 @@ namespace OpenRAVE
 		std::set<RobotBase::ManipulatorPtr> _setInitialManipulators;
 		std::set<RobotBase::AttachedSensorPtr> _setInitialSensors;
 		std::vector<std::string> openrave_scheme_aliases_vector_;
+		std::set<RobotBase::GripperInfoPtr> _setInitialGripperInfos;
 		std::map<std::string, daeURI> _mapInverseResolvedURIList; //!< holds a list of inverse resolved relationships file:// -> openrave://
 		std::map<domNodeRef, std::pair<domInstance_nodeRef, std::string> > instantiated_nodes_map_; //!< holds a map of the instantiated (cloned) node and the original instance_node elements. Also contains the idsuffix used to instantiate the node.
 

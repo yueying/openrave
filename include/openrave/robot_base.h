@@ -63,9 +63,26 @@ namespace OpenRAVE
 			Vector direction_;
 			std::string ik_solver_xml_id_; //!< xml id of the IkSolver interface to attach
 			std::vector<std::string> gripper_joint_names_vector_; //!< names of the gripper joints
+			std::string _gripperid; ///< associates the manipulator with a GripperInfo
 		};
 		typedef std::shared_ptr<ManipulatorInfo> ManipulatorInfoPtr;
 		typedef std::shared_ptr<ManipulatorInfo const> ManipulatorInfoConstPtr;
+
+		/// \brief Holds the definition of a gripper that can be mounted on the robot.
+		class OPENRAVE_API GripperInfo
+		{
+		public:
+			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
+			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
+
+			std::string gripperid; ///< unique gripperid
+			std::string grippertype; ///< gripper type
+			std::vector<std::string> gripperJointNames; ///< names of the gripper joints
+
+			std::shared_ptr<rapidjson::Document> _pdocument;  ///< contains entire rapid json document to hold custom parameters
+		};
+		typedef std::shared_ptr<GripperInfo> GripperInfoPtr;
+		typedef std::shared_ptr<GripperInfo const> GripperInfoConstPtr;
 
 		/// \brief Defines a chain of joints for an arm and set of joints for a gripper. Simplifies operating with them.
 		class OPENRAVE_API Manipulator : public std::enable_shared_from_this<Manipulator>
@@ -139,6 +156,10 @@ namespace OpenRAVE
 			virtual LinkPtr GetEndEffector() const
 			{
 				return effector_link_;
+			}
+
+			virtual std::string GetGripperId() const {
+				return info_._gripperid;
 			}
 
 			/// \brief Release all bodies grabbed by the end effector of this manipualtor
@@ -600,6 +621,7 @@ namespace OpenRAVE
 			std::vector<KinBody::JointInfoPtr> joint_infos_vector_; //!< extracted joint infos (inluding passive) representing the connected body. The names are the original "desired" names.
 			std::vector<RobotBase::ManipulatorInfoPtr> manipulator_infos_vector_; //!< extracted manip infos representing the connected body. The names are the original "desired" names.
 			std::vector<RobotBase::AttachedSensorInfoPtr> attached_sensor_infos_vector_; //!< extracted sensor infos representing the connected body. The names are the original "desired" names.
+			std::vector<RobotBase::GripperInfoPtr> _vGripperInfos; ///< extracted gripper infos representing the connected body. The names are the original "desired" names.
 			bool is_active_; //!< if true, then add the connected body. Otherwise do not add it.
 		};
 		typedef std::shared_ptr<ConnectedBodyInfo> ConnectedBodyInfoPtr;
@@ -647,6 +669,11 @@ namespace OpenRAVE
 			///
 			/// Has one-to-one correspondence with info_.attached_sensor_infos_vector_
 			virtual void GetResolvedAttachedSensors(std::vector<RobotBase::AttachedSensorPtr>& attachedsensors);
+
+			/// \brief gets the resolved gripper infos added to the robot.
+			///
+			/// Has one-to-one correspondence with _info._vGripperInfos
+			virtual void GetResolvedGripperInfos(std::vector<RobotBase::GripperInfoPtr>& gripperInfos);
 
 			virtual LinkPtr GetAttachingLink() const
 			{
@@ -704,7 +731,7 @@ namespace OpenRAVE
 			std::vector<std::pair<std::string, RobotBase::JointPtr>> _vResolvedJointNames; //!< for every entry in info_.joint_infos_vector_, the resolved link names. Also serves as cache for pointers.
 			std::vector<std::pair<std::string, RobotBase::ManipulatorPtr>> _vResolvedManipulatorNames; //!< for every entry in info_._vManipInfos. Also serves as cache for pointers
 			std::vector<std::pair<std::string, RobotBase::AttachedSensorPtr>> _vResolvedAttachedSensorNames; //!< for every entry in info_._vAttachedSensorResolvedNames. Also serves as cache for pointers
-
+			std::vector< std::pair<std::string, RobotBase::GripperInfoPtr> > _vResolvedGripperInfoNames; ///< for every entry in _info._vGripperInfos. Also serves as cache for pointers
 			RobotBaseWeakPtr attached_robot_; //!< the robot that the body is attached to
 			LinkWeakPtr _pattachedlink; //!< the robot link that the body is attached to
 			mutable std::string __hashstructure;
@@ -788,6 +815,13 @@ namespace OpenRAVE
 		{
 			return connected_bodies_vector_;
 		}
+
+		virtual const std::vector<GripperInfoPtr>& GetGripperInfos() const {
+			return _vecGripperInfos;
+		}
+
+		/// \brief Returns a GriperInfo that matches with gripperid
+		virtual GripperInfoPtr GetGripperInfo(const std::string& gripperid) const;
 
 		// \brief gets the active states of all connected bodies
 		virtual void GetConnectedBodyActiveStates(std::vector<uint8_t>& activestates) const;
@@ -1041,6 +1075,15 @@ namespace OpenRAVE
 		/// Will change the robot structure hash..
 		virtual bool RemoveConnectedBody(RobotBase::ConnectedBody& connectedBody);
 
+		/// \brief adds a GripperInfo to the list
+	///
+	/// \throw openrave_exception If removeduplicate is false and there exists a manipulator with the same gripperid, will throw an exception
+	/// \return true if added a new gripper
+		virtual bool AddGripperInfo(GripperInfoPtr gripperinfo, bool removeduplicate = false);
+
+		/// \brief removes a gripper from the robot list. if successful, returns true
+		virtual bool RemoveGripperInfo(const std::string& gripperid);
+
 		/** \brief Calculates the translation jacobian with respect to a link.
 
 			Calculates the partial differentials for the active degrees of freedom that in the path from the root node to _veclinks[index]
@@ -1180,7 +1223,7 @@ namespace OpenRAVE
 		std::vector<AttachedSensorPtr> attached_sensors_vector_; //!< \see GetAttachedSensors
 
 		std::vector<ConnectedBodyPtr> connected_bodies_vector_; //!< \see GetConnectedBodies
-
+		std::vector<GripperInfoPtr> _vecGripperInfos; /// \see GetGripperInfos
 		std::vector<int> active_dof_indices_vector_, all_dof_indices_vector_;
 		Vector vActvAffineRotationAxis;
 		int active_dof_; //!< Active degrees of freedom; if -1, use robot dofs
@@ -1226,8 +1269,8 @@ namespace OpenRAVE
 		friend class ColladaReader;
 		friend class PluginDatabase;
 		friend class Grabbed;
-		};
+	};
 
-	} // end namespace OpenRAVE
+} // end namespace OpenRAVE
 
 #endif // ROBOT_H
