@@ -29,14 +29,24 @@ namespace OpenRAVE {
 			BOOST_ASSERT(_pdocument->IsObject());
 			value.CopyFrom(*_pdocument, allocator, true);
 		}
-		openravejson::SetJsonValueByKey(value, "id", gripperid, allocator);
+		openravejson::SetJsonValueByKey(value, "name", name, allocator);
 		openravejson::SetJsonValueByKey(value, "grippertype", grippertype, allocator);
 		openravejson::SetJsonValueByKey(value, "gripperJointNames", gripperJointNames, allocator);
 	}
 
 	void RobotBase::GripperInfo::DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale)
 	{
-		openravejson::LoadJsonValueByKey(value, "id", gripperid);
+		name.clear();
+		grippertype.clear();
+		gripperJointNames.clear();
+
+		openravejson::LoadJsonValueByKey(value, "name", name);
+		if (name.size() == 0) {
+			openravejson::LoadJsonValueByKey(value, "id", name);
+			if (name.size() > 0) {
+				RAVELOG_WARN_FORMAT("gripperInfo %s got old tag 'id', when it should be 'name'", name);
+			}
+		}
 		openravejson::LoadJsonValueByKey(value, "grippertype", grippertype);
 		openravejson::LoadJsonValueByKey(value, "gripperJointNames", gripperJointNames);
 
@@ -1884,17 +1894,17 @@ namespace OpenRAVE {
 		if (!gripperInfo) {
 			throw OPENRAVE_EXCEPTION_FORMAT(_tr("Cannot add invalid gripperInfo to robot %s."), GetName(), ORE_InvalidArguments);
 		}
-		if (gripperInfo->gripperid.size() == 0) {
-			throw OPENRAVE_EXCEPTION_FORMAT(_tr("Cannot add gripperInfo to robot %s since its gripperid is empty."), GetName(), ORE_InvalidArguments);
+		if (gripperInfo->name.size() == 0) {
+			throw OPENRAVE_EXCEPTION_FORMAT(_tr("Cannot add gripperInfo to robot %s since its name is empty."), GetName(), ORE_InvalidArguments);
 		}
 
 		for (int igripper = 0; igripper < (int)_vecGripperInfos.size(); ++igripper) {
-			if (_vecGripperInfos[igripper]->gripperid == gripperInfo->gripperid) {
+			if (_vecGripperInfos[igripper]->name == gripperInfo->name) {
 				if (removeduplicate) {
 					_vecGripperInfos[igripper] = gripperInfo;
 				}
 				else {
-					throw OPENRAVE_EXCEPTION_FORMAT(_tr("gripper with name %s already exists"), gripperInfo->gripperid, ORE_InvalidArguments);
+					throw OPENRAVE_EXCEPTION_FORMAT(_tr("gripper with name %s already exists"), gripperInfo->name, ORE_InvalidArguments);
 				}
 			}
 		}
@@ -1903,10 +1913,10 @@ namespace OpenRAVE {
 		return true;
 	}
 
-	bool RobotBase::RemoveGripperInfo(const std::string& gripperid)
+	bool RobotBase::RemoveGripperInfo(const std::string& name)
 	{
 		for (int igripper = 0; igripper < (int)_vecGripperInfos.size(); ++igripper) {
-			if (_vecGripperInfos[igripper]->gripperid == gripperid) {
+			if (_vecGripperInfos[igripper]->name == name) {
 				_vecGripperInfos.erase(_vecGripperInfos.begin() + igripper);
 				return true;
 			}
@@ -1914,10 +1924,10 @@ namespace OpenRAVE {
 		return false;
 	}
 
-	RobotBase::GripperInfoPtr RobotBase::GetGripperInfo(const std::string& gripperid) const
+	RobotBase::GripperInfoPtr RobotBase::GetGripperInfo(const std::string& name) const
 	{
 		FOREACHC(itGripperInfo, _vecGripperInfos) {
-			if ((*itGripperInfo)->gripperid == gripperid) {
+			if ((*itGripperInfo)->name == name) {
 				return *itGripperInfo;
 			}
 		}
@@ -2091,10 +2101,7 @@ namespace OpenRAVE {
 	{
 		KinBody::Clone(preference, cloningoptions);
 		RobotBaseConstPtr r = RaveInterfaceConstCast<RobotBase>(preference);
-		self_collision_checker_.reset();
-		if (!!r->self_collision_checker_) {
-			// TODO clone the self collision checker?
-		}
+
 		hash_robot_structure_ = r->hash_robot_structure_;
 		manipulators_vector_.clear();
 		manipulator_active_.reset();
@@ -2117,6 +2124,17 @@ namespace OpenRAVE {
 			attached_sensors_vector_.push_back(AttachedSensorPtr(new AttachedSensor(shared_robot(), **itsensor, cloningoptions)));
 		}
 		_UpdateAttachedSensors();
+
+		// gripper infos, have to recreate the _pdocument
+		_vecGripperInfos = r->_vecGripperInfos;
+		FOREACH(itGripperInfo, _vecGripperInfos) {
+			GripperInfoPtr& pGripperInfo = *itGripperInfo;
+			if (!!pGripperInfo && !!pGripperInfo->_pdocument) {
+				std::shared_ptr<rapidjson::Document> pnewdocument(new rapidjson::Document());
+				pnewdocument->CopyFrom(*pGripperInfo->_pdocument, pnewdocument->GetAllocator());
+				pGripperInfo->_pdocument = pnewdocument;
+			}
+		}
 
 		active_dof_indices_vector_ = r->active_dof_indices_vector_;
 		active_spec_ = r->active_spec_;

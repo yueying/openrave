@@ -63,7 +63,7 @@ namespace OpenRAVE
 			Vector direction_;
 			std::string ik_solver_xml_id_; //!< xml id of the IkSolver interface to attach
 			std::vector<std::string> gripper_joint_names_vector_; //!< names of the gripper joints
-			std::string _gripperid; ///< associates the manipulator with a GripperInfo
+			std::string _grippername; ///< associates the manipulator with a GripperInfo
 		};
 		typedef std::shared_ptr<ManipulatorInfo> ManipulatorInfoPtr;
 		typedef std::shared_ptr<ManipulatorInfo const> ManipulatorInfoConstPtr;
@@ -75,7 +75,7 @@ namespace OpenRAVE
 			virtual void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale = 1.0, int options = 0) const;
 			virtual void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale = 1.0);
 
-			std::string gripperid; ///< unique gripperid
+			std::string name; ///< unique name
 			std::string grippertype; ///< gripper type
 			std::vector<std::string> gripperJointNames; ///< names of the gripper joints
 
@@ -158,8 +158,9 @@ namespace OpenRAVE
 				return effector_link_;
 			}
 
-			virtual std::string GetGripperId() const {
-				return info_._gripperid;
+			virtual std::string GetGripperName() const
+			{
+				return info_._grippername;
 			}
 
 			/// \brief Release all bodies grabbed by the end effector of this manipualtor
@@ -820,8 +821,8 @@ namespace OpenRAVE
 			return _vecGripperInfos;
 		}
 
-		/// \brief Returns a GriperInfo that matches with gripperid
-		virtual GripperInfoPtr GetGripperInfo(const std::string& gripperid) const;
+		/// \brief Returns a GriperInfo that matches with name
+		virtual GripperInfoPtr GetGripperInfo(const std::string& name) const;
 
 		// \brief gets the active states of all connected bodies
 		virtual void GetConnectedBodyActiveStates(std::vector<uint8_t>& activestates) const;
@@ -1077,12 +1078,12 @@ namespace OpenRAVE
 
 		/// \brief adds a GripperInfo to the list
 	///
-	/// \throw openrave_exception If removeduplicate is false and there exists a manipulator with the same gripperid, will throw an exception
+	/// \throw openrave_exception If removeduplicate is false and there exists a manipulator with the same name, will throw an exception
 	/// \return true if added a new gripper
 		virtual bool AddGripperInfo(GripperInfoPtr gripperinfo, bool removeduplicate = false);
 
 		/// \brief removes a gripper from the robot list. if successful, returns true
-		virtual bool RemoveGripperInfo(const std::string& gripperid);
+		virtual bool RemoveGripperInfo(const std::string& name);
 
 		/** \brief Calculates the translation jacobian with respect to a link.
 
