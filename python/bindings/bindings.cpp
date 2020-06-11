@@ -29,6 +29,7 @@ struct get_dtype
 namespace openravepy {
 
 
+constexpr char select_dtype<int8_t>::type[];
 
 using py::object;
 using py::list;
@@ -244,7 +245,7 @@ void init_python_bindings()
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyVoidHandle, std::shared_ptr<PyVoidHandle>>(m, "VoidHandle")
+    class_<PyVoidHandle, std::shared_ptr<PyVoidHandle> >(m, "VoidHandle")
     .def(init<>())
     // error: static assertion failed: Holder classes are only supported for custom types, so cannot do
     // .def(init<std::shared_ptr<void>>(), "handle"_a)

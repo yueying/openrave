@@ -2100,7 +2100,7 @@ void GetDHParameters(std::vector<DHParameter>& vparameters, KinBodyConstPtr pbod
     }
 }
 
-DynamicsCollisionConstraint::DynamicsCollisionConstraint(PlannerBase::PlannerParametersConstPtr parameters,
+DynamicsCollisionConstraint::DynamicsCollisionConstraint(PlannerBase::PlannerParametersConstPtr parameters, const std::list<KinBodyPtr>& listCheckBodies, int filtermask) : _listCheckBodies(listCheckBodies), _filtermask(filtermask), _torquelimitmode(DC_NominalTorque), _perturbation(0.1)
 	const std::list<KinBodyPtr>& listCheckBodies, int filtermask) 
 	: _listCheckBodies(listCheckBodies), _filtermask(filtermask), _torquelimitmode(0), _perturbation(0.1)
 {
@@ -2132,7 +2132,7 @@ void DynamicsCollisionConstraint::SetFilterMask(int filtermask)
     _filtermask = filtermask;
 }
 
-void DynamicsCollisionConstraint::SetTorqueLimitMode(int torquelimitmode)
+void DynamicsCollisionConstraint::SetTorqueLimitMode(DynamicsConstraintsType torquelimitmode)
 {
     _torquelimitmode = torquelimitmode;
 }
@@ -2215,10 +2215,10 @@ int DynamicsCollisionConstraint::_CheckState(const std::vector<dReal>& vdofveloc
                 for(int idof = 0; idof < (*itjoint)->GetDOF(); ++idof) {
                     // TODO use the ElectricMotorActuatorInfo if present to get the real max torque depending on the speed
                     std::pair<dReal, dReal> torquelimits;
-                    if( _torquelimitmode == 1 ) {
+                    if( _torquelimitmode == DC_InstantaneousTorque ) {
                         torquelimits = (*itjoint)->GetInstantaneousTorqueLimits(idof);
                     }
-                    else { // _torquelimitmode == 0
+                    else {
                         torquelimits = (*itjoint)->GetNominalTorqueLimits(idof);
                     }
 

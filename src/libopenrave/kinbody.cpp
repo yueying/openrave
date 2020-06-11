@@ -26,6 +26,17 @@
 
 namespace OpenRAVE {
 
+const char* GetDynamicsConstraintsTypeString(DynamicsConstraintsType type)
+{
+    switch(type) {
+    case DC_Unknown: return "Unknown";
+    case DC_IgnoreTorque: return "IgnoreTorque";
+    case DC_NominalTorque: return "NominalTorque";
+    case DC_InstantaneousTorque: return "InstantaneousTorque";
+    }
+    return "";
+}
+
 	class ChangeCallbackData : public UserData
 	{
 	public:

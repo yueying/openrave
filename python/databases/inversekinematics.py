@@ -1174,6 +1174,7 @@ class InverseKinematicsModel(DatabaseGenerator):
             if compiler.compiler_type == 'unix':
                 compile_flags.append('-O3')
                 compile_flags.append('-fPIC')
+                compile_flags.append('-std=c++11')
         return compiler, compile_flags
 
     @staticmethod

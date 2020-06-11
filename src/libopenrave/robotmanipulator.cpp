@@ -29,7 +29,7 @@ namespace OpenRAVE
 		openravejson::SetJsonValueByKey(value, "direction", direction_, allocator);
 		openravejson::SetJsonValueByKey(value, "baseLinkName", base_link_name_, allocator);
 		openravejson::SetJsonValueByKey(value, "grippername", _grippername, allocator);
-		openravejson::SetJsonValueByKey(value, "effectorLinkName", effector_link_name_, allocator);
+    openravejson::SetJsonValueByKey(value, "toolChangerConnectedBodyToolName", _toolChangerConnectedBodyToolName, allocator);
 		openravejson::SetJsonValueByKey(value, "ikSolverType", ik_solver_xml_id_, allocator);
 		openravejson::SetJsonValueByKey(value, "gripperJointNames", gripper_joint_names_vector_, allocator);
 	}

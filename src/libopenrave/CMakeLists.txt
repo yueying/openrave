@@ -12,7 +12,7 @@ fparsermulti.h ik_solver_base.cpp interface_base.cpp kinbody.cpp kinbodycollisio
 kinbodygeometry.cpp kinbodygrab.cpp kinbodyjoint.cpp kinbodylink.cpp 
 kinbodystatesaver.cpp libopenrave.cpp libopenrave.h openravemathextra.cpp 
 planner.cpp plannerparameters.cpp planningutils.cpp 
-robot_base.cpp robotconnectedbody.cpp robotmanipulator.cpp sensor_system_base.cpp 
+robot.cpp robotconnectedbody.cpp robotmanipulator.cpp sensor_system_base.cpp 
 trajectory_base.cpp utils.cpp xml_readers.cpp openrave_exception.cpp
 electric_motor_actuator_info.cpp grabbed.cpp tri_mesh.cpp rave_global.cpp
 environment_base.cpp sensor_base.cpp numerical.cpp collision_report.cpp

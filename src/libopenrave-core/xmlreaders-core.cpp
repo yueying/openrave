@@ -3200,8 +3200,8 @@ public:
                         (*itmanip)->info_.name_ = _prefix + (*itmanip)->info_.name_;
                         (*itmanip)->info_.base_link_name_ = _prefix + (*itmanip)->info_.base_link_name_;
                         (*itmanip)->info_.effector_link_name_ = _prefix + (*itmanip)->info_.effector_link_name_;
-                        FOREACH(itgrippername,(*itmanip)->info_.gripper_joint_names_vector_) {
-                            *itgrippername = _prefix + *itgrippername;
+                        FOREACH(itGripperJointName,(*itmanip)->_info._vGripperJointNames) {
+                            *itGripperJointName = _prefix + *itGripperJointName;
                         }
                     }
                 }

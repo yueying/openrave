@@ -127,56 +127,56 @@ namespace openravepy
 	template <typename T>
 	using RapidJsonSetFn = RapidJsonGenericValueUTF8 & (RapidJsonGenericValueUTF8::*)(T);
 
-	template <typename T>
+template <typename T, typename U>
 	void FillRapidJsonFromArray1D(PyArrayObject* pyarr,
 		rapidjson::Value &value,
 		rapidjson::Document::AllocatorType& allocator,
-		RapidJsonSetFn<T> f,
+                              RapidJsonSetFn<U> f,
 		npy_intp const* dims)
-	{
+{
 		const T *pv = reinterpret_cast<T*>(PyArray_DATA(pyarr));
 		const size_t numel = dims[0];
 		value.Reserve(numel, allocator);
-		for (size_t i = 0; i < numel; ++i) {
-			rapidjson::Value elementValue;
-			(elementValue.*f)(pv[i]);
-			value.PushBack(elementValue, allocator);
+    for (size_t i = 0; i < numel; ++i) {
+        rapidjson::Value elementValue;
+        (elementValue.*f)((U)pv[i]);
+        value.PushBack(elementValue, allocator);
 		}
 	}
 
-	template <typename T>
+template <typename T, typename U>
 	void FillRapidJsonFromArray2D(PyArrayObject* pyarr,
 		rapidjson::Value &value,
 		rapidjson::Document::AllocatorType& allocator,
-		RapidJsonSetFn<T> f,
-		npy_intp const* dims)
-	{
+                              RapidJsonSetFn<U> f,
+                              npy_intp const* dims)
+{
 		const T *pv = reinterpret_cast<T*>(PyArray_DATA(pyarr));
     value.Reserve(dims[0], allocator);
-    for (int i = 0, ij = 0; i < dims[0]; ++i) { 
+    for (int i = 0, ij = 0; i < dims[0]; ++i) {
         rapidjson::Value colvalues(rapidjson::kArrayType);
         colvalues.Reserve(dims[1], allocator);
-        for (int j = 0; j < dims[1]; ++j, ++ij) { 
-				rapidjson::Value elementValue;
-				(elementValue.*f)(pv[ij]);
-				colvalues.PushBack(elementValue, allocator);
-			}
-			value.PushBack(colvalues, allocator);
-		}
+        for (int j = 0; j < dims[1]; ++j, ++ij) {
+            rapidjson::Value elementValue;
+            (elementValue.*f)((U)pv[ij]);
+            colvalues.PushBack(elementValue, allocator);
+        }
+        value.PushBack(colvalues, allocator);
+    }
 	}
 
-	template <typename T>
+template <typename T, typename U>
 	void FillRapidJsonFromArray(PyArrayObject* pyarr,
 		rapidjson::Value &value,
 		rapidjson::Document::AllocatorType& allocator,
-		RapidJsonSetFn<T> f,
-		const size_t ndims, npy_intp const* dims)
-	{
+                            RapidJsonSetFn<U> f,
+                            const size_t ndims, npy_intp const* dims)
+{
 		if (ndims == 1) {
-			FillRapidJsonFromArray1D<T>(pyarr, value, allocator, f, dims);
+        FillRapidJsonFromArray1D<T, U>(pyarr, value, allocator, f, dims);
 		}
 		else if (ndims == 2) {
-			FillRapidJsonFromArray2D<T>(pyarr, value, allocator, f, dims);
+        FillRapidJsonFromArray2D<T, U>(pyarr, value, allocator, f, dims);
 		}
 		else {
 			throw OPENRAVE_EXCEPTION_FORMAT(_tr("do not support array object with %d dims"), ndims, ORE_InvalidArguments);
@@ -312,9 +312,25 @@ namespace openravepy
 					}
 				}
 				else if (PyArray_ISINTEGER(pyarrayvalues)) {
-					if (typeSize == sizeof(int)) {
+                if( typeSize == sizeof(int8_t) ) {
 						if (PyArray_ISSIGNED(pyarrayvalues)) {
-							FillRapidJsonFromArray<int>(pyarrayvalues, value, allocator, &rapidjson::Value::SetInt, ndims, dims);
+                        FillRapidJsonFromArray<int8_t>(pyarrayvalues, value, allocator, &rapidjson::Value::SetInt, ndims, dims);
+                    }
+                    else {
+                        FillRapidJsonFromArray<uint8_t>(pyarrayvalues, value, allocator, &rapidjson::Value::SetUint, ndims, dims);
+                    }
+                }
+                else if( typeSize == sizeof(int16_t) ) {
+                    if( PyArray_ISSIGNED(pyarrayvalues) ) {
+                        FillRapidJsonFromArray<int16_t>(pyarrayvalues, value, allocator, &rapidjson::Value::SetInt, ndims, dims);
+                    }
+                    else {
+                        FillRapidJsonFromArray<uint16_t>(pyarrayvalues, value, allocator, &rapidjson::Value::SetUint, ndims, dims);
+                    }
+                }
+                else if( typeSize == sizeof(int32_t) ) {
+                    if( PyArray_ISSIGNED(pyarrayvalues) ) {
+                        FillRapidJsonFromArray<int32_t>(pyarrayvalues, value, allocator, &rapidjson::Value::SetInt, ndims, dims);
 						}
 						else {
 							FillRapidJsonFromArray<uint32_t>(pyarrayvalues, value, allocator, &rapidjson::Value::SetUint, ndims, dims);
@@ -1385,7 +1401,7 @@ namespace openravepy
 		// collision
 		py::array_t<bool> pycollision({ nRays });
 		py::buffer_info bufcollision = pycollision.request();
-		bool* pcollision = (bool*)bufcollision.ptr;
+    bool* pcollision = (bool*) bufcollision.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
 		py::tuple pypos_shape = py::make_tuple(num, 6);
 		py::numpy::ndarray pypos = py::numpy::empty(pypos_shape, py::numpy::dtype::get_builtin<dReal>());

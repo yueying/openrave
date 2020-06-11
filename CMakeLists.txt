@@ -457,7 +457,7 @@ add_custom_command(
   DEPENDS cpp-gen-md5-native
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/interface_base.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/collision_checker_base.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot_base.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/robot.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/planner.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/kinbody.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openrave/sensor_system_base.h
@@ -599,8 +599,8 @@ if( WIN32 )
   endif()
 endif()
 
-find_package(Qt5 COMPONENTS Core Gui Qml Widgets OpenGL)
-if (NOT (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Qml_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND))
+find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL)
+if (NOT (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND))
   message(STATUS "WARNING: Qt5 not found, is your QTDIR enviornment variable set?")
   find_package(Qt5Core)
   find_package(Qt5Gui)

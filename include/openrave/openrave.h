@@ -184,7 +184,7 @@ namespace OpenRAVE
 #include <openrave/module.h>
 #include <openrave/collision_checker_base.h>
 #include <openrave/sensor_base.h>
-#include <openrave/robot_base.h>
+#include <openrave/robot.h>
 #include <openrave/ik_solver_base.h>
 #include <openrave/planner.h>
 #include <openrave/controller_base.h>
@@ -522,7 +522,7 @@ namespace OpenRAVE {
 
 
 
-	} // end namespace OpenRAVE
+} // end namespace OpenRAVE
 
 
 BOOST_STATIC_ASSERT(OPENRAVE_VERSION_MAJOR >= 0 && OPENRAVE_VERSION_MAJOR <= 255);
