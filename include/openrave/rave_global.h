@@ -150,7 +150,7 @@ namespace OpenRAVE
 		class XMLReaderFunctionData : public UserData
 		{
 		public:
-			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag, 
+			XMLReaderFunctionData(InterfaceType type, const std::string& xmltag,
 				const CreateXMLReaderFn& fn, std::shared_ptr<RaveGlobal> global)
 				: _global(global), _type(type), _xmltag(xmltag)
 			{
@@ -176,8 +176,8 @@ namespace OpenRAVE
 		class JSONReaderFunctionData : public UserData
 		{
 		public:
-			JSONReaderFunctionData(InterfaceType type, const std::string& id, 
-				const CreateJSONReaderFn& fn, std::shared_ptr<RaveGlobal> global) 
+			JSONReaderFunctionData(InterfaceType type, const std::string& id,
+				const CreateJSONReaderFn& fn, std::shared_ptr<RaveGlobal> global)
 				: _global(global), _type(type), _id(id)
 			{
 				boost::mutex::scoped_lock lock(global->_mutexinternal);
@@ -230,7 +230,7 @@ namespace OpenRAVE
 			return it->second(pinterface, atts);
 		}
 
-		std::shared_ptr<PluginDatabase> GetPluginDatabase() const 
+		std::shared_ptr<PluginDatabase> GetPluginDatabase() const
 		{
 			return plugin_database_;
 		}
@@ -290,7 +290,7 @@ namespace OpenRAVE
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
 			std::map<int, EnvironmentBase*>::iterator it = environments_map_.find(id);
-			if (it == environments_map_.end()) 
+			if (it == environments_map_.end())
 			{
 				return EnvironmentBasePtr();
 			}
@@ -301,10 +301,10 @@ namespace OpenRAVE
 		{
 			listenvironments.clear();
 			boost::mutex::scoped_lock lock(_mutexinternal);
-			for(auto it: environments_map_) 
+			for (auto it : environments_map_)
 			{
 				EnvironmentBasePtr penv = it.second->shared_from_this();
-				if (!!penv) 
+				if (!!penv)
 				{
 					listenvironments.push_back(penv);
 				}
@@ -373,7 +373,7 @@ namespace OpenRAVE
 #else
 			// check if filename is within boost_data_dirs_vector_
 			boost::filesystem::path fullfilename = boost::filesystem::absolute(filename);
-			_CustomNormalizePath(fullfilename);
+			fullfilename.normalize();
 			FOREACHC(itpath, boost_data_dirs_vector_) {
 				std::list<boost::filesystem::path> listfilenameparts;
 				boost::filesystem::path testfilename = fullfilename.parent_path();
@@ -395,12 +395,12 @@ namespace OpenRAVE
 			return false;
 		}
 
-		void SetDataAccess(int options) 
+		void SetDataAccess(int options)
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
 			data_access_options_ = options;
 		}
-		int GetDataAccess() 
+		int GetDataAccess()
 		{
 			boost::mutex::scoped_lock lock(_mutexinternal);
 			return data_access_options_;
@@ -408,21 +408,21 @@ namespace OpenRAVE
 
 		std::string GetDefaultViewerType()
 		{
-			if (default_viewer_type_.size() > 0) 
+			if (default_viewer_type_.size() > 0)
 			{
 				return default_viewer_type_;
 			}
 
 			// get the first viewer that can be loadable, with preferenace to qtosg, qtcoin
 			std::shared_ptr<PluginDatabase> pdatabase = plugin_database_;
-			if (!!pdatabase) 
+			if (!!pdatabase)
 			{
-				if (pdatabase->HasInterface(PT_Viewer, "qtosg")) 
+				if (pdatabase->HasInterface(PT_Viewer, "qtosg"))
 				{
 					return std::string("qtosg");
 				}
 
-				if (pdatabase->HasInterface(PT_Viewer, "qtcoin")) 
+				if (pdatabase->HasInterface(PT_Viewer, "qtcoin"))
 				{
 					return std::string("qtcoin");
 				}
@@ -430,9 +430,9 @@ namespace OpenRAVE
 				// search for the first viewer found
 				std::map<InterfaceType, std::vector<std::string> > interfacenames;
 				pdatabase->GetLoadedInterfaces(interfacenames);
-				if (interfacenames.find(PT_Viewer) != interfacenames.end()) 
+				if (interfacenames.find(PT_Viewer) != interfacenames.end())
 				{
-					if (interfacenames[PT_Viewer].size() > 0) 
+					if (interfacenames[PT_Viewer].size() > 0)
 					{
 						return interfacenames[PT_Viewer].at(0);
 					}
@@ -452,41 +452,6 @@ namespace OpenRAVE
 
 #ifdef HAVE_BOOST_FILESYSTEM
 
-		void _CustomNormalizePath(boost::filesystem::path& p)
-		{
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-			p.normalize();
-#else
-			boost::filesystem::path result;
-			for (boost::filesystem::path::iterator it = p.begin(); it != p.end(); ++it)
-			{
-				if (*it == "..") {
-					// /a/b/.. is not necessarily /a if b is a symbolic link
-					if (boost::filesystem::is_symlink(result)) {
-						result /= *it;
-					}
-					// /a/b/../.. is not /a/b/.. under most circumstances
-					// We can end up with ..s in our result because of symbolic links
-					else if (result.filename() == "..") {
-						result /= *it;
-					}
-					// Otherwise it should be safe to resolve the parent
-					else {
-						result = result.parent_path();
-					}
-				}
-				else if (*it == ".") {
-					// Ignore
-				}
-				else {
-					// Just cat other path entries
-					result /= *it;
-				}
-			}
-			p = result;
-#endif
-		}
-
 		bool _ValidateFilename(const boost::filesystem::path& filename, const boost::filesystem::path& curdir)
 		{
 			if (!boost::filesystem::exists(filename)) {
@@ -496,7 +461,7 @@ namespace OpenRAVE
 			if (data_access_options_ & 1) {
 				// check if filename is within boost_data_dirs_vector_
 				boost::filesystem::path fullfilename = boost::filesystem::absolute(filename, curdir.empty() ? boost::filesystem::current_path() : curdir);
-				_CustomNormalizePath(fullfilename);
+				fullfilename.normalize();
 				bool bfound = false;
 				FOREACHC(itpath, boost_data_dirs_vector_) {
 					boost::filesystem::path testfilename = fullfilename.parent_path();
@@ -520,7 +485,7 @@ namespace OpenRAVE
 
 #endif
 
-		void _InitializeLogging(int level) 
+		void _InitializeLogging(int level)
 		{
 #if OPENRAVE_LOG4CXX
 			_logger = log4cxx::Logger::getLogger("openrave");
@@ -544,7 +509,7 @@ namespace OpenRAVE
 
 	private:
 		static std::shared_ptr<RaveGlobal> global_state_; //!< state that is always present
-		
+
 
 		// state that is initialized/destroyed
 		std::shared_ptr<PluginDatabase> plugin_database_;
@@ -582,4 +547,4 @@ namespace OpenRAVE
 
 
 
-}
+		}

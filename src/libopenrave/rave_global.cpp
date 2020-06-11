@@ -138,7 +138,7 @@ namespace OpenRAVE
 #endif
 		database_directory_vector_.clear();
 		char* plugin_dirs_str = getenv("OPENRAVE_DATABASE"); // getenv not thread-safe?
-		if (plugin_dirs_str != NULL) 
+		if (plugin_dirs_str != NULL)
 		{
 			utils::TokenizeString(plugin_dirs_str, delim, database_directory_vector_);
 		}
@@ -146,7 +146,7 @@ namespace OpenRAVE
 
 		default_viewer_type_.clear();
 		const char* openrave_default_viewer = std::getenv("OPENRAVE_DEFAULT_VIEWER");
-		if (!!openrave_default_viewer && strlen(openrave_default_viewer) > 0) 
+		if (!!openrave_default_viewer && strlen(openrave_default_viewer) > 0)
 		{
 			default_viewer_type_ = std::string(openrave_default_viewer);
 		}
@@ -157,7 +157,7 @@ namespace OpenRAVE
 
 	void RaveGlobal::Destroy()
 	{
-		if (!!plugin_database_) 
+		if (!!plugin_database_)
 		{
 			// notify all plugins that about to destroy
 			plugin_database_->OnRavePreDestroy();
@@ -171,7 +171,7 @@ namespace OpenRAVE
 			environments_map = environments_map_;
 		}
 
-		for(auto& itenv: environments_map)
+		for (auto& itenv : environments_map)
 		{
 			// equire a shared pointer to prevent environment from getting deleted during Destroy loop
 			EnvironmentBasePtr penv = itenv.second->shared_from_this();
@@ -228,7 +228,7 @@ namespace OpenRAVE
 		const char* delim = ":";
 #endif
 		char* pOPENRAVE_DATA = getenv("OPENRAVE_DATA"); // getenv not thread-safe?
-		if (pOPENRAVE_DATA != NULL) 
+		if (pOPENRAVE_DATA != NULL)
 		{
 			utils::TokenizeString(pOPENRAVE_DATA, delim, data_dirs_vector_);
 		}
@@ -257,7 +257,7 @@ namespace OpenRAVE
 		}
 
 		boost::filesystem::path data_file_name = boost::filesystem::absolute(boost::filesystem::path(install_dir));
-		for(auto itname: data_dirs_vector_)
+		for (auto itname : data_dirs_vector_)
 		{
 			if (data_file_name == boost::filesystem::absolute(boost::filesystem::path(itname)))
 			{
@@ -276,7 +276,7 @@ namespace OpenRAVE
 			}
 		}
 #endif
-		if (!is_exists) 
+		if (!is_exists)
 		{
 			data_dirs_vector_.push_back(install_dir);
 		}
@@ -287,11 +287,11 @@ namespace OpenRAVE
 
 #ifdef HAVE_BOOST_FILESYSTEM
 		boost_data_dirs_vector_.resize(0);
-		for(auto file_name: data_dirs_vector_) 
+		for (auto file_name : data_dirs_vector_)
 		{
 			boost::filesystem::path full_file_name = boost::filesystem::absolute(boost::filesystem::path(file_name));
-			_CustomNormalizePath(full_file_name);
-			if (full_file_name.filename() == ".") 
+			full_file_name.normalize();
+			if (full_file_name.filename() == ".")
 			{
 				// full_file_name ends in '/', so remove it
 				full_file_name = full_file_name.parent_path();

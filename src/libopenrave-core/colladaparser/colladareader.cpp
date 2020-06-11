@@ -275,16 +275,20 @@ namespace OpenRAVE
 		};
 
 	public:
-		ColladaReader(EnvironmentBasePtr penv, bool bResetGlobalDae = true, bool bExtractConnectedBodies = true) : _dom(NULL), environment_(penv), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0), _nGlobalGripperInfoId(0),
-			_bResetGlobalDae(bResetGlobalDae)
+		ColladaReader(EnvironmentBasePtr penv,
+			bool is_reset_global_dae = true, bool bExtractConnectedBodies = true)
+			: _dom(NULL), environment_(penv), _nGlobalSensorId(0),
+			_nGlobalManipulatorId(0),
+			_nGlobalIndex(0), _nGlobalGripperInfoId(0),
+			_bResetGlobalDae(is_reset_global_dae)
 		{
 			daeErrorHandler::setErrorHandler(this);
 			_bOpeningZAE = false;
 			is_skip_geometry_ = false;
 			is_read_geometry_groups_ = false;
 			_bExtractConnectedBodies = bExtractConnectedBodies;
-			_fGlobalScale = 1.0 / penv->GetUnit().second;
-			_bBackCompatValuesInRadians = false;
+			global_scale_ = 1.0 / penv->GetUnit().second;
+			is_back_compat_values_in_radians_ = false;
 			if (sizeof(daeFloat) == 4) {
 				RAVELOG_WARN("collada-dom compiled with 32-bit floating-point, so there might be precision errors\n");
 			}
@@ -304,13 +308,14 @@ namespace OpenRAVE
 #endif
 		}
 
-		std::string ResolveURI(const string& uristr, const std::string& fragment = std::string())
+		std::string ResolveURI(const std::string& uristr, const std::string& fragment = std::string())
 		{
 			daeURI urioriginal(*dae_, uristr);
 			urioriginal.fragment(fragment);
 			std::string uriresolved;
 
-			if (find(openrave_scheme_aliases_vector_.begin(), openrave_scheme_aliases_vector_.end(), urioriginal.scheme()) !=
+			if (find(openrave_scheme_aliases_vector_.begin(),
+				openrave_scheme_aliases_vector_.end(), urioriginal.scheme()) !=
 				openrave_scheme_aliases_vector_.end()) {
 				if (urioriginal.path().empty()) {
 					return nullptr;
@@ -451,42 +456,53 @@ namespace OpenRAVE
 
 		bool _InitPostOpen(const AttributesList& atts)
 		{
-			_fGlobalScale = 1.0 / environment_->GetUnit().second;
-			_bBackCompatValuesInRadians = false;
-			if (!!_dom->getAsset()) {
-				// do not modify _fGlobalScale here since _GetUnitScale propagates up the hierarchy
-				if (!!_dom->getAsset()->getUnit()) {
-					_fGlobalScale *= _dom->getAsset()->getUnit()->getMeter();
+			global_scale_ = 1.0 / environment_->GetUnit().second;
+			is_back_compat_values_in_radians_ = false;
+			if (!!_dom->getAsset())
+			{
+				// do not modify global_scale_ here since _GetUnitScale propagates up the hierarchy
+				if (!!_dom->getAsset()->getUnit())
+				{
+					global_scale_ *= _dom->getAsset()->getUnit()->getMeter();
 				}
 
 				// check the authoring tool
-				for (size_t icontrib = 0; icontrib < _dom->getAsset()->getContributor_array().getCount(); ++icontrib) {
+				for (size_t icontrib = 0;
+					icontrib < _dom->getAsset()->getContributor_array().getCount(); ++icontrib)
+				{
 					domAsset::domContributorRef pcontrib = _dom->getAsset()->getContributor_array()[icontrib];
-					if (!!pcontrib->getAuthoring_tool()) {
+					if (!!pcontrib->getAuthoring_tool())
+					{
 						std::string authoring_tool = pcontrib->getAuthoring_tool()->getValue();
 						// possible there's other old writers that save in radians...
 						// newest openrave writers should have vX.Y.Z appended
-						if (authoring_tool == "OpenRAVE Collada Writer" || authoring_tool == "URDF Collada Writer") {
-							_bBackCompatValuesInRadians = true;
+						if (authoring_tool == "OpenRAVE Collada Writer"
+							|| authoring_tool == "URDF Collada Writer")
+						{
+							is_back_compat_values_in_radians_ = true;
 							RAVELOG_DEBUG("collada reader backcompat parsing for joint values\n");
 						}
 					}
 				}
 			}
-			FOREACHC(itatt, atts) {
-				if (itatt->first == "scalegeometry") {
-					stringstream ss(itatt->second);
+			for (const auto& itatt : atts)
+			{
+				if (itatt.first == "scalegeometry")
+				{
+					std::stringstream ss(itatt.second);
 					Vector v(1, 1, 1);
 					ss >> v.x;
-					_fGlobalScale *= v.x;
+					global_scale_ *= v.x;
 				}
 			}
 
 			// instantiate all nodes, might not be necessary
 			domCOLLADA::domSceneRef allscene = _dom->getScene();
-			if (!!allscene->getInstance_visual_scene()) {
+			if (!!allscene->getInstance_visual_scene())
+			{
 				domVisual_sceneRef visual_scene = daeSafeCast<domVisual_scene>(allscene->getInstance_visual_scene()->getUrl().getElement().cast());
-				if (!!visual_scene) {
+				if (!!visual_scene)
+				{
 					_InstantiateVisualSceneNodes(visual_scene->getNode_array());
 				}
 			}
@@ -792,7 +808,7 @@ namespace OpenRAVE
 					if (itaxisbinding->_pjoint->GetDOFIndex() >= 0) {
 						int idof = itaxisbinding->_pjoint->GetDOFIndex() + itaxisbinding->_iaxis;
 						dReal value = itaxisbinding->jointvalue;
-						if (!_bBackCompatValuesInRadians && pbody->IsDOFRevolute(idof)) {
+						if (!is_back_compat_values_in_radians_ && pbody->IsDOFRevolute(idof)) {
 							value *= M_PI / 180.0;
 						}
 						values.at(itaxisbinding->_pjoint->GetDOFIndex() + itaxisbinding->_iaxis) = value;
@@ -2046,7 +2062,7 @@ namespace OpenRAVE
 						}
 						else if (strcmp(pdomaxis->getElementName(), "prismatic") == 0) {
 							pjoint->info_.type_ = KinBody::JointPrismatic;
-							vaxisunits[ic] = _GetUnitScale(pdomaxis, _fGlobalScale);
+							vaxisunits[ic] = _GetUnitScale(pdomaxis, global_scale_);
 							jointtype |= 1 << (4 + ic);
 							pjoint->info_.max_velocity_vector_[ic] = 0.01;
 						}
@@ -2129,7 +2145,7 @@ namespace OpenRAVE
 							fjointmult = PI / 180.0f;
 						}
 						else if (pjoint->IsPrismatic(ic) && !!kinematics_axis_info) {
-							fjointmult = _GetUnitScale(kinematics_axis_info, _fGlobalScale);
+							fjointmult = _GetUnitScale(kinematics_axis_info, global_scale_);
 						}
 
 						pjoint->info_.offsets_vector_[ic] = 0;     // to overcome -pi to pi boundary
@@ -2163,7 +2179,7 @@ namespace OpenRAVE
 							// In below, we check the consistency between hard limit (_vhadmaxXXX) and soft limit (_vmaxXXX). If soft limit is larger than soft limit, it is invalid and overwrite soft limit by hard limit.
 							if (!!motion_axis_info->getSpeed()) {
 								pjoint->info_.max_velocity_vector_[ic] = resolveFloat(motion_axis_info->getSpeed(), motion_axis_info);
-								if (!_bBackCompatValuesInRadians) {
+								if (!is_back_compat_values_in_radians_) {
 									pjoint->info_.max_velocity_vector_[ic] *= fjointmult;
 								}
 								if (pjoint->info_.hard_max_velocity_vector_[ic] != 0.0 && pjoint->info_.hard_max_velocity_vector_[ic] < pjoint->info_.max_velocity_vector_[ic]) {
@@ -2174,7 +2190,7 @@ namespace OpenRAVE
 							}
 							if (!!motion_axis_info->getAcceleration()) {
 								pjoint->info_.max_accelerate_vector_[ic] = resolveFloat(motion_axis_info->getAcceleration(), motion_axis_info);
-								if (!_bBackCompatValuesInRadians) {
+								if (!is_back_compat_values_in_radians_) {
 									pjoint->info_.max_accelerate_vector_[ic] *= fjointmult;
 								}
 								if (pjoint->info_.hard_max_accelerate_vector_[ic] != 0.0 && pjoint->info_.hard_max_accelerate_vector_[ic] < pjoint->info_.max_accelerate_vector_[ic]) {
@@ -2185,7 +2201,7 @@ namespace OpenRAVE
 							}
 							if (!!motion_axis_info->getJerk()) {
 								pjoint->info_.max_jerk_vector_[ic] = resolveFloat(motion_axis_info->getJerk(), motion_axis_info);
-								if (!_bBackCompatValuesInRadians) {
+								if (!is_back_compat_values_in_radians_) {
 									pjoint->info_.max_jerk_vector_[ic] *= fjointmult;
 								}
 								if (pjoint->info_.hard_max_jerk_vector_[ic] != 0.0 && pjoint->info_.hard_max_jerk_vector_[ic] < pjoint->info_.max_jerk_vector_[ic]) {
@@ -2273,7 +2289,7 @@ namespace OpenRAVE
 							if (!has_soft_limits) { // prioritize soft-limits
 								// contains the hard limits (prioritize over soft limits)
 								RAVELOG_VERBOSE_FORMAT("There are LIMITS in joint %s", pjoint->GetName());
-								dReal fscale = pjoint->IsRevolute(ic) ? (PI / 180.0f) : _GetUnitScale(pdomaxis, _fGlobalScale);
+								dReal fscale = pjoint->IsRevolute(ic) ? (PI / 180.0f) : _GetUnitScale(pdomaxis, global_scale_);
 								pjoint->info_.lower_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMin()->getValue()*fscale;
 								pjoint->info_.upper_limit_vector_.at(ic) = (dReal)pdomaxis->getLimits()->getMax()->getValue()*fscale;
 								if (pjoint->IsRevolute(ic)) {
@@ -2409,7 +2425,7 @@ namespace OpenRAVE
 			Transform tnodegeom;
 			Vector vscale;
 			decompose(tmnodegeom, tnodegeom, vscale);
-			vscale *= _GetUnitScale(pdomnode, _fGlobalScale); // TODO should track the scale per each listGeometryInfos
+			vscale *= _GetUnitScale(pdomnode, global_scale_); // TODO should track the scale per each listGeometryInfos
 
 
 			FOREACH(itgeominfo, listGeometryInfos) {
@@ -2547,7 +2563,7 @@ namespace OpenRAVE
 					if (!node) {
 						continue;
 					}
-					dReal unit_scale = _GetUnitScale(node, _fGlobalScale);
+					dReal unit_scale = _GetUnitScale(node, global_scale_);
 					const domFloat_arrayRef flArray = node->getFloat_array();
 					if (!!flArray) {
 						const domList_of_floats& listFloats = flArray->getValue();
@@ -2631,7 +2647,7 @@ namespace OpenRAVE
 						if (!node) {
 							continue;
 						}
-						dReal unit_scale = _GetUnitScale(node, _fGlobalScale);
+						dReal unit_scale = _GetUnitScale(node, global_scale_);
 						const domFloat_arrayRef flArray = node->getFloat_array();
 						if (!!flArray) {
 							const domList_of_floats& listFloats = flArray->getValue();
@@ -2720,7 +2736,7 @@ namespace OpenRAVE
 						if (!node) {
 							continue;
 						}
-						dReal unit_scale = _GetUnitScale(node, _fGlobalScale);
+						dReal unit_scale = _GetUnitScale(node, global_scale_);
 						const domFloat_arrayRef flArray = node->getFloat_array();
 						if (!!flArray) {
 							const domList_of_floats& listFloats = flArray->getValue();
@@ -2807,7 +2823,7 @@ namespace OpenRAVE
 					if (!node) {
 						continue;
 					}
-					dReal unit_scale = _GetUnitScale(node, _fGlobalScale);
+					dReal unit_scale = _GetUnitScale(node, global_scale_);
 					const domFloat_arrayRef flArray = node->getFloat_array();
 					if (!!flArray) {
 						const domList_of_floats& listFloats = flArray->getValue();
@@ -3218,7 +3234,7 @@ namespace OpenRAVE
 							if (!node) {
 								continue;
 							}
-							dReal unit_scale = _GetUnitScale(node, _fGlobalScale);
+							dReal unit_scale = _GetUnitScale(node, global_scale_);
 							const domFloat_arrayRef flArray = node->getFloat_array();
 							if (!!flArray) {
 								const domList_of_floats& listFloats = flArray->getValue();
@@ -4200,7 +4216,7 @@ namespace OpenRAVE
 			if (!!ptrans) {
 				//      if( !ptrans->getSid() ) { // if sid is valid, then controlled by joint?
 				t.trans = Vector(ptrans->getValue()[0], ptrans->getValue()[1], ptrans->getValue()[2]);
-				t.trans *= _GetUnitScale(pelt, _fGlobalScale);
+				t.trans *= _GetUnitScale(pelt, global_scale_);
 				//      }
 				return t;
 			}
@@ -4213,7 +4229,7 @@ namespace OpenRAVE
 					t.m[4 * i + 2] = pmat->getValue()[4 * i + 2];
 					t.trans[i] = pmat->getValue()[4 * i + 3];
 				}
-				t.trans *= _GetUnitScale(pelt, _fGlobalScale);
+				t.trans *= _GetUnitScale(pelt, global_scale_);
 				return t;
 			}
 
@@ -4230,7 +4246,7 @@ namespace OpenRAVE
 				Vector campos(pcamera->getValue()[0], pcamera->getValue()[1], pcamera->getValue()[2]);
 				Vector lookat(pcamera->getValue()[3], pcamera->getValue()[4], pcamera->getValue()[5]);
 				Vector camup(pcamera->getValue()[6], pcamera->getValue()[7], pcamera->getValue()[8]);
-				t = transformLookat(lookat*_GetUnitScale(pelt, _fGlobalScale), campos*_GetUnitScale(pelt, _fGlobalScale), camup);
+				t = transformLookat(lookat*_GetUnitScale(pelt, global_scale_), campos*_GetUnitScale(pelt, global_scale_), camup);
 				return t;
 			}
 
@@ -4424,7 +4440,8 @@ namespace OpenRAVE
 		///
 		/// \param kiscene instance of one kinematics scene, binds the kinematic and visual models
 		/// \param bindings the extracted bindings
-		void _ExtractKinematicsVisualBindings(domInstance_with_extraRef viscene, domInstance_kinematics_sceneRef kiscene, KinematicsSceneBindings& bindings)
+		void _ExtractKinematicsVisualBindings(domInstance_with_extraRef viscene,
+			domInstance_kinematics_sceneRef kiscene, KinematicsSceneBindings& bindings)
 		{
 			domKinematics_sceneRef kscene = daeSafeCast<domKinematics_scene>(kiscene->getUrl().getElement().cast());
 			if (!kscene) {
@@ -5625,7 +5642,7 @@ namespace OpenRAVE
 		std::shared_ptr<DAE> dae_;
 		domCOLLADA* _dom;
 		EnvironmentBasePtr environment_;
-		dReal _fGlobalScale;
+		dReal global_scale_;
 		std::map<KinBody::JointPtr, std::vector<dReal> > _mapJointUnits;
 		std::map<std::string, KinBody::JointPtr> _mapJointSids;
 		string prefix_;
@@ -5644,7 +5661,7 @@ namespace OpenRAVE
 		bool _bOpeningZAE; //!< true if currently opening a zae
 		bool is_skip_geometry_;
 		bool is_read_geometry_groups_; //!< if true, then read the bind_instance_geometry tag to initialize all the geometry groups
-		bool _bBackCompatValuesInRadians; //!< if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
+		bool is_back_compat_values_in_radians_; //!< if true, will assume the speed, acceleration, and dofvalues are in radians instead of degrees (for back compat)
 		bool _bExtractConnectedBodies; //!< if true, calls ExtractRobotConnectedBodies and initializes the connected bodies.
 	};
 
