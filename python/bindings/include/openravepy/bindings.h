@@ -75,49 +75,37 @@ namespace openravepy
 		return NPY_VOID;
 	}
 
-	template <>inline NPY_TYPES getEnum<unsigned char>(void){ return NPY_UBYTE; }
+	template <>inline NPY_TYPES getEnum<unsigned char>(void) { return NPY_UBYTE; }
 
-	template <>inline NPY_TYPES getEnum<signed char>(void){return NPY_BYTE;}
-struct select_dtype<int8_t>
-{
-    static constexpr char type[] = "i1";
-};
+	template <>inline NPY_TYPES getEnum<signed char>(void) { return NPY_BYTE; }
 
-template <>
+	template <>inline NPY_TYPES getEnum<short>(void) { return NPY_SHORT; }
 
-	template <>inline NPY_TYPES getEnum<short>(void){return NPY_SHORT;}
+	template <>inline NPY_TYPES getEnum<unsigned short>(void) { return NPY_USHORT; }
 
-	template <>inline NPY_TYPES getEnum<unsigned short>(void){return NPY_USHORT;}
+	template <>inline NPY_TYPES getEnum<unsigned int>(void) { return NPY_UINT; }
 
-    template <>inline NPY_TYPES getEnum<unsigned int>(void){return NPY_UINT;}
+	template <>inline NPY_TYPES getEnum<int>(void) { return NPY_INT; }
 
-	template <>inline NPY_TYPES getEnum<int>(void){return NPY_INT;}
+	template <>inline NPY_TYPES getEnum<long>(void) { return NPY_LONG; }
 
-	template <>inline NPY_TYPES getEnum<long>(void){return NPY_LONG;}
+	template <>inline NPY_TYPES getEnum<unsigned long>(void) { return NPY_ULONG; }
 
-	template <>inline NPY_TYPES getEnum<unsigned long>(void){return NPY_ULONG;}
+	template <>inline NPY_TYPES getEnum<long long>(void) { return NPY_LONGLONG; }
 
-	template <>inline NPY_TYPES getEnum<long long>(void){return NPY_LONGLONG;}
+	template <>inline NPY_TYPES getEnum<unsigned long long>(void) { return NPY_ULONGLONG; }
 
-	template <>inline NPY_TYPES getEnum<unsigned long long>(void){return NPY_ULONGLONG;}
+	template <>inline NPY_TYPES getEnum<float>(void) { return NPY_FLOAT; }
 
-	template <>inline NPY_TYPES getEnum<float>(void){return NPY_FLOAT;}
-struct select_npy_type<int8_t>
-{
-    static constexpr NPY_TYPES type = NPY_INT8;
-};
+	template <>inline NPY_TYPES getEnum<double>(void) { return NPY_DOUBLE; }
 
-template <>
+	template <>inline NPY_TYPES getEnum<long double>(void) { return NPY_LONGDOUBLE; }
 
-	template <>inline NPY_TYPES getEnum<double>(void){return NPY_DOUBLE;}
+	template <>inline NPY_TYPES getEnum<std::complex<float> >(void) { return NPY_CFLOAT; }
 
-	template <>inline NPY_TYPES getEnum<long double>(void){return NPY_LONGDOUBLE;}
+	template <>inline NPY_TYPES getEnum<std::complex<double> >(void) { return NPY_CDOUBLE; }
 
-	template <>inline NPY_TYPES getEnum<std::complex<float> >(void){return NPY_CFLOAT;}
-
-	template <>inline NPY_TYPES getEnum<std::complex<double> >(void){return NPY_CDOUBLE;}
-
-	template <>inline NPY_TYPES getEnum<std::complex<long double> >(void){return NPY_CLONGDOUBLE;}
+	template <>inline NPY_TYPES getEnum<std::complex<long double> >(void) { return NPY_CLONGDOUBLE; }
 
 } // namespace openravepy
 
@@ -155,24 +143,24 @@ namespace openravepy {
 		std::shared_ptr<void const> _handle;
 	};
 
-inline std::vector<int8_t> ExtractArrayInt8(const py::object& o)
-{
-    if( IS_PYTHONOBJECT_NONE(o) ) {
-        return {};
-    }
-    std::vector<int8_t> v;
-    try {
-        const size_t n = len(o);
-        v.resize(n);
-        for(size_t i = 0; i < n; ++i) {
-            v[i] = (int8_t)(py::extract<int>(o[i]));
-        }
-    }
-    catch(...) {
-        RAVELOG_WARN("Cannot do ExtractArray for int");
-    }
-    return v;
-}
+	inline std::vector<int8_t> ExtractArrayInt8(const py::object& o)
+	{
+		if (IS_PYTHONOBJECT_NONE(o)) {
+			return {};
+		}
+		std::vector<int8_t> v;
+		try {
+			const size_t n = len(o);
+			v.resize(n);
+			for (size_t i = 0; i < n; ++i) {
+				v[i] = (int8_t)(py::extract<int>(o[i]));
+			}
+		}
+		catch (...) {
+			RAVELOG_WARN("Cannot do ExtractArray for int");
+		}
+		return v;
+	}
 
 	template <typename T>
 	inline std::vector<T> ExtractArray(const py::object& o)
