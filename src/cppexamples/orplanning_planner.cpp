@@ -89,7 +89,7 @@ public:
 
                 // create a new output trajectory
                 TrajectoryBasePtr ptraj = RaveCreateTrajectory(penv,"");
-                if( !planner->PlanPath(ptraj) ) {
+                if( planner->PlanPath(ptraj).GetStatusCode()==PS_Failed ) {
                     RAVELOG_WARN("plan failed, trying again\n");
                     continue;
                 }

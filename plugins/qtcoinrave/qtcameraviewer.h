@@ -16,6 +16,10 @@
 #ifndef OPENRAVE_CAMERAVIEWER_H
 #define OPENRAVE_CAMERAVIEWER_H
 
+#include <QApplication>
+#include <QWidget>
+#include <QLabel>
+
 class QtCameraViewer : public ViewerBase
 {
 public:

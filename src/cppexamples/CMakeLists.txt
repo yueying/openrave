@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6.0)
+﻿cmake_minimum_required (VERSION 2.6.0)
 project (cppexamples)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../..) # only used for cppexamples!
@@ -9,6 +9,12 @@ if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
 endif( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
 
 find_package(Boost ${OpenRAVE_Boost_VERSION} EXACT COMPONENTS iostreams python thread system)
+
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/include 
+	${CMAKE_CURRENT_SOURCE_DIR}/include 
+	${PYTHON_INCLUDE_DIRS} 
+	${OPENRAVE_INCLUDE_LOCAL_DIRS} 
+	${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS})
 
 include_directories(${OpenRAVE_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} )
 if( Boost_INCLUDE_DIRS )
@@ -21,7 +27,7 @@ macro(build_openrave_executable name)
   add_executable(${name} ${name}.cpp)
   set_target_properties(${name} PROPERTIES COMPILE_FLAGS "${OpenRAVE_CXX_FLAGS}")
   set_target_properties(${name} PROPERTIES LINK_FLAGS "${OpenRAVE_LINK_FLAGS}")
-  target_link_libraries(${name} ${OpenRAVE_LIBRARIES} ${OpenRAVE_CORE_LIBRARIES} ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY})
+  target_link_libraries(${name} ${OpenRAVE_LIBRARIES} ${OpenRAVE_CORE_LIBRARIES} ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} boost_assertion_failed)
   install(TARGETS ${name} DESTINATION . )
 endmacro(build_openrave_executable)
 
@@ -29,7 +35,7 @@ macro(build_openrave_plugin name)
 add_library(${name} SHARED ${name}.cpp)
 set_target_properties(${name} PROPERTIES COMPILE_FLAGS "${OpenRAVE_CXX_FLAGS}")
 set_target_properties(${name} PROPERTIES LINK_FLAGS "${OpenRAVE_LINK_FLAGS}")
-target_link_libraries(${name} ${OpenRAVE_LIBRARIES})
+target_link_libraries(${name} ${OpenRAVE_LIBRARIES} boost_assertion_failed)
 install(TARGETS ${name} DESTINATION . )
 endmacro(build_openrave_plugin)
 
@@ -59,7 +65,7 @@ if( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
     if( PYTHON_EXECUTABLE )
       # get the site-packages directory
       execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)"
+        COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))"
         OUTPUT_VARIABLE _python_sitepackage
         RESULT_VARIABLE _python_failed)
       if( ${_python_failed} EQUAL 0 )
@@ -72,7 +78,7 @@ if( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
 
     include_directories(${PYTHON_INCLUDE_PATH} ${OpenRAVE_INCLUDE_DIRS})
     add_library(orpythonbinding SHARED orpythonbinding.cpp)
-    target_link_libraries(orpythonbinding ${OpenRAVE_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY})
+    target_link_libraries(orpythonbinding ${OpenRAVE_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${Boost_THREAD_LIBRARY} boost_assertion_failed)
     set_target_properties(orpythonbinding PROPERTIES PREFIX "" COMPILE_FLAGS "${OpenRAVE_CXX_FLAGS}")
     if( WIN32 )
       set_target_properties(orpythonbinding PROPERTIES SUFFIX ".pyd")

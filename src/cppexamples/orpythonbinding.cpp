@@ -33,7 +33,7 @@
 #include <boost/python/exception_translator.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <pyconfig.h>
-
+#include <openravepy/bindings.h>
 #include <exception>
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
@@ -45,6 +45,7 @@
 
 using namespace OpenRAVE;
 using namespace std;
+using namespace openravepy;
 
 namespace cppexamples {
 

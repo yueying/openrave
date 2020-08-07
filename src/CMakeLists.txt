@@ -131,3 +131,6 @@ if( OPT_INSTALL_3DMODELDATA )
 endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cppexamples  DESTINATION ${OPENRAVE_SHARE_DIR} COMPONENT ${COMPONENT_PREFIX}dev FILES_MATCHING PATTERN "*.cpp" PATTERN "*.xml" PATTERN "*.h" PATTERN "*.txt" PATTERN ".svn" EXCLUDE)
+
+add_subdirectory(cexamples)
+add_subdirectory(cppexamples)

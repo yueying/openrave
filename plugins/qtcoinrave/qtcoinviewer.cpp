@@ -34,11 +34,14 @@
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/VRMLnodes/SoVRMLGroup.h>
 
-#if QT_VERSION >= 0x040000 // check for qt4
+
 #include <QtOpenGL/QGLWidget>
-#else
-#include <qgl.h>
-#endif
+#include <QFileDialog>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMainWindow>
+#include <QStatusBar>
+#include <QMessageBox>
 
 #include <locale>
 

@@ -1,4 +1,4 @@
-/** \example orplanning_door.cpp
+﻿/** \example orplanning_door.cpp
     \author Rosen Diankov
 
     \image html cppexample_orplanning_door.jpg "Robot opening door for different initial/goal configurations."
@@ -96,10 +96,11 @@ public:
         return bsuccess;
     }
 
-    void SetState(const std::vector<dReal>& v)
+    int SetState(const std::vector<dReal>& v, int options)
     {
-        vector<dReal> vtemp = v;
-        if( !_SetState(vtemp) ) {
+        std::vector<dReal> vtemp = v;
+        if( !_SetState(vtemp, options) ) 
+		{
             throw OPENRAVE_EXCEPTION_FORMAT0("could not set state",ORE_InvalidArguments);
         }
     }
@@ -196,14 +197,20 @@ public:
         params->_distmetricfn = boost::bind(&DoorConfiguration::ComputeDistance,shared_from_this(),_1,_2);
         params->_diffstatefn = boost::bind(&DoorConfiguration::DiffState,shared_from_this(),_1,_2);
 
-        SpaceSamplerBasePtr pconfigsampler1 = RaveCreateSpaceSampler(_probot->GetEnv(),str(boost::format("robotconfiguration %s")%_probot->GetName()));
-        _robotsamplefn.reset(new planningutils::SimpleNeighborhoodSampler(pconfigsampler1,boost::bind(&planningutils::SimpleDistanceMetric::Eval,_robotdistmetric,_1,_2), boost::bind(&RobotBase::SubtractActiveDOFValues,_probot,_1,_2)));
-        SpaceSamplerBasePtr pconfigsampler2 = RaveCreateSpaceSampler(_probot->GetEnv(),str(boost::format("robotconfiguration %s")%_ptarget->GetName()));
-        _doorsamplefn.reset(new planningutils::SimpleNeighborhoodSampler(pconfigsampler2,boost::bind(&planningutils::SimpleDistanceMetric::Eval,_doordistmetric,_1,_2), boost::bind(&DoorConfiguration::SubtractStates,shared_from_this(),_1,_2)));
+        SpaceSamplerBasePtr pconfigsampler1 = RaveCreateSpaceSampler(_probot->GetEnv(),
+			str(boost::format("robotconfiguration %s")%_probot->GetName()));
+        _robotsamplefn.reset(new planningutils::SimpleNeighborhoodSampler(pconfigsampler1,
+			boost::bind(&planningutils::SimpleDistanceMetric::Eval,_robotdistmetric,_1,_2), 
+			boost::bind(&RobotBase::SubtractActiveDOFValues,_probot,_1,_2)));
+        SpaceSamplerBasePtr pconfigsampler2 = RaveCreateSpaceSampler(_probot->GetEnv(),
+			str(boost::format("robotconfiguration %s")%_ptarget->GetName()));
+        _doorsamplefn.reset(new planningutils::SimpleNeighborhoodSampler(pconfigsampler2,
+			boost::bind(&planningutils::SimpleDistanceMetric::Eval,_doordistmetric,_1,_2), 
+			boost::bind(&DoorConfiguration::SubtractStates,shared_from_this(),_1,_2)));
         params->_samplefn = boost::bind(&DoorConfiguration::Sample,shared_from_this(),_1);
         params->_sampleneighfn.clear(); // won't be using it
 
-        params->_setstatefn = boost::bind(&DoorConfiguration::SetState,shared_from_this(),_1);
+        params->_setstatevaluesfn = boost::bind(&DoorConfiguration::SetState,shared_from_this(),_1,_2);
         params->_getstatefn = boost::bind(&DoorConfiguration::GetState,shared_from_this(),_1);
         params->_neighstatefn = boost::bind(&DoorConfiguration::NeightState,shared_from_this(),_1,_2,_3);
 
@@ -211,7 +218,8 @@ public:
         listCheckCollisions.push_back(_probot);
         _collision.reset(new planningutils::LineCollisionConstraint(listCheckCollisions));
         // _checkpathconstraintsfn had been deprecated, so this line no longer works
-        params->_checkpathconstraintsfn = boost::bind(&planningutils::LineCollisionConstraint::Check,_collision,params, _1, _2, _3, _4);
+		/*params->_checkpathvelocityconstraintsfn = boost::bind(&planningutils::LineCollisionConstraint::Check,
+			_collision,params, _1, _2, _3, _4);*/
 
         _ikfilter = _pmanip->GetIkSolver()->RegisterCustomFilter(0, boost::bind(&DoorConfiguration::_CheckContinuityFilter, shared_from_this(), _1, _2, _3));
     }
@@ -292,12 +300,12 @@ public:
 
                         try {
                             params->_getstatefn(params->vinitialconfig);
-                            params->_setstatefn(params->vinitialconfig);
+                            params->_setstatevaluesfn(params->vinitialconfig,0);
                             params->_getstatefn(params->vinitialconfig);
 
                             params->vgoalconfig = params->vinitialconfig;
                             params->vgoalconfig.back() = RaveRandomFloat()*1.5; // in radians
-                            params->_setstatefn(params->vgoalconfig);
+                            params->_setstatevaluesfn(params->vgoalconfig,0);
                             params->_getstatefn(params->vgoalconfig);
                             break;
                         }
@@ -309,12 +317,12 @@ public:
                 else {
                     try {
                         params->_getstatefn(params->vinitialconfig);
-                        params->_setstatefn(params->vinitialconfig);
+                        params->_setstatevaluesfn(params->vinitialconfig,0);
                         params->_getstatefn(params->vinitialconfig);
 
                         params->vgoalconfig = params->vinitialconfig;
                         params->vgoalconfig.back() = RaveRandomFloat()*1.5; // in radians
-                        params->_setstatefn(params->vgoalconfig);
+                        params->_setstatevaluesfn(params->vgoalconfig,0);
                         params->_getstatefn(params->vgoalconfig);
                     }
                     catch(const openrave_exception& ex) {
@@ -331,7 +339,7 @@ public:
                 }
 
                 // create a new output trajectory
-                if( !planner->PlanPath(ptraj) ) {
+                if( planner->PlanPath(ptraj).GetStatusCode()==PS_Failed ) {
                     RAVELOG_WARN("plan failed, trying again\n");
                     continue;
                 }

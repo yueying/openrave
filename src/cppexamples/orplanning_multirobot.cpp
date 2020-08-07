@@ -1,4 +1,4 @@
-/** \example orplanning_multirobot.cpp
+﻿/** \example orplanning_multirobot.cpp
     \author Rosen Diankov
 
     Shows how to plan for two different robots simultaneously and control them simultaneously.
@@ -60,13 +60,19 @@ public:
                         for(int i = 0; i < params->GetDOF(); ++i) {
                             params->vgoalconfig[i] = params->_vConfigLowerLimit[i] + (params->_vConfigUpperLimit[i]-params->_vConfigLowerLimit[i])*RaveRandomFloat();
                         }
-                        params->_setstatefn(params->vgoalconfig);
-                        if( params->_checkpathconstraintsfn(params->vgoalconfig,params->vgoalconfig,IT_OpenStart,PlannerBase::ConfigurationListPtr()) ) {
+                        params->_setstatevaluesfn(params->vgoalconfig,0);
+                        if( params->_checkpathvelocityconstraintsfn(params->vgoalconfig,
+						params->vgoalconfig,
+						std::vector<dReal>(), 
+						std::vector<dReal>(),
+						0,
+						IT_OpenStart,
+						0,ConstraintFilterReturnPtr() )) {
                             break;
                         }
                     }
                     // restore robot state
-                    params->_setstatefn(params->vinitialconfig);
+                    params->_setstatevaluesfn(params->vinitialconfig,0);
                 }
 
                 RAVELOG_INFO("starting to plan\n");
@@ -76,7 +82,7 @@ public:
 
                 // create a new output trajectory
                 TrajectoryBasePtr ptraj = RaveCreateTrajectory(penv,"");
-                if( !planner->PlanPath(ptraj) ) {
+                if( planner->PlanPath(ptraj).GetStatusCode()==PS_Failed ) {
                     RAVELOG_WARN("plan failed, trying again\n");
                     continue;
                 }

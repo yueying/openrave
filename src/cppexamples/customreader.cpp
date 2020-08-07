@@ -1,4 +1,4 @@
-/** \example customreader.cpp
+﻿/** \example customreader.cpp
     \author Rosen Diankov
 
     Creates a simple OpenRAVE::ControllerBase and shows how to add a custom XML reader to it.
@@ -16,11 +16,15 @@ namespace cppexamples {
 class CustomController : public ControllerBase
 {
 public:
-    class XMLData : public XMLReadable
+    class XMLData : public Readable
     {
 public:
-        XMLData() : XMLReadable("piddata") {
+        XMLData() : Readable("piddata") {
         }
+		virtual bool SerializeXML(BaseXMLWriterPtr writer, int options = 0) const
+		{
+			return true;
+		}
         vector<dReal> pgains,igains;
     };
 
@@ -36,7 +40,7 @@ public:
                 RAVELOG_INFO("%s=%s\n",itatt->first.c_str(),itatt->second.c_str());
         }
 
-        virtual XMLReadablePtr GetReadable() {
+        virtual ReadablePtr GetReadable() {
             return _piddata;
         }
 

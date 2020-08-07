@@ -16,23 +16,10 @@
 #ifndef RAVE_QTCOINGUI_H
 #define RAVE_QTCOINGUI_H
 
-#ifndef _WIN32 // not a necessary define
-
-#if QT_VERSION >= 0x040000 // check for qt4
-#include <QtCore/QObject>
-#else
-#include <qobject.h>
-#include <qaction.h>
-#include <qmainwindow.h>
-#include <qgroupbox.h>
-#include <qlayout.h>
-#include <qfiledialog.h>
-#endif
-
-#include <sys/time.h>
-#include <time.h>
-
-#endif
+#include <QMainWindow>
+#include <QVBoxLayout>
+#include <QAction>
+#include <QGroupBox>
 
 #include "qtcoin.h"
 
