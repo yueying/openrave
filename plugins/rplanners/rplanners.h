@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -29,7 +29,8 @@ enum ExtendType {
     ET_Connected=2
 };
 
-#ifndef __clang__
+
+#ifdef __unix__ 
 /// \brief wraps a static array of T onto a std::vector. Destructor just NULLs out the pointers. Any dynamic resizing operations on this vector wrapper would probably cause the problem to segfault, so use as if it is constant.
 ///
 /// This is an optimization, so if there's a compiler this doesn't compile for, #ifdef it with the regular vector.
@@ -67,6 +68,7 @@ public:
 #else // __clang__
 #define VectorWrapper std::vector
 #endif // __clang__
+
 
 class NodeBase
 {

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2017 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -680,7 +680,7 @@ const std::vector<KinBody::GeometryInfoPtr>& KinBody::Link::GetGeometriesFromGro
 
 void KinBody::Link::SetGroupGeometries(const std::string& groupname, const std::vector<KinBody::GeometryInfoPtr>& geometries)
 {
-    FOREACH(itgeominfo, geometries) {
+    FOREACHC(itgeominfo, geometries) {
         if( !(*itgeominfo) ) {
             int igeominfo = itgeominfo - geometries.begin();
             throw OPENRAVE_EXCEPTION_FORMAT("GeometryInfo index %d is invalid for body %s", igeominfo%GetParent()->GetName(), ORE_InvalidArguments);
@@ -959,11 +959,11 @@ UpdateFromInfoResult KinBody::Link::UpdateFromInfo(const KinBody::LinkInfo& info
     // _mapFloatParameters
     const std::map<std::string, std::vector<dReal> > floatParameters = GetFloatParameters();
     if (floatParameters != info._mapFloatParameters) {
-        FOREACH(itParam, floatParameters) {
+		FOREACHC(itParam, floatParameters) {
             SetFloatParameters(itParam->first, {}); // erase current parameters
         }
 
-        FOREACH(itParam, info._mapFloatParameters) {
+		FOREACHC(itParam, info._mapFloatParameters) {
             SetFloatParameters(itParam->first, itParam->second);  // update with new info
         }
     }
@@ -971,10 +971,10 @@ UpdateFromInfoResult KinBody::Link::UpdateFromInfo(const KinBody::LinkInfo& info
     // _mapIntParameters
     const std::map<std::string, std::vector<int> > intParameters = GetIntParameters();
     if (intParameters != info._mapIntParameters) {
-        FOREACH(itParam, intParameters) {
+		FOREACHC(itParam, intParameters) {
             SetIntParameters(itParam->first, {});
         }
-        FOREACH(itParam, info._mapIntParameters) {
+		FOREACHC(itParam, info._mapIntParameters) {
             SetIntParameters(itParam->first, itParam->second);
         }
     }
@@ -982,10 +982,10 @@ UpdateFromInfoResult KinBody::Link::UpdateFromInfo(const KinBody::LinkInfo& info
     // _mapStringParameters
     const std::map<std::string, std::string> stringParameters = GetStringParameters();
     if (stringParameters != info._mapStringParameters) {
-        FOREACH(itParam, stringParameters) {
+		FOREACHC(itParam, stringParameters) {
             SetStringParameters(itParam->first, {});
         }
-        FOREACH(itParam, info._mapStringParameters) {
+		FOREACHC(itParam, info._mapStringParameters) {
             SetStringParameters(itParam->first, itParam->second);
         }
     }

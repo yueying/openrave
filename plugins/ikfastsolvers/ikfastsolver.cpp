@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2016 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -156,7 +156,7 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
         if( _vFreeInc.size() == 0 ) {
             return true;
         }
-        FOREACHC(it, _vFreeInc) {
+        FOREACH(it, _vFreeInc) {
             sinput >> *it;
         }
         return !!sinput;
@@ -297,7 +297,7 @@ for numBacktraceLinksForSelfCollisionWithNonMoving numBacktraceLinksForSelfColli
         }
         if( !bfound ) {
             std::stringstream smanipnames;
-            FOREACH(itmanip, probot->GetManipulators()) {
+			FOREACHC(itmanip, probot->GetManipulators()) {
                 smanipnames << (*itmanip)->GetName() << ", ";
             }
             throw OPENRAVE_EXCEPTION_FORMAT(_("manipulator '%s' not found in robot '%s' (%d) with manips [%s]"), pmanip->GetName()%probot->GetName()%probot->GetEnvironmentId()%smanipnames.str(), ORE_InvalidArguments);

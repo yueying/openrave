@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -2440,11 +2440,11 @@ UpdateFromInfoResult KinBody::Joint::UpdateFromInfo(const KinBody::JointInfo& in
     // _mapFloatParameters
     const std::map<std::string, std::vector<dReal> > floatParameters = GetFloatParameters();
     if (floatParameters != info._mapFloatParameters) {
-        FOREACH(itParam, floatParameters) {
+		FOREACHC(itParam, floatParameters) {
             SetFloatParameters(itParam->first, {}); // erase current parameters
         }
 
-        FOREACH(itParam, info._mapFloatParameters) {
+		FOREACHC(itParam, info._mapFloatParameters) {
             SetFloatParameters(itParam->first, itParam->second);  // update with new info
         }
     }
@@ -2452,10 +2452,10 @@ UpdateFromInfoResult KinBody::Joint::UpdateFromInfo(const KinBody::JointInfo& in
     // _mapIntParameters
     const std::map<std::string, std::vector<int> > intParameters = GetIntParameters();
     if (intParameters != info._mapIntParameters) {
-        FOREACH(itParam, intParameters) {
+		FOREACHC(itParam, intParameters) {
             SetIntParameters(itParam->first, {});
         }
-        FOREACH(itParam, info._mapIntParameters) {
+		FOREACHC(itParam, info._mapIntParameters) {
             SetIntParameters(itParam->first, itParam->second);
         }
     }
@@ -2463,10 +2463,10 @@ UpdateFromInfoResult KinBody::Joint::UpdateFromInfo(const KinBody::JointInfo& in
     // _mapStringParameters
     const std::map<std::string, std::string> stringParameters = GetStringParameters();
     if (stringParameters != info._mapStringParameters) {
-        FOREACH(itParam, stringParameters) {
+		FOREACHC(itParam, stringParameters) {
             SetStringParameters(itParam->first, {});
         }
-        FOREACH(itParam, info._mapStringParameters) {
+		FOREACHC(itParam, info._mapStringParameters) {
             SetStringParameters(itParam->first, itParam->second);
         }
     }

@@ -50,7 +50,6 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-namespace numeric = py::numeric;
 
 PyTrajectoryBase::PyTrajectoryBase(TrajectoryBasePtr pTrajectory, PyEnvironmentBasePtr pyenv) : PyInterfaceBase(pTrajectory, pyenv),_ptrajectory(pTrajectory) {
 }
@@ -154,12 +153,13 @@ object PyTrajectoryBase::SamplePoints2D(object otimes) const
     pypos.resize({(int) values.size()/numdof, numdof});
     return pypos;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { npy_intp(values.size()/numdof), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    if( !values.empty() ) {
-        memcpy(PyArray_DATA(pypos), values.data(), values.size()*sizeof(values[0]));
-    }
-    return py::to_array_astype<dReal>(pypos);
+	py::numpy::ndarray pypos = py::numpy::empty(py::make_tuple(int(values.size() / numdof), numdof),
+		py::numpy::dtype::get_builtin<dReal>());
+	if (values.size() > 0) 
+	{
+		memcpy(pypos.get_data(), &values[0], values.size() * sizeof(values[0]));
+	}
+	return std::move(pypos);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -176,12 +176,13 @@ object PyTrajectoryBase::SamplePoints2D(object otimes, PyConfigurationSpecificat
     pypos.resize({(int) values.size()/numdof, numdof});
     return pypos;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { npy_intp(values.size()/numdof), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    if( !values.empty() ) {
-        memcpy(PyArray_DATA(pypos), values.data(), values.size()*sizeof(values[0]));
-    }
-    return py::to_array_astype<dReal>(pypos);
+	py::numpy::ndarray pypos = py::numpy::empty(py::make_tuple(int(values.size() / numdof), numdof), 
+		py::numpy::dtype::get_builtin<dReal>());
+	if (values.size() > 0) 
+	{
+		memcpy(pypos.get_data(), &values[0], values.size() * sizeof(values[0]));
+	}
+	return std::move(pypos);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -231,12 +232,13 @@ object PyTrajectoryBase::GetWaypoints2D(size_t startindex, size_t endindex) cons
     pypos.resize({(int) values.size()/numdof, numdof});
     return pypos;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { npy_intp(values.size()/numdof), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    if( !values.empty() ) {
-        memcpy(PyArray_DATA(pypos), values.data(), values.size()*sizeof(values[0]));
-    }
-    return py::to_array_astype<dReal>(pypos);
+	py::numpy::ndarray pypos = py::numpy::empty(boost::python::make_tuple(int(values.size() / numdof), int(numdof)),
+		py::numpy::dtype::get_builtin<dReal>());
+	if (values.size() > 0)
+	{
+		memcpy(pypos.get_data(), &values[0], values.size() * sizeof(values[0]));
+	}
+	return std::move(pypos);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -286,8 +288,8 @@ object PyTrajectoryBase::__getitem__(py::slice indices) const
     py::buffer_info buf = pypos.request();
     dReal* ppos = (dReal*) buf.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { npy_intp(nindices), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
+	py::numpy::ndarray pypos = py::numpy::empty(py::make_tuple(nindices, numdof), 
+		py::numpy::dtype::get_builtin<dReal>());
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     const int waypointSize = nvalues * sizeof(values[0]);
     for(int i = 0; i < nindices; i++) {
@@ -296,14 +298,10 @@ object PyTrajectoryBase::__getitem__(py::slice indices) const
         memcpy(ppos, values.data(), waypointSize);
         ppos += numdof;
 #else
-        memcpy(PyArray_BYTES(pypos)+(i*waypointSize), values.data(), waypointSize);
+		memcpy(pypos.get_data() + (i*waypointSize), values.data(), waypointSize);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
     return pypos;
-#else // USE_PYBIND11_PYTHON_BINDINGS
-    return py::to_array_astype<dReal>(pypos);
-#endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
 object PyTrajectoryBase::GetAllWaypoints2D() const
@@ -323,12 +321,13 @@ object PyTrajectoryBase::GetWaypoints2D(size_t startindex, size_t endindex, PyCo
     pypos.resize({nvalues/numdof, numdof});
     return pypos;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { npy_intp(nvalues/numdof), npy_intp(numdof) };
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    if( !values.empty() ) {
-        memcpy(PyArray_DATA(pypos), values.data(), nvalues*sizeof(values[0]));
-    }
-    return py::to_array_astype<dReal>(pypos);
+	py::numpy::ndarray pypos = py::numpy::empty(py::make_tuple(nvalues / numdof, numdof), 
+		py::numpy::dtype::get_builtin<dReal>());
+	if (values.size() > 0)
+	{
+		memcpy(pypos.get_data(), &values[0], values.size() * sizeof(values[0]));
+	}
+	return std::move(pypos);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 

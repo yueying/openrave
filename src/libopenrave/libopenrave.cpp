@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -1989,7 +1989,7 @@ std::string CollisionReport::__str__() const
     if( vLinkColliding.size() > 0 ) {
         s << "pairs=" << vLinkColliding.size();
         int index = 0;
-        FOREACH(itlinkpair, vLinkColliding) {
+        FOREACHC(itlinkpair, vLinkColliding) {
             s << ", [" << index << "](";
             if( !!itlinkpair->first ) {
                 KinBodyPtr parent = itlinkpair->first->GetParent(true);

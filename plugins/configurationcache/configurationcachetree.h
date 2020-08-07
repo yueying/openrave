@@ -1,4 +1,4 @@
-// -*- Coding: utf-8 -*-
+﻿// -*- Coding: utf-8 -*-
 // Copyright (C) 2014 Alejandro Perez & Rosen Diankov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ enum ConfigurationNodeType {
     CNT_Any = 3, /// used to target any node. not a node type
 };
 
-class CacheTreeNode
+class OPENRAVE_API CacheTreeNode
 {
 public:
     /// \brief returns the configuration state
@@ -161,7 +161,7 @@ typedef const CacheTreeNode* CacheTreeNodeConstPtr;
     d(p,q) < (1 + e)d(p,S)
     2^(1+i) (1 + 1/e) <= d(p,Qi)
  */
-class CacheTree
+class OPENRAVE_API CacheTree
 {
 public:
 
@@ -349,7 +349,7 @@ typedef OPENRAVE_SHARED_PTR<CacheTree> CacheTreePtr;
 /** Maintains an up-to-date cache tree synchronized to the openrave environment. Tracks bodies being added removed, states changing, etc.
    The state of cache consists of the active DOFs of the robot that is passed in at constructor time.
  */
-class ConfigurationCache
+class OPENRAVE_API ConfigurationCache
 {
 public:
     /// \brief start tracking the active DOFs of the robot

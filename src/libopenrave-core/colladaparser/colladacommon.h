@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -38,7 +38,9 @@ namespace ColladaDOM150 {} // declare in case earlier versions are used
 #include <1.5/dom/domElements.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
-
+#ifndef M_PI
+#	define M_PI 3.14159265358979323846	// PI
+#endif
 namespace OpenRAVE
 {
 

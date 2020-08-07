@@ -1,41 +1,88 @@
-/// BoostPython specific bindings
+﻿/// BoostPython specific bindings
 #ifndef OPENRAVE_BOOSTPYTHON_BINDINGS_H
 #define OPENRAVE_BOOSTPYTHON_BINDINGS_H
 
 #include <boost/multi_array.hpp>
 
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(_MSC_VER)
+#define OPENRAVEPY_API __declspec(dllimport)
+#define OPENRAVEPY_API __declspec(dllexport)
+#define OPENRAVE_HELPER_DLL_LOCAL
+#else
+#if __GNUC__ >= 4
+#define OPENRAVEPY_API __attribute__ ((visibility("default")))
+#define OPENRAVEPY_API __attribute__ ((visibility("default")))
+#define OPENRAVE_HELPER_DLL_LOCAL  __attribute__ ((visibility("hidden")))
+#else
 #define OPENRAVEPY_API
+#define OPENRAVEPY_API
+#define OPENRAVE_HELPER_DLL_LOCAL
+#endif
+#endif
+
 #include <boost/python.hpp> // already has #include <boost/shared_ptr.hpp>
+#include <boost/python/numpy.hpp>
+
 #define OPENRAVE_PYTHON_MODULE(X) BOOST_PYTHON_MODULE(X)
 // might need a space before "::"?
 #define PY_ARGS(...) py::args(__VA_ARGS__),
 
 namespace boost {
-namespace python {
-template <typename T>
-inline object to_object(const T& t) {
-    return object(t);
-}
-inline object handle_to_object(PyObject* pyo) {
-    return object(handle<>(pyo));
-}
-template<typename T>
-inline boost::python::numeric::array to_array_astype(PyObject* pyo) {
-    return static_cast<boost::python::numeric::array>(static_cast<boost::python::numeric::array>(handle<>(pyo)).astype(openravepy::select_dtype<T>::type));
-}
-template<typename T>
-inline object empty_array_astype() {
-    return boost::python::numeric::array(boost::python::list()).astype(openravepy::select_dtype<T>::type);
-}
-template <typename T>
-using extract_ = extract<T>;
-// https://www.boost.org/doc/libs/1_62_0/libs/python/doc/html/reference/high_level_components/boost_python_scope_hpp.html
-using scope_ = scope;
-inline object none_() {
-    return object();
-}
-using array_int = object; // py::array_int
-} // namespace boost::python
+	namespace python {
+
+		template <typename T>
+		inline object to_object(const T& t)
+		{
+			return object(t);
+		}
+
+		inline object handle_to_object(PyObject* pyo)
+		{
+			return object(handle<>(pyo));
+		}
+
+		inline void check_PyArrayElementType(object newo) {
+			NPY_TYPES theType = NPY_TYPES(PyArray_TYPE(reinterpret_cast<PyArrayObject*>(newo.ptr())));
+			if (theType == NPY_OBJECT) {
+				std::ostringstream stream;
+				stream << "array elments have been cast to NPY_OBJECT, "
+					<< "numhandle can only accept arrays with numerical elements"
+					<< std::ends;
+				PyErr_SetString(PyExc_TypeError, stream.str().c_str());
+				throw_error_already_set();
+			}
+			return;
+		}
+
+		template<typename T>
+		inline boost::python::numpy::ndarray to_array_astype(PyObject* pyo)
+		{
+			if (!PySequence_Check(pyo)) {
+				PyErr_SetString(PyExc_ValueError, "expected a sequence");
+				throw_error_already_set();
+			}
+			object obj(handle<>
+				(PyArray_ContiguousFromObject(pyo, NPY_NOTYPE, 0, 0)));
+			check_PyArrayElementType(obj);
+			return extract<numpy::ndarray>(obj);
+		}
+		template<typename T>
+		inline object empty_array_astype()
+		{
+			boost::python::tuple shape = boost::python::make_tuple(1, 1);
+			boost::python::numpy::dtype dtype = boost::python::numpy::dtype::get_builtin<T>();
+
+			return boost::python::numpy::empty(shape, dtype);
+		}
+		template <typename T>
+		using extract_ = extract<T>;
+		// https://www.boost.org/doc/libs/1_62_0/libs/python/doc/html/reference/high_level_components/boost_python_scope_hpp.html
+		using scope_ = scope;
+		inline object none_() {
+			return object();
+		}
+		using array_int = object; // py::array_int
+	} // namespace boost::python
 } // namespace boost
 
 // is_none is not supported by older versions of python
@@ -46,7 +93,7 @@ using array_int = object; // py::array_int
 #endif
 
 
-#define IS_PYTHONOBJECT_STRING(o) (!IS_PYTHONOBJECT_NONE(o) && (PyString_Check((o).ptr()) || PyUnicode_Check((o).ptr())))
+#define IS_PYTHONOBJECT_STRING(o) (!IS_PYTHONOBJECT_NONE(o) && (PyBytes_Check((o).ptr()) || PyUnicode_Check((o).ptr())))
 
 namespace openravepy {
 
@@ -59,71 +106,63 @@ inline py::object ConvertStringToUnicode(const std::string& s)
 
 #ifdef OPENRAVE_BINDINGS_PYARRAY
 
-template <typename T>
-inline py::numeric::array toPyArrayN(const T* pvalues, const size_t N)
-{
-    if( N == 0 ) {
-        return static_cast<py::numeric::array>(py::empty_array_astype<T>());
-    }
-    npy_intp dims[] = { npy_intp(N) };
-    PyObject *pyvalues = PyArray_SimpleNew(1, dims, select_npy_type<T>::type);
-    if( pvalues != nullptr ) {
-        memcpy(PyArray_DATA(pyvalues), pvalues, N * sizeof(T));
-    }
-    return static_cast<py::numeric::array>(py::handle<>(pyvalues));
-}
+	template <typename T>
+	inline py::numpy::ndarray toPyArrayN(const T* values, size_t N)
+	{
+		if (N == 0)
+		{
+			return py::numpy::array(py::list());
+		}
+		py::numpy::dtype dt = py::numpy::dtype::get_builtin<T>();
+		py::tuple shape = py::make_tuple(N);
+		py::numpy::ndarray pyarray = py::numpy::empty(shape, dt);
+		std::memcpy(pyarray.get_data(), &values[0], N * sizeof(T));
+		return pyarray;
+	}
 
-template <typename T>
-inline py::numeric::array toPyArrayN(const T* pvalues, std::vector<npy_intp>& dims)
-{
-    if( dims.empty() ) {
-        return static_cast<py::numeric::array>(py::empty_array_astype<T>());
-    }
-    size_t numel = 1;
-    for(npy_intp dim : dims) {
-        numel *= dim;
-    }
-    if( numel == 0 ) {
-        return static_cast<py::numeric::array>(py::empty_array_astype<T>());
-    }
-    PyObject *pyvalues = PyArray_SimpleNew(dims.size(), dims.data(), select_npy_type<T>::type);
-    if( pvalues != nullptr ) {
-        memcpy(PyArray_DATA(pyvalues), pvalues, numel * sizeof(T));
-    }
-    return static_cast<py::numeric::array>(py::handle<>(pyvalues));
-}
+	template <typename T>
+	inline py::numpy::ndarray toPyArrayN(const T* values, std::vector<size_t>& dims)
+	{
+		if (dims.empty())
+		{
+			return py::numpy::array(py::list());
+		}
+		size_t size = sizeof(T);
+		for (auto & dim : dims)
+		{
+			size *= dim;
+		}
+		py::numpy::dtype dt = py::numpy::dtype::get_builtin<T>();
+		py::numpy::ndarray pyarray = py::numpy::empty(py::tuple(dims), dt);
+		std::memcpy(pyarray.get_data(), &values[0], size);
+		return pyarray;
+	}
 
-template <typename T>
-inline py::numeric::array toPyArray(const std::vector<T>& v)
-{
-    return toPyArrayN(v.data(), v.size());
-}
+	template <typename T>
+	inline py::numpy::ndarray toPyArray(const std::vector<T>& v)
+	{
+		return toPyArrayN(v.data(), v.size());
+	}
 
-template <typename T>
-inline py::numeric::array toPyArray(const std::vector<T>& v, std::vector<npy_intp>& dims)
-{
-    if( v.empty() ) {
-        return toPyArrayN((T*)nullptr, dims);
-    }
-    size_t numel = 1;
-    for(npy_intp dim : dims) {
-        numel *= dim;
-    }
-    BOOST_ASSERT(numel == v.size());
-    return toPyArrayN(v.data(), dims);
-}
+	template <typename T>
+	inline py::numpy::ndarray toPyArray(const std::vector<T>& v, std::vector<size_t>& dims)
+	{
+		if (v.empty()) {
+			return toPyArrayN((T*)nullptr, dims);
+		}
+		size_t numel = 1;
+		for (npy_intp dim : dims) {
+			numel *= dim;
+		}
+		BOOST_ASSERT(numel == v.size());
+		return toPyArrayN(v.data(), dims);
+	}
 
-template <typename T, long unsigned int N>
-inline py::numeric::array toPyArray(const std::array<T, N>& v)
-{
-    return toPyArrayN(v.data(), N);
-}
-
-template <typename T, int N>
-inline py::numeric::array toPyArray(const boost::array<T, N>& v)
-{
-    return toPyArrayN(v.data(), N);
-}
+	template <typename T, int N>
+	inline py::numpy::ndarray toPyArray(const boost::array<T, N>& v)
+	{
+		return toPyArrayN(v.data(), N);
+	}
 
 #endif // OPENRAVE_BINDINGS_PYARRAY
 

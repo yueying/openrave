@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -984,7 +984,7 @@ public:
         {
             boost::timed_mutex::scoped_lock lock(_mutexInterfaces);
             vector<KinBodyPtr>::iterator it = _vecbodies.end();
-            FOREACHC(itbody, _vecbodies) {
+            FOREACH(itbody, _vecbodies) {
                 if( (*itbody)->GetName() == name ) {
                     it = itbody;
                     break;
@@ -1243,7 +1243,7 @@ public:
             (*itsensor)->SimulationStep(fTimeStep);
         }
         FOREACH(itrobot, vecrobots) {
-            FOREACH(itsensor, (*itrobot)->GetAttachedSensors()) {
+            FOREACHC(itsensor, (*itrobot)->GetAttachedSensors()) {
                 if( !!(*itsensor)->GetSensor() ) {
                     (*itsensor)->GetSensor()->SimulationStep(fTimeStep);
                 }

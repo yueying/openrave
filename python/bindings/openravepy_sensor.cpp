@@ -43,20 +43,25 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-namespace numeric = py::numeric;
 
-inline void resize_3x3(numeric::array& arr) {
+inline void resize_3x3(py::numpy::ndarray& arr)
+{
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    arr.resize({3, 3});
+	arr.resize({ 3, 3 });
 #else
-    arr.resize(3, 3);
+	arr.reshape(py::make_tuple(3, 3));
 #endif
 }
 
+
 PyCameraIntrinsics::PyCameraIntrinsics(const geometry::RaveCameraIntrinsics<float>& intrinsics)
 {
-    numeric::array arr(py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1));
-    resize_3x3(arr);
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+	py::numpy::ndarray arr = py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1);
+#else
+	py::numpy::ndarray arr = py::numpy::array(py::make_tuple(intrinsics.fx, 0, intrinsics.cx, 0, intrinsics.fy, intrinsics.cy, 0, 0, 1));
+#endif
+	resize_3x3(arr);
     K = arr;
     distortion_model = intrinsics.distortion_model;
     distortion_coeffs = toPyArray(intrinsics.distortion_coeffs);
@@ -65,8 +70,12 @@ PyCameraIntrinsics::PyCameraIntrinsics(const geometry::RaveCameraIntrinsics<floa
 
 PyCameraIntrinsics::PyCameraIntrinsics(const geometry::RaveCameraIntrinsics<double>& intrinsics)
 {
-    numeric::array arr(py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1));
-    resize_3x3(arr);
+#ifdef USE_PYBIND11_PYTHON_BINDINGS
+	py::numpy::ndarray arr = py::make_tuple(intrinsics.fx,0,intrinsics.cx,0,intrinsics.fy,intrinsics.cy,0,0,1);
+#else
+	py::numpy::ndarray arr = py::numpy::array(py::make_tuple(intrinsics.fx, 0, intrinsics.cx, 0, intrinsics.fy, intrinsics.cy, 0, 0, 1));
+#endif
+	resize_3x3(arr);
     K = arr;
     distortion_model = intrinsics.distortion_model;
     distortion_coeffs = toPyArray(intrinsics.distortion_coeffs);
@@ -331,12 +340,13 @@ PySensorBase::PyCameraSensorData::PyCameraSensorData(OPENRAVE_SHARED_PTR<SensorB
         pyimagedata.resize({pgeom->height, pgeom->width, 3});
         imagedata = pyimagedata;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = {npy_intp(pgeom->height), npy_intp(pgeom->width), npy_intp(3)};
-        PyObject *pyvalues = PyArray_SimpleNew(3, dims, PyArray_UINT8);
-        if( !vimagedata.empty() ) {
-            memcpy(PyArray_DATA(pyvalues), vimagedata.data(), numel);
-        }
-        imagedata = py::to_array_astype<uint8_t>(pyvalues);
+		py::numpy::ndarray pyvalues = py::numpy::empty(py::make_tuple(pgeom->height, pgeom->width, 3), 
+			py::numpy::dtype::get_builtin<uint8_t>());
+		if (pdata->vimagedata.size() > 0) 
+		{
+			memcpy(pyvalues.get_data(), &pdata->vimagedata[0], pdata->vimagedata.size());
+		}
+		imagedata = pyvalues;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
 }
@@ -351,15 +361,18 @@ PySensorBase::PyCameraSensorData::PyCameraSensorData(OPENRAVE_SHARED_PTR<SensorB
         memset(pimagedata, 0, numel * sizeof(uint8_t)); // although we know sizeof(uint8_t)==1
         imagedata = pyimagedata;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { pgeom->height,pgeom->width,3};
-        PyObject *pyvalues = PyArray_SimpleNew(3,dims, PyArray_UINT8);
-        memset(PyArray_DATA(pyvalues), 0, numel * sizeof(uint8_t));
-        imagedata = py::to_array_astype<uint8_t>(pyvalues);
+		py::numpy::ndarray pyvalues = py::numpy::zeros(py::make_tuple(pgeom->height, pgeom->width, 3), 
+			py::numpy::dtype::get_builtin<uint8_t>());
+		imagedata = pyvalues;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
     {
-        numeric::array arr(py::make_tuple(pgeom->intrinsics.fx,0,pgeom->intrinsics.cx,0,pgeom->intrinsics.fy,pgeom->intrinsics.cy,0,0,1));
-        resize_3x3(arr);
+#ifdef USE_PYBIND11_PYTHON_BINDINGS		
+		py::numpy::ndarray arr = py::make_tuple(pgeom->intrinsics.fx,0,pgeom->intrinsics.cx,0,pgeom->intrinsics.fy,pgeom->intrinsics.cy,0,0,1);
+#else
+		py::numpy::ndarray arr = py::numpy::array(py::make_tuple(pgeom->intrinsics.fx, 0, pgeom->intrinsics.cx, 0, pgeom->intrinsics.fy, pgeom->intrinsics.cy, 0, 0, 1));
+#endif
+		resize_3x3(arr);
         KK = arr;
     }
 }
@@ -395,7 +408,7 @@ PySensorBase::PyIMUSensorData::PyIMUSensorData(OPENRAVE_SHARED_PTR<SensorBase::I
     rotation = toPyVector4(pdata->rotation);
     angular_velocity = toPyVector3(pdata->angular_velocity);
     linear_acceleration = toPyVector3(pdata->linear_acceleration);
-    numeric::array arr = toPyArrayN(pdata->rotation_covariance.data(), pdata->rotation_covariance.size());
+	py::numpy::ndarray arr = toPyArrayN(pdata->rotation_covariance.data(), pdata->rotation_covariance.size());
     resize_3x3(arr);
     rotation_covariance = arr;
     arr = toPyArrayN(pdata->angular_velocity_covariance.data(), pdata->angular_velocity_covariance.size());
@@ -416,7 +429,7 @@ PySensorBase::PyOdometrySensorData::PyOdometrySensorData(OPENRAVE_SHARED_PTR<Sen
     pose = toPyArray(pdata->pose);
     linear_velocity = toPyVector3(pdata->linear_velocity);
     angular_velocity = toPyVector3(pdata->angular_velocity);
-    numeric::array arr = toPyArrayN(pdata->pose_covariance.data(), pdata->pose_covariance.size());
+	py::numpy::ndarray arr = toPyArrayN(pdata->pose_covariance.data(), pdata->pose_covariance.size());
     resize_3x3(arr);
     pose_covariance = arr;
     arr = toPyArrayN(pdata->velocity_covariance.data(), pdata->velocity_covariance.size());
@@ -435,7 +448,7 @@ PySensorBase::PyOdometrySensorData::~PyOdometrySensorData() {
 PySensorBase::PyTactileSensorData::PyTactileSensorData(OPENRAVE_SHARED_PTR<SensorBase::TactileGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::TactileSensorData> pdata) : PySensorData(pdata)
 {
     forces = toPyArray3(pdata->forces);
-    numeric::array arr = toPyArrayN(pdata->force_covariance.data(), pdata->force_covariance.size());
+    py::numpy::ndarray arr = toPyArrayN(pdata->force_covariance.data(), pdata->force_covariance.size());
     resize_3x3(arr);
     force_covariance = arr;
     positions = toPyArray3(pgeom->positions);

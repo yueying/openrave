@@ -1,4 +1,4 @@
-// -*- Coding: utf-8 -*-
+﻿// -*- Coding: utf-8 -*-
 // Copyright (C) 2014 Alejandro Perez & Rosen Diankov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -641,6 +641,10 @@ bool CacheTree::RemoveNode(CacheTreeNodeConstPtr _removenode)
     return bRemoved;
 }
 
+void CacheTree::UpdateCollisionNodes(KinBodyPtr pbody)
+{
+}
+
 bool CacheTree::_Remove(CacheTreeNodePtr removenode, std::vector< std::vector<CacheTreeNodePtr> >& vvCoverSetNodes, int currentlevel, dReal fLevelBound2)
 {
     int enclevel = _EncodeLevel(currentlevel);
@@ -757,7 +761,7 @@ void CacheTree::GetNodeValues(std::vector<dReal>& vals) const
     if( (int)vals.capacity() < _numnodes*_statedof) {
         vals.reserve(_numnodes*_statedof);
     }
-    FOREACH(itlevelnodes, _vsetLevelNodes) {
+	FOREACHC(itlevelnodes, _vsetLevelNodes) {
         FOREACH(itnode, *itlevelnodes) {
             vals.insert(vals.end(), (*itnode)->GetConfigurationState(), (*itnode)->GetConfigurationState()+_statedof);
         }

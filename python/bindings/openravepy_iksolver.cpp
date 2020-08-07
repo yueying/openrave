@@ -45,8 +45,6 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-namespace numeric = py::numeric;
-
 PyIkReturn::PyIkReturn(const IkReturn& ret) : _ret(ret) {
 }
 PyIkReturn::PyIkReturn(IkReturnPtr pret) : _ret(*pret) {
@@ -136,9 +134,11 @@ IkSolverBasePtr PyIkSolverBase::GetIkSolver() {
 int PyIkSolverBase::GetNumFreeParameters() const {
     return _pIkSolver->GetNumFreeParameters();
 }
-object PyIkSolverBase::GetFreeParameters() const {
-    if( _pIkSolver->GetNumFreeParameters() == 0 ) {
-        return py::empty_array_astype<dReal>();
+object PyIkSolverBase::GetFreeParameters() const 
+{
+    if( _pIkSolver->GetNumFreeParameters() == 0 ) 
+	{
+		return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pIkSolver->GetFreeParameters(values);

@@ -1,4 +1,4 @@
-###########################################
+﻿###########################################
 # logging openrave plugin
 ###########################################
 set(logging_SOURCES logging.cpp plugindefs.h)
@@ -72,8 +72,9 @@ if( ENABLE_VIDEORECORDING )
   set(logging_SOURCES ${logging_SOURCES} viewerrecorder.cpp)
 endif()
 
-add_library(logging SHARED ${logging_SOURCES})
-target_link_libraries(logging libopenrave ${FFMPEG_LIBRARIES})
+find_package(Boost REQUIRED COMPONENTS thread system)
+add_library(logging SHARED ${logging_SOURCES} )
+target_link_libraries(logging libopenrave ${FFMPEG_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(logging PRIVATE boost_assertion_failed)
 set_target_properties(logging PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS}" LINK_FLAGS "${PLUGIN_LINK_FLAGS}")
 install(TARGETS logging DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${PLUGINS_BASE})

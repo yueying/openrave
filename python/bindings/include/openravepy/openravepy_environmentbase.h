@@ -112,7 +112,7 @@ public:
 
     bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport);
 
-    object CheckCollisionRays(py::numeric::array rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false);
+    object CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyPtr pbody,bool bFrontFacingOnly=false);
 
     bool CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray);
 

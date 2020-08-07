@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -95,12 +95,15 @@
 #include <crlibm.h> // robust/accurate math
 #endif
 
+#ifndef M_PI
+#	define M_PI 3.14159265358979323846	// PI
+#endif
+
 #define FORIT(it, v) for(it = (v).begin(); it != (v).end(); ++(it))
 
 #ifdef _WIN32
-#elif defined(__APPLE_CC__)
-#define _strnicmp strncasecmp
-#define _stricmp strcasecmp
+#define  strncasecmp _strnicmp
+#define  strcasecmp _stricmp
 #else
 #define _strnicmp strncasecmp
 #define _stricmp strcasecmp
@@ -130,6 +133,55 @@ inline path absolute(const path& p, const path& base)
 #endif
 
 #endif
+
+#ifdef _MSC_VER
+#include <intrin.h>
+
+static inline int __builtin_ctz(unsigned x) {
+	unsigned long ret;
+	_BitScanForward(&ret, x);
+	return (int)ret;
+}
+
+static inline int __builtin_ctzll(unsigned long long x) {
+	unsigned long ret;
+	_BitScanForward64(&ret, x);
+	return (int)ret;
+}
+
+static inline int __builtin_ctzl(unsigned long x) {
+	return sizeof(x) == 8 ? __builtin_ctzll(x) : __builtin_ctz((uint32_t)x);
+}
+
+static inline int __builtin_clz(unsigned x) {
+	//unsigned long ret;
+	//_BitScanReverse(&ret, x);
+	//return (int)(31 ^ ret);
+	return (int)__lzcnt(x);
+}
+
+static inline int __builtin_clzll(unsigned long long x) {
+	//unsigned long ret;
+	//_BitScanReverse64(&ret, x);
+	//return (int)(63 ^ ret);
+	return (int)__lzcnt64(x);
+}
+
+static inline int __builtin_clzl(unsigned long x) {
+	return sizeof(x) == 8 ? __builtin_clzll(x) : __builtin_clz((uint32_t)x);
+}
+
+#ifdef __cplusplus
+static inline int __builtin_ctzl(unsigned long long x) {
+	return __builtin_ctzll(x);
+}
+
+static inline int __builtin_clzl(unsigned long long x) {
+	return __builtin_clzll(x);
+}
+#endif
+#endif
+
 
 namespace OpenRAVE {
 

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2018 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -614,7 +614,7 @@ protected:
                 int neighstatus = NSS_Failed;
                 if( mult > 1 ) {
                     dq2 = dq;
-                    FOREACHC(it, dq2) {
+                    FOREACH(it, dq2) {
                         *it *= mult;
                     }
                     neighstatus = parameters->_neighstatefn(qcur, dq2, NSO_OnlyHardConstraints);

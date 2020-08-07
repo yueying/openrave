@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2016 Rosen Diankov
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the
@@ -148,7 +148,7 @@ public:
                     if( grabbedbodies.size() > 0 ) {
                         FOREACH(itbody, grabbedbodies) {
                             if( pmanip->IsGrabbing(**itbody) ) {
-                                FOREACH(itlink, (*itbody)->GetLinks()) {
+								FOREACHC(itlink, (*itbody)->GetLinks()) {
                                     globallinklist.push_back(*itlink);
                                 }
                             }
@@ -413,7 +413,7 @@ public:
                 endeffaccang = endeffaccs.at(endeffindex).second;
                 Transform R = itmanipinfo->plink->GetTransform();
 
-                FOREACH(itpoint, itmanipinfo->checkpoints) {
+				FOREACHC(itpoint, itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     if( _maxmanipspeed > 0 ) {
@@ -697,7 +697,7 @@ public:
             endeffaccang = endeffaccs.at(endeffindex).second;
             Transform R = itmanipinfo->plink->GetTransform();
 
-            FOREACH(itpoint, itmanipinfo->checkpoints) {
+            FOREACHC(itpoint, itmanipinfo->checkpoints) {
                 Vector point = R.rotate(*itpoint);
 
                 if( _maxmanipspeed > 0 ) {

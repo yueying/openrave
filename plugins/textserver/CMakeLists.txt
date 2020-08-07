@@ -1,14 +1,14 @@
-###########################################
+﻿###########################################
 # textserver openrave plugin
 ###########################################
 add_library(textserver SHARED textserver.cpp textserver.h plugindefs.h)
-
+find_package(Boost REQUIRED COMPONENTS thread system)
 if( MSVC )
   target_link_libraries(textserver libopenrave imm32 winmm ws2_32)
 else()
   target_link_libraries(textserver libopenrave)
 endif()
-target_link_libraries(textserver PRIVATE boost_assertion_failed)
+target_link_libraries(textserver PRIVATE boost_assertion_failed ${Boost_LIBRARIES})
 
 set_target_properties(textserver PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS}" LINK_FLAGS "${PLUGIN_LINK_FLAGS}")
 install(TARGETS textserver DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}plugin-textserver)

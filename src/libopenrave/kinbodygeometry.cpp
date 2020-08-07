@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -429,7 +429,7 @@ bool KinBody::GeometryInfo::ComputeInnerEmptyVolume(Transform& tInnerEmptyVolume
         vwallmax.y = _vGeomData.y;
         int sideWallExtents = 0;
 
-        FOREACH(itwall, _vSideWalls) {
+        FOREACHC(itwall, _vSideWalls) {
             // compute the XYZ extents of the wall
             Vector vxaxis = geometry::ExtractAxisFromQuat(itwall->transf.rot, 0);
             Vector vyaxis = geometry::ExtractAxisFromQuat(itwall->transf.rot, 1);
@@ -824,7 +824,7 @@ void KinBody::GeometryInfo::DeserializeJSON(const rapidjson::Value &value, const
             _vGeomData.y *= fUnitScale;
         }
     }
-    else if (typestr == "trimesh" or typestr == "mesh") {
+    else if (typestr == "trimesh" || typestr == "mesh") {
         _type = GT_TriMesh;
         if (value.HasMember("mesh")) {
             orjson::LoadJsonValueByKey(value, "mesh", _meshcollision);

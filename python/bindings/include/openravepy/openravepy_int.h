@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OPENRAVEPY_INTERNAL_H
 #define OPENRAVEPY_INTERNAL_H
-
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 
 #include <openrave-core.h>
@@ -347,13 +347,13 @@ inline py::object toPyArrayRotation(const TransformMatrix& t)
     pvalue[8] = t.m[10];
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = {3,3};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
-    pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
-    pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
-    pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(3, 3);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
+	pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
+	pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -371,17 +371,18 @@ inline py::object toPyArray3(const std::vector<RaveVector<T> >& v)
     }
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { npy_intp(v.size()), npy_intp(3) };
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(T)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    if( v.size() > 0 ) {
-        T* pf = (T*)PyArray_DATA(pyvalues);
-        FOREACHC(it,v) {
-            *pf++ = it->x;
-            *pf++ = it->y;
-            *pf++ = it->z;
-        }
-    }
-    return py::to_array_astype<T>(pyvalues);
+	py::tuple shape = py::make_tuple(v.size(), 3);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<T>());
+	if (v.size() > 0) 
+	{
+		T* pf = (T*)pyvalues.get_data();
+		FOREACHC(it, v) {
+			*pf++ = it->x;
+			*pf++ = it->y;
+			*pf++ = it->z;
+		}
+	}
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -395,8 +396,7 @@ inline py::object toPyVector2(Vector v)
     pvec[1] = v.y;
     return pyvec;
 #else
-    const dReal arr[2] {v.x, v.y};
-    return toPyArrayN(arr, 2);
+	return py::numpy::array(py::make_tuple(v.x, v.y));
 #endif
 }
 
@@ -411,8 +411,7 @@ inline py::object toPyVector3(Vector v)
     pvec[2] = v.z;
     return pyvec;
 #else
-    const dReal arr[3] {v.x, v.y, v.z};
-    return toPyArrayN(arr, 3);
+	return py::numpy::array(py::make_tuple(v.x, v.y, v.z));
 #endif
 }
 
@@ -428,8 +427,7 @@ inline py::object toPyVector4(Vector v)
     pvec[3] = v.w;
     return pyvec;
 #else
-    const dReal arr[4] {v.x, v.y, v.z, v.w};
-    return toPyArrayN(arr, 4);
+	return py::numpy::array(py::make_tuple(v.x, v.y, v.z, v.w));
 #endif
 }
 

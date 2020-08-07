@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -2694,7 +2694,7 @@ public:
 
         if( !_psensor ) {
             // check for current sensors
-            FOREACH(itsensor,probot->GetAttachedSensors()) {
+			FOREACHC(itsensor,probot->GetAttachedSensors()) {
                 if(( name.size() > 0) &&( (*itsensor)->GetName() == name) ) {
                     _psensor = *itsensor;
                     break;
@@ -2861,10 +2861,10 @@ public:
                 rootoffset = (int)_probot->GetLinks().size();
                 rootjoffset = (int)_probot->GetJoints().size();
                 rootjpoffset = (int)_probot->GetPassiveJoints().size();
-                FOREACH(itmanip,_probot->GetManipulators()) {
+				FOREACHC(itmanip,_probot->GetManipulators()) {
                     _setInitialManipulators.insert(*itmanip);
                 }
-                FOREACH(itsensor,_probot->GetAttachedSensors()) {
+				FOREACHC(itsensor,_probot->GetAttachedSensors()) {
                     _setInitialSensors.insert(*itsensor);
                 }
             }
@@ -2983,7 +2983,7 @@ public:
             // put the sensors and manipulators in front of what was declared. this is necessary so that user-based manipulator definitions come before the pre-defined ones.
             if( _setInitialSensors.size() > 0 ) {
                 std::vector<RobotBase::AttachedSensorPtr> vtemp; vtemp.reserve(_probot->GetAttachedSensors().size());
-                FOREACH(itsensor,_probot->GetAttachedSensors()) {
+				FOREACHC(itsensor,_probot->GetAttachedSensors()) {
                     if( _setInitialSensors.find(*itsensor) == _setInitialSensors.end() ) {
                         vtemp.insert(vtemp.begin(),*itsensor);
                     }
@@ -2995,7 +2995,7 @@ public:
             }
             if( _setInitialManipulators.size() > 0 ) {
                 std::vector<RobotBase::ManipulatorPtr> vtemp; vtemp.reserve(_probot->GetManipulators().size());
-                FOREACH(itmanip,_probot->GetManipulators()) {
+				FOREACHC(itmanip,_probot->GetManipulators()) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end() ) {
                         vtemp.insert(vtemp.begin(),*itmanip);
                     }
@@ -3045,12 +3045,12 @@ public:
                         }
                     }
                 }
-                FOREACH(itsensor, _probot->GetAttachedSensors()) {
+				FOREACHC(itsensor, _probot->GetAttachedSensors()) {
                     if( _setInitialSensors.find(*itsensor) == _setInitialSensors.end() ) {
                         (*itsensor)->_info._name = _prefix + (*itsensor)->_info._name;
                     }
                 }
-                FOREACH(itmanip,_probot->GetManipulators()) {
+				FOREACHC(itmanip,_probot->GetManipulators()) {
                     if( _setInitialManipulators.find(*itmanip) == _setInitialManipulators.end()) {
                         (*itmanip)->_info._name = _prefix + (*itmanip)->_info._name;
                         (*itmanip)->_info._sBaseLinkName = _prefix + (*itmanip)->_info._sBaseLinkName;

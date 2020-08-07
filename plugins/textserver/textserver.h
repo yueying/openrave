@@ -28,6 +28,7 @@
 // for some reason there's a clash between winsock.h and winsock2.h, so don't include winsockX directly. Also cannot define WIN32_LEAN_AND_MEAN for vc100
 #undef WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <WinSock2.h>
 #define usleep(microseconds) Sleep((microseconds+999)/1000)
 #endif
 

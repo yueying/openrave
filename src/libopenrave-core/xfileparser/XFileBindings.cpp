@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2011-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -327,7 +327,7 @@ protected:
             }
         }
 
-        FOREACH(it,node->mMeshes) {
+		FOREACHC(it,node->mMeshes) {
             if( !plink ) {
                 // link is expected and one doesn't exist, so create it
                 plink.reset(new KinBody::Link(pbody));
@@ -345,7 +345,7 @@ protected:
             plink->_vGeometries.push_back(KinBody::Link::GeometryPtr(new KinBody::Link::Geometry(plink,g)));
         }
 
-        FOREACH(it,node->mChildren) {
+		FOREACHC(it,node->mChildren) {
             _Read(pbody, plink, *it,tnode,level+1);
             if( !plink && pbody->GetLinks().size() > 0 ) {
                 plink = pbody->GetLinks().at(0);

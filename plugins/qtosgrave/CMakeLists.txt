@@ -1,4 +1,4 @@
-#############################
+﻿#############################
 # qtosgrave openrave plugin #
 #############################
 if(APPLE)
@@ -11,8 +11,8 @@ if(NOT OPENGL_FOUND)
 endif()
 
 #include(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSG.cmake)
-find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgGA osgFX osgText osgViewer osgManipulator)
-
+find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgUtil osg OpenThreads osgGA osgFX osgText osgViewer osgManipulator)
+find_package(Boost REQUIRED COMPONENTS thread system)
 if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND)
   message(STATUS "Detected Qt/OSG GUI, making plugin")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -37,7 +37,7 @@ if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND 
     set(QTOSG_COMPILE_FLAGS "${QTOSG_COMPILE_FLAGS} -DHAVE_X11_XLIB_H")
   endif()
 
-  set (extLIBS ${LIBXML2_LIBRARIES} ${PTHREADS_LIBRARY} ${OPENGL_LIBRARIES} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL)
+  set (extLIBS ${Boost_LIBRARIES} ${LIBXML2_LIBRARIES} ${PTHREADS_LIBRARY} ${OPENGL_LIBRARIES} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL)
   set (extLIBS ${extLIBS} ${OPENSCENEGRAPH_LIBRARIES})
   #set (extLIBS ${extLIBS} ${OSGDB_LIBRARY_DEBUG} ${OSGQT_LIBRARY_DEBUG} ${OSGGA_LIBRARY_DEBUG} ${OSGFX_LIBRARY_DEBUG} ${OSGTEXT_LIBRARY_DEBUG} ${OSGVIEWER_LIBRARY_DEBUG} ${OSGMANIPULATOR_LIBRARY_DEBUG})
   

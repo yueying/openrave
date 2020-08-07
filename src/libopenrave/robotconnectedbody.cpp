@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2019
 //
 // This file is part of OpenRAVE.
@@ -47,14 +47,14 @@ void RobotBase::ConnectedBodyInfo::InitInfoFromBody(RobotBase& robot)
         _vJointInfos.push_back(boost::make_shared<KinBody::JointInfo>((*itjoint)->UpdateAndGetInfo()));
     }
 
-    FOREACH(itmanip, robot.GetManipulators()) {
+	FOREACHC(itmanip, robot.GetManipulators()) {
         _vManipulatorInfos.push_back(boost::make_shared<RobotBase::ManipulatorInfo>((*itmanip)->GetInfo()));
     }
 
-    FOREACH(itattachedsensor, robot.GetAttachedSensors()) {
+	FOREACHC(itattachedsensor, robot.GetAttachedSensors()) {
         _vAttachedSensorInfos.push_back(boost::make_shared<RobotBase::AttachedSensorInfo>((*itattachedsensor)->UpdateAndGetInfo()));
     }
-    FOREACH(itGripperInfo, robot.GetGripperInfos()) {
+	FOREACHC(itGripperInfo, robot.GetGripperInfos()) {
         RobotBase::GripperInfoPtr pGripperInfo(new RobotBase::GripperInfo());
         *pGripperInfo = **itGripperInfo;
         _vGripperInfos.push_back(pGripperInfo);
@@ -94,7 +94,7 @@ void RobotBase::ConnectedBodyInfo::SerializeJSON(rapidjson::Value &rConnectedBod
 
     rapidjson::Value linkInfosValue;
     linkInfosValue.SetArray();
-    FOREACH(it, _vLinkInfos)
+	FOREACHC(it, _vLinkInfos)
     {
         rapidjson::Value info;
         (*it)->SerializeJSON(info, allocator, fUnitScale, options);
@@ -106,7 +106,7 @@ void RobotBase::ConnectedBodyInfo::SerializeJSON(rapidjson::Value &rConnectedBod
 
     rapidjson::Value jointInfosValue;
     jointInfosValue.SetArray();
-    FOREACH(it, _vJointInfos)
+	FOREACHC(it, _vJointInfos)
     {
         rapidjson::Value v;
         (*it)->SerializeJSON(v, allocator, fUnitScale, options);
@@ -118,7 +118,7 @@ void RobotBase::ConnectedBodyInfo::SerializeJSON(rapidjson::Value &rConnectedBod
 
     rapidjson::Value manipulatorInfosValue;
     manipulatorInfosValue.SetArray();
-    FOREACH(it, _vManipulatorInfos)
+	FOREACHC(it, _vManipulatorInfos)
     {
         rapidjson::Value info;
         (*it)->SerializeJSON(info, allocator, fUnitScale, options);
@@ -130,7 +130,7 @@ void RobotBase::ConnectedBodyInfo::SerializeJSON(rapidjson::Value &rConnectedBod
 
     rapidjson::Value attachedSensorInfosValue;
     attachedSensorInfosValue.SetArray();
-    FOREACH(it, _vAttachedSensorInfos)
+	FOREACHC(it, _vAttachedSensorInfos)
     {
         rapidjson::Value info;
         (*it)->SerializeJSON(info, allocator, fUnitScale, options);
@@ -142,7 +142,7 @@ void RobotBase::ConnectedBodyInfo::SerializeJSON(rapidjson::Value &rConnectedBod
 
     rapidjson::Value rGripperInfos;
     rGripperInfos.SetArray();
-    FOREACH(it, _vGripperInfos)
+	FOREACHC(it, _vGripperInfos)
     {
         rapidjson::Value info;
         (*it)->SerializeJSON(info, allocator, fUnitScale, options);
@@ -621,7 +621,7 @@ bool RobotBase::ConnectedBody::CanProvideManipulator(const std::string& resolved
     const char* pStartCheckName = resolvedManipulatorName.c_str() + _nameprefix.size();
     int nCheckNameLength = resolvedManipulatorName.size() - _nameprefix.size();
     //std::string submanipname = resolvedManipulatorName.substr(_nameprefix.size());
-    FOREACH(itmanip, _info._vManipulatorInfos) {
+	FOREACHC(itmanip, _info._vManipulatorInfos) {
         const RobotBase::ManipulatorInfo& manipinfo = **itmanip;
         if( (int)manipinfo._name.size() == nCheckNameLength && strncmp(manipinfo._name.c_str(), pStartCheckName, nCheckNameLength) == 0 ) {
             return true;

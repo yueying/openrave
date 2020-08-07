@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2016 Rosen Diankov, Gustavo Puche, OpenGrasp Team
 //
 // OpenRAVE Qt/OpenSceneGraph Viewer is licensed under the Apache License, Version 2.0 (the "License");
@@ -491,7 +491,7 @@ void KinBodyItem::Load()
     std::vector<uint8_t> addedlinks(_pbody->GetLinks().size(), 0);
 
     //  Assemble link hierarchy
-    FOREACH(itjoint, _pbody->GetDependencyOrderedJoints()) {
+	FOREACHC(itjoint, _pbody->GetDependencyOrderedJoints()) {
         if( addedlinks[(*itjoint)->GetHierarchyChildLink()->GetIndex()] == 0 ) {
             OSGGroupPtr parent = _veclinks.at((*itjoint)->GetHierarchyParentLink()->GetIndex()).first;
             OSGGroupPtr child = _veclinks.at(((*itjoint)->GetHierarchyChildLink()->GetIndex())).first;
@@ -504,7 +504,7 @@ void KinBodyItem::Load()
     }
 
     //  Assemble passive joints
-    FOREACH(itjoint, _pbody->GetPassiveJoints()) {
+	FOREACHC(itjoint, _pbody->GetPassiveJoints()) {
         if( addedlinks[(*itjoint)->GetHierarchyChildLink()->GetIndex()] == 0 ) {
             OSGGroupPtr parent = _veclinks.at((*itjoint)->GetHierarchyParentLink()->GetIndex()).first;
             OSGGroupPtr child = _veclinks.at((*itjoint)->GetHierarchyChildLink()->GetIndex()).first;

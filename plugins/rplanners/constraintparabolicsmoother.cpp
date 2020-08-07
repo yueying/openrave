@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -157,7 +157,7 @@ public:
                     std::vector<int> vuseddofindices, vusedconfigindices;
                     _parameters->_configurationspecification.ExtractUsedIndices(probot, vuseddofindices, vusedconfigindices);
                     // go through every manipulator and check whether it depends on vusedindices
-                    FOREACH(itmanip, probot->GetManipulators()) {
+					FOREACHC(itmanip, probot->GetManipulators()) {
                         KinBody::LinkPtr endeffector = (*itmanip)->GetEndEffector();
                         if( setCheckedManips.find(endeffector) != setCheckedManips.end() ) {
                             // already checked, so don't do anything
@@ -187,7 +187,7 @@ public:
                         probot->GetGrabbed(grabbedbodies);
                         FOREACH(itbody,grabbedbodies){
                             if((*itmanip)->IsGrabbing(**itbody)) {
-                                FOREACH(itlink,(*itbody)->GetLinks()){
+								FOREACHC(itlink,(*itbody)->GetLinks()){
                                     globallinklist.push_back(*itlink);
                                 }
                             }
@@ -563,7 +563,7 @@ public:
         _dummytraj->Insert(_dummytraj->GetNumWaypoints(),_vtrajpointscache);
         ParabolicRamp::Vector vconfig;
         // TODO ramps are unitary so don't have to track switch points
-        FOREACH(itrampnd,ramps) {
+		FOREACHC(itrampnd,ramps) {
             // double-check the current ramps
             //                if(_parameters->verifyinitialpath) {
             if(!!pchecker) {

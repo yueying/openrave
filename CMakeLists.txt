@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6.3) # using import/export targets, 2.6.3 for open scene graph cmake files
+﻿cmake_minimum_required (VERSION 2.6.3) # using import/export targets, 2.6.3 for open scene graph cmake files
 project(OpenRAVE)
 set( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE )
 
@@ -117,11 +117,11 @@ if( OPT_PYTHON )
 #      OUTPUT_VARIABLE _python_distpackage OUTPUT_STRIP_TRAILING_WHITESPACE
 #      RESULT_VARIABLE _python_failed1)
     execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print numpy.get_include()"
+      COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print (numpy.get_include())"
       OUTPUT_VARIABLE _python_numpy_include OUTPUT_STRIP_TRAILING_WHITESPACE
       RESULT_VARIABLE _python_failed0)
     execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; from myrelpath import relpath; print relpath(get_python_lib(1,prefix='${CMAKE_INSTALL_PREFIX}'),'${CMAKE_INSTALL_PREFIX}')"
+      COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; from myrelpath import relpath; print (relpath(get_python_lib(1,prefix='${CMAKE_INSTALL_PREFIX}'),'${CMAKE_INSTALL_PREFIX}'))"
       OUTPUT_VARIABLE OPENRAVE_PYTHON_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       RESULT_VARIABLE _python_failed2)
@@ -256,7 +256,7 @@ set(OPENRAVE_LINK_DIRS "")
 if( MSVC )
   add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE)
   add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_DEPRECATE)
-
+  add_definitions(-DNOMINMAX)
   #gives linking problems
   #string(REGEX REPLACE "/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
   #string(REGEX REPLACE "/MDd" "/MD" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
@@ -269,7 +269,7 @@ if( MSVC )
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /EHc- ")
 
   # untar the source files
-  set(EXTRA_MSVC_DEPEND msvc_boost msvc_collada msvc_libxml2 msvc_ode msvc_soqt)
+  set(EXTRA_MSVC_DEPEND msvc_libxml2 )
   foreach(MSVC_LIBRARY ${EXTRA_MSVC_DEPEND})
     if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}" )
       execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf "${CMAKE_CURRENT_SOURCE_DIR}/${MSVC_LIBRARY}.tgz" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -289,80 +289,61 @@ if( MSVC )
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/msvc_include)
   endif()
   
-  # have to install dlls manually
-  if( MSVC70 OR MSVC71 )
-    set(MSVC_PREFIX "vc70")
-  elseif( MSVC80 )
-    set(MSVC_PREFIX "vc80")
-  elseif( MSVC90 )
-    set(MSVC_PREFIX "vc90")
-  else()
-    set(MSVC_PREFIX "vc100")
+  if (${MSVC_VERSION} EQUAL 1600)
+    set(MSVC_PREFIX "vc100") # Visual Studio 2010
+  elseif (${MSVC_VERSION} EQUAL 1700)
+    set(MSVC_PREFIX "vc110") # Visual Studio 2012
+  elseif (${MSVC_VERSION} EQUAL 1800)
+    set(MSVC_PREFIX "vc120") # Visual Studio 2013
+  elseif (${MSVC_VERSION} EQUAL 1900)
+    set(MSVC_PREFIX "vc140") # Visual Studio 2015
+  elseif (${MSVC_VERSION} EQUAL 1910 OR ${MSVC_VERSION} EQUAL 1916)
+    set(MSVC_PREFIX "vc141") # Visual Studio 2017
   endif()
+  # have to install dlls manually
   set(OPENRAVE_LIBRARY_SUFFIX "${OPENRAVE_SOVERSION}-${MSVC_PREFIX}-mt" CACHE STRING "Suffix to append to library names")
   
   # force multi-threaded DLL boost
   set(Boost_USE_MULTITHREAD ON)
   set(Boost_USE_STATIC_LIBS OFF)
   set(Boost_USE_STATIC_RUNTIME OFF)
-  set(Boost_CFLAGS "-DBOOST_ALL_DYN_LINK -DBOOST_ALL_NO_LIB")
+  add_definitions(-DWIN32_LEAN_AND_MEAN)
+  add_definitions(-DBOOST_ALL_NO_LIB)
+  add_definitions(-DBOOST_USE_WINDOWS_H)
+  add_definitions(-DBOOST_ALL_DYN_LINK=1)
+  add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 else()
   set(OPENRAVE_LIBRARY_SUFFIX "${OPENRAVE_SOVERSION}" CACHE STRING "Suffix to append to library names")
 endif()
 
 # only look for installed boost if not an old version of msvc
-if(NOT MSVC71 AND NOT MSVC80)
+if(MSVC)
   if( NOT $ENV{BOOST_INCLUDEDIR} STREQUAL "" )
     set(Boost_INCLUDE_DIR $ENV{BOOST_INCLUDEDIR})
   endif()
   if( NOT $ENV{BOOST_LIBRARYDIR} STREQUAL "" )
     set(Boost_LIBRARY_DIRS $ENV{BOOST_LIBRARYDIR})
   endif()
-  set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.45" "1.44" "1.43" "1.42" "1.41" "1.40" "1.39" "1.38" "1.37.0" "1.37" "1.35.0" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" ${Boost_ADDITIONAL_VERSIONS})
+  set(Boost_ADDITIONAL_VERSIONS "1.72.0" "1.45" "1.44" "1.43" "1.42" "1.41" "1.40" "1.39" "1.38" "1.37.0" "1.37" "1.35.0" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" ${Boost_ADDITIONAL_VERSIONS})
   if(OPT_PYTHON AND NOT USE_PYBIND11_PYTHON_BINDINGS)
-    find_package(Boost COMPONENTS regex filesystem system python thread iostreams date_time)
+    find_package(Boost 1.56 REQUIRED COMPONENTS thread system regex timer python numpy filesystem serialization program_options iostreams)
   else()
-    find_package(Boost COMPONENTS regex filesystem system thread iostreams date_time)
+    find_package(Boost 1.56 REQUIRED COMPONENTS thread system regex timer filesystem serialization program_options iostreams)
   endif()
+  set(Boost_PYTHON_FOUND TRUE)
+  set(Boost_THREAD_FOUND TRUE)
 else()
   # have to rely on local boost and a hack
   add_definitions(-DTEMP_SPIRIT_HACK)
 endif()
 
-if( Boost_FOUND )
+if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${Boost_LIBRARY_DIRS})
 elseif(Boost_VERSION AND NOT "${Boost_VERSION}" STREQUAL "0")
   include_directories(${Boost_INCLUDE_DIRS})
   set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${Boost_LIBRARY_DIRS})
-elseif( MSVC )
-  # to facilitate compilation, visual studio libraries are included locally
-  message(STATUS "using local boost libraries for MSVC")
-  set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/msvc_boost")
-  set(Boost_FOUND 1)
-  set(Boost_INCLUDE_DIRS "${BOOST_ROOT}")
-  set(Boost_INCLUDE_DIR "${BOOST_ROOT}")
-  set(Boost_LIBRARY_DIRS "${BOOST_ROOT}/lib")
-  set(Boost_REGEX_FOUND 0)
-  set(Boost_FILESYSTEM_FOUND 1)
-  set(Boost_IOSTREAMS_FOUND 1)
-  set(Boost_SYSTEM_FOUND 1)
-  set(Boost_PYTHON_FOUND 1)
-  set(Boost_THREAD_FOUND 1)
-  set(Boost_DATE_TIME_FOUND 1)
-  set(Boost_SIGNALS_FOUND 1)
-  set(Boost_VERSION "104400")
-  # have to add to required flags for applications that will test linking with boost
-  set(CMAKE_REQUIRED_FLAGS "-DBOOST_ALL_DYN_LINK -DBOOST_ALL_NO_LIB")
-  set(Boost_DATE_TIME_LIBRARY "${Boost_LIBRARY_DIRS}/boost_date_time-${MSVC_PREFIX}-mt-1_44.lib")
-  set(Boost_THREAD_LIBRARY "${Boost_LIBRARY_DIRS}/boost_thread-${MSVC_PREFIX}-mt-1_44.lib")
-  set(Boost_SYSTEM_LIBRARY "${Boost_LIBRARY_DIRS}/boost_system-${MSVC_PREFIX}-mt-1_44.lib")
-  set(Boost_FILESYSTEM_LIBRARY "${Boost_LIBRARY_DIRS}/boost_filesystem-${MSVC_PREFIX}-mt-1_44.lib")
-  set(Boost_PYTHON_LIBRARY "${Boost_LIBRARY_DIRS}/boost_python-${MSVC_PREFIX}-mt-1_44.lib")
-  set(Boost_IOSTREAMS_LIBRARY "${Boost_LIBRARY_DIRS}/boost_iostreams-${MSVC_PREFIX}-mt-1_44.lib")
-  install(DIRECTORY "${Boost_LIBRARY_DIRS}/" DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base FILES_MATCHING PATTERN "*-${MSVC_PREFIX}-*.dll")
-  install(DIRECTORY "${Boost_LIBRARY_DIRS}/" DESTINATION lib${LIB_SUFFIX} COMPONENT ${COMPONENT_PREFIX}dev FILES_MATCHING PATTERN "*-${MSVC_PREFIX}-*.lib")
-  install(DIRECTORY "${Boost_INCLUDE_DIR}/boost" DESTINATION include COMPONENT ${COMPONENT_PREFIX}dev)
+elseif( MSVC ) 
   include_directories(${Boost_INCLUDE_DIRS})
   set(OPENRAVE_LINK_DIRS ${OPENRAVE_LINK_DIRS} ${Boost_LIBRARY_DIRS})
 else()
@@ -546,7 +527,8 @@ if( CLOCK_GETTIME_FOUND )
 endif()
 
 find_package(RapidJSON)
-if( RAPIDJSON_FOUND )
+if(RAPIDJSON_FOUND)
+  include_directories(${RAPIDJSON_INCLUDES})
 else()
   message(FATAL_ERROR "rapidjson library not found")
 endif()
@@ -826,7 +808,7 @@ if(OPT_PYTHON AND PYTHON_EXECUTABLE)
   if( PYTHON_EXECUTABLE )
     # get the sympy version
     execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "import sympy; print sympy.__version__"
+      COMMAND ${PYTHON_EXECUTABLE} -c "import sympy; print (sympy.__version__)"
       OUTPUT_VARIABLE _sympy_version OUTPUT_STRIP_TRAILING_WHITESPACE
       RESULT_VARIABLE _sympy_version_failed)
     if( ${_sympy_version_failed} EQUAL 0 )

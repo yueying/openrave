@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -101,7 +101,6 @@ using py::manage_new_object;
 using py::def;
 using py::error_already_set;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
 
 class PyViewerBase : public PyInterfaceBase
 {
@@ -317,7 +316,7 @@ public:
         if( !_pviewer->GetCameraImage(memory, width,height,RaveTransform<float>(ExtractTransform(extrinsic)), KK) ) {
             throw openrave_exception(_("failed to get camera image"));
         }
-        std::vector<npy_intp> dims(3); dims[0] = height; dims[1] = width; dims[2] = 3;
+        std::vector<size_t> dims(3); dims[0] = height; dims[1] = width; dims[2] = 3;
         return toPyArray(memory,dims);
     }
 

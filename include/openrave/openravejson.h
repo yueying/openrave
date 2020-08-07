@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2019 OpenRAVE
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -228,17 +228,17 @@ inline void LoadJsonValue(const rapidjson::Value& v, uint8_t& t) {
     }
 }
 
-inline void LoadJsonValue(const rapidjson::Value& v, unsigned long long& t) {
-    if (v.IsUint64()) {
-        t = v.GetUint64();
-    } else if (v.IsString()) {
-        t = boost::lexical_cast<unsigned long long>(v.GetString());
-    } else if (v.IsBool()) {
-        t = v.GetBool() ? 1 : 0;
-    } else {
-        throw OPENRAVE_EXCEPTION_FORMAT("Cannot convert JSON type %s to Int64", GetJsonString(v), OpenRAVE::ORE_InvalidArguments);
-    }
-}
+//inline void LoadJsonValue(const rapidjson::Value& v, unsigned long long& t) {
+//    if (v.IsUint64()) {
+//        t = v.GetUint64();
+//    } else if (v.IsString()) {
+//        t = boost::lexical_cast<unsigned long long>(v.GetString());
+//    } else if (v.IsBool()) {
+//        t = v.GetBool() ? 1 : 0;
+//    } else {
+//        throw OPENRAVE_EXCEPTION_FORMAT("Cannot convert JSON type %s to Int64", GetJsonString(v), OpenRAVE::ORE_InvalidArguments);
+//    }
+//}
 
 inline void LoadJsonValue(const rapidjson::Value& v, uint64_t& t) {
     if (v.IsUint64()) {
@@ -505,17 +505,17 @@ inline void SaveJsonValue(rapidjson::Value& v, long long t, rapidjson::Document:
     v.SetInt64(t);
 }
 
-inline void SaveJsonValue(rapidjson::Value& v, int64_t t, rapidjson::Document::AllocatorType& alloc) {
-    v.SetInt64(t);
-}
+//inline void SaveJsonValue(rapidjson::Value& v, int64_t t, rapidjson::Document::AllocatorType& alloc) {
+//    v.SetInt64(t);
+//}
 
 inline void SaveJsonValue(rapidjson::Value& v, unsigned long long t, rapidjson::Document::AllocatorType& alloc) {
     v.SetUint64(t);
 }
 
-inline void SaveJsonValue(rapidjson::Value& v, uint64_t t, rapidjson::Document::AllocatorType& alloc) {
-    v.SetUint64(t);
-}
+//inline void SaveJsonValue(rapidjson::Value& v, uint64_t t, rapidjson::Document::AllocatorType& alloc) {
+//    v.SetUint64(t);
+//}
 
 inline void SaveJsonValue(rapidjson::Value& v, bool t, rapidjson::Document::AllocatorType& alloc) {
     v.SetBool(t);

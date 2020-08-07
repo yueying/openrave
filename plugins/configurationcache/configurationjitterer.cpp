@@ -19,8 +19,7 @@
 #include <boost/numeric/ublas/vector_proxy.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/bindings/traits/ublas_matrix.hpp>
-#include <boost/numeric/bindings/lapack/gesdd.hpp>
+
 #endif
 
 #include "configurationcachetree.h"
@@ -942,7 +941,8 @@ protected:
             boost::numeric::ublas::matrix<double, column_major> U(P.size(),P.size()), V(numdof,numdof);
             // J * dofvelocities = P
             // compute single value decomposition: Jacobian = U*diag(S)*transpose(V)
-            int ret = boost::numeric::bindings::lapack::gesdd('O','A',J,S,U,V);
+			//TODO: add svd!!!
+			int ret;//= boost::numeric::bindings::lapack::gesdd('O','A',J,S,U,V);
             if( ret != 0 ) {
                 RAVELOG_WARN("failed to compute SVD for jacobian, disabling bias\n");
                 return;

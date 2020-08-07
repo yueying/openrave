@@ -1,8 +1,8 @@
-###########################################
+﻿###########################################
 # oderave openrave plugin
 ###########################################
-include(${CMAKE_CURRENT_SOURCE_DIR}/FindODE.cmake)
-if(ODE_LIBRARY_FOUND)
+find_package(ode REQUIRED)
+if(ode_FOUND)
   link_directories(${OPENRAVE_LINK_DIRS} ${ODE_LINK_DIRS})
 
   # doesn't work
@@ -50,7 +50,7 @@ if(ODE_LIBRARY_FOUND)
 
   message(STATUS "ODE found, building oderave plugin, precision=${ODE_PRECISION}")
 
-  target_link_libraries(oderave libopenrave ${ODE_LIBRARY})
+  target_link_libraries(oderave libopenrave ${ODE_LIBRARY} ${ODE_LIBRARIES})
   target_link_libraries(oderave PRIVATE boost_assertion_failed)
   set_target_properties(oderave PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS} ${ODE_CXXFLAGS}" LINK_FLAGS "${PLUGIN_LINK_FLAGS}")
   install(TARGETS oderave DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}plugin-oderave)

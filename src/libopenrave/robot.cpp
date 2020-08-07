@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -770,7 +770,7 @@ bool RobotBase::InitFromRobotInfo(const RobotBaseInfo& info)
     }
 
     _vecGripperInfos.clear();
-    FOREACH(itgripperinfo, info._vGripperInfos) {
+	FOREACHC(itgripperinfo, info._vGripperInfos) {
         GripperInfoPtr newGripperInfo(new GripperInfo(**itgripperinfo));
         _vecGripperInfos.push_back(newGripperInfo);
     }
@@ -779,7 +779,7 @@ bool RobotBase::InitFromRobotInfo(const RobotBaseInfo& info)
     _name = info._name;
     _referenceUri = info._referenceUri;
 
-    FOREACH(it, info._mReadableInterfaces) {
+	FOREACHC(it, info._mReadableInterfaces) {
         SetReadableInterface(it->first, it->second);
     }
     return true;
@@ -2573,7 +2573,7 @@ void RobotBase::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     _UpdateAttachedSensors();
 
     _vecGripperInfos.clear();
-    FOREACH(itGripperInfo, r->_vecGripperInfos) {
+	FOREACHC(itGripperInfo, r->_vecGripperInfos) {
         _vecGripperInfos.push_back(GripperInfoPtr(new GripperInfo(**itGripperInfo))); // deep copy
     }
 
@@ -2727,7 +2727,7 @@ UpdateFromInfoResult RobotBase::UpdateFromRobotInfo(const RobotBaseInfo& info)
     FOREACHC(itManipulatorInfo, info._vManipulatorInfos) {
         // find existing manipulator in robot
         std::vector<RobotBase::ManipulatorPtr>::iterator itExistingManipulator = _vecManipulators.end();
-        FOREACHC(itManipulator, _vecManipulators) {
+        FOREACH(itManipulator, _vecManipulators) {
             if ((*itManipulator)->_info._id == (*itManipulatorInfo)->_id) {
                 itExistingManipulator = itManipulator;
                 break;
@@ -2753,7 +2753,7 @@ UpdateFromInfoResult RobotBase::UpdateFromRobotInfo(const RobotBaseInfo& info)
     FOREACHC(itAttachedSensorInfo, info._vAttachedSensorInfos) {
         // find existing attachedsensor in robot
         std::vector<RobotBase::AttachedSensorPtr>::iterator itExistingAttachedSensor = _vecAttachedSensors.end();
-        FOREACHC(itAttachedSensor, _vecAttachedSensors) {
+        FOREACH(itAttachedSensor, _vecAttachedSensors) {
             if ((*itAttachedSensor)->_info._id == (*itAttachedSensorInfo)->_id) {
                 itExistingAttachedSensor = itAttachedSensor;
                 break;
@@ -2778,7 +2778,7 @@ UpdateFromInfoResult RobotBase::UpdateFromRobotInfo(const RobotBaseInfo& info)
     FOREACHC(itConnectedBodyInfo, info._vConnectedBodyInfos) {
         // find existing connectedbody in robot
         std::vector<RobotBase::ConnectedBodyPtr>::iterator itExistingConnectedBody = _vecConnectedBodies.end();
-        FOREACHC(itConnectedBody, _vecConnectedBodies) {
+        FOREACH(itConnectedBody, _vecConnectedBodies) {
             if ((*itConnectedBody)->_info._id == (*itConnectedBodyInfo)->_id) {
                 itExistingConnectedBody = itConnectedBody;
                 break;

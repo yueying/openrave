@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Carnegie Mellon University (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -1493,7 +1493,7 @@ protected:
 
         //make sure we get the right chucking direction and don't look at irrelevant joints
         vector<dReal> chuckingdir(_robot->GetDOF(),0);
-        FOREACH(itmanip,_robot->GetManipulators()) {
+		FOREACHC(itmanip,_robot->GetManipulators()) {
             vector<dReal>::const_iterator itchucking = (*itmanip)->GetChuckingDirection().begin();
             FOREACHC(itgripper,(*itmanip)->GetGripperIndices()) {
                 chuckingdir.at(*itgripper) = *itchucking++;

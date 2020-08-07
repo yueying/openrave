@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -146,7 +146,7 @@ public:
                         // look at only the grabbed body rather than the links
                         FOREACH(itbody, grabbedbodies) {
                             if( pmanip->IsGrabbing(**itbody) ) {
-                                FOREACH(itlink, (*itbody)->GetLinks()) {
+								FOREACHC(itlink, (*itbody)->GetLinks()) {
                                     globallinklist.push_back(*itlink);
                                 }
                             }
@@ -397,7 +397,7 @@ public:
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // For each point in checkpoints, compute its vel and acc and check whether they satisfy the manipulator constraints
-                FOREACH(itpoint,itmanipinfo->checkpoints) {
+				FOREACHC(itpoint,itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     // RAVELOG_DEBUG_FORMAT("checkpoint = [%.15e, %.15e, %.15e]", itpoint->x%itpoint->y%itpoint->z);
@@ -498,7 +498,7 @@ public:
                 endeffaccang = endeffaccs.at(endeffindex).second;
                 Transform R = itmanipinfo->plink->GetTransform();
 
-                FOREACH(itpoint, itmanipinfo->checkpoints) {
+				FOREACHC(itpoint, itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     if (_maxmanipspeed > 0) {
@@ -559,7 +559,7 @@ public:
                 endeffaccang = endeffaccs.at(endeffindex).second;
                 Transform R = itmanipinfo->plink->GetTransform();
 
-                FOREACH(itpoint, itmanipinfo->checkpoints) {
+				FOREACHC(itpoint, itmanipinfo->checkpoints) {
                     Vector point = R.rotate(*itpoint);
 
                     if (_maxmanipspeed > 0) {

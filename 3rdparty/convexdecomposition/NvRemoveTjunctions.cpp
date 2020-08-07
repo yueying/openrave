@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 NvRemoveTjunctions.cpp : A code snippet to remove tjunctions from a triangle mesh.  This version is currently disabled as it appears to have a bug.
 
@@ -58,11 +58,7 @@ NvRemoveTjunctions.cpp : A code snippet to remove tjunctions from a triangle mes
 #pragma warning(disable:4702)
 #pragma warning(disable:4127) //conditional expression is constant (because _HAS_EXCEPTIONS=0)
 #include <vector>
-#ifdef USE_EXT_HASH_MAP
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
+#include <unordered_map>
 #include "NvUserMemAlloc.h"
 #include "NvHashMap.h"
 #include "NvRemoveTjunctions.h"

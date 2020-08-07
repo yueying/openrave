@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Rosen Diankov
+﻿// Copyright (C) 2010 Rosen Diankov
 //
 // convexdecompositionpy is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -31,7 +31,8 @@
 #include "NvConvexDecomposition.h"
 
 namespace py = openravepy::py;
-namespace numeric = py::numeric;
+namespace numeric = py::numpy;
+
 using py::object;
 using py::extract;
 using py::handle;
@@ -74,22 +75,22 @@ private:
     std::string _s;
 };
 
-#if !defined(OPENRAVE_DISABLE_ASSERT_HANDLER) && defined(BOOST_ENABLE_ASSERT_HANDLER)
-namespace boost
-{
-inline void assertion_failed(char const * expr, char const * function, char const * file, long line)
-{
-    throw cdpy_exception(boost::str(boost::format("[%s:%d] -> %s, expr: %s")%file%line%function%expr));
-}
-#if BOOST_VERSION>104600
-inline void assertion_failed_msg(char const * expr, char const * msg, char const * function, char const * file, long line)
-{
-    throw cdpy_exception(boost::str(boost::format("[%s:%d] -> %s, expr: %s, msg: %s")%file%line%function%expr%msg));
-}
-#endif
-
-}
-#endif
+//#if !defined(OPENRAVE_DISABLE_ASSERT_HANDLER) && defined(BOOST_ENABLE_ASSERT_HANDLER)
+//namespace boost
+//{
+//inline void assertion_failed(char const * expr, char const * function, char const * file, long line)
+//{
+//    throw cdpy_exception(boost::str(boost::format("[%s:%d] -> %s, expr: %s")%file%line%function%expr));
+//}
+//#if BOOST_VERSION>104600
+//inline void assertion_failed_msg(char const * expr, char const * msg, char const * function, char const * file, long line)
+//{
+//    throw cdpy_exception(boost::str(boost::format("[%s:%d] -> %s, expr: %s, msg: %s")%file%line%function%expr%msg));
+//}
+//#endif
+//
+//}
+//#endif
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
 object computeConvexDecomposition(py::array_t<float>& vertices, py::array_t<int>& indices,
@@ -158,13 +159,13 @@ object computeConvexDecomposition(const boost::multi_array<float, 2>& vertices, 
         hulls.append(py::make_tuple(pyvertices, pyindices));
 #else // USE_PYBIND11_PYTHON_BINDINGS
         npy_intp dims[] = { result.mVcount,3};
-        PyObject *pyvertices = PyArray_SimpleNew(2,dims, sizeof(result.mVertices[0])==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        std::copy(result.mVertices, result.mVertices + 3 * result.mVcount, (NxF32*)PyArray_DATA(pyvertices));
+        PyObject *pyvertices = PyArray_SimpleNew(2,dims, sizeof(result.mVertices[0])==8 ? NPY_DOUBLE : NPY_FLOAT);
+        std::copy(result.mVertices, result.mVertices + 3 * result.mVcount, (NxF32*)PyArray_DATA((PyArrayObject*)pyvertices));
 
         dims[0] = result.mTcount;
         dims[1] = 3;
         PyObject *pyindices = PyArray_SimpleNew(2,dims, PyArray_INT);
-        std::copy(result.mIndices, result.mIndices + 3 * result.mTcount, (int*)PyArray_DATA(pyindices));
+        std::copy(result.mIndices, result.mIndices + 3 * result.mTcount, (int*)PyArray_DATA((PyArrayObject*)pyindices));
         hulls.append(py::make_tuple(py::to_array_astype<NxF32>(pyvertices), py::to_array_astype<int>(pyindices)));
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
@@ -178,9 +179,9 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(computeConvexDecomposition_overloads, computeCon
 
 OPENRAVE_PYTHON_MODULE(convexdecompositionpy)
 {
-    import_array();
+    import_array1();
 #ifndef USE_PYBIND11_PYTHON_BINDINGS
-    numeric::array::set_module_and_type("numpy", "ndarray");
+	py::numpy::initialize();
     int_from_number<int>();
     float_from_number<float>();
     float_from_number<double>();

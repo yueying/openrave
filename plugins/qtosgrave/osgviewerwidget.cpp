@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2012-2016 Rosen Diankov, Gustavo Puche, OpenGrasp Team
 //
 // OpenRAVE Qt/OpenSceneGraph Viewer is licensed under the Apache License, Version 2.0 (the "License");
@@ -236,7 +236,8 @@ public:
 
             // setup animation data and restore original transformation
             ad->_eyemovement = (osg::Vec3d(_center) - prevEye) * 0.5;
-            ad->start( osg::Vec3d(_center) - prevCenter, ea.getTime() );
+			//TODO::
+            //ad->start( osg::Vec3d(_center) - prevCenter, ea.getTime() );
             setTransformation( prevEye, prevCenter, prevUp );
             return true;
         }
@@ -543,6 +544,11 @@ void QOSGViewerWidget::ActivateSelection(bool active)
 {
     _bIsSelectiveActive = active;
     RestoreCursor();
+}
+
+void QOSGViewerWidget::DrawBoundingBox(bool pressed)
+{
+	//TODO:
 }
 
 void QOSGViewerWidget::SetDraggerMode(const std::string& draggerName)

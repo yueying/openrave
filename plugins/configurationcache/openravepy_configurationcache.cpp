@@ -1,4 +1,4 @@
-// -*- Coding: utf-8 -*-
+﻿// -*- Coding: utf-8 -*-
 // Copyright (C) 2014 Rosen Diankov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,7 @@ namespace py = pybind11;
 #include <boost/python.hpp>
 #include <boost/python/exception_translator.hpp>
 #include <boost/python/docstring_options.hpp>
+#include <boost/python/numpy.hpp>
 namespace py = boost::python;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
@@ -56,9 +57,9 @@ using py::docstring_options;
 using py::pickle_suite;
 using py::manage_new_object;
 using py::def;
-#endif // USE_PYBIND11_PYTHON_BINDINGS
-namespace numeric = py::numeric;
 
+#endif // USE_PYBIND11_PYTHON_BINDINGS
+namespace numeric = py::numpy;
 using openravepy::ConvertStringToUnicode;
 
 using namespace OpenRAVE;
@@ -193,7 +194,11 @@ typedef OPENRAVE_SHARED_PTR<PyConfigurationCache> PyConfigurationCachePtr;
 OPENRAVE_PYTHON_MODULE(openravepy_configurationcache)
 {
     using namespace configurationcachepy;
-    import_array();
+#ifndef USE_PYBIND11_PYTHON3_BINDINGS
+    //import_array1(); // not sure if this is necessary for pybind11
+	Py_Initialize();
+	py::numpy::initialize();
+#endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     m.attr("__doc__") = "The module contains configuration cache bindings for openravepy\n";
 #else

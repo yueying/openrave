@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -55,7 +55,6 @@ using py::def;
 using py::scope;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-namespace numeric = py::numeric;
 
 // convert from rapidjson to python object
 object toPyObject(const rapidjson::Value& value)
@@ -110,7 +109,7 @@ object toPyObject(const rapidjson::Value& value)
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
             return py::int_(value.GetInt64());
 #else
-            return py::to_object(py::handle<>(PyInt_FromLong(value.GetInt64())));
+            return py::to_object(py::handle<>(PyLong_FromLong(value.GetInt64())));
 #endif
         }
     }
@@ -204,10 +203,10 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
     {
         value.SetDouble(PyFloat_AsDouble(obj.ptr()));
     }
-    else if (PyInt_Check(obj.ptr()))
+    else if (PyLong_Check(obj.ptr()))
     {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        value.SetInt64(PyInt_AsLong(obj.ptr()));
+        value.SetInt64(PyLong_AsLong(obj.ptr()));
 #else
         value.SetInt64(PyLong_AsLong(obj.ptr()));
 #endif
@@ -218,13 +217,13 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
         value.SetInt64(PyLong_AsLong(obj.ptr()));
     }
 #endif
-    else if (PyString_Check(obj.ptr()))
+    else if (PyBytes_Check(obj.ptr()))
     {
-        value.SetString(PyString_AsString(obj.ptr()), PyString_GET_SIZE(obj.ptr()), allocator);
+        value.SetString(PyBytes_AsString(obj.ptr()), PyBytes_GET_SIZE(obj.ptr()));
     }
     else if (PyUnicode_Check(obj.ptr()))
     {
-        value.SetString(PyBytes_AsString(obj.ptr()), PyBytes_GET_SIZE(obj.ptr()), allocator);
+        value.SetString(PyBytes_AsString(obj.ptr()), PyBytes_GET_SIZE(obj.ptr()));
     }
     else if (PyTuple_Check(obj.ptr()))
     {
@@ -401,14 +400,14 @@ object toPyArray(const TransformMatrix& t)
     pvalue[15] = 1.0;
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { 4,4};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
-    pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2]; pdata[3] = t.trans.x;
-    pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
-    pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
-    pdata[12] = 0; pdata[13] = 0; pdata[14] = 0; pdata[15] = 1;
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(4, 4);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2]; pdata[3] = t.trans.x;
+	pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
+	pdata[8] = t.m[8]; pdata[9] = t.m[9]; pdata[10] = t.m[10]; pdata[11] = t.trans.z;
+	pdata[12] = 0; pdata[13] = 0; pdata[14] = 0; pdata[15] = 1;
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -428,12 +427,12 @@ object toPyArray(const Transform& t)
     pvalue[6] = t.trans.z;
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { 7};
-    PyObject *pyvalues = PyArray_SimpleNew(1,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
-    pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
-    pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(7);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
+	pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 
@@ -1460,12 +1459,13 @@ bool PyEnvironmentBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBo
     return bCollision;
 }
 
-object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyPtr pbody, bool bFrontFacingOnly)
+object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyPtr pbody, bool bFrontFacingOnly)
 {
     object shape = rays.attr("shape");
-    const int nRays = extract<int>(shape[0]);
-    if( nRays == 0 ) {
-        return py::make_tuple(py::empty_array_astype<int>(), py::empty_array_astype<dReal>());
+    const int num = extract<int>(shape[0]);
+    if(num == 0 )
+	{
+		return py::make_tuple(py::numpy::array(py::list()), py::numpy::array(py::list()));
     }
     if( extract<int>(shape[1]) != 6 ) {
         throw OpenRAVEException(_("rays object needs to be a Nx6 vector\n"));
@@ -1496,38 +1496,28 @@ object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyP
     py::buffer_info bufcollision = pycollision.request();
     bool* pcollision = (bool*) bufcollision.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { nRays,6};
-    PyObject *pypos = PyArray_SimpleNew(2,dims, sizeof(dReal) == sizeof(double) ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* ppos = (dReal*)PyArray_DATA(pypos);
-    std::memset(ppos, 0, nRays * sizeof(dReal));
-    PyObject* pycollision = PyArray_SimpleNew(1,dims, PyArray_BOOL);
-    // numpy bool = uint8_t
-    uint8_t* pcollision = (uint8_t*)PyArray_DATA(pycollision);
-    std::memset(pcollision, 0, nRays * sizeof(uint8_t));
+	py::tuple pypos_shape = py::make_tuple(num, 6);
+	py::numpy::ndarray pypos = py::numpy::empty(pypos_shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* ppos = (dReal*)pypos.get_data();
+	py::numpy::ndarray pycollision = py::numpy::empty(py::make_tuple(num), py::numpy::dtype::get_builtin<bool>());
+	bool* pcollision = (bool*)pycollision.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     {
         openravepy::PythonThreadSaver threadsaver;
 
-        for(int i = 0; i < nRays; ++i, ppos += 6) {
-            if (isFloat) {
-                r.pos.x = pRaysFloat[0];
-                r.pos.y = pRaysFloat[1];
-                r.pos.z = pRaysFloat[2];
-                r.dir.x = pRaysFloat[3];
-                r.dir.y = pRaysFloat[4];
-                r.dir.z = pRaysFloat[5];
-                pRaysFloat += 6;
-            } else {
-                r.pos.x = pRaysDouble[0];
-                r.pos.y = pRaysDouble[1];
-                r.pos.z = pRaysDouble[2];
-                r.dir.x = pRaysDouble[3];
-                r.dir.y = pRaysDouble[4];
-                r.dir.z = pRaysDouble[5];
-                pRaysDouble += 6;
-            }
+        for(int i = 0; i < num; ++i, ppos += 6) 
+		{
+			std::vector<dReal> ray = ExtractArray<dReal>(rays[i]);
+			r.pos.x = ray[0];
+			r.pos.y = ray[1];
+			r.pos.z = ray[2];
+			r.dir.x = ray[3];
+			r.dir.y = ray[4];
+			r.dir.z = ray[5];
 
-            const bool bCollision = pbody ? _penv->CheckCollision(r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), preport) : _penv->CheckCollision(r, preport);
+            const bool bCollision = pbody 
+				? _penv->CheckCollision(r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), preport) 
+				: _penv->CheckCollision(r, preport);
 
             if( bCollision &&( report.contacts.size() > 0) ) {
                 if( !bFrontFacingOnly ||( report.contacts[0].norm.dot3(r.dir)<0) ) {
@@ -1542,11 +1532,7 @@ object PyEnvironmentBase::CheckCollisionRays(py::numeric::array rays, PyKinBodyP
             }
         }
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-    return py::make_tuple(pycollision, pypos);
-#else // USE_PYBIND11_PYTHON_BINDINGS
-    return py::make_tuple(py::to_array_astype<bool>(pycollision), py::to_array_astype<dReal>(pypos));
-#endif // USE_PYBIND11_PYTHON_BINDINGS
+	return py::make_tuple(pycollision, pypos);
 }
 
 bool PyEnvironmentBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray)
@@ -1630,9 +1616,9 @@ object PyEnvironmentBase::WriteToMemory(const std::string &filetype, const int o
     else {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
         // https://github.com/pybind/pybind11/issues/1201
-        return py::cast<py::object>(PyString_FromStringAndSize(output.data(), output.size()));
+        return py::cast<py::object>(PyBytes_FromStringAndSize(output.data(), output.size()));
 #else
-        return py::to_object(py::handle<>(PyString_FromStringAndSize(output.data(), output.size())));
+        return py::to_object(py::handle<>(PyBytes_FromStringAndSize(output.data(), output.size())));
 #endif
     }
 }
@@ -2563,7 +2549,9 @@ py::object GetCodeStringOpenRAVEException(OpenRAVEException* p)
 OPENRAVE_PYTHON_MODULE(openravepy_int)
 {
     using namespace openravepy;
-    import_array(); // not sure if this is necessary for pybind11
+	Py_Initialize();
+	py::numpy::initialize();
+
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     using namespace py::literals; // "..."_a
 #else // USE_PYBIND11_PYTHON_BINDINGS
@@ -2573,7 +2561,8 @@ OPENRAVE_PYTHON_MODULE(openravepy_int)
     doc_options.enable_py_signatures();
     doc_options.enable_user_defined();
 #endif
-    numeric::array::set_module_and_type("numpy", "ndarray");
+
+    //numeric::array::set_module_and_type("numpy", "ndarray");
     int_from_number<int>();
     int_from_number<uint8_t>();
     float_from_number<float>();

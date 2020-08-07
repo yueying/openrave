@@ -1,54 +1,59 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 #ifndef OPENRAVE_FCL_SPACE
 #define OPENRAVE_FCL_SPACE
 
 #include <boost/shared_ptr.hpp>
 #include <memory> // c++11
 #include <vector>
-
+#include "plugindefs.h"
 namespace fclrave {
 
 typedef KinBody::LinkConstPtr LinkConstPtr;
 typedef std::pair<LinkConstPtr, LinkConstPtr> LinkPair;
 typedef boost::weak_ptr<const KinBody> KinBodyConstWeakPtr;
 using OpenRAVE::ORE_Assert;
+using OpenRAVE::dReal;
 
 // Warning : this is the only place where we use std::shared_ptr (for compatibility with fcl)
-typedef std::shared_ptr<fcl::CollisionGeometry> CollisionGeometryPtr;
-typedef boost::shared_ptr<fcl::CollisionObject> CollisionObjectPtr;
-typedef boost::function<CollisionGeometryPtr (std::vector<fcl::Vec3f> const &points, std::vector<fcl::Triangle> const &triangles) > MeshFactory;
-typedef std::vector<fcl::CollisionObject *> CollisionGroup;
+typedef std::shared_ptr<fcl::CollisionGeometry<dReal>> CollisionGeometryPtr;
+typedef boost::shared_ptr<fcl::CollisionObject<dReal>> CollisionObjectPtr;
+typedef boost::function<CollisionGeometryPtr (std::vector<fcl::Vector3<dReal>> const &points, std::vector<fcl::Triangle> const &triangles) > MeshFactory;
+typedef std::vector<fcl::CollisionObject<dReal> *> CollisionGroup;
 typedef boost::shared_ptr<CollisionGroup> CollisionGroupPtr;
 typedef std::pair<Transform, CollisionObjectPtr> TransformCollisionPair;
 
 
 // Helper functions for conversions from OpenRAVE to FCL
 
-Vector ConvertVectorFromFCL(fcl::Vec3f const &v)
+Vector ConvertVectorFromFCL(fcl::Vector3<dReal> const &v)
 {
     return Vector(v[0], v[1], v[2]);
 }
 
-fcl::Vec3f ConvertVectorToFCL(Vector const &v)
+fcl::Vector3<dReal> ConvertVectorToFCL(Vector const &v)
 {
-    return fcl::Vec3f(v.x, v.y, v.z);
-}
-fcl::Quaternion3f ConvertQuaternionToFCL(Vector const &v)
-{
-    return fcl::Quaternion3f(v[0], v[1], v[2], v[3]);
+    return fcl::Vector3<dReal>(v.x, v.y, v.z);
 }
 
-Vector ConvertQuaternionFromFCL(fcl::Quaternion3f const &v) {
-    return Vector(v.getW(), v.getX(), v.getY(), v.getZ());
+fcl::Quaternion<dReal> ConvertQuaternionToFCL(Vector const &v)
+{
+    return fcl::Quaternion<dReal>(v[0], v[1], v[2], v[3]);
 }
 
-fcl::AABB ConvertAABBToFcl(const OpenRAVE::AABB& bv) {
-    return fcl::AABB(fcl::AABB(ConvertVectorToFCL(bv.pos)), ConvertVectorToFCL(bv.extents));
+Vector ConvertQuaternionFromFCL(fcl::Quaternion<dReal> const &v) 
+{
+    return Vector(v.w(), v.x(), v.y(), v.z());
+}
+
+fcl::AABB<dReal> ConvertAABBToFcl(const OpenRAVE::AABB& bv)
+{
+    return fcl::AABB<dReal>(fcl::AABB<dReal>(ConvertVectorToFCL(bv.pos)), ConvertVectorToFCL(bv.extents));
 }
 
 
 template <class T>
-CollisionGeometryPtr ConvertMeshToFCL(std::vector<fcl::Vec3f> const &points,std::vector<fcl::Triangle> const &triangles)
+CollisionGeometryPtr ConvertMeshToFCL(std::vector<fcl::Vector3<dReal>> const &points,
+	std::vector<fcl::Triangle> const &triangles)
 {
     std::shared_ptr< fcl::BVHModel<T> > const model = make_shared<fcl::BVHModel<T> >();
     model->beginModel(triangles.size(), points.size());
@@ -213,12 +218,12 @@ public:
 
 
             typedef boost::range_detail::any_iterator<KinBody::GeometryInfo, boost::forward_traversal_tag, KinBody::GeometryInfo const&, std::ptrdiff_t> GeometryInfoIterator;
-            fcl::AABB enclosingBV;
+            fcl::AABB<dReal> enclosingBV;
 
             // Glue code for a unified access to geometries
             if(pinfo->_geometrygroup.size() > 0 && plink->GetGroupNumGeometries(pinfo->_geometrygroup) >= 0) {
                 const std::vector<KinBody::GeometryInfoPtr>& vgeometryinfos = plink->GetGeometriesFromGroup(pinfo->_geometrygroup);
-                FOREACH(itgeominfo, vgeometryinfos) {
+                FOREACHC(itgeominfo, vgeometryinfos) {
                     const KinBody::GeometryInfoPtr& pgeominfo = *itgeominfo;
                     if( !pgeominfo ) {
                         int igeominfo = itgeominfo - vgeometryinfos.begin();
@@ -231,7 +236,7 @@ public:
                     }
 
                     // We do not set the transformation here and leave it to _Synchronize
-                    CollisionObjectPtr pfclcoll = boost::make_shared<fcl::CollisionObject>(pfclgeom);
+                    CollisionObjectPtr pfclcoll = boost::make_shared<fcl::CollisionObject<dReal>>(pfclgeom);
                     pfclcoll->setUserData(linkinfo.get());
                     linkinfo->vgeoms.push_back(TransformCollisionPair(pgeominfo->_t, pfclcoll));
 
@@ -246,7 +251,7 @@ public:
             }
             else {
                 const std::vector<KinBody::Link::GeometryPtr> & vgeometries = plink->GetGeometries();
-                FOREACH(itgeom, vgeometries) {
+                FOREACHC(itgeom, vgeometries) {
                     const KinBody::GeometryInfo& geominfo = (*itgeom)->GetInfo();
                     const CollisionGeometryPtr pfclgeom = _CreateFCLGeomFromGeometryInfo(_meshFactory, geominfo);
 
@@ -255,7 +260,7 @@ public:
                     }
 
                     // We do not set the transformation here and leave it to _Synchronize
-                    CollisionObjectPtr pfclcoll = boost::make_shared<fcl::CollisionObject>(pfclgeom);
+                    CollisionObjectPtr pfclcoll = boost::make_shared<fcl::CollisionObject<dReal>>(pfclgeom);
                     pfclcoll->setUserData(linkinfo.get());
 
                     linkinfo->vgeoms.push_back(TransformCollisionPair(geominfo._t, pfclcoll));
@@ -274,8 +279,8 @@ public:
                 RAVELOG_DEBUG_FORMAT("Initializing link %s/%s with 0 geometries (env %d) (userdatakey %s)",pbody->GetName()%plink->GetName()%_penv->GetId()%_userdatakey);
             }
             else {
-                CollisionGeometryPtr pfclgeomBV = std::make_shared<fcl::Box>(enclosingBV.max_ - enclosingBV.min_);
-                CollisionObjectPtr pfclcollBV = boost::make_shared<fcl::CollisionObject>(pfclgeomBV);
+                CollisionGeometryPtr pfclgeomBV = std::make_shared<fcl::Box<dReal>>(enclosingBV.max_ - enclosingBV.min_);
+                CollisionObjectPtr pfclcollBV = boost::make_shared<fcl::CollisionObject<dReal>>(pfclgeomBV);
                 Transform trans(Vector(1,0,0,0),ConvertVectorFromFCL(0.5 * (enclosingBV.min_ + enclosingBV.max_)));
                 pfclcollBV->setUserData(linkinfo.get());
                 linkinfo->linkBV = std::make_pair(trans, pfclcollBV);
@@ -315,7 +320,7 @@ public:
         if( groupname.size() == 0 ) {
             return true;
         }
-        FOREACH(itlink, body.GetLinks()) {
+        FOREACHC(itlink, body.GetLinks()) {
             if( (*itlink)->GetGroupNumGeometries(groupname) >= 0 ) {
                 return true;
             }
@@ -393,28 +398,28 @@ public:
 
         if (type == "AABB") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL<fcl::AABB>;
+            _meshFactory = &ConvertMeshToFCL<fcl::AABB<dReal>>;
         } else if (type == "OBB") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL<fcl::OBB>;
+            _meshFactory = &ConvertMeshToFCL<fcl::OBB<dReal>>;
         } else if (type == "RSS") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL<fcl::RSS>;
+            _meshFactory = &ConvertMeshToFCL<fcl::RSS<dReal>>;
         } else if (type == "OBBRSS") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL<fcl::OBBRSS>;
+            _meshFactory = &ConvertMeshToFCL<fcl::OBBRSS<dReal>>;
         } else if (type == "kDOP16") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL< fcl::KDOP<16> >;
+            _meshFactory = &ConvertMeshToFCL< fcl::KDOP<dReal,16> >;
         } else if (type == "kDOP18") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL< fcl::KDOP<18> >;
+            _meshFactory = &ConvertMeshToFCL< fcl::KDOP<dReal,18> >;
         } else if (type == "kDOP24") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL< fcl::KDOP<24> >;
+            _meshFactory = &ConvertMeshToFCL< fcl::KDOP<dReal,24> >;
         } else if (type == "kIOS") {
             _bvhRepresentation = type;
-            _meshFactory = &ConvertMeshToFCL<fcl::kIOS>;
+            _meshFactory = &ConvertMeshToFCL<fcl::kIOS<dReal>>;
         } else {
             RAVELOG_WARN(str(boost::format("Unknown BVH representation '%s', keeping '%s' representation") % type % _bvhRepresentation));
             return;
@@ -541,7 +546,7 @@ public:
     }
 
 private:
-    static void _AddGeomInfoToBVHSubmodel(fcl::BVHModel<fcl::OBB>& model, KinBody::GeometryInfo const &info)
+    static void _AddGeomInfoToBVHSubmodel(fcl::BVHModel<fcl::OBB<dReal>>& model, KinBody::GeometryInfo const &info)
     {
         const OpenRAVE::TriMesh& mesh = info._meshcollision;
         if (mesh.vertices.empty() || mesh.indices.empty()) {
@@ -552,10 +557,10 @@ private:
         size_t const num_points = mesh.vertices.size();
         size_t const num_triangles = mesh.indices.size() / 3;
 
-        std::vector<fcl::Vec3f> fcl_points(num_points);
+        std::vector<fcl::Vector3<dReal>> fcl_points(num_points);
         for (size_t ipoint = 0; ipoint < num_points; ++ipoint) {
             Vector v = info._t*mesh.vertices[ipoint];
-            fcl_points[ipoint] = fcl::Vec3f(v.x, v.y, v.z);
+            fcl_points[ipoint] = fcl::Vector3<dReal>(v.x, v.y, v.z);
         }
 
         std::vector<fcl::Triangle> fcl_triangles(num_triangles);
@@ -566,11 +571,11 @@ private:
         model.addSubModel(fcl_points, fcl_triangles);
     }
 
-    static TransformCollisionPair _CreateTransformCollisionPairFromOBB(fcl::OBB const &bv) {
-        CollisionGeometryPtr pbvGeom = make_shared<fcl::Box>(bv.extent[0]*2.0f, bv.extent[1]*2.0f, bv.extent[2]*2.0f);
-        CollisionObjectPtr pbvColl = boost::make_shared<fcl::CollisionObject>(pbvGeom);
-        fcl::Quaternion3f fclBvRot;
-        fclBvRot.fromAxes(bv.axis);
+    static TransformCollisionPair _CreateTransformCollisionPairFromOBB(fcl::OBB<dReal> const &bv) {
+        CollisionGeometryPtr pbvGeom = make_shared<fcl::Box<dReal>>(bv.extent[0]*2.0f, bv.extent[1]*2.0f, bv.extent[2]*2.0f);
+        CollisionObjectPtr pbvColl = boost::make_shared<fcl::CollisionObject<dReal>>(pbvGeom);
+        fcl::Quaternion<dReal> fclBvRot;
+        fclBvRot = (bv.axis);
         Vector bvRotation = ConvertQuaternionFromFCL(fclBvRot);
         Vector bvTranslation = ConvertVectorFromFCL(bv.center());
 
@@ -586,13 +591,13 @@ private:
             return CollisionGeometryPtr();
 
         case OpenRAVE::GT_Box:
-            return make_shared<fcl::Box>(info._vGeomData.x*2.0f,info._vGeomData.y*2.0f,info._vGeomData.z*2.0f);
+            return make_shared<fcl::Box<dReal>>(info._vGeomData.x*2.0f,info._vGeomData.y*2.0f,info._vGeomData.z*2.0f);
 
         case OpenRAVE::GT_Sphere:
-            return make_shared<fcl::Sphere>(info._vGeomData.x);
+            return make_shared<fcl::Sphere<dReal>>(info._vGeomData.x);
 
         case OpenRAVE::GT_Cylinder:
-            return make_shared<fcl::Cylinder>(info._vGeomData.x, info._vGeomData.y);
+            return make_shared<fcl::Cylinder<dReal>>(info._vGeomData.x, info._vGeomData.y);
 
         case OpenRAVE::GT_Container:
         case OpenRAVE::GT_TriMesh:
@@ -607,10 +612,10 @@ private:
             size_t const num_points = mesh.vertices.size();
             size_t const num_triangles = mesh.indices.size() / 3;
 
-            std::vector<fcl::Vec3f> fcl_points(num_points);
+            std::vector<fcl::Vector3<dReal>> fcl_points(num_points);
             for (size_t ipoint = 0; ipoint < num_points; ++ipoint) {
                 Vector v = mesh.vertices[ipoint];
-                fcl_points[ipoint] = fcl::Vec3f(v.x, v.y, v.z);
+                fcl_points[ipoint] = fcl::Vector3<dReal>(v.x, v.y, v.z);
             }
 
             std::vector<fcl::Triangle> fcl_triangles(num_triangles);
@@ -644,8 +649,8 @@ private:
                     continue;
                 }
                 Transform pose = vtrans[i] * info.vlinks[i]->linkBV.first;
-                fcl::Vec3f newPosition = ConvertVectorToFCL(pose.trans);
-                fcl::Quaternion3f newOrientation = ConvertQuaternionToFCL(pose.rot);
+                fcl::Vector3<dReal> newPosition = ConvertVectorToFCL(pose.trans);
+                fcl::Quaternion<dReal> newOrientation = ConvertQuaternionToFCL(pose.rot);
 
                 pcoll->setTranslation(newPosition);
                 pcoll->setQuatRotation(newOrientation);
@@ -656,8 +661,8 @@ private:
                 FOREACHC(itgeomcoll, info.vlinks[i]->vgeoms) {
                     CollisionObjectPtr pcoll = (*itgeomcoll).second;
                     Transform pose = vtrans[i] * (*itgeomcoll).first;
-                    fcl::Vec3f newPosition = ConvertVectorToFCL(pose.trans);
-                    fcl::Quaternion3f newOrientation = ConvertQuaternionToFCL(pose.rot);
+                    fcl::Vector3<dReal> newPosition = ConvertVectorToFCL(pose.trans);
+                    fcl::Quaternion<dReal> newOrientation = ConvertQuaternionToFCL(pose.rot);
 
                     pcoll->setTranslation(newPosition);
                     pcoll->setQuatRotation(newOrientation);
@@ -770,7 +775,7 @@ private:
 };
 
 #ifdef RAVE_REGISTER_BOOST
-#include BOOST_TYPEOF_REGISTRATION_GROUP()
+//#include BOOST_TYPEOF_REGISTRATION_GROUP()
 BOOST_TYPEOF_REGISTER_TYPE(FCLSpace)
 BOOST_TYPEOF_REGISTER_TYPE(FCLSpace::KinBodyInfo)
 BOOST_TYPEOF_REGISTER_TYPE(FCLSpace::KinBodyInfo::LinkInfo)

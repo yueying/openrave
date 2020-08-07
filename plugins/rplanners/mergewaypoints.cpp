@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2013 Cuong Pham <cuong.pham@normalesup.org>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 #define INF 1e30
 #define TINY g_fEpsilonLinear
-
+#undef small
 
 namespace mergewaypoints {
 
@@ -511,7 +511,7 @@ bool ScaleRampsTime(const std::list<ParabolicRamp::ParabolicRampND>& origramps, 
     if(trysmart && doscale && origramps.size()>=2) {
         dReal durationbeforescaling = ComputeRampsDuration(origramps);
         dReal durationmodifiedramps = 0;
-        FOREACH(itramp,origramps) {
+        FOREACHC(itramp,origramps) {
             if(itramp->modified) {
                 durationmodifiedramps += itramp->endTime;
             }
@@ -542,7 +542,7 @@ bool ScaleRampsTime(const std::list<ParabolicRamp::ParabolicRampND>& origramps, 
     }
 
     // Time scale the whole trajectory
-    FOREACH(itramp,origramps) {
+	FOREACHC(itramp,origramps) {
         PARABOLIC_RAMP_ASSERT(itramp->IsValid());
         dReal t = itramp->endTime;
         if(t>TINY) {
@@ -1317,7 +1317,7 @@ size_t CountUnitaryRamps(const ParabolicRamp::ParabolicRampND& rampnd)
 dReal ComputeRampsDuration(const std::list<ParabolicRamp::ParabolicRampND>&ramps)
 {
     dReal res=0;
-    FOREACH(itramp, ramps) {
+	FOREACHC(itramp, ramps) {
         res += itramp->endTime;
     }
     return res;
@@ -1328,7 +1328,7 @@ void PrintRamps(const std::list<ParabolicRamp::ParabolicRampND>&ramps,Constraint
 {
     int itx = 0;
     dReal totaltime = 0;
-    FOREACH(itramp, ramps) {
+	FOREACHC(itramp, ramps) {
         totaltime += itramp->endTime;
         string m = "-";
         if(itramp->modified) {

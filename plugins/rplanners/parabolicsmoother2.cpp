@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2016-2020 Puttichai Lertkultanon & Rosen DianKov
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the
@@ -69,7 +69,7 @@ public:
 
             // If all necessary constraints are checked (specified by options), then we set constraintChecked to true.
             if( (options & constraintmask) == constraintmask ) {
-                FOREACH(itrampnd, rampndVect) {
+				FOREACHC(itrampnd, rampndVect) {
                     itrampnd->constraintChecked = true;
                 }
             }
@@ -614,7 +614,7 @@ public:
 #endif
                     }
 
-                    FOREACHC(itrampnd, tempRampNDVect) {
+                    FOREACH(itrampnd, tempRampNDVect) {
                         parabolicpath.AppendRampND(*itrampnd);
                     }
                     x0Vect.swap(x1Vect);
@@ -692,7 +692,7 @@ public:
 
         // Tell parabolicsmoother not to check constraints again if we already did (e.g. in linearsmoother, etc.)
         if( !_parameters->verifyinitialpath && bPathIsPerfectlyModeled ) {
-            FOREACH(itrampnd, parabolicpath.GetRampNDVect()) {
+			FOREACHC(itrampnd, parabolicpath.GetRampNDVect()) {
                 itrampnd->constraintChecked = true;
             }
         }
@@ -763,7 +763,7 @@ public:
             _pdummytraj->Init(newSpec);
 
             // Consistency checking
-            FOREACH(itrampnd, parabolicpath.GetRampNDVect()) {
+			FOREACHC(itrampnd, parabolicpath.GetRampNDVect()) {
                 OPENRAVE_ASSERT_OP((int) itrampnd->GetDOF(), ==, _parameters->GetDOF());
             }
 
@@ -1489,7 +1489,7 @@ protected:
 
                 // Keep track of zero-velocity waypoints
                 dReal duration = 0;
-                FOREACHC(itrampnd, rampndVect) {
+                FOREACH(itrampnd, rampndVect) {
                     duration += itrampnd->GetDuration();
                     parabolicpath.AppendRampND(*itrampnd);
                 }
@@ -2468,7 +2468,7 @@ protected:
 
         // Parameters & variables for early shortcut termination
         size_t nItersFromPrevSuccessful = 0;        // keeps track of the most recent successful shortcut iteration
-        size_t nCutoffIters = std::max(_parameters->nshortcutcycles, min(100, numIters/2)); // we stop shortcutting if no progress has been made in the past nCutoffIters iterations
+        size_t nCutoffIters = std::max(_parameters->nshortcutcycles, std::min(100, numIters/2)); // we stop shortcutting if no progress has been made in the past nCutoffIters iterations
         size_t nTimeBasedConstraintsFailed = 0;     // the number of times that time-based constraints fail between two consecutive successful shortcuts (reset
         // every time a shortcut attempt is successful)
 

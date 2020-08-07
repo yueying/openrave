@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -1347,7 +1347,7 @@ private:
         std::vector<uint8_t> vConnectedPassiveJoints; vConnectedPassiveJoints.resize(pbody->GetPassiveJoints().size(),0);
         if( pbody->IsRobot() ) {
             RobotBasePtr probot = RaveInterfaceCast<RobotBase>(pbody);
-            FOREACH(itconnectedBody, probot->GetConnectedBodies()) {
+			FOREACHC(itconnectedBody, probot->GetConnectedBodies()) {
                 RobotBase::ConnectedBody& connectedBody = **itconnectedBody;
                 if( (*itconnectedBody)->IsActive() == 0 ) {
                     // not active, so will not be mapped onto real robot
@@ -1789,7 +1789,7 @@ private:
         std::vector<KinBody::LinkPtr> vConnectedLinks;
         if( pbody->IsRobot() ) {
             RobotBasePtr probot = RaveInterfaceCast<RobotBase>(pbody);
-            FOREACH(itConnectedBody, probot->GetConnectedBodies()) {
+			FOREACHC(itConnectedBody, probot->GetConnectedBodies()) {
                 if( (*itConnectedBody)->IsActive() == 0 ) {
                     // not active, so will not be mapped onto real robot
                     continue;
@@ -2341,7 +2341,7 @@ private:
                 if( listIgnoreLinks.size() > 0 ) {
                     daeElementRef pconstrainttec = pconstraint->add("technique");
                     pconstrainttec->setAttribute("profile","OpenRAVE");
-                    FOREACHC(itignorelink, listIgnoreLinks) {
+                    FOREACH(itignorelink, listIgnoreLinks) {
                         KinBody::LinkConstPtr& pignorelink = *itignorelink;
                         if( pignorelink->GetIndex() < (int)ipmout->pmout->vrigidbodysids.size() ) {
                             string linksid = ipmout->pmout->vrigidbodysids.at(pignorelink->GetIndex());
@@ -2359,7 +2359,7 @@ private:
     void _WriteManipulators(RobotBasePtr probot, daeElementRef parent, const std::vector<std::string>& vlinksidrefs, const std::vector<std::string>& vdofsidrefs)
     {
         std::vector<RobotBase::ManipulatorPtr> vConnectedManipulators;
-        FOREACH(itConnectedBody, probot->GetConnectedBodies()) {
+		FOREACHC(itConnectedBody, probot->GetConnectedBodies()) {
             if( (*itConnectedBody)->IsActive() == 0 ) {
                 // not active, so will not be mapped onto real robot
                 continue;
@@ -2439,7 +2439,7 @@ private:
     {
         if (probot->GetAttachedSensors().size() > 0) {
             std::vector<RobotBase::AttachedSensorPtr> vConnectedAttachedSensors;
-            FOREACH(itConnectedBody, probot->GetConnectedBodies()) {
+			FOREACHC(itConnectedBody, probot->GetConnectedBodies()) {
                 if( (*itConnectedBody)->IsActive() == 0 ) {
                     // not active, so will not be mapped onto real robot
                     continue;
@@ -2535,7 +2535,7 @@ private:
     {
         if (probot->GetGripperInfos().size() > 0) {
             std::vector<RobotBase::GripperInfoPtr> vConnectedGripperInfos;
-            FOREACH(itConnectedBody, probot->GetConnectedBodies()) {
+			FOREACHC(itConnectedBody, probot->GetConnectedBodies()) {
                 if( (*itConnectedBody)->IsActive() == 0 ) {
                     // not active, so will not be mapped onto real robot
                     continue;
@@ -2615,7 +2615,7 @@ private:
             std::vector<KinBody::LinkPtr> vConnectedLinks;
             if( pbody->IsRobot() ) {
                 RobotBasePtr probot = RaveInterfaceCast<RobotBase>(pbody);
-                FOREACH(itConnectedBody, probot->GetConnectedBodies()) {
+				FOREACHC(itConnectedBody, probot->GetConnectedBodies()) {
                     if( (*itConnectedBody)->IsActive() == 0 ) {
                         // not active, so will not be mapped onto real robot
                         continue;

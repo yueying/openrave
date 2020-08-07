@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -694,7 +694,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
             else if( cmd == "sensorname" ) {
                 string sensorname;
                 sinput >> sensorname;
-                FOREACH(itsensor,_sensorrobot->GetAttachedSensors()) {
+				FOREACHC(itsensor,_sensorrobot->GetAttachedSensors()) {
                     if( (*itsensor)->GetName() == sensorname ) {
                         psensor = *itsensor;
                         break;
@@ -720,7 +720,7 @@ Visibility computation checks occlusion with other objects using ray sampling in
             else if( cmd == "manipname" ) {
                 string manipname;
                 sinput >> manipname;
-                FOREACH(itmanip,_robot->GetManipulators()) {
+				FOREACHC(itmanip,_robot->GetManipulators()) {
                     if( (*itmanip)->GetName() == manipname ) {
                         pmanip = *itmanip;
                         break;

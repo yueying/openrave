@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -643,7 +643,7 @@ bool KinBody::InitFromKinBodyInfo(const KinBodyInfo& info)
     _name = info._name;
     _referenceUri = info._referenceUri;
 
-    FOREACH(it, info._mReadableInterfaces) {
+	FOREACHC(it, info._mReadableInterfaces) {
         SetReadableInterface(it->first, it->second);
     }
 
@@ -712,7 +712,7 @@ void KinBody::GetDOFValues(std::vector<dReal>& v, const std::vector<int>& dofind
                     ss << *itvalue << ", ";
                 }
                 ss << "]; jointorder=[";
-                FOREACH(itj, _vDOFOrderedJoints) {
+                FOREACHC(itj, _vDOFOrderedJoints) {
                     ss << (*itj)->GetName() << ", ";
                 }
                 ss << "];";
@@ -5724,7 +5724,7 @@ UpdateFromInfoResult KinBody::UpdateFromKinBodyInfo(const KinBodyInfo& info)
         SetDOFValues(dofValues);
     }
 
-    FOREACH(it, info._mReadableInterfaces) {
+	FOREACHC(it, info._mReadableInterfaces) {
         ReadablePtr pReadable = boost::dynamic_pointer_cast<Readable>(GetReadableInterface(it->first));
         if (!!pReadable) {
             if ( (*(it->second)) != (*pReadable)) {
@@ -5742,7 +5742,7 @@ UpdateFromInfoResult KinBody::UpdateFromKinBodyInfo(const KinBodyInfo& info)
     }
 
     // delete readableInterface
-    FOREACH(itExisting, GetReadableInterfaces()) {
+	FOREACHC(itExisting, GetReadableInterfaces()) {
         bool bFound = false;
         FOREACHC(it, info._mReadableInterfaces) {
             if (itExisting->first == it->first) {

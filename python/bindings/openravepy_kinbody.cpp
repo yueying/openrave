@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2013 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -46,7 +46,6 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-namespace numeric = py::numeric;
 
 KinBody::KinBodyInfoPtr ExtractKinBodyInfo(object obj)
 {
@@ -526,10 +525,10 @@ void PyElectricMotorActuatorInfo::_Update(const ElectricMotorActuatorInfo& info)
     no_load_speed = info.no_load_speed;
     stall_torque = info.stall_torque;
     max_instantaneous_torque = info.max_instantaneous_torque;
-    FOREACH(itpoint, info.nominal_speed_torque_points) {
+    FOREACHC(itpoint, info.nominal_speed_torque_points) {
         nominal_speed_torque_points.append(py::make_tuple(itpoint->first, itpoint->second));
     }
-    FOREACH(itpoint, info.max_speed_torque_points) {
+    FOREACHC(itpoint, info.max_speed_torque_points) {
         max_speed_torque_points.append(py::make_tuple(itpoint->first, itpoint->second));
     }
     nominal_torque = info.nominal_torque;
@@ -903,7 +902,7 @@ object PyJointInfo::GetDOF() {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     return py::handle_to_object(PyInt_FromLong(pInfo->GetDOF()));
 #else
-    return py::to_object(py::handle<>(PyInt_FromLong(pInfo->GetDOF())));
+    return py::to_object(py::handle<>(PyLong_FromLong(pInfo->GetDOF())));
 #endif
 }
 
@@ -1366,13 +1365,13 @@ object PyLink::GetLocalInertia() const {
     pvalue[8] = t.m[10];
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { 3, 3};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
-    pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
-    pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
-    pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(3, 3);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
+	pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
+	pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 object PyLink::GetGlobalInertia() const {
@@ -1392,13 +1391,13 @@ object PyLink::GetGlobalInertia() const {
     pvalue[8] = t.m[10];
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = { 3, 3};
-    PyObject *pyvalues = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pdata = (dReal*)PyArray_DATA(pyvalues);
-    pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
-    pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
-    pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
-    return py::to_array_astype<dReal>(pyvalues);
+	py::tuple shape = py::make_tuple(3, 3);
+	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pdata = (dReal*)pyvalues.get_data();
+	pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2];
+	pdata[3] = t.m[4]; pdata[4] = t.m[5]; pdata[5] = t.m[6];
+	pdata[6] = t.m[8]; pdata[7] = t.m[9]; pdata[8] = t.m[10];
+	return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 }
 dReal PyLink::GetMass() const {
@@ -2494,12 +2493,14 @@ object PyKinBody::GetDOFValues() const
 }
 object PyKinBody::GetDOFValues(object oindices) const
 {
-    if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+    if( IS_PYTHONOBJECT_NONE(oindices) )
+	{
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
-    if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+    if( vindices.size() == 0 ) 
+	{
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pbody->GetDOFValues(values,vindices);
@@ -2515,12 +2516,14 @@ object PyKinBody::GetDOFVelocities() const
 
 object PyKinBody::GetDOFVelocities(object oindices) const
 {
-    if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+    if( IS_PYTHONOBJECT_NONE(oindices) ) 
+	{
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
-    if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+    if( vindices.size() == 0 )
+	{
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values;
     _pbody->GetDOFVelocities(values,vindices);
@@ -2586,11 +2589,11 @@ object PyKinBody::GetDOFTorqueLimits() const
 object PyKinBody::GetDOFLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::make_tuple(py::empty_array_astype<dReal>(), py::empty_array_astype<dReal>()); // always need 2 since users can do lower, upper = GetDOFLimits()
+        return py::make_tuple(py::numpy::array(py::list()), py::numpy::array(py::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::make_tuple(py::empty_array_astype<dReal>(), py::empty_array_astype<dReal>()); // always need 2 since users can do lower, upper = GetDOFLimits()
+        return py::make_tuple(py::numpy::array(py::list()), py::numpy::array(py::list())); // always need 2 since users can do lower, upper = GetDOFLimits()
     }
     std::vector<dReal> vlower, vupper, vtemplower, vtempupper;
     vlower.reserve(vindices.size());
@@ -2607,11 +2610,11 @@ object PyKinBody::GetDOFLimits(object oindices) const
 object PyKinBody::GetDOFVelocityLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2626,11 +2629,11 @@ object PyKinBody::GetDOFVelocityLimits(object oindices) const
 object PyKinBody::GetDOFAccelerationLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2645,11 +2648,11 @@ object PyKinBody::GetDOFAccelerationLimits(object oindices) const
 object PyKinBody::GetDOFJerkLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2664,11 +2667,11 @@ object PyKinBody::GetDOFJerkLimits(object oindices) const
 object PyKinBody::GetDOFHardVelocityLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2683,11 +2686,11 @@ object PyKinBody::GetDOFHardVelocityLimits(object oindices) const
 object PyKinBody::GetDOFHardAccelerationLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2702,11 +2705,11 @@ object PyKinBody::GetDOFHardAccelerationLimits(object oindices) const
 object PyKinBody::GetDOFHardJerkLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2721,11 +2724,11 @@ object PyKinBody::GetDOFHardJerkLimits(object oindices) const
 object PyKinBody::GetDOFTorqueLimits(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vmax, vtempmax;
     vmax.reserve(vindices.size());
@@ -2768,11 +2771,11 @@ object PyKinBody::GetDOFWeights() const
 object PyKinBody::GetDOFWeights(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values, v;
     values.reserve(vindices.size());
@@ -2793,11 +2796,11 @@ object PyKinBody::GetDOFResolutions() const
 object PyKinBody::GetDOFResolutions(object oindices) const
 {
     if( IS_PYTHONOBJECT_NONE(oindices) ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<int> vindices = ExtractArray<int>(oindices);
     if( vindices.size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> values, v;
     values.reserve(vindices.size());
@@ -3054,8 +3057,9 @@ void PyKinBody::SetDOFVelocities(object odofvelocities, uint32_t checklimits, ob
 
 object PyKinBody::GetLinkVelocities() const
 {
-    if( _pbody->GetLinks().empty() ) {
-        return py::empty_array_astype<dReal>();
+    if( _pbody->GetLinks().empty() )
+	{
+        return py::numpy::array(py::list());
     }
     std::vector<std::pair<Vector,Vector> > velocities;
     _pbody->GetLinkVelocities(velocities);
@@ -3065,9 +3069,9 @@ object PyKinBody::GetLinkVelocities() const
     py::buffer_info buf = pyvel.request();
     dReal* pfvel = (dReal*) buf.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = {npy_intp(velocities.size()),npy_intp(6)};
-    PyObject *pyvel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pfvel = (dReal*)PyArray_DATA(pyvel);
+	py::tuple shape = py::make_tuple(velocities.size(), 6);
+	py::numpy::ndarray pyvel = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	dReal* pfvel = (dReal*)pyvel.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     for(size_t i = 0; i < nvelocities; ++i) {
         pfvel[6*i+0] = velocities[i].first.x;
@@ -3077,17 +3081,14 @@ object PyKinBody::GetLinkVelocities() const
         pfvel[6*i+4] = velocities[i].second.y;
         pfvel[6*i+5] = velocities[i].second.z;
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-    return pyvel;
-#else // USE_PYBIND11_PYTHON_BINDINGS
-    return py::to_array_astype<dReal>(pyvel);
-#endif // USE_PYBIND11_PYTHON_BINDINGS
+	return std::move(pyvel);
 }
 
 object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexternalaccelerations) const
 {
-    if( _pbody->GetLinks().size() == 0 ) {
-        return py::empty_array_astype<dReal>();
+    if( _pbody->GetLinks().size() == 0 ) 
+	{
+        return py::numpy::array(py::list());
     }
     std::vector<dReal> vDOFAccelerations = ExtractArray<dReal>(odofaccelerations);
     KinBody::AccelerationMapPtr pmapExternalAccelerations;
@@ -3121,10 +3122,10 @@ object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexterna
     py::array_t<dReal> pyaccel({(int)nLinkAccelerations, 6});
     py::buffer_info buf = pyaccel.request();
     dReal* pf = (dReal*) buf.ptr;
-#else // USE_PYBIND11_PYTHON_BINDINGS
-    npy_intp dims[] = {npy_intp(nLinkAccelerations), npy_intp(6)};
-    PyObject *pyaccel = PyArray_SimpleNew(2,dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-    dReal* pf = (dReal*)PyArray_DATA(pyaccel);
+#else // USE_PYBIND11_PYTHON_BINDINGS    
+   py::tuple shape = py::make_tuple(vLinkAccelerations.size(), 6);
+   py::numpy::ndarray pyaccel = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+   dReal* pf = (dReal*)pyaccel.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     for(size_t i = 0; i < nLinkAccelerations; ++i) {
         pf[6*i+0] = vLinkAccelerations[i].first.x;
@@ -3134,11 +3135,7 @@ object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexterna
         pf[6*i+4] = vLinkAccelerations[i].second.y;
         pf[6*i+5] = vLinkAccelerations[i].second.z;
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
-    return pyaccel;
-#else
-    return py::to_array_astype<dReal>(pyaccel);
-#endif // USE_PYBIND11_PYTHON_BINDINGS
+	return std::move(pyaccel);
 }
 
 object PyKinBody::ComputeAABB(bool bEnabledOnlyLinks)
@@ -3407,7 +3404,7 @@ object PyKinBody::ComputeJacobianTranslation(int index, object oposition, object
     }
     std::vector<dReal> vjacobian;
     _pbody->ComputeJacobianTranslation(index,ExtractVector3(oposition),vjacobian,vindices);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = vjacobian.size()/3;
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = vjacobian.size()/3;
     return toPyArray(vjacobian,dims);
 }
 
@@ -3419,7 +3416,7 @@ object PyKinBody::ComputeJacobianAxisAngle(int index, object oindices)
     }
     std::vector<dReal> vjacobian;
     _pbody->ComputeJacobianAxisAngle(index,vjacobian,vindices);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = vjacobian.size()/3;
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = vjacobian.size()/3;
     return toPyArray(vjacobian,dims);
 }
 
@@ -3427,7 +3424,7 @@ object PyKinBody::CalculateJacobian(int index, object oposition)
 {
     std::vector<dReal> vjacobian;
     _pbody->CalculateJacobian(index,ExtractVector3(oposition),vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = vjacobian.size()/3;
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = vjacobian.size()/3;
     return toPyArray(vjacobian,dims);
 }
 
@@ -3435,7 +3432,7 @@ object PyKinBody::CalculateRotationJacobian(int index, object q) const
 {
     std::vector<dReal> vjacobian;
     _pbody->CalculateRotationJacobian(index,ExtractVector4(q),vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 4; dims[1] = _pbody->GetDOF();
+    std::vector<size_t> dims(2); dims[0] = 4; dims[1] = _pbody->GetDOF();
     return toPyArray(vjacobian,dims);
 }
 
@@ -3443,7 +3440,7 @@ object PyKinBody::CalculateAngularVelocityJacobian(int index) const
 {
     std::vector<dReal> vjacobian;
     _pbody->ComputeJacobianAxisAngle(index,vjacobian);
-    std::vector<npy_intp> dims(2); dims[0] = 3; dims[1] = _pbody->GetDOF();
+    std::vector<size_t> dims(2); dims[0] = 3; dims[1] = _pbody->GetDOF();
     return toPyArray(vjacobian,dims);
 }
 
@@ -3456,7 +3453,7 @@ object PyKinBody::ComputeHessianTranslation(int index, object oposition, object 
     size_t dof = vindices.size() == 0 ? (size_t)_pbody->GetDOF() : vindices.size();
     std::vector<dReal> vhessian;
     _pbody->ComputeHessianTranslation(index,ExtractVector3(oposition),vhessian,vindices);
-    std::vector<npy_intp> dims(3); dims[0] = dof; dims[1] = 3; dims[2] = dof;
+    std::vector<size_t> dims(3); dims[0] = dof; dims[1] = 3; dims[2] = dof;
     return toPyArray(vhessian,dims);
 }
 
@@ -3469,7 +3466,7 @@ object PyKinBody::ComputeHessianAxisAngle(int index, object oindices)
     size_t dof = vindices.size() == 0 ? (size_t)_pbody->GetDOF() : vindices.size();
     std::vector<dReal> vhessian;
     _pbody->ComputeHessianAxisAngle(index,vhessian,vindices);
-    std::vector<npy_intp> dims(3); dims[0] = dof; dims[1] = 3; dims[2] = dof;
+    std::vector<size_t> dims(3); dims[0] = dof; dims[1] = 3; dims[2] = dof;
     return toPyArray(vhessian,dims);
 }
 

@@ -43,7 +43,6 @@ using py::manage_new_object;
 using py::def;
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
-namespace numeric = py::numeric;
 
 class PySpaceSamplerBase : public PyInterfaceBase
 {
@@ -172,17 +171,18 @@ protected:
         pyvalues.resize({(int) samples.size()/dim, dim});
         return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { npy_intp(samples.size()/dim), npy_intp(dim) };
-        PyObject *pyvalues = PyArray_SimpleNew(2, dims, sizeof(dReal)==8 ? PyArray_DOUBLE : PyArray_FLOAT);
-        memcpy(PyArray_DATA(pyvalues), samples.data(), samples.size()*sizeof(samples[0]));
-        return py::to_array_astype<dReal>(pyvalues);
+		py::numpy::ndarray pyvalues = py::numpy::empty(py::make_tuple(int(samples.size() / dim), dim),
+			py::numpy::dtype::get_builtin<dReal>());
+		memcpy(pyvalues.get_data(), &samples.at(0), samples.size() * sizeof(samples[0]));
+		return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
 
     object _ReturnSamples2D(const std::vector<uint32_t>&samples)
     {
-        if( samples.empty() == 0 ) {
-            return py::empty_array_astype<uint32_t>();
+        if( samples.empty() == 0 ) 
+		{
+            return py::numpy::array(py::list());
         }
         const int dim = _pspacesampler->GetNumberOfValues();
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
@@ -190,10 +190,10 @@ protected:
         pyvalues.resize({(int) samples.size()/dim, dim});
         return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
-        npy_intp dims[] = { npy_intp(samples.size()/dim), npy_intp(dim) };
-        PyObject *pyvalues = PyArray_SimpleNew(2,dims, PyArray_UINT32);
-        memcpy(PyArray_DATA(pyvalues), samples.data(), samples.size()*sizeof(samples[0]));
-        return py::to_array_astype<uint32_t>(pyvalues);
+		py::numpy::ndarray pyvalues = py::numpy::empty(py::make_tuple(int(samples.size() / dim), dim), 
+			py::numpy::dtype::get_builtin<uint32_t>());
+		memcpy(pyvalues.get_data(), &samples.at(0), samples.size() * sizeof(samples[0]));
+		return std::move(pyvalues);
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     }
 };
