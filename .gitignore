@@ -8,3 +8,6 @@ msvc_soqt/
 src/models/
 
 myrelpath.pyc
+vs2017/
+sympy/
+python/.idea
