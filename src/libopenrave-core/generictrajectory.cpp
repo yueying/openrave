@@ -466,7 +466,7 @@ public:
                 WriteBinaryString(O, itReadableInterface->first);  // readable interface id
 
                 // try to serialize to json first
-                ReadablePtr pReadable = OPENRAVE_DYNAMIC_POINTER_CAST<Readable>(itReadableInterface->second);
+                ReadablePtr pReadable = std::dynamic_pointer_cast<Readable>(itReadableInterface->second);
                 if (!!pReadable) {
                     rapidjson::Value rReadable;
                     if( pReadable->SerializeJSON(rReadable, document.GetAllocator(), fUnitScale, zerooptions) ) {
@@ -479,7 +479,7 @@ public:
                         xmlreaders::StreamXMLWriterPtr writer;
                         
                         // try to serialize to HierarchicalXML
-                        xmlreaders::HierarchicalXMLReadablePtr pHierarchical = OPENRAVE_DYNAMIC_POINTER_CAST<xmlreaders::HierarchicalXMLReadable>(pReadable);
+                        xmlreaders::HierarchicalXMLReadablePtr pHierarchical = std::dynamic_pointer_cast<xmlreaders::HierarchicalXMLReadable>(pReadable);
                         if( !!pHierarchical ) {
                             writer.reset(new xmlreaders::StreamXMLWriter("root")); // need to parse with xml, so need a root
                             pHierarchical->SerializeXML(writer, options);
@@ -615,7 +615,7 @@ public:
     void Swap(TrajectoryBasePtr rawtraj)
     {
         OPENRAVE_ASSERT_OP(GetXMLId(),==,rawtraj->GetXMLId());
-        boost::shared_ptr<GenericTrajectory> traj = boost::dynamic_pointer_cast<GenericTrajectory>(rawtraj);
+        std::shared_ptr<GenericTrajectory> traj = std::dynamic_pointer_cast<GenericTrajectory>(rawtraj);
         _spec.Swap(traj->_spec);
         _vderivoffsets.swap(traj->_vderivoffsets);
         _vddoffsets.swap(traj->_vddoffsets);

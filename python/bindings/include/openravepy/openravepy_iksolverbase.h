@@ -42,7 +42,7 @@ public:
     IkReturn _ret;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyIkReturn> PyIkReturnPtr;
+typedef std::shared_ptr<PyIkReturn> PyIkReturnPtr;
 
 class PyIkSolverBase : public PyInterfaceBase
 {

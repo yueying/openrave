@@ -173,7 +173,7 @@ PyInterfaceBasePtr toPyController(ControllerBasePtr pcontroller, PyEnvironmentBa
     // TODO this is a hack
     // unfortunately dynamic_pointer_cast will not work. The most ideal situation is to have MultiControllerBase registered as its own individual interface....
     else if( pcontroller->GetXMLId() == std::string("MultiController") ) {
-        return PyInterfaceBasePtr(new PyMultiControllerBase(OPENRAVE_STATIC_POINTER_CAST<MultiControllerBase>(pcontroller), pyenv));
+        return PyInterfaceBasePtr(new PyMultiControllerBase(std::static_pointer_cast<MultiControllerBase>(pcontroller), pyenv));
     }
     else {
         return PyInterfaceBasePtr(new PyControllerBase(pcontroller, pyenv));
@@ -215,9 +215,9 @@ void init_openravepy_controller()
         bool (PyControllerBase::*setdesired2)(object,object) = &PyControllerBase::SetDesired;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
         using namespace py::literals;  // "..."_a
-        class_<PyControllerBase, OPENRAVE_SHARED_PTR<PyControllerBase>, PyInterfaceBase>(m, "Controller", DOXY_CLASS(ControllerBase))
+        class_<PyControllerBase, std::shared_ptr<PyControllerBase>, PyInterfaceBase>(m, "Controller", DOXY_CLASS(ControllerBase))
 #else
-        class_<PyControllerBase, OPENRAVE_SHARED_PTR<PyControllerBase>, bases<PyInterfaceBase> >("Controller", DOXY_CLASS(ControllerBase), no_init)
+        class_<PyControllerBase, std::shared_ptr<PyControllerBase>, bases<PyInterfaceBase> >("Controller", DOXY_CLASS(ControllerBase), no_init)
 #endif
         .def("Init",init1, DOXY_FN(ControllerBase,Init))
         .def("Init",init2, PY_ARGS("robot","dofindices","controltransform") DOXY_FN(ControllerBase,Init))
@@ -245,9 +245,9 @@ void init_openravepy_controller()
 
     {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<PyMultiControllerBase, OPENRAVE_SHARED_PTR<PyMultiControllerBase>, PyControllerBase/*, PyInterfaceBase*/ >(m, "MultiController", DOXY_CLASS(MultiControllerBase))
+        class_<PyMultiControllerBase, std::shared_ptr<PyMultiControllerBase>, PyControllerBase/*, PyInterfaceBase*/ >(m, "MultiController", DOXY_CLASS(MultiControllerBase))
 #else
-        class_<PyMultiControllerBase, OPENRAVE_SHARED_PTR<PyMultiControllerBase>, bases<PyControllerBase, PyInterfaceBase> >("MultiController", DOXY_CLASS(MultiControllerBase), no_init)
+        class_<PyMultiControllerBase, std::shared_ptr<PyMultiControllerBase>, bases<PyControllerBase, PyInterfaceBase> >("MultiController", DOXY_CLASS(MultiControllerBase), no_init)
 #endif
         .def("AttachController",&PyMultiControllerBase::AttachController, PY_ARGS("controller","dofindices","controltransform") DOXY_FN(MultiControllerBase,AttachController))
         .def("RemoveController",&PyMultiControllerBase::RemoveController, PY_ARGS("controller") DOXY_FN(MultiControllerBase,RemoveController))

@@ -69,7 +69,7 @@
 // openrave
 #include <openrave/config.h>
 #include <openrave/logging.h>
-#include <openrave/smart_ptr.h>
+#include <memory>
 
 #ifndef _RAVE_DISPLAY
 #define _RAVE_DISPLAY(RUNCODE)                                               \
@@ -217,12 +217,12 @@ class PyVoidHandle
 public:
     PyVoidHandle() {
     }
-    PyVoidHandle(OPENRAVE_SHARED_PTR<void> handle) : _handle(handle) {
+    PyVoidHandle(std::shared_ptr<void> handle) : _handle(handle) {
     }
     void Close() {
         _handle.reset();
     }
-    OPENRAVE_SHARED_PTR<void> _handle;
+    std::shared_ptr<void> _handle;
 };
 
 class PyVoidHandleConst
@@ -230,12 +230,12 @@ class PyVoidHandleConst
 public:
     PyVoidHandleConst() {
     }
-    PyVoidHandleConst(OPENRAVE_SHARED_PTR<void const> handle) : _handle(handle) {
+    PyVoidHandleConst(std::shared_ptr<void const> handle) : _handle(handle) {
     }
     void Close() {
         _handle.reset();
     }
-    OPENRAVE_SHARED_PTR<void const> _handle;
+    std::shared_ptr<void const> _handle;
 };
 
 inline std::vector<int8_t> ExtractArrayInt8(const py::object& o)

@@ -242,14 +242,14 @@ private:
         struct sockaddr_in client_address;
         bool bInit;
     };
-    typedef boost::shared_ptr<Socket> SocketPtr;
-    typedef boost::shared_ptr<Socket const> SocketConstPtr;
+    typedef std::shared_ptr<Socket> SocketPtr;
+    typedef std::shared_ptr<Socket const> SocketConstPtr;
 
     /// \param in is the data passed from the network
     /// \param out is the return data that will be passed to the client
-    /// \param boost::shared_ptr<void> is a pointer to a void that willl be passed to the worker thread function
-    typedef boost::function<bool (istream&, ostream&, boost::shared_ptr<void>&)> OpenRaveNetworkFn;
-    typedef boost::function<bool (boost::shared_ptr<istream>, boost::shared_ptr<void>)> OpenRaveWorkerFn;
+    /// \param std::shared_ptr<void> is a pointer to a void that willl be passed to the worker thread function
+    typedef boost::function<bool (istream&, ostream&, std::shared_ptr<void>&)> OpenRaveNetworkFn;
+    typedef boost::function<bool (std::shared_ptr<istream>, std::shared_ptr<void>)> OpenRaveWorkerFn;
 
     /// each network function has a function to intially processes the data on the socket function
     /// and one that is executed on the main worker thread to avoid multithreading data synchronization issues
@@ -472,11 +472,11 @@ public:
 
 private:
 
-    inline boost::shared_ptr<SimpleTextServer> shared_server() {
-        return boost::static_pointer_cast<SimpleTextServer>(shared_from_this());
+    inline std::shared_ptr<SimpleTextServer> shared_server() {
+        return std::static_pointer_cast<SimpleTextServer>(shared_from_this());
     }
-    inline boost::shared_ptr<SimpleTextServer const> shared_server_const() const {
-        return boost::static_pointer_cast<SimpleTextServer const>(shared_from_this());
+    inline std::shared_ptr<SimpleTextServer const> shared_server_const() const {
+        return std::static_pointer_cast<SimpleTextServer const>(shared_from_this());
     }
 
     // called from threads other than the main worker to wait until
@@ -547,7 +547,7 @@ private:
             }
 
             // start a new thread
-            _listReadThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SimpleTextServer::_read_threadcb,shared_server(), psocket))));
+            _listReadThreads.push_back(std::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SimpleTextServer::_read_threadcb,shared_server(), psocket))));
             psocket.reset(new Socket());
         }
 
@@ -567,7 +567,7 @@ private:
                     flog << index++ << ": " << line << endl;
                 }
 
-                boost::shared_ptr<istream> is(new stringstream(line));
+                std::shared_ptr<istream> is(new stringstream(line));
                 *is >> cmd;
                 if( !*is ) {
                     RAVELOG_ERROR("Failed to get command\n");
@@ -580,7 +580,7 @@ private:
                 map<string, RAVENETWORKFN>::iterator itfn = mapNetworkFns.find(cmd);
                 if( itfn != mapNetworkFns.end() ) {
                     bool bCallWorker = true;
-                    boost::shared_ptr<void> pdata;
+                    std::shared_ptr<void> pdata;
 
                     // need to set w.args before pcmdend is modified
                     sout.str(""); sout.clear();
@@ -644,8 +644,8 @@ private:
 
     int _nPort;     ///< port used for listening to incoming connections
 
-    boost::shared_ptr<boost::thread> _servthread, _workerthread;
-    list<boost::shared_ptr<boost::thread> > _listReadThreads;
+    std::shared_ptr<boost::thread> _servthread, _workerthread;
+    list<std::shared_ptr<boost::thread> > _listReadThreads;
 
     boost::mutex _mutexWorker;
     boost::condition _condWorker;
@@ -697,7 +697,7 @@ protected:
     }
 
     /// orRender - Render the new OpenRAVE scene
-    bool worRender(boost::shared_ptr<istream> is, boost::shared_ptr<void> pdata)
+    bool worRender(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
         string cmd;
         while(1) {
@@ -726,7 +726,7 @@ protected:
     }
 
     /// orEnvSetOptions - Set physics simulation parameters,
-    bool orEnvSetOptions(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvSetOptions(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         string cmd;
         is >> cmd;
@@ -744,7 +744,7 @@ protected:
     {
         exit(0);
     }
-    bool worSetOptions(boost::shared_ptr<istream> is, boost::shared_ptr<void> pdata)
+    bool worSetOptions(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
         string cmd;
         while(1) {
@@ -843,7 +843,7 @@ protected:
     }
 
     /// orEnvSetOptions - Set physics simulation parameters,
-    bool orEnvLoadScene(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvLoadScene(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         bool bClearScene=false;
         string filename;
@@ -870,7 +870,7 @@ protected:
     }
 
     /// robot = orEnvCreateRobot(name, xmlfile) - create a specific robot, return a robot handle (a robot is also a kinbody)
-    bool orEnvCreateRobot(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvCreateRobot(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         string robotname, xmlfile, robottype;
         is >> robotname >> xmlfile >> robottype;
@@ -892,7 +892,7 @@ protected:
         return true;
     }
 
-    bool orEnvCreateModule(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvCreateModule(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         string problemname;
         bool bDestroyDuplicates = true;
@@ -930,13 +930,13 @@ protected:
         return true;
     }
 
-    bool worEnvCreateModule(boost::shared_ptr<istream> is, boost::shared_ptr<void> pdata)
+    bool worEnvCreateModule(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
-        GetEnv()->Add(boost::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->first, true, boost::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->second);
+        GetEnv()->Add(std::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->first, true, std::static_pointer_cast< pair<ModuleBasePtr,string> >(pdata)->second);
         return true;
     }
 
-    bool worEnvDestroyProblem(boost::shared_ptr<istream> is, boost::shared_ptr<void> pdata)
+    bool worEnvDestroyProblem(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
         int index = 0;
         *is >> index;
@@ -957,7 +957,7 @@ protected:
     }
 
     /// body = orEnvCreateKinBody(name, xmlfile) - create a specific kinbody
-    bool orEnvCreateKinBody(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvCreateKinBody(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         string bodyname, xmlfile;
         is >> bodyname >> xmlfile;
@@ -981,7 +981,7 @@ protected:
 
     // bodyid = orEnvGetBody(bodyname)
     // Returns the id of the body given its name
-    bool orEnvGetBody(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvGetBody(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         string bodyname;
         is >> bodyname;
@@ -1001,7 +1001,7 @@ protected:
         return true;
     }
 
-    bool orEnvGetRobots(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvGetRobots(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1016,7 +1016,7 @@ protected:
         return true;
     }
 
-    bool orEnvGetBodies(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvGetBodies(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1032,7 +1032,7 @@ protected:
     }
 
     /// values = orBodySetTransform(body, position, rotation) - returns the dof values of a kinbody
-    bool orKinBodySetTransform(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orKinBodySetTransform(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         KinBodyPtr pbody = orMacroGetBody(is);
@@ -1086,7 +1086,7 @@ protected:
     }
 
     /// orBodyDestroy(robot, indices, affinedofs, axis) - returns the dof values of a kinbody
-    bool orBodyDestroy(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyDestroy(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         KinBodyPtr pbody = orMacroGetBody(is);
@@ -1096,7 +1096,7 @@ protected:
         return GetEnv()->Remove(pbody);
     }
 
-    bool orBodyEnable(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyEnable(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         KinBodyPtr pbody = orMacroGetBody(is);
@@ -1113,7 +1113,7 @@ protected:
     }
 
     /// values = orBodyGetLinks(body) - returns the dof values of a kinbody
-    bool orBodyGetLinks(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyGetLinks(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1129,7 +1129,7 @@ protected:
         return true;
     }
 
-    bool orRobotControllerSend(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotControllerSend(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1144,7 +1144,7 @@ protected:
         return false;
     }
 
-    bool orRobotSensorSend(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotSensorSend(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1163,7 +1163,7 @@ protected:
         return probot->GetAttachedSensors().at(sensorindex)->GetSensor()->SendCommand(os,is);
     }
 
-    bool orRobotSensorConfigure(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotSensorConfigure(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1210,7 +1210,7 @@ protected:
         return true;
     }
 
-    bool orRobotSensorData(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotSensorData(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1227,7 +1227,7 @@ protected:
             return false;
         }
         SensorBasePtr psensor = probot->GetAttachedSensors().at(sensorindex)->GetSensor();
-        boost::shared_ptr<SensorBase::SensorData> psensordata = psensor->CreateSensorData();
+        std::shared_ptr<SensorBase::SensorData> psensordata = psensor->CreateSensorData();
 
         if( !psensordata ) {
             RAVELOG_ERROR("Robot %s, failed to create sensor %s data\n", probot->GetName().c_str(), probot->GetAttachedSensors().at(sensorindex)->GetName().c_str());
@@ -1244,7 +1244,7 @@ protected:
 
         switch(psensordata->GetType()) {
         case SensorBase::ST_Laser: {
-            boost::shared_ptr<SensorBase::LaserSensorData> plaserdata = boost::static_pointer_cast<SensorBase::LaserSensorData>(psensordata);
+            std::shared_ptr<SensorBase::LaserSensorData> plaserdata = std::static_pointer_cast<SensorBase::LaserSensorData>(psensordata);
             os << plaserdata->ranges.size() << " ";
             if( plaserdata->positions.size() != plaserdata->ranges.size() ) {
                 os << "1 ";
@@ -1280,14 +1280,14 @@ protected:
             break;
         }
         case SensorBase::ST_Camera: {
-            boost::shared_ptr<SensorBase::CameraSensorData> pcameradata = boost::static_pointer_cast<SensorBase::CameraSensorData>(psensordata);
+            std::shared_ptr<SensorBase::CameraSensorData> pcameradata = std::static_pointer_cast<SensorBase::CameraSensorData>(psensordata);
 
             if( psensor->GetSensorGeometry()->GetType() != SensorBase::ST_Camera ) {
                 RAVELOG_ERROR("sensor geometry not a camera type\n");
                 return false;
             }
 
-            SensorBase::CameraGeomDataConstPtr pgeom = boost::static_pointer_cast<SensorBase::CameraGeomData const>(psensor->GetSensorGeometry());
+            SensorBase::CameraGeomDataConstPtr pgeom = std::static_pointer_cast<SensorBase::CameraGeomData const>(psensor->GetSensorGeometry());
 
             if( (int)pcameradata->vimagedata.size() != pgeom->width*pgeom->height*3 ) {
                 RAVELOG_ERROR(str(boost::format("image data wrong size %d != %d\n")%pcameradata->vimagedata.size()%(pgeom->width*pgeom->height*3)));
@@ -1331,7 +1331,7 @@ protected:
         return true;
     }
 
-    bool orRobotControllerSet(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotControllerSet(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1356,7 +1356,7 @@ protected:
         return probot->SetController(pcontroller, dofindices,1);
     }
 
-    bool orEnvClose(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvClose(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         vector<int> ids = vector<int>((istream_iterator<int>(is)), istream_iterator<int>());
         if( ids.size() == 0 ) {
@@ -1370,7 +1370,7 @@ protected:
         return true;
     }
 
-    bool orEnvPlot(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvPlot(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         int id = _nNextFigureId++;
 
@@ -1466,7 +1466,7 @@ protected:
     }
 
     /// orRobotSetActiveDOFs(robot, indices, affinedofs, axis) - returns the dof values of a kinbody
-    bool orRobotSetActiveDOFs(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotSetActiveDOFs(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1511,7 +1511,7 @@ protected:
     }
 
     /// orRobotSetActiveManipulator(robot, manip) - returns the dof values of a kinbody
-    bool orRobotSetActiveManipulator(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotSetActiveManipulator(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1528,7 +1528,7 @@ protected:
         return true;
     }
 
-    bool orRobotCheckSelfCollision(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotCheckSelfCollision(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1542,7 +1542,7 @@ protected:
     }
 
     /// dofs = orRobotGetActiveDOF(body) - returns the active degrees of freedom of the robot
-    bool orRobotGetActiveDOF(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotGetActiveDOF(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1555,7 +1555,7 @@ protected:
     }
 
     /// dofs = orBodyGetAABB(body) - returns the number of active joints of the body
-    bool orBodyGetAABB(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyGetAABB(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1569,7 +1569,7 @@ protected:
     }
 
     /// values = orBodyGetLinks(body) - returns the dof values of a kinbody
-    bool orBodyGetAABBs(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyGetAABBs(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1586,7 +1586,7 @@ protected:
     }
 
     /// dofs = orBodyGetDOF(body) - returns the number of active joints of the body
-    bool orBodyGetDOF(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyGetDOF(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1599,7 +1599,7 @@ protected:
     }
 
     /// values = orBodyGetDOFValues(body, indices) - returns the dof values of a kinbody
-    bool orBodyGetJointValues(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodyGetJointValues(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1632,7 +1632,7 @@ protected:
     }
 
     /// values = orRobotGetDOFValues(body, indices) - returns the dof values of a kinbody
-    bool orRobotGetDOFValues(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotGetDOFValues(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1664,7 +1664,7 @@ protected:
     }
 
     /// [lower, upper] = orKinBodyGetDOFLimits(body) - returns the dof limits of a kinbody
-    bool orRobotGetDOFLimits(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotGetDOFLimits(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1685,7 +1685,7 @@ protected:
         return true;
     }
 
-    bool orRobotGetManipulators(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotGetManipulators(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1734,7 +1734,7 @@ protected:
         return true;
     }
 
-    bool orRobotGetAttachedSensors(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotGetAttachedSensors(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1766,7 +1766,7 @@ protected:
     }
 
     /// orBodySetJointValues(body, values, indices)
-    bool orBodySetJointValues(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodySetJointValues(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1839,7 +1839,7 @@ protected:
     }
 
     /// orBodySetJointTorques(body, values, indices)
-    bool orBodySetJointTorques(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orBodySetJointTorques(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1869,7 +1869,7 @@ protected:
     }
 
     /// orRobotSetDOFValues(body, values, indices)
-    bool orRobotSetDOFValues(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orRobotSetDOFValues(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -1938,7 +1938,7 @@ protected:
 
     /// orRobotStartActiveTrajectory(robot, jointvalues, timestamps, transformations)
     /// - starts a trajectory on the robot with the active degrees of freedom
-    bool worRobotStartActiveTrajectory(boost::shared_ptr<istream> is, boost::shared_ptr<void> pdata)
+    bool worRobotStartActiveTrajectory(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
         RobotBasePtr probot = orMacroGetRobot(*is);
@@ -2030,7 +2030,7 @@ protected:
     }
 
     /// [collision, bodycolliding] = orEnvCheckCollision(body) - returns whether a certain body is colliding with the scene
-    bool orEnvCheckCollision(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvCheckCollision(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -2102,7 +2102,7 @@ protected:
     /// every ray is 6 dims
     /// collision is a N dim vector that is 0 for non colliding rays and 1 for colliding rays
     /// info is a Nx6 vector where the first 3 columns are position and last 3 are normals
-    bool orEnvRayCollision(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvRayCollision(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         EnvironmentMutex::scoped_lock lock(GetEnv()->GetMutex());
@@ -2149,7 +2149,7 @@ protected:
         return true;
     }
 
-    bool orEnvStepSimulation(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvStepSimulation(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         dReal timestep=0;
         bool bSync=true;
@@ -2162,7 +2162,7 @@ protected:
         return true;
     }
 
-    bool worEnvStepSimulation(boost::shared_ptr<istream> is, boost::shared_ptr<void> pdata)
+    bool worEnvStepSimulation(std::shared_ptr<istream> is, std::shared_ptr<void> pdata)
     {
         dReal timestep=0;
         bool bSync=true;
@@ -2173,7 +2173,7 @@ protected:
         return true;
     }
 
-    bool orEnvTriangulate(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvTriangulate(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
 
@@ -2207,7 +2207,7 @@ protected:
 
     // waits for rave to finish commands
     // if a robot id is specified, also waits for that robot's trajectory to finish
-    bool orEnvWait(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvWait(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         _SyncWithWorkerThread();
         RobotBasePtr probot;
@@ -2256,7 +2256,7 @@ protected:
     }
 
     /// sends a comment to the problem
-    bool orProblemSendCommand(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orProblemSendCommand(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         int problemid=0, dosync;
         bool bDoLock;
@@ -2294,7 +2294,7 @@ protected:
     }
 
     /// sends a comment to the problem
-    bool orEnvLoadPlugin(istream& is, ostream& os, boost::shared_ptr<void>& pdata)
+    bool orEnvLoadPlugin(istream& is, ostream& os, std::shared_ptr<void>& pdata)
     {
         string pluginname;
         is >> pluginname;

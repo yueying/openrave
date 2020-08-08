@@ -35,10 +35,10 @@ void DeleteItemCallbackSafe(QtOSGViewerWeakPtr wpt, Item* pItem)
 class ItemSelectionCallbackData : public UserData
 {
 public:
-    ItemSelectionCallbackData(const ViewerBase::ItemSelectionCallbackFn& callback, boost::shared_ptr<QtOSGViewer> pviewer) : _callback(callback), _pweakviewer(pviewer) {
+    ItemSelectionCallbackData(const ViewerBase::ItemSelectionCallbackFn& callback, std::shared_ptr<QtOSGViewer> pviewer) : _callback(callback), _pweakviewer(pviewer) {
     }
     virtual ~ItemSelectionCallbackData() {
-        boost::shared_ptr<QtOSGViewer> pviewer = _pweakviewer.lock();
+        std::shared_ptr<QtOSGViewer> pviewer = _pweakviewer.lock();
         if( !!pviewer ) {
             boost::mutex::scoped_lock lock(pviewer->_mutexCallbacks);
             pviewer->_listRegisteredItemSelectionCallbacks.erase(_iterator);
@@ -48,17 +48,17 @@ public:
     list<UserDataWeakPtr>::iterator _iterator;
     ViewerBase::ItemSelectionCallbackFn _callback;
 protected:
-    boost::weak_ptr<QtOSGViewer> _pweakviewer;
+    std::weak_ptr<QtOSGViewer> _pweakviewer;
 };
-typedef boost::shared_ptr<ItemSelectionCallbackData> ItemSelectionCallbackDataPtr;
+typedef std::shared_ptr<ItemSelectionCallbackData> ItemSelectionCallbackDataPtr;
 
 class ViewerThreadCallbackData : public UserData
 {
 public:
-    ViewerThreadCallbackData(const ViewerBase::ViewerThreadCallbackFn& callback, boost::shared_ptr<QtOSGViewer> pviewer) : _callback(callback), _pweakviewer(pviewer) {
+    ViewerThreadCallbackData(const ViewerBase::ViewerThreadCallbackFn& callback, std::shared_ptr<QtOSGViewer> pviewer) : _callback(callback), _pweakviewer(pviewer) {
     }
     virtual ~ViewerThreadCallbackData() {
-        boost::shared_ptr<QtOSGViewer> pviewer = _pweakviewer.lock();
+        std::shared_ptr<QtOSGViewer> pviewer = _pweakviewer.lock();
         if( !!pviewer ) {
             boost::mutex::scoped_lock lock(pviewer->_mutexCallbacks);
             pviewer->_listRegisteredViewerThreadCallbacks.erase(_iterator);
@@ -68,9 +68,9 @@ public:
     list<UserDataWeakPtr>::iterator _iterator;
     ViewerBase::ViewerThreadCallbackFn _callback;
 protected:
-    boost::weak_ptr<QtOSGViewer> _pweakviewer;
+    std::weak_ptr<QtOSGViewer> _pweakviewer;
 };
-typedef boost::shared_ptr<ViewerThreadCallbackData> ViewerThreadCallbackDataPtr;
+typedef std::shared_ptr<ViewerThreadCallbackData> ViewerThreadCallbackDataPtr;
 
 QtOSGViewer::QtOSGViewer(EnvironmentBasePtr penv, std::istream& sinput) : QMainWindow(NULL, Qt::Window), ViewerBase(penv)
 {
@@ -446,7 +446,7 @@ void QtOSGViewer::_UpdateViewerCallback()
                 listRegisteredViewerThreadCallbacks = _listRegisteredViewerThreadCallbacks;
             }
             FOREACH(it,listRegisteredViewerThreadCallbacks) {
-                ViewerThreadCallbackDataPtr pdata = boost::dynamic_pointer_cast<ViewerThreadCallbackData>(it->lock());
+                ViewerThreadCallbackDataPtr pdata = std::dynamic_pointer_cast<ViewerThreadCallbackData>(it->lock());
                 if( !!pdata ) {
                     try {
                         pdata->_callback();
@@ -1934,7 +1934,7 @@ void QtOSGViewer::UpdateFromModel()
     FOREACH(itbody, vecbodies) {
         BOOST_ASSERT( !!itbody->pbody );
         KinBodyPtr pbody = itbody->pbody; // try to use only as an id, don't call any methods!
-        KinBodyItemPtr pitem = boost::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
+        KinBodyItemPtr pitem = std::dynamic_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
 
         if( !!pitem ) {
             if( !pitem->GetBody() ) {
@@ -1969,10 +1969,10 @@ void QtOSGViewer::UpdateFromModel()
                     }
 
                     if( pbody->IsRobot() ) {
-                        pitem = boost::shared_ptr<RobotItem>(new RobotItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), boost::static_pointer_cast<RobotBase>(pbody), _viewGeometryMode), ITEM_DELETER);
+                        pitem = std::shared_ptr<RobotItem>(new RobotItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), std::static_pointer_cast<RobotBase>(pbody), _viewGeometryMode), ITEM_DELETER);
                     }
                     else {
-                        pitem = boost::shared_ptr<KinBodyItem>(new KinBodyItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), pbody, _viewGeometryMode), ITEM_DELETER);
+                        pitem = std::shared_ptr<KinBodyItem>(new KinBodyItem(_posgWidget->GetSceneRoot(), _posgWidget->GetFigureRoot(), pbody, _viewGeometryMode), ITEM_DELETER);
                     }
                     newdata = true;
 
@@ -1987,7 +1987,7 @@ void QtOSGViewer::UpdateFromModel()
                     newdata = true;
                 }
                 else {
-                    pitem = boost::static_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
+                    pitem = std::static_pointer_cast<KinBodyItem>(pbody->GetUserData(_userdatakey));
                     BOOST_ASSERT( _mapbodies.find(pbody) != _mapbodies.end() && _mapbodies[pbody] == pitem );
                 }
             }
@@ -2052,13 +2052,13 @@ void QtOSGViewer::UpdateFromModel()
     }
 }
 
-boost::shared_ptr<EnvironmentMutex::scoped_try_lock> QtOSGViewer::LockEnvironment(uint64_t timeout,bool bUpdateEnvironment)
+std::shared_ptr<EnvironmentMutex::scoped_try_lock> QtOSGViewer::LockEnvironment(uint64_t timeout,bool bUpdateEnvironment)
 {
     // try to acquire the lock
 #if BOOST_VERSION >= 103500
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),boost::defer_lock_t()));
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),boost::defer_lock_t()));
 #else
-    boost::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),false));
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),false));
 #endif
     uint64_t basetime = utils::GetMicroTime();
     while(utils::GetMicroTime()-basetime<timeout ) {

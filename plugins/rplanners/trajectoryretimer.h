@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2014 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -40,8 +40,8 @@ public:
         // optional
         std::vector<dReal> _vConfigJerkLimit;
     };
-    typedef boost::shared_ptr<GroupInfo> GroupInfoPtr;
-    typedef boost::shared_ptr<GroupInfo const> GroupInfoConstPtr;
+    typedef std::shared_ptr<GroupInfo> GroupInfoPtr;
+    typedef std::shared_ptr<GroupInfo const> GroupInfoConstPtr;
 
 public:
     TrajectoryRetimer(EnvironmentBasePtr penv, std::istream& sinput) : PlannerBase(penv)

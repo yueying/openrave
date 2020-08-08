@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Rosen Diankov (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2011 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -79,9 +79,9 @@ protected:
     {
 public:
         QtImageWindow(SensorBasePtr psensor) : QWidget(NULL), _psensor(psensor) {
-            _pdata = boost::static_pointer_cast<SensorBase::CameraSensorData>(_psensor->CreateSensorData(SensorBase::ST_Camera));
-            _pdatanew = boost::static_pointer_cast<SensorBase::CameraSensorData>(_psensor->CreateSensorData(SensorBase::ST_Camera));
-            _pgeom = boost::static_pointer_cast<SensorBase::CameraGeomData const>(_psensor->GetSensorGeometry(SensorBase::ST_Camera));
+            _pdata = std::static_pointer_cast<SensorBase::CameraSensorData>(_psensor->CreateSensorData(SensorBase::ST_Camera));
+            _pdatanew = std::static_pointer_cast<SensorBase::CameraSensorData>(_psensor->CreateSensorData(SensorBase::ST_Camera));
+            _pgeom = std::static_pointer_cast<SensorBase::CameraGeomData const>(_psensor->GetSensorGeometry(SensorBase::ST_Camera));
             if( !_pdata || !_pgeom ) {
                 throw openrave_exception(str(boost::format("QtImageWindow: failed to create sensor data for sensor %s")%_psensor->GetName()));
             }
@@ -120,7 +120,7 @@ public:
 private:
         QLabel *_label;
         SensorBasePtr _psensor;
-        boost::shared_ptr<SensorBase::CameraSensorData> _pdatanew, _pdata;
+        std::shared_ptr<SensorBase::CameraSensorData> _pdatanew, _pdata;
         SensorBase::CameraGeomDataConstPtr _pgeom;
 #if QT_VERSION < 0x040400 // qt4.4+
         vector<uint8_t> vimagedata;
@@ -136,12 +136,12 @@ private:
         }
     }
 
-    static void _DestroyImageWindow(boost::shared_ptr<QtImageWindow> imagewindow)
+    static void _DestroyImageWindow(std::shared_ptr<QtImageWindow> imagewindow)
     {
     }
 
     SensorBasePtr _psensor;
-    boost::shared_ptr<QtImageWindow> _imagewindow;
+    std::shared_ptr<QtImageWindow> _imagewindow;
     boost::mutex _mutex;
 };
 

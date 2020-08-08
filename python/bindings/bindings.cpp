@@ -250,12 +250,12 @@ void init_python_bindings()
 #endif // USE_PYBIND11_PYTHON_BINDINGS
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyVoidHandle, OPENRAVE_SHARED_PTR<PyVoidHandle> >(m, "VoidHandle")
+    class_<PyVoidHandle, std::shared_ptr<PyVoidHandle> >(m, "VoidHandle")
     .def(init<>())
     // error: static assertion failed: Holder classes are only supported for custom types, so cannot do
-    // .def(init<OPENRAVE_SHARED_PTR<void>>(), "handle"_a)
+    // .def(init<std::shared_ptr<void>>(), "handle"_a)
 #else
-    class_<PyVoidHandle, OPENRAVE_SHARED_PTR<PyVoidHandle> >("VoidHandle")
+    class_<PyVoidHandle, std::shared_ptr<PyVoidHandle> >("VoidHandle")
 #endif
     .def("close",&PyVoidHandle::Close,"deprecated")
     .def("Close",&PyVoidHandle::Close)

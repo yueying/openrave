@@ -85,7 +85,7 @@ void PyIkReturn::SetMapKeyValue(const std::string& key, object ovalues) {
     _ret._mapdata[key] = ExtractArray<dReal>(ovalues);
 }
 
-typedef OPENRAVE_SHARED_PTR<PyIkReturn> PyIkReturnPtr;
+typedef std::shared_ptr<PyIkReturn> PyIkReturnPtr;
 
 IkReturn PyIkSolverBase::_CallCustomFilter(object fncallback, PyEnvironmentBasePtr pyenv, IkSolverBasePtr pIkSolver, std::vector<dReal>& values, RobotBase::ManipulatorConstPtr pmanip, const IkParameterization& ikparam)
 {
@@ -93,7 +93,7 @@ IkReturn PyIkSolverBase::_CallCustomFilter(object fncallback, PyEnvironmentBaseP
     PyGILState_STATE gstate = PyGILState_Ensure();
     std::string errmsg;
     try {
-        RobotBase::ManipulatorPtr pmanip2 = OPENRAVE_CONST_POINTER_CAST<RobotBase::Manipulator>(pmanip);
+        RobotBase::ManipulatorPtr pmanip2 = std::const_pointer_cast<RobotBase::Manipulator>(pmanip);
         res = fncallback(toPyArray(values), openravepy::toPyRobotManipulator(pmanip2,pyenv),toPyIkParameterization(ikparam));
     }
     catch(...) {
@@ -353,9 +353,9 @@ void init_openravepy_iksolver()
         object (PyIkSolverBase::*SolveAll)(object, int) = &PyIkSolverBase::SolveAll;
         object (PyIkSolverBase::*SolveAllFree)(object, object, int) = &PyIkSolverBase::SolveAll;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<PyIkSolverBase, OPENRAVE_SHARED_PTR<PyIkSolverBase>, PyInterfaceBase>(m, "IkSolver", DOXY_CLASS(IkSolverBase))
+        class_<PyIkSolverBase, std::shared_ptr<PyIkSolverBase>, PyInterfaceBase>(m, "IkSolver", DOXY_CLASS(IkSolverBase))
 #else
-        class_<PyIkSolverBase, OPENRAVE_SHARED_PTR<PyIkSolverBase>, bases<PyInterfaceBase> >("IkSolver", DOXY_CLASS(IkSolverBase), no_init)
+        class_<PyIkSolverBase, std::shared_ptr<PyIkSolverBase>, bases<PyInterfaceBase> >("IkSolver", DOXY_CLASS(IkSolverBase), no_init)
 #endif
         .def("Solve",Solve, PY_ARGS("ikparam","q0","filteroptions") DOXY_FN(IkSolverBase, Solve "const IkParameterization&; const std::vector; int; IkReturnPtr"))
         .def("Solve",SolveFree, PY_ARGS("ikparam","q0","freeparameters", "filteroptions") DOXY_FN(IkSolverBase, Solve "const IkParameterization&; const std::vector; const std::vector; int; IkReturnPtr"))

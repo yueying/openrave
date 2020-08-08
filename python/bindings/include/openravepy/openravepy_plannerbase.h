@@ -59,7 +59,7 @@ public:
         PlannerBase::PlannerParametersConstPtr _paramsread;
 public:
         PyPlannerParameters();
-        PyPlannerParameters(OPENRAVE_SHARED_PTR<PyPlannerParameters> pyparameters);
+        PyPlannerParameters(std::shared_ptr<PyPlannerParameters> pyparameters);
         PyPlannerParameters(PlannerBase::PlannerParametersPtr params);
         PyPlannerParameters(PlannerBase::PlannerParametersConstPtr params);
         virtual ~PyPlannerParameters();
@@ -101,12 +101,12 @@ public:
         std::string __repr__();
         std::string __str__();
         object __unicode__();
-        bool __eq__(OPENRAVE_SHARED_PTR<PyPlannerParameters> p);
-        bool __ne__(OPENRAVE_SHARED_PTR<PyPlannerParameters> p);
+        bool __eq__(std::shared_ptr<PyPlannerParameters> p);
+        bool __ne__(std::shared_ptr<PyPlannerParameters> p);
     };
 
-    typedef OPENRAVE_SHARED_PTR<PyPlannerParameters> PyPlannerParametersPtr;
-    typedef OPENRAVE_SHARED_PTR<PyPlannerParameters const> PyPlannerParametersConstPtr;
+    typedef std::shared_ptr<PyPlannerParameters> PyPlannerParametersPtr;
+    typedef std::shared_ptr<PyPlannerParameters const> PyPlannerParametersConstPtr;
 
     PyPlannerBase(PlannerBasePtr pplanner, PyEnvironmentBasePtr pyenv);
     virtual ~PyPlannerBase();

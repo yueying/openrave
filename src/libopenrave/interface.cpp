@@ -103,7 +103,7 @@ bool InterfaceBase::SendCommand(ostream& sout, istream& sinput)
     if( !sinput ) {
         throw openrave_exception(_("invalid command"),ORE_InvalidArguments);
     }
-    boost::shared_ptr<InterfaceCommand> interfacecmd;
+    std::shared_ptr<InterfaceCommand> interfacecmd;
     {
         boost::shared_lock< boost::shared_mutex > lock(_mutexInterface);
         CMDMAP::iterator it = __mapCommands.find(cmd);
@@ -124,7 +124,7 @@ void InterfaceBase::Serialize(BaseXMLWriterPtr writer, int options) const
     FOREACHC(it, __mapReadableInterfaces) {
         // sometimes interfaces might be disabled
         // some readable are not xml readable and does not get serialized here
-        ReadablePtr pxmlreadable = OPENRAVE_DYNAMIC_POINTER_CAST<Readable>(it->second);
+        ReadablePtr pxmlreadable = std::dynamic_pointer_cast<Readable>(it->second);
         if( !!pxmlreadable ) {
             pxmlreadable->SerializeXML(writer,options);
         }
@@ -140,7 +140,7 @@ void InterfaceBase::RegisterCommand(const std::string& cmdname, InterfaceBase::I
     if( __mapCommands.find(cmdname) != __mapCommands.end() ) {
         throw openrave_exception(str(boost::format(_("command '%s' already registered"))%cmdname),ORE_InvalidArguments);
     }
-    __mapCommands[cmdname] = boost::shared_ptr<InterfaceCommand>(new InterfaceCommand(fncmd, strhelp));
+    __mapCommands[cmdname] = std::shared_ptr<InterfaceCommand>(new InterfaceCommand(fncmd, strhelp));
 }
 
 void InterfaceBase::UnregisterCommand(const std::string& cmdname)
@@ -223,7 +223,7 @@ void InterfaceBase::RegisterJSONCommand(const std::string& cmdname, InterfaceBas
     if( __mapJSONCommands.find(cmdname) != __mapJSONCommands.end() ) {
         throw openrave_exception(str(boost::format(_("command '%s' already registered"))%cmdname),ORE_InvalidArguments);
     }
-    __mapJSONCommands[cmdname] = boost::shared_ptr<InterfaceJSONCommand>(new InterfaceJSONCommand(fncmd, strhelp));
+    __mapJSONCommands[cmdname] = std::shared_ptr<InterfaceJSONCommand>(new InterfaceJSONCommand(fncmd, strhelp));
 }
 
 void InterfaceBase::UnregisterJSONCommand(const std::string& cmdname)
@@ -238,7 +238,7 @@ void InterfaceBase::UnregisterJSONCommand(const std::string& cmdname)
 void InterfaceBase::SendJSONCommand(const std::string& cmdname, const rapidjson::Value& input, rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator) {
     output.SetNull();
 
-    boost::shared_ptr<InterfaceJSONCommand> interfacecmd;
+    std::shared_ptr<InterfaceJSONCommand> interfacecmd;
     {
         boost::shared_lock< boost::shared_mutex > lock(_mutexInterface);
         JSONCMDMAP::iterator it = __mapJSONCommands.find(cmdname);

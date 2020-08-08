@@ -187,7 +187,7 @@ protected:
     configurationcache::ConfigurationCachePtr _cache;
 };
 
-typedef OPENRAVE_SHARED_PTR<PyConfigurationCache> PyConfigurationCachePtr;
+typedef std::shared_ptr<PyConfigurationCache> PyConfigurationCachePtr;
 
 } // end namespace configurationcachepy
 

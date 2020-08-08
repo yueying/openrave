@@ -11,7 +11,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include <boost/shared_ptr.hpp>
-PYBIND11_DECLARE_HOLDER_TYPE(T, OPENRAVE_SHARED_PTR<T>);
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 namespace pybind11 {
 namespace numeric {
 // so py::numeric::array = py::array_t<double>

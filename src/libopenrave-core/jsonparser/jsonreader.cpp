@@ -128,15 +128,15 @@ public:
         return true;
     }
 
-    boost::shared_ptr<const rapidjson::Document> _GetJsonDocumentFromUri(const std::string& fullFilename, rapidjson::Document::AllocatorType& alloc)
+    std::shared_ptr<const rapidjson::Document> _GetJsonDocumentFromUri(const std::string& fullFilename, rapidjson::Document::AllocatorType& alloc)
     {
-        boost::shared_ptr<const rapidjson::Document> expandedDoc;
+        std::shared_ptr<const rapidjson::Document> expandedDoc;
         // TODO: optimize this. for the first time expandedDoc is cached, all the expandable object will never get cached, because we are not update document cache after expand any body
         if (_rapidJSONDocuments.find(fullFilename) != _rapidJSONDocuments.end()) {
             expandedDoc = _rapidJSONDocuments[fullFilename];
         }
         else {
-            boost::shared_ptr<rapidjson::Document> newDoc;
+            std::shared_ptr<rapidjson::Document> newDoc;
             newDoc.reset(new rapidjson::Document(&alloc));
             OpenRapidJsonDocument(fullFilename, *newDoc);
             expandedDoc = newDoc;
@@ -186,7 +186,7 @@ public:
         }
 
         if (!bFoundBody) {
-            boost::shared_ptr<const rapidjson::Document> expandedDoc = _GetJsonDocumentFromUri(fullFilename, alloc);
+            std::shared_ptr<const rapidjson::Document> expandedDoc = _GetJsonDocumentFromUri(fullFilename, alloc);
             if (!expandedDoc || !(*expandedDoc).HasMember("bodies")) {
                 return false;
             }
@@ -247,7 +247,7 @@ public:
             envInfo.DeserializeJSON(doc, fUnitScale, _deserializeOptions);
             FOREACH(itBodyInfo, envInfo._vBodyInfos) {
                 KinBody::KinBodyInfoPtr& pKinBodyInfo = *itBodyInfo;
-                RobotBase::RobotBaseInfoPtr pRobotBaseInfo = OPENRAVE_DYNAMIC_POINTER_CAST<RobotBase::RobotBaseInfo>(pKinBodyInfo);
+                RobotBase::RobotBaseInfoPtr pRobotBaseInfo = std::dynamic_pointer_cast<RobotBase::RobotBaseInfo>(pKinBodyInfo);
                 if( !!pRobotBaseInfo ) {
                     _ProcessURIsInInfo(*pRobotBaseInfo, fUnitScale, alloc);
                 }
@@ -389,7 +389,7 @@ protected:
     }
 
     template<typename T>
-    void _ExtractTransform(const rapidjson::Value& bodyValue, boost::shared_ptr<T> pbody, dReal fUnitScale)
+    void _ExtractTransform(const rapidjson::Value& bodyValue, std::shared_ptr<T> pbody, dReal fUnitScale)
     {
         Transform transform;
         if (bodyValue.HasMember("transform")) {
@@ -414,7 +414,7 @@ protected:
         KinBody::KinBodyInfoPtr pKinBodyInfo(new KinBody::KinBodyInfo());
         pKinBodyInfo->DeserializeJSON(bodyValue, fUnitScale, _deserializeOptions);
         _EnsureUniqueIdAndUri(*pKinBodyInfo);
-        RobotBase::RobotBaseInfoPtr pRobotBaseInfo = OPENRAVE_DYNAMIC_POINTER_CAST<RobotBase::RobotBaseInfo>(pKinBodyInfo);
+        RobotBase::RobotBaseInfoPtr pRobotBaseInfo = std::dynamic_pointer_cast<RobotBase::RobotBaseInfo>(pKinBodyInfo);
 
         KinBodyPtr pBody;
         if( !!pRobotBaseInfo ) {
@@ -510,7 +510,7 @@ protected:
         }
 
         circularReference.insert(uri);
-        boost::shared_ptr<const rapidjson::Document> prConnectedBody = _GetJsonDocumentFromUri(fullFilename, alloc);
+        std::shared_ptr<const rapidjson::Document> prConnectedBody = _GetJsonDocumentFromUri(fullFilename, alloc);
 
         if (!!prConnectedBody && prConnectedBody->HasMember("bodies")) {
             const rapidjson::Document& rConnectedBody = *prConnectedBody;
@@ -541,8 +541,8 @@ protected:
 
     std::set<std::string> _bodyUniqueIds; ///< unique id for bodies in current doc
 
-    std::map<std::string, boost::shared_ptr<const rapidjson::Document> > _rapidJSONDocuments; ///< cache for opened rapidjson Documents
-    std::map<boost::shared_ptr<const rapidjson::Document>, std::map<std::string, rapidjson::Value::ConstValueIterator> > _rapidJSONObjects;  ///< cache for opened rapidjson objects
+    std::map<std::string, std::shared_ptr<const rapidjson::Document> > _rapidJSONDocuments; ///< cache for opened rapidjson Documents
+    std::map<std::shared_ptr<const rapidjson::Document>, std::map<std::string, rapidjson::Value::ConstValueIterator> > _rapidJSONObjects;  ///< cache for opened rapidjson objects
 };
 
 bool RaveParseJSON(EnvironmentBasePtr penv, const rapidjson::Value& doc, const AttributesList& atts, rapidjson::Document::AllocatorType& alloc)

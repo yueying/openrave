@@ -123,7 +123,7 @@ public:
     py::object _setRobotLinksToIgnore = py::none_();
 #endif
 }; // class PyGrabbedInfo
-typedef OPENRAVE_SHARED_PTR<PyGrabbedInfo> PyGrabbedInfoPtr;
+typedef std::shared_ptr<PyGrabbedInfo> PyGrabbedInfoPtr;
 
 public:
     class PyKinBodyInfo
@@ -165,7 +165,7 @@ protected:
 
 protected:
     KinBodyPtr _pbody;
-    std::list<OPENRAVE_SHARED_PTR<void> > _listStateSavers;
+    std::list<std::shared_ptr<void> > _listStateSavers;
 
 public:
     PyKinBody(KinBodyPtr pbody, PyEnvironmentBasePtr pyenv);

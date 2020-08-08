@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -29,11 +29,9 @@
 #include <istream>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/assert.hpp>
-#include <openrave/smart_ptr.h>
+#include <memory>
 
 #include <time.h>
 
@@ -167,9 +165,9 @@ struct null_deleter
     }
 };
 
-template <class T> boost::shared_ptr<T> sptr_from(boost::weak_ptr<T> const& wpt)
+template <class T> std::shared_ptr<T> sptr_from(std::weak_ptr<T> const& wpt)
 {
-    return boost::shared_ptr<T>(wpt); // throws on wpt.expired()
+    return std::shared_ptr<T>(wpt); // throws on wpt.expired()
 }
 
 template<typename T>

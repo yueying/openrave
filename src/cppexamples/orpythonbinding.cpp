@@ -1,4 +1,4 @@
-/** \example orpythonbinding.cpp
+﻿/** \example orpythonbinding.cpp
     \author Rosen Diankov
 
     Shows how to creating python bindings with an OpenRAVE C++ plugin. The demo registers a python function to be called inside the environment simulation thread using a Module interface.
@@ -68,7 +68,7 @@ public:
     }
 
     virtual bool SimulationStep(dReal fElapsedTime) {
-        boost::shared_ptr<FunctionUserData> p = boost::dynamic_pointer_cast<FunctionUserData>(GetUserData());
+        std::shared_ptr<FunctionUserData> p = std::dynamic_pointer_cast<FunctionUserData>(GetUserData());
         bool ret = false;
         if( !!p ) {
             PyGILState_STATE gstate = PyGILState_Ensure();
@@ -89,7 +89,7 @@ public:
     }
 };
 
-boost::shared_ptr<void> g_PythonBindingInterfaceHandle;
+std::shared_ptr<void> g_PythonBindingInterfaceHandle;
 
 InterfaceBasePtr PythonBindingCreateInterface(EnvironmentBasePtr penv, std::istream& istream)
 {
@@ -100,7 +100,7 @@ InterfaceBasePtr RegisterSimulationFunction(int environmentid, py::object simula
 {
     ModuleBasePtr module = RaveCreateModule(RaveGetEnvironment(environmentid), "PythonBinding");
     if( !!module ) {
-        boost::shared_ptr<FunctionUserData> p = boost::dynamic_pointer_cast<FunctionUserData>(module->GetUserData());
+        std::shared_ptr<FunctionUserData> p = std::dynamic_pointer_cast<FunctionUserData>(module->GetUserData());
         p->simulationfn = simulationfn;
         module->GetEnv()->Add(module,true,"");
     }

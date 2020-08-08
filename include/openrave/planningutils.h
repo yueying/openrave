@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -163,7 +163,7 @@ protected:
     UserDataPtr _changehandler; ///< tracks changes for the robot and re-initializes parameters
 };
 
-typedef boost::shared_ptr<ActiveDOFTrajectorySmoother> ActiveDOFTrajectorySmootherPtr;
+typedef std::shared_ptr<ActiveDOFTrajectorySmoother> ActiveDOFTrajectorySmootherPtr;
 
 /** \brief Retimer planner the trajectory points by extracting and using the currently set active dofs of the robot. <b>[multi-thread safe]</b>
 
@@ -203,7 +203,7 @@ protected:
     UserDataPtr _changehandler; ///< tracks changes for the robot and re-initializes parameters
 };
 
-typedef boost::shared_ptr<ActiveDOFTrajectoryRetimer> ActiveDOFTrajectoryRetimerPtr;
+typedef std::shared_ptr<ActiveDOFTrajectoryRetimer> ActiveDOFTrajectoryRetimerPtr;
 
 /** \brief Retime the trajectory points consisting of affine transformation values while avoiding collisions. <b>[multi-thread safe]</b>
 
@@ -255,7 +255,7 @@ protected:
     PlannerBasePtr _planner; ///< the planner is setup once in the constructor
 };
 
-typedef boost::shared_ptr<AffineTrajectoryRetimer> AffineTrajectoryRetimerPtr;
+typedef std::shared_ptr<AffineTrajectoryRetimer> AffineTrajectoryRetimerPtr;
 
 /** \brief Retime the trajectory points using all the positional data from the trajectory. <b>[multi-thread safe]</b>
 
@@ -470,10 +470,10 @@ protected:
     std::vector< std::pair<int, std::pair<dReal, dReal> > > _vtorquevalues; ///< cache for dof indices and the torque limits that the current torque should be in
     std::vector< int > _vdofindices;
     std::vector<dReal> _doftorques, _dofaccelerations; ///< in body DOF space
-    boost::shared_ptr<ConfigurationSpecification::SetConfigurationStateFn> _setvelstatefn;
+    std::shared_ptr<ConfigurationSpecification::SetConfigurationStateFn> _setvelstatefn;
 };
 
-typedef boost::shared_ptr<DynamicsCollisionConstraint> DynamicsCollisionConstraintPtr;
+typedef std::shared_ptr<DynamicsCollisionConstraint> DynamicsCollisionConstraintPtr;
 
 /// \deprecated (13/05/29)
 class OPENRAVE_API LineCollisionConstraint
@@ -627,7 +627,7 @@ protected:
     std::vector<dReal> _vfreegoalvalues;
 };
 
-typedef boost::shared_ptr<ManipulatorIKGoalSampler> ManipulatorIKGoalSamplerPtr;
+typedef std::shared_ptr<ManipulatorIKGoalSampler> ManipulatorIKGoalSamplerPtr;
 
 } // planningutils
 } // OpenRAVE

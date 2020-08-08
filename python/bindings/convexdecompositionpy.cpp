@@ -99,7 +99,7 @@ object computeConvexDecomposition(const boost::multi_array<float, 2>& vertices, 
 #endif
                                   NxF32 skinWidth=0, NxU32 decompositionDepth=8, NxU32 maxHullVertices=64, NxF32 concavityThresholdPercent=0.1f, NxF32 mergeThresholdPercent=30.0f, NxF32 volumeSplitThresholdPercent=0.1f, bool useInitialIslandGeneration=true, bool useIslandGeneration=false)
 {
-    OPENRAVE_SHARED_PTR<CONVEX_DECOMPOSITION::iConvexDecomposition> ic(CONVEX_DECOMPOSITION::createConvexDecomposition(),CONVEX_DECOMPOSITION::releaseConvexDecomposition);
+    std::shared_ptr<CONVEX_DECOMPOSITION::iConvexDecomposition> ic(CONVEX_DECOMPOSITION::createConvexDecomposition(),CONVEX_DECOMPOSITION::releaseConvexDecomposition);
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     // https://pybind11.readthedocs.io/en/stable/advanced/pycpp/numpy.html#direct-access
     // https://stackoverflow.com/questions/49582252/pybind-numpy-access-2d-nd-arrays

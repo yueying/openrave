@@ -42,7 +42,7 @@ class PyCameraGeomData : public PySensorGeometry
 {
 public:
     PyCameraGeomData();
-    PyCameraGeomData(OPENRAVE_SHARED_PTR<SensorBase::CameraGeomData const> pgeom);
+    PyCameraGeomData(std::shared_ptr<SensorBase::CameraGeomData const> pgeom);
     virtual ~PyCameraGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -60,14 +60,14 @@ public:
     dReal gain = 1.0;
 
 private:
-    void _Update(OPENRAVE_SHARED_PTR<SensorBase::CameraGeomData const> pgeom);
+    void _Update(std::shared_ptr<SensorBase::CameraGeomData const> pgeom);
 };
 
 class PyLaserGeomData : public PySensorGeometry
 {
 public:
     PyLaserGeomData();
-    PyLaserGeomData(OPENRAVE_SHARED_PTR<SensorBase::LaserGeomData const> pgeom);
+    PyLaserGeomData(std::shared_ptr<SensorBase::LaserGeomData const> pgeom);
     virtual ~PyLaserGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -84,7 +84,7 @@ class PyJointEncoderGeomData : public PySensorGeometry
 {
 public:
     PyJointEncoderGeomData();
-    PyJointEncoderGeomData(OPENRAVE_SHARED_PTR<SensorBase::JointEncoderGeomData const> pgeom);
+    PyJointEncoderGeomData(std::shared_ptr<SensorBase::JointEncoderGeomData const> pgeom);
     virtual ~PyJointEncoderGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -96,7 +96,7 @@ class PyForce6DGeomData : public PySensorGeometry
 {
 public:
     PyForce6DGeomData();
-    PyForce6DGeomData(OPENRAVE_SHARED_PTR<SensorBase::Force6DGeomData const> pgeom);
+    PyForce6DGeomData(std::shared_ptr<SensorBase::Force6DGeomData const> pgeom);
     virtual ~PyForce6DGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -106,7 +106,7 @@ class PyIMUGeomData : public PySensorGeometry
 {
 public:
     PyIMUGeomData();
-    PyIMUGeomData(OPENRAVE_SHARED_PTR<SensorBase::IMUGeomData const> pgeom);
+    PyIMUGeomData(std::shared_ptr<SensorBase::IMUGeomData const> pgeom);
     virtual ~PyIMUGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -118,7 +118,7 @@ class PyOdometryGeomData : public PySensorGeometry
 {
 public:
     PyOdometryGeomData();
-    PyOdometryGeomData(OPENRAVE_SHARED_PTR<SensorBase::OdometryGeomData const> pgeom);
+    PyOdometryGeomData(std::shared_ptr<SensorBase::OdometryGeomData const> pgeom);
     virtual ~PyOdometryGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -131,7 +131,7 @@ class PyTactileGeomData : public PySensorGeometry
 {
 public:
     PyTactileGeomData();
-    PyTactileGeomData(OPENRAVE_SHARED_PTR<SensorBase::TactileGeomData const> pgeom);
+    PyTactileGeomData(std::shared_ptr<SensorBase::TactileGeomData const> pgeom);
     ~PyTactileGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -143,7 +143,7 @@ class PyActuatorGeomData : public PySensorGeometry
 {
 public:
     PyActuatorGeomData();
-    PyActuatorGeomData(OPENRAVE_SHARED_PTR<SensorBase::ActuatorGeomData const> pgeom);
+    PyActuatorGeomData(std::shared_ptr<SensorBase::ActuatorGeomData const> pgeom);
     virtual ~PyActuatorGeomData();
     virtual SensorBase::SensorType GetType();
     virtual SensorBase::SensorGeometryPtr GetGeometry();
@@ -180,8 +180,8 @@ public:
     class PyLaserSensorData : public PySensorData
     {
 public:
-        PyLaserSensorData(OPENRAVE_SHARED_PTR<SensorBase::LaserGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::LaserSensorData> pdata);
-        PyLaserSensorData(OPENRAVE_SHARED_PTR<SensorBase::LaserGeomData const> pgeom);
+        PyLaserSensorData(std::shared_ptr<SensorBase::LaserGeomData const> pgeom, std::shared_ptr<SensorBase::LaserSensorData> pdata);
+        PyLaserSensorData(std::shared_ptr<SensorBase::LaserGeomData const> pgeom);
         virtual ~PyLaserSensorData();
         object positions = py::none_();
         object ranges = py::none_();
@@ -191,8 +191,8 @@ public:
     class PyCameraSensorData : public PySensorData
     {
 public:
-        PyCameraSensorData(OPENRAVE_SHARED_PTR<SensorBase::CameraGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::CameraSensorData> pdata);
-        PyCameraSensorData(OPENRAVE_SHARED_PTR<SensorBase::CameraGeomData const> pgeom);
+        PyCameraSensorData(std::shared_ptr<SensorBase::CameraGeomData const> pgeom, std::shared_ptr<SensorBase::CameraSensorData> pdata);
+        PyCameraSensorData(std::shared_ptr<SensorBase::CameraGeomData const> pgeom);
         virtual ~PyCameraSensorData();
         object imagedata = py::none_();
         object KK = py::none_();
@@ -202,8 +202,8 @@ public:
     class PyJointEncoderSensorData : public PySensorData
     {
 public:
-        PyJointEncoderSensorData(OPENRAVE_SHARED_PTR<SensorBase::JointEncoderGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::JointEncoderSensorData> pdata);
-        PyJointEncoderSensorData(OPENRAVE_SHARED_PTR<SensorBase::JointEncoderGeomData const> pgeom);
+        PyJointEncoderSensorData(std::shared_ptr<SensorBase::JointEncoderGeomData const> pgeom, std::shared_ptr<SensorBase::JointEncoderSensorData> pdata);
+        PyJointEncoderSensorData(std::shared_ptr<SensorBase::JointEncoderGeomData const> pgeom);
         virtual ~PyJointEncoderSensorData();
         object encoderValues = py::none_();
         object encoderVelocity = py::none_();
@@ -213,8 +213,8 @@ public:
     class PyForce6DSensorData : public PySensorData
     {
 public:
-        PyForce6DSensorData(OPENRAVE_SHARED_PTR<SensorBase::Force6DGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::Force6DSensorData> pdata);
-        PyForce6DSensorData(OPENRAVE_SHARED_PTR<SensorBase::Force6DGeomData const> pgeom);
+        PyForce6DSensorData(std::shared_ptr<SensorBase::Force6DGeomData const> pgeom, std::shared_ptr<SensorBase::Force6DSensorData> pdata);
+        PyForce6DSensorData(std::shared_ptr<SensorBase::Force6DGeomData const> pgeom);
         virtual ~PyForce6DSensorData();
         object force = py::none_();
         object torque = py::none_();
@@ -223,8 +223,8 @@ public:
     class PyIMUSensorData : public PySensorData
     {
 public:
-        PyIMUSensorData(OPENRAVE_SHARED_PTR<SensorBase::IMUGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::IMUSensorData> pdata);
-        PyIMUSensorData(OPENRAVE_SHARED_PTR<SensorBase::IMUGeomData const> pgeom);
+        PyIMUSensorData(std::shared_ptr<SensorBase::IMUGeomData const> pgeom, std::shared_ptr<SensorBase::IMUSensorData> pdata);
+        PyIMUSensorData(std::shared_ptr<SensorBase::IMUGeomData const> pgeom);
         virtual ~PyIMUSensorData();
         object rotation = py::none_();
         object angular_velocity = py::none_();
@@ -237,8 +237,8 @@ public:
     class PyOdometrySensorData : public PySensorData
     {
 public:
-        PyOdometrySensorData(OPENRAVE_SHARED_PTR<SensorBase::OdometryGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::OdometrySensorData> pdata);
-        PyOdometrySensorData(OPENRAVE_SHARED_PTR<SensorBase::OdometryGeomData const> pgeom);
+        PyOdometrySensorData(std::shared_ptr<SensorBase::OdometryGeomData const> pgeom, std::shared_ptr<SensorBase::OdometrySensorData> pdata);
+        PyOdometrySensorData(std::shared_ptr<SensorBase::OdometryGeomData const> pgeom);
         virtual ~PyOdometrySensorData();
         object pose = py::none_();
         object linear_velocity = py::none_();
@@ -251,8 +251,8 @@ public:
     class PyTactileSensorData : public PySensorData
     {
 public:
-        PyTactileSensorData(OPENRAVE_SHARED_PTR<SensorBase::TactileGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::TactileSensorData> pdata);
-        PyTactileSensorData(OPENRAVE_SHARED_PTR<SensorBase::TactileGeomData const> pgeom);
+        PyTactileSensorData(std::shared_ptr<SensorBase::TactileGeomData const> pgeom, std::shared_ptr<SensorBase::TactileSensorData> pdata);
+        PyTactileSensorData(std::shared_ptr<SensorBase::TactileGeomData const> pgeom);
         virtual ~PyTactileSensorData();
         object forces = py::none_();
         object force_covariance = py::none_();
@@ -263,8 +263,8 @@ public:
     class PyActuatorSensorData : public PySensorData
     {
 public:
-        PyActuatorSensorData(OPENRAVE_SHARED_PTR<SensorBase::ActuatorGeomData const> pgeom, OPENRAVE_SHARED_PTR<SensorBase::ActuatorSensorData> pdata);
-        PyActuatorSensorData(OPENRAVE_SHARED_PTR<SensorBase::ActuatorGeomData const> pgeom);
+        PyActuatorSensorData(std::shared_ptr<SensorBase::ActuatorGeomData const> pgeom, std::shared_ptr<SensorBase::ActuatorSensorData> pdata);
+        PyActuatorSensorData(std::shared_ptr<SensorBase::ActuatorGeomData const> pgeom);
         virtual ~PyActuatorSensorData();
         SensorBase::ActuatorSensorData::ActuatorState state;
         dReal measuredcurrent, measuredtemperature, appliedcurrent;
@@ -279,14 +279,14 @@ public:
 
     bool SimulationStep(dReal timeelapsed);
 
-    OPENRAVE_SHARED_PTR<PySensorGeometry> GetSensorGeometry(SensorBase::SensorType type);
+    std::shared_ptr<PySensorGeometry> GetSensorGeometry(SensorBase::SensorType type);
 
-    OPENRAVE_SHARED_PTR<PySensorData> CreateSensorData(SensorBase::SensorType type);
+    std::shared_ptr<PySensorData> CreateSensorData(SensorBase::SensorType type);
 
-    OPENRAVE_SHARED_PTR<PySensorData> GetSensorData();
-    OPENRAVE_SHARED_PTR<PySensorData> GetSensorData(SensorBase::SensorType type);
+    std::shared_ptr<PySensorData> GetSensorData();
+    std::shared_ptr<PySensorData> GetSensorData(SensorBase::SensorType type);
 
-    OPENRAVE_SHARED_PTR<PySensorData> ConvertToPySensorData(SensorBase::SensorDataPtr psensordata);
+    std::shared_ptr<PySensorData> ConvertToPySensorData(SensorBase::SensorDataPtr psensordata);
 
     bool Supports(SensorBase::SensorType type);
     void SetSensorGeometry(PySensorGeometryPtr pygeometry);

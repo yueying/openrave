@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -71,7 +71,7 @@ public:
 /** \brief <b>[interface]</b> Base class for all interfaces that OpenRAVE provides. See \ref interface_concepts.
     \ingroup interfaces
  */
-class OPENRAVE_API InterfaceBase : public boost::enable_shared_from_this<InterfaceBase>
+class OPENRAVE_API InterfaceBase : public std::enable_shared_from_this<InterfaceBase>
 {
 public:
     typedef std::map<std::string, ReadablePtr, CaseInsensitiveCompare> READERSMAP;
@@ -315,10 +315,10 @@ private:
     mutable std::map<std::string, UserDataPtr> __mapUserData; ///< \see GetUserData
 
     READERSMAP __mapReadableInterfaces; ///< pointers to extra interfaces that are included with this object
-    typedef std::map<std::string, boost::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
+    typedef std::map<std::string, std::shared_ptr<InterfaceCommand>, CaseInsensitiveCompare> CMDMAP;
     CMDMAP __mapCommands; ///< all registered commands
 
-    typedef std::map<std::string, boost::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
+    typedef std::map<std::string, std::shared_ptr<InterfaceJSONCommand>, CaseInsensitiveCompare> JSONCMDMAP;
     JSONCMDMAP __mapJSONCommands; ///< all registered commands
 
 #ifdef RAVE_PRIVATE

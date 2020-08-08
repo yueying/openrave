@@ -28,7 +28,7 @@ typedef boost::recursive_try_mutex EnvironmentMutex;
 
 /** \brief Maintains a world state, which serves as the gateway to all functions offered through %OpenRAVE. See \ref arch_environment.
  */
-class OPENRAVE_API EnvironmentBase : public boost::enable_shared_from_this<EnvironmentBase>
+class OPENRAVE_API EnvironmentBase : public std::enable_shared_from_this<EnvironmentBase>
 {
 public:
     EnvironmentBase();
@@ -368,8 +368,8 @@ public:
         \param filename the name of the resource file, its extension determines the format of the file. Complex meshes and articulated meshes are all triangulated appropriately. See \ref supported_formats.
         \param atts Options to control the parsing process.
      */
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshURI(boost::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshFile(boost::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts = AttributesList()) {
+    virtual std::shared_ptr<TriMesh> ReadTrimeshURI(std::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts = AttributesList()) = 0;
+    virtual std::shared_ptr<TriMesh> ReadTrimeshFile(std::shared_ptr<TriMesh> ptrimesh, const std::string& filename, const AttributesList& atts = AttributesList()) {
         return ReadTrimeshURI(ptrimesh,filename,atts);
     }
 
@@ -379,7 +379,7 @@ public:
         \param formathint is the hint to the underlying cad importer for the format of data
         \param atts Options to control the parsing process.
      */
-    virtual boost::shared_ptr<TriMesh> ReadTrimeshData(boost::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, const AttributesList& atts = AttributesList()) = 0;
+    virtual std::shared_ptr<TriMesh> ReadTrimeshData(std::shared_ptr<TriMesh> ptrimesh, const std::string& data, const std::string& formathint, const AttributesList& atts = AttributesList()) = 0;
 
     //@}
 
@@ -730,8 +730,8 @@ public:
         std::vector<KinBody::KinBodyInfoPtr> _vBodyInfos; ///< list of pointers to KinBodyInfo
         uint64_t _revision;
     };
-    typedef boost::shared_ptr<EnvironmentBaseInfo> EnvironmentBaseInfoPtr;
-    typedef boost::shared_ptr<EnvironmentBaseInfo const> EnvironmentBaseInfoConstPtr;
+    typedef std::shared_ptr<EnvironmentBaseInfo> EnvironmentBaseInfoPtr;
+    typedef std::shared_ptr<EnvironmentBaseInfo const> EnvironmentBaseInfoConstPtr;
 
     inline uint64_t GetRevision() const {
         return _revision;

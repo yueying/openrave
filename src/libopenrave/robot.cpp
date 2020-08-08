@@ -172,7 +172,7 @@ RobotBase::AttachedSensor::AttachedSensor(RobotBasePtr probot, const RobotBase::
                     pReader->DeserializeJSON(_info._docSensorGeometry);
                     ReadablePtr pReadable = pReader->GetReadable();
                     if (!!pReadable) {
-                        SensorBase::SensorGeometryPtr sensorGeometry = OPENRAVE_DYNAMIC_POINTER_CAST<SensorBase::SensorGeometry>(pReadable);
+                        SensorBase::SensorGeometryPtr sensorGeometry = std::dynamic_pointer_cast<SensorBase::SensorGeometry>(pReadable);
                         _psensor->SetSensorGeometry(sensorGeometry);
                     }
                 } else {
@@ -207,7 +207,7 @@ void RobotBase::AttachedSensor::UpdateInfo(SensorBase::SensorType type)
     rapidjson::Document docSensorGeometry;
     if( !!_psensor ) {
         _info._sensorname = _psensor->GetXMLId();
-        SensorBase::SensorGeometryPtr sensorGeometry = boost::const_pointer_cast<SensorBase::SensorGeometry>(_psensor->GetSensorGeometry(type));
+        SensorBase::SensorGeometryPtr sensorGeometry = std::const_pointer_cast<SensorBase::SensorGeometry>(_psensor->GetSensorGeometry(type));
         if (!!sensorGeometry) {
             sensorGeometry->SerializeJSON(docSensorGeometry, docSensorGeometry.GetAllocator());
         }
@@ -231,7 +231,7 @@ void RobotBase::AttachedSensor::ExtractInfo(AttachedSensorInfo& info) const
     rapidjson::Document docSensorGeometry;
     if( !!_psensor ) {
         info._sensorname = _psensor->GetXMLId();
-        SensorBase::SensorGeometryPtr sensorGeometry = boost::const_pointer_cast<SensorBase::SensorGeometry>(_psensor->GetSensorGeometry(SensorBase::ST_Invalid));
+        SensorBase::SensorGeometryPtr sensorGeometry = std::const_pointer_cast<SensorBase::SensorGeometry>(_psensor->GetSensorGeometry(SensorBase::ST_Invalid));
         if (!!sensorGeometry) {
             sensorGeometry->SerializeJSON(docSensorGeometry, docSensorGeometry.GetAllocator());
         }
@@ -293,12 +293,12 @@ void RobotBase::AttachedSensor::serialize(std::ostream& o, int options) const
         if( !!prawgeom ) {
             switch(prawgeom->GetType()) {
             case SensorBase::ST_Laser: {
-                SensorBase::LaserGeomDataConstPtr pgeom = boost::static_pointer_cast<SensorBase::LaserGeomData const>(prawgeom);
+                SensorBase::LaserGeomDataConstPtr pgeom = std::static_pointer_cast<SensorBase::LaserGeomData const>(prawgeom);
                 o << pgeom->min_angle[0] << " " << pgeom->max_angle[0] << " " << pgeom->resolution[0] << " " << pgeom->max_range << " ";
                 break;
             }
             case SensorBase::ST_Camera: {
-                SensorBase::CameraGeomDataConstPtr pgeom = boost::static_pointer_cast<SensorBase::CameraGeomData const>(prawgeom);
+                SensorBase::CameraGeomDataConstPtr pgeom = std::static_pointer_cast<SensorBase::CameraGeomData const>(prawgeom);
                 o << pgeom->KK.fx << " " << pgeom->KK.fy << " " << pgeom->KK.cx << " " << pgeom->KK.cy << " " << pgeom->width << " " << pgeom->height << " ";
                 break;
             }
@@ -368,7 +368,7 @@ RobotBase::RobotStateSaver::~RobotStateSaver()
     }
 }
 
-void RobotBase::RobotStateSaver::Restore(boost::shared_ptr<RobotBase> robot)
+void RobotBase::RobotStateSaver::Restore(std::shared_ptr<RobotBase> robot)
 {
     _RestoreRobot(!robot ? _probot : robot);
     KinBodyStateSaver::Restore(!robot ? KinBodyPtr(_probot) : KinBodyPtr(robot));
@@ -404,7 +404,7 @@ private:
     EnvironmentBasePtr _pEnv;
 };
 
-void RobotBase::RobotStateSaver::_RestoreRobot(boost::shared_ptr<RobotBase> probot)
+void RobotBase::RobotStateSaver::_RestoreRobot(std::shared_ptr<RobotBase> probot)
 {
     if( !probot ) {
         return;

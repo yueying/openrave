@@ -72,7 +72,7 @@ void EnvironmentBase::EnvironmentBaseInfo::DeserializeJSON(const rapidjson::Valu
             FOREACH(itBodyInfo, _vBodyInfos) {
                 if ((*itBodyInfo)->_id == id ) {
                     itExistingBodyInfo = itBodyInfo;
-                    isExistingRobot = !!OPENRAVE_DYNAMIC_POINTER_CAST<RobotBase::RobotBaseInfo>(*itBodyInfo);
+                    isExistingRobot = !!std::dynamic_pointer_cast<RobotBase::RobotBaseInfo>(*itBodyInfo);
                     RAVELOG_DEBUG_FORMAT("found existing body: %s, isRobot = %d", id%isExistingRobot);
                     break;
                 }
@@ -102,7 +102,7 @@ void EnvironmentBase::EnvironmentBaseInfo::DeserializeJSON(const rapidjson::Valu
                     continue;
                 }
                 KinBody::KinBodyInfoPtr pKinBodyInfo = *itExistingBodyInfo;
-                RobotBase::RobotBaseInfoPtr pRobotBaseInfo = OPENRAVE_DYNAMIC_POINTER_CAST<RobotBase::RobotBaseInfo>(pKinBodyInfo);
+                RobotBase::RobotBaseInfoPtr pRobotBaseInfo = std::dynamic_pointer_cast<RobotBase::RobotBaseInfo>(pKinBodyInfo);
                 if (!pRobotBaseInfo) {
                     // previous body was not a robot
                     // need to replace with a new RobotBaseInfo
@@ -132,7 +132,7 @@ void EnvironmentBase::EnvironmentBaseInfo::DeserializeJSON(const rapidjson::Valu
                     continue;
                 }
                 KinBody::KinBodyInfoPtr pKinBodyInfo = *itExistingBodyInfo;
-                RobotBase::RobotBaseInfoPtr pRobotBaseInfo = OPENRAVE_DYNAMIC_POINTER_CAST<RobotBase::RobotBaseInfo>(pKinBodyInfo);
+                RobotBase::RobotBaseInfoPtr pRobotBaseInfo = std::dynamic_pointer_cast<RobotBase::RobotBaseInfo>(pKinBodyInfo);
                 if (!!pRobotBaseInfo) {
                     // previous body was a robot
                     // need to replace with a new KinBodyInfo

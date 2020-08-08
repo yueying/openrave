@@ -54,7 +54,7 @@ public:
     int _properties;
     boost::function<void()> _callback;
 protected:
-    boost::weak_ptr<KinBody const> _pweakbody;
+    std::weak_ptr<KinBody const> _pweakbody;
 };
 
 class CallFunctionAtDestructor
@@ -70,7 +70,7 @@ protected:
     boost::function<void()> _fn;
 };
 
-typedef boost::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
+typedef std::shared_ptr<ChangeCallbackData> ChangeCallbackDataPtr;
 
 void ElectricMotorActuatorInfo::Reset()
 {
@@ -3724,7 +3724,7 @@ void KinBody::_ComputeInternalInformation()
             }
         }
         // fill Mimic::_vmimicdofs, check that there are no circular dependencies between the mimic joints
-        std::map<Mimic::DOFFormat, boost::shared_ptr<Mimic> > mapmimic;
+        std::map<Mimic::DOFFormat, std::shared_ptr<Mimic> > mapmimic;
         for(int ijoints = 0; ijoints < 2; ++ijoints) {
             vector<JointPtr>& vjoints = ijoints ? _vPassiveJoints : _vecjoints;
             int jointindex=0;
@@ -3758,14 +3758,14 @@ void KinBody::_ComputeInternalInformation()
         while(bchanged) {
             bchanged = false;
             FOREACH(itmimic,mapmimic) {
-                boost::shared_ptr<Mimic> mimic = itmimic->second;
+                std::shared_ptr<Mimic> mimic = itmimic->second;
                 Mimic::DOFHierarchy h;
                 h.dofformatindex = 0;
                 FOREACH(itdofformat,mimic->_vdofformat) {
                     if( mapmimic.find(*itdofformat) == mapmimic.end() ) {
                         continue; // this is normal, just means that the parent is a regular dof
                     }
-                    boost::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
+                    std::shared_ptr<Mimic> mimicparent = mapmimic[*itdofformat];
                     FOREACH(itmimicdof, mimicparent->_vmimicdofs) {
                         if( mimicparent->_vdofformat[itmimicdof->dofformatindex] == itmimic->first ) {
                             JointPtr pjoint = itmimic->first.GetJoint(*this);
@@ -4514,7 +4514,7 @@ void KinBody::_ComputeInternalInformation()
                 listRegisteredCallbacks = _vlistRegisteredCallbacks.at(index); // copy since it can be changed
             }
             FOREACH(it,listRegisteredCallbacks) {
-                ChangeCallbackDataPtr pdata = boost::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
+                ChangeCallbackDataPtr pdata = std::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
                 if( !!pdata ) {
                     pdata->_callback();
                 }
@@ -4543,7 +4543,7 @@ bool KinBody::IsAttached(const KinBody &body) const
 
 void KinBody::GetAttached(std::set<KinBodyPtr>&setAttached) const
 {
-    setAttached.insert(boost::const_pointer_cast<KinBody>(shared_kinbody_const()));
+    setAttached.insert(std::const_pointer_cast<KinBody>(shared_kinbody_const()));
     FOREACHC(itbody,_listAttachedBodies) {
         KinBodyPtr pattached = itbody->lock();
         if( !!pattached && setAttached.insert(pattached).second ) {
@@ -4735,7 +4735,7 @@ public:
         }
         ~TransformsSaver() {
             for(size_t i = 0; i < _pbody->_veclinks.size(); ++i) {
-                boost::static_pointer_cast<Link>(_pbody->_veclinks[i])->_info._t = vcurtrans.at(i);
+                std::static_pointer_cast<Link>(_pbody->_veclinks[i])->_info._t = vcurtrans.at(i);
             }
             for(size_t i = 0; i < _pbody->_vecjoints.size(); ++i) {
                 for(int j = 0; j < _pbody->_vecjoints[i]->GetDOF(); ++j) {
@@ -4757,7 +4757,7 @@ private:
         CollisionCheckerBasePtr collisionchecker = !!_selfcollisionchecker ? _selfcollisionchecker : GetEnv()->GetCollisionChecker();
         CollisionOptionsStateSaver colsaver(collisionchecker,0); // have to reset the collision options
         for(size_t i = 0; i < _veclinks.size(); ++i) {
-            boost::static_pointer_cast<Link>(_veclinks[i])->_info._t = _vInitialLinkTransformations.at(i);
+            std::static_pointer_cast<Link>(_veclinks[i])->_info._t = _vInitialLinkTransformations.at(i);
         }
         _nUpdateStampId++; // because transforms were modified
         _vNonAdjacentLinks[0].resize(0);
@@ -4937,7 +4937,7 @@ void KinBody::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
     // clone the grabbed bodies, note that this can fail if the new cloned environment hasn't added the bodies yet (check out Environment::Clone)
     _vGrabbedBodies.resize(0);
     FOREACHC(itgrabbedref, r->_vGrabbedBodies) {
-        GrabbedConstPtr pgrabbedref = boost::dynamic_pointer_cast<Grabbed const>(*itgrabbedref);
+        GrabbedConstPtr pgrabbedref = std::dynamic_pointer_cast<Grabbed const>(*itgrabbedref);
         if( !pgrabbedref ) {
             RAVELOG_WARN_FORMAT("env=%d, have uninitialized GrabbedConstPtr in _vGrabbedBodies", GetEnv()->GetId());
             continue;
@@ -5006,7 +5006,7 @@ void KinBody::_PostprocessChangedParameters(uint32_t parameters)
         FOREACH(itlink,_veclinks) {
             if( (*itlink)->IsEnabled() ) {
                 FOREACH(itgrabbed,_vGrabbedBodies) {
-                    GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+                    GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
                     if( find(pgrabbed->GetRigidlyAttachedLinks().begin(),pgrabbed->GetRigidlyAttachedLinks().end(), *itlink) == pgrabbed->GetRigidlyAttachedLinks().end() ) {
                         std::list<KinBody::LinkConstPtr>::iterator itnoncolliding = find(pgrabbed->_listNonCollidingLinks.begin(),pgrabbed->_listNonCollidingLinks.end(),*itlink);
                         if( itnoncolliding != pgrabbed->_listNonCollidingLinks.end() ) {
@@ -5027,7 +5027,7 @@ void KinBody::_PostprocessChangedParameters(uint32_t parameters)
             else {
                 // add since it is disabled?
                 FOREACH(itgrabbed,_vGrabbedBodies) {
-                    GrabbedPtr pgrabbed = boost::dynamic_pointer_cast<Grabbed>(*itgrabbed);
+                    GrabbedPtr pgrabbed = std::dynamic_pointer_cast<Grabbed>(*itgrabbed);
                     if( find(pgrabbed->GetRigidlyAttachedLinks().begin(),pgrabbed->GetRigidlyAttachedLinks().end(), *itlink) == pgrabbed->GetRigidlyAttachedLinks().end() ) {
                         if( find(pgrabbed->_listNonCollidingLinks.begin(),pgrabbed->_listNonCollidingLinks.end(),*itlink) == pgrabbed->_listNonCollidingLinks.end() ) {
                             if( pgrabbed->WasLinkNonColliding(*itlink) != 0 ) {
@@ -5063,7 +5063,7 @@ void KinBody::_PostprocessChangedParameters(uint32_t parameters)
                 listRegisteredCallbacks = _vlistRegisteredCallbacks.at(index); // copy since it can be changed
             }
             FOREACH(it,listRegisteredCallbacks) {
-                ChangeCallbackDataPtr pdata = boost::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
+                ChangeCallbackDataPtr pdata = std::dynamic_pointer_cast<ChangeCallbackData>(it->lock());
                 if( !!pdata ) {
                     pdata->_callback();
                 }
@@ -5555,7 +5555,7 @@ void KinBody::ExtractInfo(KinBodyInfo& info)
 
 
     FOREACHC(it, GetReadableInterfaces()) {
-        ReadablePtr pReadable = boost::dynamic_pointer_cast<Readable>(it->second);
+        ReadablePtr pReadable = std::dynamic_pointer_cast<Readable>(it->second);
         if (!!pReadable) {
             info._mReadableInterfaces[it->first] = pReadable;
         }
@@ -5733,7 +5733,7 @@ UpdateFromInfoResult KinBody::UpdateFromKinBodyInfo(const KinBodyInfo& info)
     }
 
 	FOREACHC(it, info._mReadableInterfaces) {
-        ReadablePtr pReadable = boost::dynamic_pointer_cast<Readable>(GetReadableInterface(it->first));
+        ReadablePtr pReadable = std::dynamic_pointer_cast<Readable>(GetReadableInterface(it->first));
         if (!!pReadable) {
             if ( (*(it->second)) != (*pReadable)) {
                 rapidjson::Document docReadable;

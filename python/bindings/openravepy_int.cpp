@@ -529,7 +529,7 @@ class ViewerManager
         boost::condition _cond;  ///< notify when viewer thread is done processing and has initialized _pviewer
         bool _bShowViewer; ///< true if should show the viewer when initially created
     };
-    typedef OPENRAVE_SHARED_PTR<ViewerInfo> ViewerInfoPtr;
+    typedef std::shared_ptr<ViewerInfo> ViewerInfoPtr;
 public:
     ViewerManager() {
         _bShutdown = false;
@@ -784,7 +784,7 @@ protected:
 
     }
 
-    OPENRAVE_SHARED_PTR<boost::thread> _threadviewer;
+    std::shared_ptr<boost::thread> _threadviewer;
     boost::mutex _mutexViewer;
     boost::condition _conditionViewer;
     std::list<ViewerInfoPtr> _listviewerinfos;
@@ -901,19 +901,19 @@ PyInterfaceBasePtr PyEnvironmentBase::_toPyInterface(InterfaceBasePtr pinterface
         return PyInterfaceBasePtr();
     }
     switch(pinterface->GetInterfaceType()) {
-    case PT_Planner: return openravepy::toPyPlanner(OPENRAVE_STATIC_POINTER_CAST<PlannerBase>(pinterface),shared_from_this());
-    case PT_Robot: return openravepy::toPyRobot(OPENRAVE_STATIC_POINTER_CAST<RobotBase>(pinterface),shared_from_this());
-    case PT_SensorSystem: return openravepy::toPySensorSystem(OPENRAVE_STATIC_POINTER_CAST<SensorSystemBase>(pinterface),shared_from_this());
-    case PT_Controller: return openravepy::toPyController(OPENRAVE_STATIC_POINTER_CAST<ControllerBase>(pinterface),shared_from_this());
-    case PT_Module: return openravepy::toPyModule(OPENRAVE_STATIC_POINTER_CAST<ModuleBase>(pinterface),shared_from_this());
-    case PT_IkSolver: return openravepy::toPyIkSolver(OPENRAVE_STATIC_POINTER_CAST<IkSolverBase>(pinterface),shared_from_this());
-    case PT_KinBody: return openravepy::toPyKinBody(OPENRAVE_STATIC_POINTER_CAST<KinBody>(pinterface),shared_from_this());
-    case PT_PhysicsEngine: return openravepy::toPyPhysicsEngine(OPENRAVE_STATIC_POINTER_CAST<PhysicsEngineBase>(pinterface),shared_from_this());
-    case PT_Sensor: return openravepy::toPySensor(OPENRAVE_STATIC_POINTER_CAST<SensorBase>(pinterface),shared_from_this());
-    case PT_CollisionChecker: return openravepy::toPyCollisionChecker(OPENRAVE_STATIC_POINTER_CAST<CollisionCheckerBase>(pinterface),shared_from_this());
-    case PT_Trajectory: return openravepy::toPyTrajectory(OPENRAVE_STATIC_POINTER_CAST<TrajectoryBase>(pinterface),shared_from_this());
-    case PT_Viewer: return openravepy::toPyViewer(OPENRAVE_STATIC_POINTER_CAST<ViewerBase>(pinterface),shared_from_this());
-    case PT_SpaceSampler: return openravepy::toPySpaceSampler(OPENRAVE_STATIC_POINTER_CAST<SpaceSamplerBase>(pinterface),shared_from_this());
+    case PT_Planner: return openravepy::toPyPlanner(std::static_pointer_cast<PlannerBase>(pinterface),shared_from_this());
+    case PT_Robot: return openravepy::toPyRobot(std::static_pointer_cast<RobotBase>(pinterface),shared_from_this());
+    case PT_SensorSystem: return openravepy::toPySensorSystem(std::static_pointer_cast<SensorSystemBase>(pinterface),shared_from_this());
+    case PT_Controller: return openravepy::toPyController(std::static_pointer_cast<ControllerBase>(pinterface),shared_from_this());
+    case PT_Module: return openravepy::toPyModule(std::static_pointer_cast<ModuleBase>(pinterface),shared_from_this());
+    case PT_IkSolver: return openravepy::toPyIkSolver(std::static_pointer_cast<IkSolverBase>(pinterface),shared_from_this());
+    case PT_KinBody: return openravepy::toPyKinBody(std::static_pointer_cast<KinBody>(pinterface),shared_from_this());
+    case PT_PhysicsEngine: return openravepy::toPyPhysicsEngine(std::static_pointer_cast<PhysicsEngineBase>(pinterface),shared_from_this());
+    case PT_Sensor: return openravepy::toPySensor(std::static_pointer_cast<SensorBase>(pinterface),shared_from_this());
+    case PT_CollisionChecker: return openravepy::toPyCollisionChecker(std::static_pointer_cast<CollisionCheckerBase>(pinterface),shared_from_this());
+    case PT_Trajectory: return openravepy::toPyTrajectory(std::static_pointer_cast<TrajectoryBase>(pinterface),shared_from_this());
+    case PT_Viewer: return openravepy::toPyViewer(std::static_pointer_cast<ViewerBase>(pinterface),shared_from_this());
+    case PT_SpaceSampler: return openravepy::toPySpaceSampler(std::static_pointer_cast<SpaceSamplerBase>(pinterface),shared_from_this());
     }
     return PyInterfaceBasePtr();
 }
@@ -929,14 +929,14 @@ static std::vector<KinBody::KinBodyInfoPtr> _ExtractBodyInfoArray(object vBodyIn
         vBodyInfos.resize(arraySize);
 
         for(size_t iBodyInfo = 0; iBodyInfo < arraySize; iBodyInfo++) {
-            extract_<OPENRAVE_SHARED_PTR<PyRobotBase::PyRobotBaseInfo> > pyrobotbaseinfo(vBodyInfoList[iBodyInfo]);
+            extract_<std::shared_ptr<PyRobotBase::PyRobotBaseInfo> > pyrobotbaseinfo(vBodyInfoList[iBodyInfo]);
             if (pyrobotbaseinfo.check()) {
-                vBodyInfos[iBodyInfo] = ((OPENRAVE_SHARED_PTR<PyRobotBase::PyRobotBaseInfo>)pyrobotbaseinfo)->GetRobotBaseInfo();
+                vBodyInfos[iBodyInfo] = ((std::shared_ptr<PyRobotBase::PyRobotBaseInfo>)pyrobotbaseinfo)->GetRobotBaseInfo();
                 continue;
             }
-            extract_<OPENRAVE_SHARED_PTR<PyKinBody::PyKinBodyInfo> > pykinbodyinfo(vBodyInfoList[iBodyInfo]);
+            extract_<std::shared_ptr<PyKinBody::PyKinBodyInfo> > pykinbodyinfo(vBodyInfoList[iBodyInfo]);
             if (pykinbodyinfo.check()) {
-                vBodyInfos[iBodyInfo] = ((OPENRAVE_SHARED_PTR<PyKinBody::PyKinBodyInfo>)pykinbodyinfo)->GetKinBodyInfo();
+                vBodyInfos[iBodyInfo] = ((std::shared_ptr<PyKinBody::PyKinBodyInfo>)pykinbodyinfo)->GetKinBodyInfo();
                 continue;
             }
             throw openrave_exception(_("Bad BodyInfo"));
@@ -992,7 +992,7 @@ void PyEnvironmentBase::PyEnvironmentBaseInfo::_Update(const EnvironmentBase::En
 #else
     py::list vBodyInfos;
     FOREACHC(itBodyInfo, info._vBodyInfos) {
-        RobotBase::RobotBaseInfoPtr pRobotBaseInfo = OPENRAVE_DYNAMIC_POINTER_CAST<RobotBase::RobotBaseInfo>(*itBodyInfo);
+        RobotBase::RobotBaseInfoPtr pRobotBaseInfo = std::dynamic_pointer_cast<RobotBase::RobotBaseInfo>(*itBodyInfo);
         if (!!pRobotBaseInfo) {
             PyRobotBase::PyRobotBaseInfo info = PyRobotBase::PyRobotBaseInfo(*pRobotBaseInfo);
             vBodyInfos.append(info);
@@ -1447,12 +1447,12 @@ bool PyEnvironmentBase::CheckCollision(PyKinBodyPtr pbody, object bodyexcluded, 
     return bCollision;
 }
 
-bool PyEnvironmentBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody)
+bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody)
 {
     return _penv->CheckCollision(pyray->r,KinBodyConstPtr(openravepy::GetKinBody(pbody)));
 }
 
-bool PyEnvironmentBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport)
+bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyKinBodyPtr pbody, PyCollisionReportPtr pReport)
 {
     bool bCollision = _penv->CheckCollision(pyray->r, KinBodyConstPtr(openravepy::GetKinBody(pbody)), openravepy::GetCollisionReport(pReport));
     openravepy::UpdateCollisionReport(pReport,shared_from_this());
@@ -1535,12 +1535,12 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
 	return py::make_tuple(pycollision, pypos);
 }
 
-bool PyEnvironmentBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray)
+bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray)
 {
     return _penv->CheckCollision(pyray->r);
 }
 
-bool PyEnvironmentBase::CheckCollision(OPENRAVE_SHARED_PTR<PyRay> pyray, PyCollisionReportPtr pReport)
+bool PyEnvironmentBase::CheckCollision(std::shared_ptr<PyRay> pyray, PyCollisionReportPtr pReport)
 {
     bool bCollision = _penv->CheckCollision(pyray->r, openravepy::GetCollisionReport(pReport));
     openravepy::UpdateCollisionReport(pReport,shared_from_this());
@@ -1665,7 +1665,7 @@ PyInterfaceBasePtr PyEnvironmentBase::ReadInterfaceURI(const std::string& filena
 }
 object PyEnvironmentBase::ReadTrimeshURI(const std::string& filename)
 {
-    OPENRAVE_SHARED_PTR<TriMesh> ptrimesh = _penv->ReadTrimeshURI(OPENRAVE_SHARED_PTR<TriMesh>(),filename);
+    std::shared_ptr<TriMesh> ptrimesh = _penv->ReadTrimeshURI(std::shared_ptr<TriMesh>(),filename);
     if( !ptrimesh ) {
         return py::none_();
     }
@@ -1673,7 +1673,7 @@ object PyEnvironmentBase::ReadTrimeshURI(const std::string& filename)
 }
 object PyEnvironmentBase::ReadTrimeshURI(const std::string& filename, object odictatts)
 {
-    OPENRAVE_SHARED_PTR<TriMesh> ptrimesh = _penv->ReadTrimeshURI(OPENRAVE_SHARED_PTR<TriMesh>(),filename,toAttributesList(odictatts));
+    std::shared_ptr<TriMesh> ptrimesh = _penv->ReadTrimeshURI(std::shared_ptr<TriMesh>(),filename,toAttributesList(odictatts));
     if( !ptrimesh ) {
         return py::none_();
     }
@@ -1682,7 +1682,7 @@ object PyEnvironmentBase::ReadTrimeshURI(const std::string& filename, object odi
 
 object PyEnvironmentBase::ReadTrimeshData(const std::string& data, const std::string& formathint)
 {
-    OPENRAVE_SHARED_PTR<TriMesh> ptrimesh = _penv->ReadTrimeshData(OPENRAVE_SHARED_PTR<TriMesh>(),data,formathint);
+    std::shared_ptr<TriMesh> ptrimesh = _penv->ReadTrimeshData(std::shared_ptr<TriMesh>(),data,formathint);
     if( !ptrimesh ) {
         return py::none_();
     }
@@ -1690,7 +1690,7 @@ object PyEnvironmentBase::ReadTrimeshData(const std::string& data, const std::st
 }
 object PyEnvironmentBase::ReadTrimeshData(const std::string& data, const std::string& formathint, object odictatts)
 {
-    OPENRAVE_SHARED_PTR<TriMesh> ptrimesh = _penv->ReadTrimeshData(OPENRAVE_SHARED_PTR<TriMesh>(),data,formathint,toAttributesList(odictatts));
+    std::shared_ptr<TriMesh> ptrimesh = _penv->ReadTrimeshData(std::shared_ptr<TriMesh>(),data,formathint,toAttributesList(odictatts));
     if( !ptrimesh ) {
         return py::none_();
     }
@@ -1875,7 +1875,7 @@ void PyEnvironmentBase::LockRaw()
         _listenvlocks.splice(_listenvlocks.end(),_listfreelocks,--_listfreelocks.end());
     }
     else {
-        _listenvlocks.push_back(OPENRAVE_SHARED_PTR<EnvironmentMutex::scoped_lock>(new EnvironmentMutex::scoped_lock(_penv->GetMutex())));
+        _listenvlocks.push_back(std::shared_ptr<EnvironmentMutex::scoped_lock>(new EnvironmentMutex::scoped_lock(_penv->GetMutex())));
     }
 #else
     _penv->GetMutex().lock();
@@ -1906,10 +1906,10 @@ bool PyEnvironmentBase::TryLockReleaseGil()
     bool bSuccess = false;
     PythonThreadSaver saver;
 #if BOOST_VERSION < 103500
-    OPENRAVE_SHARED_PTR<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),false));
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),false));
     if( !!lockenv->try_lock() ) {
         bSuccess = true;
-        _listenvlocks.push_back(OPENRAVE_SHARED_PTR<EnvironmentMutex::scoped_lock>(new EnvironmentMutex::scoped_lock(_penv->GetMutex())));
+        _listenvlocks.push_back(std::shared_ptr<EnvironmentMutex::scoped_lock>(new EnvironmentMutex::scoped_lock(_penv->GetMutex())));
     }
 #else
     if( _penv->GetMutex().try_lock() ) {
@@ -1923,10 +1923,10 @@ bool PyEnvironmentBase::TryLock()
 {
     bool bSuccess = false;
 #if BOOST_VERSION < 103500
-    OPENRAVE_SHARED_PTR<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),false));
+    std::shared_ptr<EnvironmentMutex::scoped_try_lock> lockenv(new EnvironmentMutex::scoped_try_lock(GetEnv()->GetMutex(),false));
     if( !!lockenv->try_lock() ) {
         bSuccess = true;
-        _listenvlocks.push_back(OPENRAVE_SHARED_PTR<EnvironmentMutex::scoped_lock>(new EnvironmentMutex::scoped_lock(_penv->GetMutex())));
+        _listenvlocks.push_back(std::shared_ptr<EnvironmentMutex::scoped_lock>(new EnvironmentMutex::scoped_lock(_penv->GetMutex())));
     }
 #else
     if( _penv->GetMutex().try_lock() ) {
@@ -2324,7 +2324,7 @@ void PyEnvironmentBase::SetUserData(PyUserData pdata) {
     _penv->SetUserData(pdata._handle);
 }
 void PyEnvironmentBase::SetUserData(object o) {
-    _penv->SetUserData(OPENRAVE_SHARED_PTR<UserData>(new PyUserObject(o)));
+    _penv->SetUserData(std::shared_ptr<UserData>(new PyUserObject(o)));
 }
 object PyEnvironmentBase::GetUserData() const {
     return openravepy::GetUserData(_penv->GetUserData());
@@ -2351,7 +2351,7 @@ object PyEnvironmentBase::GetRevision() const {
 object PyEnvironmentBase::ExtractInfo() const {
     EnvironmentBase::EnvironmentBaseInfo info;
     _penv->ExtractInfo(info);
-    return py::to_object(boost::shared_ptr<PyEnvironmentBase::PyEnvironmentBaseInfo>(new PyEnvironmentBase::PyEnvironmentBaseInfo(info)));
+    return py::to_object(std::shared_ptr<PyEnvironmentBase::PyEnvironmentBaseInfo>(new PyEnvironmentBase::PyEnvironmentBaseInfo(info)));
 }
 
 void PyEnvironmentBase::UpdateFromInfo(PyEnvironmentBaseInfoPtr info) {
@@ -2391,12 +2391,12 @@ PyEnvironmentBasePtr PyInterfaceBase::GetEnv() const
 
 object GetUserData(UserDataPtr pdata)
 {
-    OPENRAVE_SHARED_PTR<PyUserObject> po = OPENRAVE_DYNAMIC_POINTER_CAST<PyUserObject>(pdata);
+    std::shared_ptr<PyUserObject> po = std::dynamic_pointer_cast<PyUserObject>(pdata);
     if( !!po ) {
         return po->_o;
     }
     else {
-        SerializableDataPtr pserializable = OPENRAVE_DYNAMIC_POINTER_CAST<SerializableData>(pdata);
+        SerializableDataPtr pserializable = std::dynamic_pointer_cast<SerializableData>(pdata);
         if( !!pserializable ) {
             return py::to_object(PySerializableData(pserializable));
         }
@@ -2672,9 +2672,9 @@ The **releasegil** parameter controls whether the python Global Interpreter Lock
 Because race conditions can pop up when trying to lock the openrave environment without releasing the GIL, if lockenv=True is specified, the system can try to safely lock the openrave environment without causing a deadlock with the python GIL and other threads.\n");
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-        class_<PyInterfaceBase, OPENRAVE_SHARED_PTR<PyInterfaceBase> >(m, "Interface", DOXY_CLASS(InterfaceBase))
+        class_<PyInterfaceBase, std::shared_ptr<PyInterfaceBase> >(m, "Interface", DOXY_CLASS(InterfaceBase))
 #else
-        class_<PyInterfaceBase, OPENRAVE_SHARED_PTR<PyInterfaceBase> >("Interface", DOXY_CLASS(InterfaceBase), no_init)
+        class_<PyInterfaceBase, std::shared_ptr<PyInterfaceBase> >("Interface", DOXY_CLASS(InterfaceBase), no_init)
 #endif
         .def("GetInterfaceType",&PyInterfaceBase::GetInterfaceType, DOXY_FN(InterfaceBase,GetInterfaceType))
         .def("GetXMLId",&PyInterfaceBase::GetXMLId, DOXY_FN(InterfaceBase,GetXMLId))
@@ -2733,10 +2733,10 @@ Because race conditions can pop up when trying to lock the openrave environment 
 
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    object environmentbaseinfo = class_<PyEnvironmentBase::PyEnvironmentBaseInfo, OPENRAVE_SHARED_PTR<PyEnvironmentBase::PyEnvironmentBaseInfo> >(m, "EnvironmentBaseInfo", DOXY_CLASS(EnvironmentBase::EnvironmentBaseInfo))
+    object environmentbaseinfo = class_<PyEnvironmentBase::PyEnvironmentBaseInfo, std::shared_ptr<PyEnvironmentBase::PyEnvironmentBaseInfo> >(m, "EnvironmentBaseInfo", DOXY_CLASS(EnvironmentBase::EnvironmentBaseInfo))
                                  .def(init<>())
 #else
-    object environmentbaseinfo = class_<PyEnvironmentBase::PyEnvironmentBaseInfo, OPENRAVE_SHARED_PTR<PyEnvironmentBase::PyEnvironmentBaseInfo> >("EnvironmentBaseInfo", DOXY_CLASS(EnvironmentBase::EnvironmentBaseInfo))
+    object environmentbaseinfo = class_<PyEnvironmentBase::PyEnvironmentBaseInfo, std::shared_ptr<PyEnvironmentBase::PyEnvironmentBaseInfo> >("EnvironmentBaseInfo", DOXY_CLASS(EnvironmentBase::EnvironmentBaseInfo))
 #endif
                                  .def_readwrite("_vBodyInfos",&PyEnvironmentBase::PyEnvironmentBaseInfo::_vBodyInfos)
                                  .def("__str__",&PyEnvironmentBase::PyEnvironmentBaseInfo::__str__)
@@ -2774,10 +2774,10 @@ Because race conditions can pop up when trying to lock the openrave environment 
         bool (PyEnvironmentBase::*pcoller)(object, object,object,PyCollisionReportPtr) = &PyEnvironmentBase::CheckCollision;
         bool (PyEnvironmentBase::*pcolbe)(PyKinBodyPtr,object,object) = &PyEnvironmentBase::CheckCollision;
         bool (PyEnvironmentBase::*pcolber)(PyKinBodyPtr, object,object,PyCollisionReportPtr) = &PyEnvironmentBase::CheckCollision;
-        bool (PyEnvironmentBase::*pcolyb)(OPENRAVE_SHARED_PTR<PyRay>,PyKinBodyPtr) = &PyEnvironmentBase::CheckCollision;
-        bool (PyEnvironmentBase::*pcolybr)(OPENRAVE_SHARED_PTR<PyRay>, PyKinBodyPtr, PyCollisionReportPtr) = &PyEnvironmentBase::CheckCollision;
-        bool (PyEnvironmentBase::*pcoly)(OPENRAVE_SHARED_PTR<PyRay>) = &PyEnvironmentBase::CheckCollision;
-        bool (PyEnvironmentBase::*pcolyr)(OPENRAVE_SHARED_PTR<PyRay>, PyCollisionReportPtr) = &PyEnvironmentBase::CheckCollision;
+        bool (PyEnvironmentBase::*pcolyb)(std::shared_ptr<PyRay>,PyKinBodyPtr) = &PyEnvironmentBase::CheckCollision;
+        bool (PyEnvironmentBase::*pcolybr)(std::shared_ptr<PyRay>, PyKinBodyPtr, PyCollisionReportPtr) = &PyEnvironmentBase::CheckCollision;
+        bool (PyEnvironmentBase::*pcoly)(std::shared_ptr<PyRay>) = &PyEnvironmentBase::CheckCollision;
+        bool (PyEnvironmentBase::*pcolyr)(std::shared_ptr<PyRay>, PyCollisionReportPtr) = &PyEnvironmentBase::CheckCollision;
 
         void (PyEnvironmentBase::*Lock1)() = &PyEnvironmentBase::Lock;
         bool (PyEnvironmentBase::*Lock2)(float) = &PyEnvironmentBase::Lock;

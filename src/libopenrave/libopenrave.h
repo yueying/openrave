@@ -359,7 +359,7 @@ void CallGetStateFns(const std::vector< std::pair<PlannerBase::PlannerParameters
 void subtractstates(std::vector<dReal>& q1, const std::vector<dReal>& q2);
 
 /// \brief The information of a currently grabbed body.
-class Grabbed : public UserData, public boost::enable_shared_from_this<Grabbed>
+class Grabbed : public UserData, public std::enable_shared_from_this<Grabbed>
 {
 public:
     Grabbed(KinBodyPtr pgrabbedbody, KinBody::LinkPtr plinkrobot) : _pgrabbedbody(pgrabbedbody), _plinkrobot(plinkrobot) {
@@ -402,8 +402,8 @@ private:
     std::map<KinBody::LinkConstPtr, int> _mapLinkIsNonColliding; // the collision state for each link at the time the body was grabbed.
 };
 
-typedef boost::shared_ptr<Grabbed> GrabbedPtr;
-typedef boost::shared_ptr<Grabbed const> GrabbedConstPtr;
+typedef std::shared_ptr<Grabbed> GrabbedPtr;
+typedef std::shared_ptr<Grabbed const> GrabbedConstPtr;
 
 /// -1 v1 is smaller than v2
 // 0 two vectors are equivalent
@@ -564,9 +564,9 @@ inline uint32_t ConvertUIntToHex(uint32_t value, char* output)
 
 ///* \brief Update current info from json value. Create a new one if there is no id matched.
 template<typename T>
-void UpdateOrCreateInfo(const rapidjson::Value& value, const std::string& id, std::vector<boost::shared_ptr<T> >& vInfos, dReal fUnitScale, int options)
+void UpdateOrCreateInfo(const rapidjson::Value& value, const std::string& id, std::vector<std::shared_ptr<T> >& vInfos, dReal fUnitScale, int options)
 {
-    typename std::vector<boost::shared_ptr<T> >::iterator itExistingInfo = vInfos.end();
+    typename std::vector<std::shared_ptr<T> >::iterator itExistingInfo = vInfos.end();
     FOREACH(itInfo, vInfos) {
         if ((*itInfo)->_id == id) {
             itExistingInfo = itInfo;
@@ -586,7 +586,7 @@ void UpdateOrCreateInfo(const rapidjson::Value& value, const std::string& id, st
     if (isDeleted) {
         return;
     }
-    boost::shared_ptr<T> pNewInfo(new T());
+    std::shared_ptr<T> pNewInfo(new T());
     pNewInfo->DeserializeJSON(value, fUnitScale, options);
     pNewInfo->_id = id;
     vInfos.push_back(pNewInfo);
@@ -594,12 +594,12 @@ void UpdateOrCreateInfo(const rapidjson::Value& value, const std::string& id, st
 
 /// \brief helper function to compare two info(shared_ptr) vectors and copy the diff into vecDiffOut;
 template<typename T>
-void GetInfoVectorDiff(const std::vector<boost::shared_ptr<T> >& oldInfos, const std::vector<boost::shared_ptr<T> >& newInfos, std::vector<boost::shared_ptr<T> >& vecDiffOut) {
+void GetInfoVectorDiff(const std::vector<std::shared_ptr<T> >& oldInfos, const std::vector<std::shared_ptr<T> >& newInfos, std::vector<std::shared_ptr<T> >& vecDiffOut) {
     vecDiffOut.reserve(oldInfos.size() + newInfos.size());
     std::vector<bool> existingNewInfo(newInfos.size(), false);
-    for(typename std::vector<boost::shared_ptr<T> >::const_iterator itOldInfo = oldInfos.begin(); itOldInfo != oldInfos.end(); itOldInfo++) {
+    for(typename std::vector<std::shared_ptr<T> >::const_iterator itOldInfo = oldInfos.begin(); itOldInfo != oldInfos.end(); itOldInfo++) {
         bool oldInfoFound = false;
-        for(typename std::vector<boost::shared_ptr<T> >::const_iterator itNewInfo = newInfos.begin(); itNewInfo != newInfos.end(); itNewInfo++) {
+        for(typename std::vector<std::shared_ptr<T> >::const_iterator itNewInfo = newInfos.begin(); itNewInfo != newInfos.end(); itNewInfo++) {
             if ((*itOldInfo)->_id == (*itNewInfo)->_id) {
                 if ((**itOldInfo) != (**itNewInfo)) {
                     vecDiffOut.push_back(*itOldInfo);
@@ -622,7 +622,7 @@ void GetInfoVectorDiff(const std::vector<boost::shared_ptr<T> >& oldInfos, const
 }
 
 template<typename T>
-bool IsInfoVectorEqual(const std::vector<boost::shared_ptr<T> >& oldInfos, const std::vector<boost::shared_ptr<T> >& newInfos) {
+bool IsInfoVectorEqual(const std::vector<std::shared_ptr<T> >& oldInfos, const std::vector<std::shared_ptr<T> >& newInfos) {
     if (oldInfos.size() != newInfos.size()) {
         return false;
     }

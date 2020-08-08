@@ -79,7 +79,7 @@ public:
     }
     std::string GetXMLId() const {
         // some readable are not xml readable and does have a xml id
-        ReadablePtr pxmlreadable = OPENRAVE_DYNAMIC_POINTER_CAST<Readable>(_readable);
+        ReadablePtr pxmlreadable = std::dynamic_pointer_cast<Readable>(_readable);
         if (!pxmlreadable) {
             return "";
         }
@@ -88,7 +88,7 @@ public:
 
     object SerializeXML(int options=0) {
         // some readable are not xml readable and does not get serialized here
-        ReadablePtr pxmlreadable = OPENRAVE_DYNAMIC_POINTER_CAST<Readable>(_readable);
+        ReadablePtr pxmlreadable = std::dynamic_pointer_cast<Readable>(_readable);
         if (!pxmlreadable) {
             return py::none_();
         }
@@ -105,7 +105,7 @@ public:
 
     py::object SerializeJSON(dReal fUnitScale=1.0, int options=0) const
     {
-        ReadablePtr pjsonreadable = OPENRAVE_DYNAMIC_POINTER_CAST<Readable>(_readable);
+        ReadablePtr pjsonreadable = std::dynamic_pointer_cast<Readable>(_readable);
         if (!pjsonreadable) {
             return py::none_();
         }
@@ -120,7 +120,7 @@ public:
     {
         rapidjson::Document doc;
         toRapidJSONValue(obj, doc, doc.GetAllocator());
-        ReadablePtr pjsonreadable = OPENRAVE_DYNAMIC_POINTER_CAST<Readable>(_readable);
+        ReadablePtr pjsonreadable = std::dynamic_pointer_cast<Readable>(_readable);
         return pjsonreadable->DeserializeJSON(doc, fUnitScale);
     }
 
@@ -190,20 +190,20 @@ object toPyUserData(UserDataPtr p)
 
 object toPyRay(const RAY& r)
 {
-    return py::to_object(OPENRAVE_SHARED_PTR<PyRay>(new PyRay(r)));
+    return py::to_object(std::shared_ptr<PyRay>(new PyRay(r)));
 }
 
 RAY ExtractRay(object o)
 {
-    extract_<OPENRAVE_SHARED_PTR<PyRay> > pyray(o);
-    return ((OPENRAVE_SHARED_PTR<PyRay>)pyray)->r;
+    extract_<std::shared_ptr<PyRay> > pyray(o);
+    return ((std::shared_ptr<PyRay>)pyray)->r;
 }
 
 bool ExtractRay(object o, RAY& ray)
 {
-    extract_<OPENRAVE_SHARED_PTR<PyRay> > pyray(o);
+    extract_<std::shared_ptr<PyRay> > pyray(o);
     if( pyray.check() ) {
-        ray = ((OPENRAVE_SHARED_PTR<PyRay>)pyray)->r;
+        ray = ((std::shared_ptr<PyRay>)pyray)->r;
         return true;
     }
     return false;
@@ -262,13 +262,13 @@ public:
 
 AABB ExtractAABB(object o)
 {
-    extract_<OPENRAVE_SHARED_PTR<PyAABB> > pyaabb(o);
-    return ((OPENRAVE_SHARED_PTR<PyAABB>)pyaabb)->ab;
+    extract_<std::shared_ptr<PyAABB> > pyaabb(o);
+    return ((std::shared_ptr<PyAABB>)pyaabb)->ab;
 }
 
 object toPyAABB(const AABB& ab)
 {
-    return py::to_object(OPENRAVE_SHARED_PTR<PyAABB>(new PyAABB(ab)));
+    return py::to_object(std::shared_ptr<PyAABB>(new PyAABB(ab)));
 }
 
 class AABB_pickle_suite
@@ -418,9 +418,9 @@ public:
 
 bool ExtractTriMesh(object o, TriMesh& mesh)
 {
-    extract_<OPENRAVE_SHARED_PTR<PyTriMesh> > pytrimesh(o);
+    extract_<std::shared_ptr<PyTriMesh> > pytrimesh(o);
     if( pytrimesh.check() ) {
-        ((OPENRAVE_SHARED_PTR<PyTriMesh>)pytrimesh)->GetTriMesh(mesh);
+        ((std::shared_ptr<PyTriMesh>)pytrimesh)->GetTriMesh(mesh);
         return true;
     }
     return false;
@@ -428,7 +428,7 @@ bool ExtractTriMesh(object o, TriMesh& mesh)
 
 object toPyTriMesh(const TriMesh& mesh)
 {
-    return py::to_object(OPENRAVE_SHARED_PTR<PyTriMesh>(new PyTriMesh(mesh)));
+    return py::to_object(std::shared_ptr<PyTriMesh>(new PyTriMesh(mesh)));
 }
 
 class TriMesh_pickle_suite
@@ -496,7 +496,7 @@ object PyConfigurationSpecification::FindCompatibleGroup(const std::string& name
     if( it == _spec._vgroups.end() ) {
         return py::none_();
     }
-    return py::to_object(OPENRAVE_SHARED_PTR<ConfigurationSpecification::Group>(new ConfigurationSpecification::Group(*it)));
+    return py::to_object(std::shared_ptr<ConfigurationSpecification::Group>(new ConfigurationSpecification::Group(*it)));
 }
 
 object PyConfigurationSpecification::FindTimeDerivativeGroup(const std::string& name, bool exactmatch) const
@@ -505,7 +505,7 @@ object PyConfigurationSpecification::FindTimeDerivativeGroup(const std::string& 
     if( it == _spec._vgroups.end() ) {
         return py::none_();
     }
-    return py::to_object(OPENRAVE_SHARED_PTR<ConfigurationSpecification::Group>(new ConfigurationSpecification::Group(*it)));
+    return py::to_object(std::shared_ptr<ConfigurationSpecification::Group>(new ConfigurationSpecification::Group(*it)));
 }
 
 //    ConfigurationSpecification GetTimeDerivativeSpecification(int timederivative) const;
@@ -915,7 +915,7 @@ object RaveGetPluginInfo()
     std::list< std::pair<std::string, PLUGININFO> > listplugins;
     OpenRAVE::RaveGetPluginInfo(listplugins);
     FOREACH(itplugin, listplugins) {
-        plugins.append(py::make_tuple(itplugin->first, py::to_object(OPENRAVE_SHARED_PTR<PyPluginInfo>(new PyPluginInfo(itplugin->second)))));
+        plugins.append(py::make_tuple(itplugin->first, py::to_object(std::shared_ptr<PyPluginInfo>(new PyPluginInfo(itplugin->second)))));
     }
     return plugins;
 }
@@ -1379,17 +1379,17 @@ void init_openravepy_global()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_< OPENRAVE_SHARED_PTR< void > >(m, "VoidPointer", "Holds auto-managed resources, deleting it releases its shared data.");
+    class_< std::shared_ptr< void > >(m, "VoidPointer", "Holds auto-managed resources, deleting it releases its shared data.");
 #else
-    class_< OPENRAVE_SHARED_PTR< void > >("VoidPointer", "Holds auto-managed resources, deleting it releases its shared data.");
+    class_< std::shared_ptr< void > >("VoidPointer", "Holds auto-managed resources, deleting it releases its shared data.");
 #endif
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyGraphHandle, OPENRAVE_SHARED_PTR<PyGraphHandle> >(m, "GraphHandle", DOXY_CLASS(GraphHandle))
+    class_<PyGraphHandle, std::shared_ptr<PyGraphHandle> >(m, "GraphHandle", DOXY_CLASS(GraphHandle))
     .def(init<>())
     .def(init<GraphHandlePtr>(), "handle"_a)
 #else
-    class_<PyGraphHandle, OPENRAVE_SHARED_PTR<PyGraphHandle> >("GraphHandle", DOXY_CLASS(GraphHandle), no_init)
+    class_<PyGraphHandle, std::shared_ptr<PyGraphHandle> >("GraphHandle", DOXY_CLASS(GraphHandle), no_init)
 #endif
     .def("SetTransform",&PyGraphHandle::SetTransform,DOXY_FN(GraphHandle,SetTransform))
     .def("SetShow",&PyGraphHandle::SetShow,DOXY_FN(GraphHandle,SetShow))
@@ -1397,21 +1397,21 @@ void init_openravepy_global()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyUserData, OPENRAVE_SHARED_PTR<PyUserData> >(m, "UserData", DOXY_CLASS(UserData))
+    class_<PyUserData, std::shared_ptr<PyUserData> >(m, "UserData", DOXY_CLASS(UserData))
     .def(init<>())
     .def(init<UserDataPtr>(), "handle"_a)
 #else
-    class_<PyUserData, OPENRAVE_SHARED_PTR<PyUserData> >("UserData", DOXY_CLASS(UserData), no_init)
+    class_<PyUserData, std::shared_ptr<PyUserData> >("UserData", DOXY_CLASS(UserData), no_init)
 #endif
     .def("close",&PyUserData::Close,"deprecated")
     .def("Close",&PyUserData::Close,"force releasing the user handle point.")
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PySerializableData, OPENRAVE_SHARED_PTR<PySerializableData>, PyUserData >(m, "SerializableData", DOXY_CLASS(SerializableData))
+    class_<PySerializableData, std::shared_ptr<PySerializableData>, PyUserData >(m, "SerializableData", DOXY_CLASS(SerializableData))
     .def(init<>())
     .def(init<SerializableDataPtr>(), "handle"_a)
 #else
-    class_<PySerializableData, OPENRAVE_SHARED_PTR<PySerializableData>, bases<PyUserData> >("SerializableData", DOXY_CLASS(SerializableData))
+    class_<PySerializableData, std::shared_ptr<PySerializableData>, bases<PyUserData> >("SerializableData", DOXY_CLASS(SerializableData))
 #endif
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
     .def(init<const std::string&>(), "data"_a)
@@ -1424,12 +1424,12 @@ void init_openravepy_global()
     ;
 
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyRay, OPENRAVE_SHARED_PTR<PyRay> >(m, "Ray", DOXY_CLASS(geometry::ray))
+    class_<PyRay, std::shared_ptr<PyRay> >(m, "Ray", DOXY_CLASS(geometry::ray))
     .def(init<>())
     .def(init<object, object>(), "pos"_a, "dir"_a)
     .def(init<const RAY&>(), "r"_a)
 #else
-    class_<PyRay, OPENRAVE_SHARED_PTR<PyRay> >("Ray", DOXY_CLASS(geometry::ray))
+    class_<PyRay, std::shared_ptr<PyRay> >("Ray", DOXY_CLASS(geometry::ray))
     .def(init<object,object>(py::args("pos","dir")))
 #endif
     .def("dir",&PyRay::dir)
@@ -1466,7 +1466,7 @@ void init_openravepy_global()
 #endif
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyAABB, OPENRAVE_SHARED_PTR<PyAABB> >(m, "AABB", DOXY_CLASS(geometry::aabb))
+    class_<PyAABB, std::shared_ptr<PyAABB> >(m, "AABB", DOXY_CLASS(geometry::aabb))
     .def(init<>())
     .def(init<object, object>(), "pos"_a, "extents"_a)
     .def(init<const AABB&>(), "ab"_a)
@@ -1474,11 +1474,11 @@ void init_openravepy_global()
             return self;
         })
     .def("__deepcopy__", [](const PyAABB& self, const py::dict& memo) {
-            OPENRAVE_SHARED_PTR<PyAABB> pyaabb(new PyAABB(self.ab));
+            std::shared_ptr<PyAABB> pyaabb(new PyAABB(self.ab));
             return py::to_object(pyaabb);
         })
 #else
-    class_<PyAABB, OPENRAVE_SHARED_PTR<PyAABB> >("AABB", DOXY_CLASS(geometry::aabb))
+    class_<PyAABB, std::shared_ptr<PyAABB> >("AABB", DOXY_CLASS(geometry::aabb))
     .def(init<object,object>(py::args("pos","extents")))
 #endif
     .def("extents",&PyAABB::extents)
@@ -1516,12 +1516,12 @@ void init_openravepy_global()
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyTriMesh, OPENRAVE_SHARED_PTR<PyTriMesh> >(m, "TriMesh", DOXY_CLASS(TriMesh))
+    class_<PyTriMesh, std::shared_ptr<PyTriMesh> >(m, "TriMesh", DOXY_CLASS(TriMesh))
     .def(init<>())
     .def(init<object, object>(), "vertices"_a, "indices"_a)
     .def(init<const TriMesh&>(), "mesh"_a)
 #else
-    class_<PyTriMesh, OPENRAVE_SHARED_PTR<PyTriMesh> >("TriMesh", DOXY_CLASS(TriMesh))
+    class_<PyTriMesh, std::shared_ptr<PyTriMesh> >("TriMesh", DOXY_CLASS(TriMesh))
     //.def(init<object,object>(py::args("vertices","indices")))
 #endif
     .def_readwrite("vertices",&PyTriMesh::vertices)
@@ -1582,10 +1582,10 @@ void init_openravepy_global()
 #endif
     ;
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
-    class_<PyPluginInfo, OPENRAVE_SHARED_PTR<PyPluginInfo> >(m, "PluginInfo", DOXY_CLASS(PLUGININFO))
+    class_<PyPluginInfo, std::shared_ptr<PyPluginInfo> >(m, "PluginInfo", DOXY_CLASS(PLUGININFO))
     .def(init<const PLUGININFO&>(), "info"_a)
 #else
-    class_<PyPluginInfo, OPENRAVE_SHARED_PTR<PyPluginInfo> >("PluginInfo", DOXY_CLASS(PLUGININFO),no_init)
+    class_<PyPluginInfo, std::shared_ptr<PyPluginInfo> >("PluginInfo", DOXY_CLASS(PLUGININFO),no_init)
 #endif
     .def_readonly("interfacenames",&PyPluginInfo::interfacenames)
     .def_readonly("version",&PyPluginInfo::version)
@@ -1739,10 +1739,10 @@ void init_openravepy_global()
         {
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
             // Group belongs to ConfigurationSpecification
-            scope_ group = class_<ConfigurationSpecification::Group, OPENRAVE_SHARED_PTR<ConfigurationSpecification::Group> >(configurationspecification, "Group",DOXY_CLASS(ConfigurationSpecification::Group))
+            scope_ group = class_<ConfigurationSpecification::Group, std::shared_ptr<ConfigurationSpecification::Group> >(configurationspecification, "Group",DOXY_CLASS(ConfigurationSpecification::Group))
                            .def(init<>())
 #else
-            scope_ group = class_<ConfigurationSpecification::Group, OPENRAVE_SHARED_PTR<ConfigurationSpecification::Group> >("Group",DOXY_CLASS(ConfigurationSpecification::Group))
+            scope_ group = class_<ConfigurationSpecification::Group, std::shared_ptr<ConfigurationSpecification::Group> >("Group",DOXY_CLASS(ConfigurationSpecification::Group))
 #endif
                            .def_readwrite("name",&ConfigurationSpecification::Group::name)
                            .def_readwrite("interpolation",&ConfigurationSpecification::Group::interpolation)
