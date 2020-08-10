@@ -1,22 +1,43 @@
-/// pybind11 specific bindings
+﻿/// pybind11 specific bindings
 #ifndef OPENRAVE_PYBIND11_BINDINGS_H
 #define OPENRAVE_PYBIND11_BINDINGS_H
 
 #include <boost/format.hpp>
 
 #define OPENRAVEPY_API __attribute__ ((visibility ("default")))
+
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(_MSC_VER)
+#define OPENRAVEPY_API __declspec(dllimport)
+#define OPENRAVEPY_API __declspec(dllexport)
+#define OPENRAVE_HELPER_DLL_LOCAL
+#else
+#if __GNUC__ >= 4
+#define OPENRAVEPY_API __attribute__ ((visibility("default")))
+#define OPENRAVEPY_API __attribute__ ((visibility("default")))
+#define OPENRAVE_HELPER_DLL_LOCAL  __attribute__ ((visibility("hidden")))
+#else
+#define OPENRAVEPY_API
+#define OPENRAVEPY_API
+#define OPENRAVE_HELPER_DLL_LOCAL
+#endif
+#endif
+
 #include <iostream>
 // use std::cout temporarily
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-#include <boost/shared_ptr.hpp>
+
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
-namespace pybind11 {
-namespace numeric {
-// so py::numeric::array = py::array_t<double>
+
+namespace pybind11 
+{
+namespace numpy 
+{
+// so py::numpy::ndarray = py::array_t<double>
 using array = ::pybind11::array_t<double>;
-} // namespace pybind11::numeric
+} // namespace pybind11::numpy
+
 template <typename T>
 inline T extract(object o) {
     return o.cast<T>();

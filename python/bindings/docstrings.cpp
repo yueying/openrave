@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
@@ -18,7 +18,7 @@
 #include <openrave/config.h>
 #include <openravepy/docstrings.h>
 namespace openravepy {
-OPENRAVE_API void InitializeComments(std::map<std::string,std::string>& m)
+	void InitializeComments(std::map<std::string,std::string>& m)
 {m["en function RaveCreateSensorSystem"] = "\n\nOPENRAVE_API   SensorSystemBasePtr  **RaveCreateSensorSystem**\\(EnvironmentBasePtr penv, const std::string & name)\n    \n            ";
 m["en function KinBody::KinBodyStateSaver  GetBody"] = "\n\nKinBodyPtr  **GetBody**\\()\n    \n            ";
 m["en function KinBody::KinBodyStateSaver  Restore"] = "\n\nvoid  **Restore**\\(std::shared_ptr<  KinBody  > body = std::shared_ptr<  KinBody  >() )\n    \n    restore the state\n    \n    *Parameters*\n     ``body`` - \n      if set, will attempt to restore the stored state to the passed in body, otherwise will restore it for the original body. \\ *Exceptions*\n     ``openrave_exception`` - \n      if the passed in body is not compatible with the saved state, will throw\n    \n            ";

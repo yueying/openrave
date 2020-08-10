@@ -20,7 +20,7 @@
 
 #include <openravepy/openravepy_config.h>
 
-#include <stdint.h>
+#include <cstdint>
 // numpy
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>

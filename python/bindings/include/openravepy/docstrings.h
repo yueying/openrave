@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
+﻿// Copyright (C) 2006-2010 Rosen Diankov (rosen.diankov@gmail.com)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@ inline std::string InitializeLanguageCode()
     return "en";
 }
 
-void InitializeComments(std::map<std::string,std::string>& comments);
+OPENRAVE_API void InitializeComments(std::map<std::string,std::string>& comments);
 
 inline const char* GetDoxygenComment(const char* type, const char* name, const char* classtype=NULL)
 {
