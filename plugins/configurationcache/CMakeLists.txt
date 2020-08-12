@@ -1,7 +1,8 @@
 ﻿###########################################
 # configurationcache openrave plugin
 ###########################################
-add_library(configurationcache SHARED configurationcachetree.h cachechecker.cpp configurationcache.cpp configurationcachetree.cpp configurationjitterer.cpp)
+add_library(configurationcache SHARED configurationcachetree.h cachechecker.cpp 
+configurationcache.cpp configurationcachetree.cpp configurationjitterer.cpp)
 target_link_libraries(configurationcache libopenrave ${LAPACK_LIBRARIES})
 target_link_libraries(configurationcache PRIVATE boost_assertion_failed)
 set_target_properties(configurationcache PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS} -DOPENRAVE_DLL_EXPORTS -DOPENRAVE_DLL" LINK_FLAGS "${PLUGIN_LINK_FLAGS}")
@@ -10,10 +11,9 @@ install(TARGETS configurationcache DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} C
 # python bindings
 if( HAVE_ALL_PYTHON_HEADERS )
   # include
-  include_directories(${PYTHON_INCLUDE_PATH} ${PYTHON_INCLUDE_DIRS}
+  include_directories(${PYTHON_INCLUDE_PATH} ${PYTHON_INCLUDE_DIRS} ${pybind11_INCLUDE_DIRS}
     ${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS} ${OPENRAVEPY_INCLUDE_LOCAL_DIRS}
   )
-
   # link
   set(OPENRAVEPY_CONFIGURATIONCACHE_LINKED_LIBRARIES libopenrave openravepy_int configurationcache 
   ${Python3_LIBRARY} ${PYTHON_LIBRARIES} ${Boost_THREAD_LIBRARY} ${LAPACK_LIBRARIES}

@@ -113,7 +113,7 @@ def SetViewerUserThread(env,viewername,userfn):
     userthread = Thread(target=localuserfn,args=(userfn,viewer))
     userthread.start()
     sig_thread_id = 0
-    for tid, tobj in threading._active.items():
+    for tid, tobj in list(threading._active.items()):
         if tobj is userthread:
             sig_thread_id = tid
             break
@@ -153,7 +153,7 @@ class OpenRAVEGlobalArguments:
     def parseGlobal(options,**kwargs):
         """Parses all global options independent of the environment"""
         if options._level is not None:
-            for debuglevel,debugname in openravepy_int.DebugLevel.values.iteritems():
+            for debuglevel,debugname in openravepy_int.DebugLevel.values.items():
                 if (not options._level.isdigit() and options._level.lower() == debugname.name.lower()) or (options._level.isdigit() and int(options._level) == int(debuglevel)):
                     openravepy_int.RaveSetDebugLevel(debugname)
                     break
@@ -468,17 +468,17 @@ def TSP(solutions,distfn=None):
 def sequence_cross_product(*sequences):
     """iterates through the cross product of all items in the sequences"""
     # visualize an odometer, with "wheels" displaying "digits"...:
-    wheels = map(iter, sequences)
-    digits = [it.next( ) for it in wheels]
+    wheels = list(map(iter, sequences))
+    digits = [next(it) for it in wheels]
     while True:
         yield tuple(digits)
         for i in range(len(digits)-1, -1, -1):
             try:
-                digits[i] = wheels[i].next( )
+                digits[i] = next(wheels[i])
                 break
             except StopIteration:
                 wheels[i] = iter(sequences[i])
-                digits[i] = wheels[i].next( )
+                digits[i] = next(wheels[i])
         else:
             break
 

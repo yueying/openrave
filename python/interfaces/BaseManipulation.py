@@ -8,7 +8,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import with_statement # for python 2.5
+ # for python 3.7
 __author__ = 'Rosen Diankov'
 __copyright__ = 'Copyright (C) 2009-2011 Rosen Diankov <rosen.diankov@gmail.com>'
 __license__ = 'Apache License, Version 2.0'
@@ -78,7 +78,7 @@ class BaseManipulation:
         cmd = 'VerifyTrajectory stream ' + data + ' resettrans %d resettiming %d '%(resettrans,resettiming)
         if samplingstep is not None:
             cmd += 'samplingstep %.15e '%samplingstep
-        print cmd
+        print(cmd)
         return self.prob.SendCommand(cmd)
 
     def MoveHandStraight(self,direction,minsteps=None,maxsteps=None,stepsize=None,ignorefirstcollision=None,starteematrix=None,greedysearch=None,execute=None,outputtraj=None,maxdeviationangle=None,steplength=None,planner=None,outputtrajobj=None):

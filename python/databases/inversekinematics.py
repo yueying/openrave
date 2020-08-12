@@ -138,7 +138,7 @@ Command-line
 Class Definitions
 -----------------
 """
-from __future__ import with_statement # for python 2.5
+ # for python 3.7
 __author__ = 'Rosen Diankov'
 __copyright__ = 'Copyright (C) 2009-2012 Rosen Diankov <rosen.diankov@gmail.com>'
 __license__ = 'Apache License, Version 2.0'
@@ -158,11 +158,7 @@ from os import getcwd, remove
 import distutils
 from distutils import ccompiler
 from optparse import OptionParser
-
-try:
-    import cPickle as pickle
-except:
-    import pickle
+import pickle
 
 import logging
 log = logging.getLogger('openravepy.'+__name__.split('.',2)[-1])
@@ -241,7 +237,7 @@ class InverseKinematicsModel(DatabaseGenerator):
                     raise InverseKinematicsError(u'link %s part of IK chain cannot be declared static'%link)
         try:
             self.ikfast = __import__('openravepy.ikfast',fromlist=['openravepy'])
-        except ImportError,e:
+        except ImportError as e:
             log.warn('failed to import ikfast, so reverting to older version: %s',e)
             self.ikfast = __import__('openravepy.ikfast_sympy0_6',fromlist=['openravepy'])
         for handler in log.handlers:
@@ -338,7 +334,7 @@ class InverseKinematicsModel(DatabaseGenerator):
                 log.warn('version is wrong %s!=%s',modelversion,self.getversion())
                 return checkforloaded and self.manip.GetIkSolver() is not None  and self.manip.GetIkSolver().Supports(self.iktype) # might have ik already loaded
                 
-        except Exception,e:
+        except Exception as e:
             log.warn(e)
             return checkforloaded and self.manip.GetIkSolver() is not None and self.manip.GetIkSolver().Supports(self.iktype) # might have ik already loaded
             
@@ -699,7 +695,7 @@ class InverseKinematicsModel(DatabaseGenerator):
                 if not dofindices[0] in self.manip.GetArmIndices():
                     raise LookupError("cannot find joint '%s(%d)' in solve joints: %s"%(jointname,dofindices[0],self.manip.GetArmIndices()))
                 freeindices.append(dofindices[0])
-        print 'getIndicesFromJointNames',freeindices,freejoints
+        print('getIndicesFromJointNames',freeindices,freejoints)
         return freeindices
 
     def generate(self,iktype=None, freejoints=None, freeinc=None, freeindices=None, precision=None, forceikbuild=True, outputlang=None, avoidPrismaticAsFree=False, ipython=False, ikfastoptions=0, ikfastmaxcasedepth=3):
@@ -938,11 +934,11 @@ class InverseKinematicsModel(DatabaseGenerator):
                 try:
                     from pkg_resources import resource_filename
                     shutil.copyfile(resource_filename('openravepy','ikfast.h'), os.path.join(sourcedir,'ikfast.h'))
-                except ImportError,e:
+                except ImportError as e:
                     log.warn(e)
                     
                 log.info(u'successfully generated c++ ik in %fs, file=%s', self.statistics['generationtime'], sourcefilename)
-            except self.ikfast.IKFastSolver.IKFeasibilityError, e:
+            except self.ikfast.IKFastSolver.IKFeasibilityError as e:
                 self.ikfeasibility = str(e)
                 log.warn(e)
 
@@ -968,7 +964,7 @@ class InverseKinematicsModel(DatabaseGenerator):
                         if self.statistics.get('usinglapack',False) or not iswindows:
                             libraries = ['lapack']
                         compiler.link_shared_object(objectfiles,output_filename=output_filename, libraries=libraries)
-                    except distutils.errors.LinkError,e:
+                    except distutils.errors.LinkError as e:
                         log.warn(e)
                         if libraries is not None and 'lapack' in libraries:
                             libraries.remove('lapack')
@@ -1075,7 +1071,7 @@ class InverseKinematicsModel(DatabaseGenerator):
                         newcompiler = ccompiler.new_compiler()
                         if newcompiler is not None:
                             compiler = newcompiler
-            except Exception, e:
+            except Exception as e:
                 log.warn(e)
         else:
             compiler.add_library('stdc++')
@@ -1111,7 +1107,7 @@ class InverseKinematicsModel(DatabaseGenerator):
         parser.add_option('--ipython', '-i',action="store_true",dest='ipython',default=False,
                           help='if true will drop into the ipython interpreter right before ikfast is called')
         parser.add_option('--iktype', action='store',type='string',dest='iktype',default=None,
-                          help='The ik type to build the solver current types are: %s'%(', '.join(iktype.name for iktype in IkParameterizationType.values.values() if not int(iktype) & IkParameterizationType.VelocityDataBit )))
+                          help='The ik type to build the solver current types are: %s'%(', '.join(iktype.name for iktype in list(IkParameterizationType.values.values()) if not int(iktype) & IkParameterizationType.VelocityDataBit )))
         parser.add_option('--filepermissions', action='store',type='int',dest='filepermissions',default=-1,
                           help='The desired permissions for saving the iksolver files and directories')
         return parser
@@ -1123,7 +1119,7 @@ class InverseKinematicsModel(DatabaseGenerator):
         (options, leftargs) = parser.parse_args(args=args)
         if options.iktype is not None:
             # cannot use .names due to python 2.5 (or is it boost version?)
-            for value,type in IkParameterizationType.values.iteritems():
+            for value,type in IkParameterizationType.values.items():
                 if type.name.lower() == options.iktype.lower():
                     iktype = type
                     break

@@ -11,13 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License. 
-from __future__ import with_statement # for python 2.5
-import openravepy_int
+from . import openravepy_int
 import numpy
-try:
-    import cPickle as pickle
-except:
-    import pickle
+import pickle
 
 import logging
 log = logging.getLogger('openravepy')
@@ -25,7 +21,7 @@ log = logging.getLogger('openravepy')
 # https://github.com/pybind/pybind11/issues/253
 def enum_to_dict(enum):
     import re
-    return {k: v for k, v in enum.__dict__.iteritems() if not re.match("__(.*)__", str(k))}
+    return {k: v for k, v in enum.__dict__.items() if not re.match("__(.*)__", str(k))}
 
 def KinBodyStateSaver(body,options=None):
     log.warn('use body.CreateKinBodyStateSaver instead of KinBodyStateSaver')
@@ -86,7 +82,7 @@ def _tuple2enum(enum, value):
 #    return isinstance(o, type) and issubclass(o,int) and not (o is int)
 
 def _registerEnumPicklers(): 
-    from copy_reg import constructor, pickle
+    from copyreg import constructor, pickle
     def reduce_enum(e):
         enum = type(e).__name__.split('.')[-1]
         return ( _tuple2enum, ( enum, int(e) ) )
@@ -95,7 +91,8 @@ def _registerEnumPicklers():
     #for e in [ e for e in vars(openravepy).itervalues() if isEnumType(e) ]:
     #    pickle(e, reduce_enum)
 
-_registerEnumPicklers()
+if openravepy_int.__pythonbinding__ != 'pybind11':
+    _registerEnumPicklers()
 
 import atexit
 atexit.register(openravepy_int.RaveDestroy)

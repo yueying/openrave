@@ -73,7 +73,7 @@ def main(env,options):
 
         # with target.CreateKinBodyStateSaver():
         #     target.SetTransform(Ttarget1)
-        #     raw_input('as')
+        #     input('as')
         Tgrasp0 = dot(matrixFromAxisAngle([pi/2,0,0]),matrixFromAxisAngle([0,pi/2,0]))
         Tgrasp0[0:3,3] = dot(Ttarget0,Toffset)[0:3,3]
         Tgraspoffset = dot(linalg.inv(Ttarget0),Tgrasp0)
@@ -102,7 +102,7 @@ def main(env,options):
 
     with env:
         robot.Grab(target)
-        print 'planning for turning lever'
+        print('planning for turning lever')
         planner = RaveCreatePlanner(env,'workspacetrajectorytracker')
         params = Planner.PlannerParameters()
         params.SetRobotActiveJoints(robot)
