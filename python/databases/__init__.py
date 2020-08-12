@@ -21,11 +21,7 @@ objects the generator relies on are used to produce a unique ID to index the dat
 $OPENRAVE_DATABASE. For example, the grasping database will combine the robot manipulator hash and
 the target object hash.
 """
- # for python 3.7
-try: # for python 3.x
-    import cPickle as pickle
-except:
-    import pickle
+import pickle # python 3.7
 from .. import openravepy_int
 from .. import OpenRAVEException
 from .. import metaclass

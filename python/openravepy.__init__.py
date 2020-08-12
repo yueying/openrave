@@ -94,26 +94,26 @@ else:
 openrave_exception = OpenRAVEException # for back compat
 
 class PlanningError(Exception):
-    def __init__(self,parameter=u'', recoverySuggestions=None):
+    def __init__(self,parameter='', recoverySuggestions=None):
         """:param recoverySuggestions: list of unicode suggestions to fix or recover from the error
         """
-        self.parameter = unicode(parameter)
+        self.parameter = str(parameter)
         if recoverySuggestions is None:
             self.recoverySuggestions = []
         else:
-            self.recoverySuggestions = [unicode(s) for s in recoverySuggestions]
+            self.recoverySuggestions = [str(s) for s in recoverySuggestions]
             
     def __unicode__(self):
         s = u'Planning Error\n%s'%self.parameter
         if len(self.recoverySuggestions) > 0:
             s += u'\nRecovery Suggestions:\n'
             for suggestion in self.recoverySuggestions:
-                s += u'- %s\n'%unicode(suggestion)
+                s += u'- %s\n'%str(suggestion)
             s += u'\n'
         return s
         
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return str(self).encode('utf-8')
     
     def __repr__(self):
         return '<openravepy.PlanningError(%r,%r)>'%(self.parameter,self.recoverySuggestions)

@@ -1,4 +1,4 @@
-/** \example orplanning_planner.cpp
+﻿/** \example orplanning_planner.cpp
     \author Rosen Diankov
 
     Shows how to use a planner by directly creating the planner and setting the module parameters.
@@ -29,7 +29,7 @@ public:
     }
 
     virtual void demothread(int argc, char ** argv) {
-        string scenefilename = "data/hanoi_complex2.env.xml";
+        string scenefilename = "data/lab1.env.xml";
         RaveSetDebugLevel(Level_Debug);
         penv->Load(scenefilename);
 

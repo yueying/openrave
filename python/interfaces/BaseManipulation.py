@@ -31,9 +31,9 @@ class BaseManipulation:
         self.robot = robot
         self.args = self.robot.GetName()
         if plannername is not None:
-            self.args += u' planner ' + plannername
+            self.args += ' planner ' + plannername
         if maxvelmult is not None:
-            self.args += u' maxvelmult %.15e '%maxvelmult
+            self.args += ' maxvelmult %.15e '%maxvelmult
         env.Add(self.prob,True,self.args)
     def  __del__(self):
         # need to lock the environment since Remove locks it
@@ -61,7 +61,7 @@ class BaseManipulation:
     def SetRobot(self,robot):
         """See :ref:`module-basemanipulation-setrobot`
         """
-        success = self.prob.SendCommand(u'setrobot '+robot.GetName())
+        success = self.prob.SendCommand('setrobot '+robot.GetName())
         if success is not None:
             self.robot = robot
             return True

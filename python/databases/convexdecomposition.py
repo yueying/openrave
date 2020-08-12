@@ -102,9 +102,9 @@ class ConvexDecompositionError(Exception):
     def __init__(self,msg=''):
         self.msg = msg
     def __unicode__(self):
-        return u'Convex Decomposition Error: %s'%self.msg
+        return 'Convex Decomposition Error: %s'%self.msg
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return str(self).encode('utf-8')
 
 class ConvexDecompositionModel(DatabaseGenerator):
     """Computes the convex decomposition of all of the robot's links"""
@@ -153,7 +153,7 @@ class ConvexDecompositionModel(DatabaseGenerator):
     def SaveHDF5(self):
         import h5py
         filename=self.getfilename(False)
-        log.info(u'saving model to %s',filename)
+        log.info('saving model to %s',filename)
         try:
             makedirs(os.path.split(filename)[0])
         except OSError:
@@ -206,7 +206,7 @@ class ConvexDecompositionModel(DatabaseGenerator):
         try:
             f=h5py.File(filename,'r')
             if f['version'].value != self.getversion():
-                log.error(u'version is wrong %s!=%s ',f['version'],self.getversion())
+                log.error('version is wrong %s!=%s ',f['version'],self.getversion())
                 return False
             
             self.convexparams = {}
@@ -236,7 +236,7 @@ class ConvexDecompositionModel(DatabaseGenerator):
             return self.has()
         
         except Exception as e:
-            log.debug(u'LoadHDF5 for %s: ',filename,e)
+            log.debug('LoadHDF5 for %s: ',filename,e)
             return False
         finally:
             if f is not None:
@@ -272,7 +272,7 @@ class ConvexDecompositionModel(DatabaseGenerator):
                 padding = 0.0
         if convexHullLinks is None:
             convexHullLinks = []
-        log.info(u'Generating Convex Decomposition: %r',self.convexparams)
+        log.info('Generating Convex Decomposition: %r',self.convexparams)
         starttime = time.time()
         self.linkgeometry = []
         with self.env:
@@ -287,20 +287,20 @@ class ConvexDecompositionModel(DatabaseGenerator):
                             geom.InitCollisionMesh()
                             trimesh = geom.GetCollisionMesh()
                         if link.GetName() in convexHullLinks or (minTriangleConvexHullThresh is not None and len(trimesh.indices) > minTriangleConvexHullThresh):
-                            log.info(u'computing hull for link %d/%d geom %d/%d: vertices=%d, indices=%d',il,len(links), ig, len(geometries), len(trimesh.vertices), len(trimesh.indices))
+                            log.info('computing hull for link %d/%d geom %d/%d: vertices=%d, indices=%d',il,len(links), ig, len(geometries), len(trimesh.vertices), len(trimesh.indices))
                             orghulls = [self.ComputePaddedConvexHullFromTriMesh(trimesh,padding)]
                         else:
-                            log.info(u'computing decomposition for link %d/%d geom %d/%d type %s',il,len(links), ig, len(geometries), geom.GetType())
+                            log.info('computing decomposition for link %d/%d geom %d/%d type %s',il,len(links), ig, len(geometries), geom.GetType())
                             orghulls = self.ComputePaddedConvexDecompositionFromTriMesh(trimesh,padding)
                         cdhulls = []
                         for hull in orghulls:
                             if any(isnan(hull[0])):
-                                raise ConvexDecompositionError(u'geom link %s has NaNs', link.GetName())
+                                raise ConvexDecompositionError('geom link %s has NaNs', link.GetName())
                             cdhulls.append((hull[0],hull[1],self.ComputeHullPlanes(hull)))
                         geomhulls.append((ig,cdhulls))
                 self.linkgeometry.append(geomhulls)
         self._padding = padding
-        log.info(u'all convex decomposition finished in %fs',time.time()-starttime)
+        log.info('all convex decomposition finished in %fs',time.time()-starttime)
 
     def ComputePaddedConvexDecompositionFromTriMesh(self, trimesh, padding=0.0):
         if len(trimesh.indices) > 0:
@@ -331,7 +331,7 @@ class ConvexDecompositionModel(DatabaseGenerator):
                 return zeros((0,3), float), zeros((0,3),int)# trimesh.vertices, trimesh.indices
             res = self._graspermodule.SendCommand(cmd.getvalue()).split()
             if res is None:
-                raise ConvexDecompositionError(u'failed to compute convex hull')
+                raise ConvexDecompositionError('failed to compute convex hull')
             
             offset = 0
             #numplanes = int(res[offset]); offset += 1

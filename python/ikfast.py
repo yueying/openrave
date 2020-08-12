@@ -1290,13 +1290,13 @@ class IKFastSolver(AutoReloader):
     class CannotSolveError(Exception):
         """thrown when ikfast fails to solve a particular set of equations with the given knowns and unknowns
         """
-        def __init__(self,value=u''):
+        def __init__(self,value=''):
             self.value = value
         def __unicode__(self):
-            return u'%s: %s'%(self.__class__.__name__, self.value)
+            return '%s: %s'%(self.__class__.__name__, self.value)
         
         def __str__(self):
-            return unicode(self).encode('utf-8')
+            return str(self).encode('utf-8')
         
         def __repr__(self):
             return '<%s(%r)>'%(self.__class__.__name__, self.value)
@@ -1406,7 +1406,7 @@ class IKFastSolver(AutoReloader):
                 self.axismap[name] = axis
                 self.axismapinv[idof] = name
     
-    def _CheckPreemptFn(self, msg=u'', progress=0.25):
+    def _CheckPreemptFn(self, msg='', progress=0.25):
         """progress is a value from [0,1] where 0 is just starting and 1 is complete 
         """
         if self._checkpreemptfn is not None:
@@ -2163,7 +2163,7 @@ class IKFastSolver(AutoReloader):
             weakself = weakref.proxy(self)
             def _CheckPreemtCodeGen(msg, progress):
                 # put the progress in the latter half
-                weakself._checkpreemptfn(u'CodeGen %s'%msg, 0.5+0.5*progress)
+                weakself._checkpreemptfn('CodeGen %s'%msg, 0.5+0.5*progress)
         else:
             _CheckPreemtCodeGen = None
         return CodeGenerators[lang](kinematicshash=self.kinematicshash,version=__version__,iktypestr=self._iktype, checkpreemptfn=_CheckPreemtCodeGen).generate(chaintree)
@@ -3305,7 +3305,7 @@ class IKFastSolver(AutoReloader):
                         break
                 except self.CannotSolveError as e:
                     if rawpolyeqs2[splitindex] is not None and len(rawpolyeqs2[splitindex]) > 0:
-                        log.warn(u'solving %s: %s', rawpolyeqs2[splitindex][0][0].gens, e)
+                        log.warn('solving %s: %s', rawpolyeqs2[splitindex][0][0].gens, e)
                     else:
                         log.warn(e)
                     continue
@@ -4661,7 +4661,7 @@ class IKFastSolver(AutoReloader):
                         diveq *= peqcomb.gens[i]**minimummonom[i]
             
             if diveq is not None:
-                log.info(u'assuming equation %r is non-zero, dividing by %r', diveq, peqcomb)
+                log.info('assuming equation %r is non-zero, dividing by %r', diveq, peqcomb)
                 peqcombnum, r = div(peqcomb, diveq)
                 assert(r==S.Zero)
                 peqcombold = peqcomb # save for debugging
@@ -4687,7 +4687,7 @@ class IKFastSolver(AutoReloader):
                         #if factor.as_expr().has(*(originalsymbols+othersymbols)):
                         #    eq *= factor.as_expr()
                         #    continue
-                        log.info(u'assuming equation %r is non-zero', factor)
+                        log.info('assuming equation %r is non-zero', factor)
                         newzeros.append(factor.as_expr())
                         divisoreq *= factor.as_expr()
                     else:
@@ -5074,7 +5074,7 @@ class IKFastSolver(AutoReloader):
                         try:
                             AUinv = AU.inv()
                         except ValueError as e:
-                            raise self.CannotSolveError(u'failed to invert matrix: %e'%e)
+                            raise self.CannotSolveError('failed to invert matrix: %e'%e)
                         
                         BUresult = AUinv*BU
                         C = AL*BUresult-BL
@@ -6506,7 +6506,7 @@ class IKFastSolver(AutoReloader):
             try:
                 # not sure about this thresh
                 if self.codeComplexity(eq) > 300:
-                    log.warn(u'equation too complex to simplify for rot norm: %s', eq)
+                    log.warn('equation too complex to simplify for rot norm: %s', eq)
                     continue
                 
                 # need to do 1234*group[3] hack in order to get the Poly domain to recognize group[3] (sympy 0.7.1)
@@ -7852,7 +7852,7 @@ class IKFastSolver(AutoReloader):
                                 prevsolution = AST.SolverBreak('SolvePairVariablesHalfAngle fail')
                                 for divisor,linearsolution in linearsolutions:
                                     assert(len(linearsolution)==1)
-                                    divisorsymbol = self.gsymbolgen.next()
+                                    divisorsymbol = next(self.gsymbolgen)
                                     solversolution = AST.SolverSolution(varsyms[ileftvar].name,jointeval=[2*atan(linearsolution[0]/divisorsymbol)],isHinge=self.IsHinge(varsyms[ileftvar].name))
                                     prevsolution = AST.SolverCheckZeros(varsyms[ileftvar].name,[divisorsymbol],zerobranch=[prevsolution],nonzerobranch=[solversolution],thresh=1e-6)
                                     prevsolution.dictequations = [(divisorsymbol,divisor)]
@@ -8475,7 +8475,7 @@ class IKFastSolver(AutoReloader):
                             try:
                                 expandedsol = atan2check(svarsolsimp,cvarsolsimp)
                             except RuntimeError as e:
-                                log.warn(u'most likely got recursion error when calling atan2: %s', e)
+                                log.warn('most likely got recursion error when calling atan2: %s', e)
                                 continue
                             
                             solversolution.FeasibleIsZeros = False
@@ -8678,7 +8678,7 @@ class IKFastSolver(AutoReloader):
                     except self.CannotSolveError:
                         pass
                 
-        raise self.CannotSolveError(u'SolvePrismaticHingePairVariables: failed to find variable with degree 1')
+        raise self.CannotSolveError('SolvePrismaticHingePairVariables: failed to find variable with degree 1')
         
     def SolvePairVariables(self,raweqns,var0,var1,othersolvedvars,maxcomplexity=50,unknownvars=None):
         """solves two hinge variables together

@@ -114,7 +114,7 @@ class LinkStatisticsModel(DatabaseGenerator):
         try:
             params = DatabaseGenerator.load(self)
         except Exception as e:
-            log.warn(u'failed to load linkstatistics: %s', e)
+            log.warn('failed to load linkstatistics: %s', e)
             return False
         
         if params is None:

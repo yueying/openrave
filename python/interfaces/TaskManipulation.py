@@ -63,7 +63,7 @@ class TaskManipulation:
     
     def SetRobot(self, robot):
         self.robot = robot
-        return self.prob.SendCommand(u'setrobot '+robot.GetName())
+        return self.prob.SendCommand('setrobot '+robot.GetName())
     
     def GraspPlanning(self,graspindices=None,grasps=None,target=None,approachoffset=0,destposes=None,seedgrasps=None,seeddests=None,seedik=None,maxiter=None,randomgrasps=None,randomdests=None, execute=None,outputtraj=None,grasptranslationstepmult=None,graspfinestep=None,outputtrajobj=None,gmodel=None,paddedgeometryinfo=None,steplength=None,releasegil=False):
         """See :ref:`module-taskmanipulation-graspplanning`

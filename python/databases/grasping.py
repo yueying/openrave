@@ -197,7 +197,7 @@ class GraspingModel(DatabaseGenerator):
     - approachdirectionmanip - the approach direction with respect to the manipulator coordinate system. If this is nonzero use it instead of igraspdir
     - igrasptranslationoffset - a translation offset in the manipluator coordinate system to use before solving the IK
     """
-    graspsetname = u'default' # the name of the grasp set. this allows applications another way to differentiate what grasp parameters their set was generated with
+    graspsetname = 'default' # the name of the grasp set. this allows applications another way to differentiate what grasp parameters their set was generated with
     
     class GripperVisibility:
         """When 'entered' will hide all the non-gripper links in order to facilitate visiblity of the gripper"""
