@@ -300,7 +300,7 @@ class InverseKinematicsModel(DatabaseGenerator):
             except OSError as e:
                 pass
 
-            with open(statsfilename, 'w') as f:
+            with open(statsfilename, 'wb') as f:
                 pickle.dump((self.getversion(),self.statistics,self.ikfeasibility,self.solveindices,self.freeindices,self.freeinc), f)
             log.info('inversekinematics generation is done, compiled shared object: %s',self.getfilename(False))
 

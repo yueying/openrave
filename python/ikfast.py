@@ -279,7 +279,7 @@ CodeGenerators = {}
 # except ImportError:
 #     pass
 try:
-    import ikfast_generator_cpp
+    from. import ikfast_generator_cpp
     CodeGenerators['cpp'] = ikfast_generator_cpp.CodeGenerator
     IkType = ikfast_generator_cpp.IkType
 except ImportError:
@@ -1249,7 +1249,7 @@ class GinacUtils:
                 gcoeff = geq.coeff(gothersymbol,degree)
                 if i+1 < len(gothersymbols):
                     newterms = GinacUtils.GetPolyTermsFromGinac(gcoeff,gothersymbols[i+1:],othersymbols[i+1:])
-                    for newmonom, newcoeff in newterms.items():
+                    for newmonom, newcoeff in list(newterms.items()):
                         assert(len(newmonom)==len(gothersymbols)-i-1)
                         terms[monomprefix+newmonom] = newcoeff
                 else:
@@ -1263,7 +1263,7 @@ class GinacUtils:
         All parameters have to be ginac objects
         """
         gX = swiginac.symbolic_matrix(gB.rows(),gB.cols(),name)
-        for i in reversed(range(gA.rows())):
+        for i in reversed(list(range(gA.rows()))):
             if gA[i, i] == 0:
                 raise ValueError("Matrix must be non-singular.")
             
@@ -1928,7 +1928,7 @@ class IKFastSolver(AutoReloader):
         return complexity
     
     def sortComplexity(self,exprs):
-        exprs.sort(lambda x, y: self.codeComplexity(x)-self.codeComplexity(y))
+        exprs.sort(key=lambda x: self.codeComplexity(x))
         return exprs
 
     def checkForDivideByZero(self,eq):
@@ -3591,7 +3591,7 @@ class IKFastSolver(AutoReloader):
                         eqnew += term
                     newreducedeqs.append(Poly(eqnew,*dummys))
 
-                newreducedeqs.sort(cmp=lambda x,y: len(x.monoms()) - len(y.monoms()))
+                newreducedeqs.sort(key=lambda x: len(x.monoms()))
                 ileftvar = 0
                 leftvar = dummys[ileftvar]
                 exportcoeffeqs=None
@@ -3912,7 +3912,7 @@ class IKFastSolver(AutoReloader):
                         continue
         
         # sort with respect to least number of symbols
-        reducedelayed.sort(lambda x,y: x[3]-y[3])
+        reducedelayed.sort(key=lambda x: x[3])
 
         reducedeqs = []
         tree = []
@@ -3966,7 +3966,7 @@ class IKFastSolver(AutoReloader):
         # ideally we want to try all combinations of simple equations first until we arrive to linearly independent ones.
         # However, in practice most of the first equations are linearly dependent and it takes a lot of time to prune all of them,
         # so start at the most complex
-        systemcoeffs.sort(lambda x,y: -x[0]+y[0])
+        systemcoeffs.sort(key=lambda x: x[0], reverse=True)
         # sort left and right in the same way
         leftsideeqs = [leftsideeqs[ileft] for rank,ileft,coeffs in systemcoeffs]
         rightsideeqs = [rightsideeqs[ileft] for rank,ileft,coeffs in systemcoeffs]
@@ -4190,7 +4190,7 @@ class IKFastSolver(AutoReloader):
         def _computereducedequations():
             reducedeqs = []
             # order the equations based on the number of terms
-            newleftsideeqs.sort(lambda x,y: len(x.monoms()) - len(y.monoms()))
+            newleftsideeqs.sort(key=lambda x: len(x.monoms()))
             newunknowns = newleftsideeqs[0].gens
             log.info('solving for all pairwise variables in %s, number of symbol coeffs are %s',unknownvars,builtins.sum(numsymbolcoeffs))
             systemcoeffs = []
@@ -4221,11 +4221,11 @@ class IKFastSolver(AutoReloader):
                 except IndexError:
                     # not enough equations?
                     continue                
-                if solution is not None and all([self.isValidSolution(value.subs(localsymbols)) for key,value in solution.items()]):
+                if solution is not None and all([self.isValidSolution(value.subs(localsymbols)) for key,value in list(solution.items())]):
                     # substitute 
                     solsubs = []
                     allvalid = True
-                    for key,value in solution.items():
+                    for key,value in list(solution.items()):
                         valuesub = value.subs(localsymbols)
                         solsubs.append((key,valuesub))
                         reducedeqs.append([key.subs(localsymbols),valuesub])
@@ -4273,7 +4273,7 @@ class IKFastSolver(AutoReloader):
             raise self.CannotSolveError('number of equations %d less than 6'%(len(RightEquations)))
         
         # sort with respect to the number of monomials
-        RightEquations.sort(lambda x, y: len(x.monoms())-len(y.monoms()))
+        RightEquations.sort(key=lambda x: len(x.monoms()))
         
         # substitute with dummy=tan(half angle)
         symbols = RightEquations[0].gens
@@ -5031,7 +5031,7 @@ class IKFastSolver(AutoReloader):
                         polyterms = GinacUtils.GetPolyTermsFromGinac(gres1[icol],gothersymbols,othersymbols)
                         # create a new symbol for every term
                         eq = S.Zero
-                        for monom, coeff in polyterms.items():
+                        for monom, coeff in list(polyterms.items()):
                             sym = next(self.gsymbolgen)
                             dictequations.append((sym,coeff))
                             localsymbolmap[sym.name] = swiginac.symbol(sym.name)
@@ -5051,7 +5051,7 @@ class IKFastSolver(AutoReloader):
                         polyterms = GinacUtils.GetPolyTermsFromGinac(gres3[icol],gothersymbols,othersymbols)
                         # create a new symbol for every term
                         eq = S.Zero
-                        for monom, coeff in polyterms.items():
+                        for monom, coeff in list(polyterms.items()):
                             sym = next(self.gsymbolgen)
                             dictequations.append((sym,coeff))
                             localsymbolmap[sym.name] = swiginac.symbol(sym.name)
@@ -6725,7 +6725,7 @@ class IKFastSolver(AutoReloader):
         # first substitute everything that doesn't have othersolvedvar or unknownvars
         numberSubstitutions = []
         otherSubstitutions = []
-        for var, value in newsubsdict.items():
+        for var, value in list(newsubsdict.items()):
             if not value.has(*constantSymbols):
                 numberSubstitutions.append((var,value))
             else:
@@ -6811,7 +6811,7 @@ class IKFastSolver(AutoReloader):
                         complexity += self.codeComplexity(eq)
             if len(raweqns) > 1:
                 curvarsubssol.append((var0,var1,raweqns,complexity))
-        curvarsubssol.sort(lambda x, y: x[3]-y[3])
+        curvarsubssol.sort(key=lambda x: x[3])
         
         if len(curvars) == 2 and self.IsHinge(curvars[0].name) and self.IsHinge(curvars[1].name) and len(curvarsubssol) > 0:
             # there's only two variables left, it might be the case that the axes are aligning and the two variables are dependent on each other
@@ -7015,7 +7015,7 @@ class IKFastSolver(AutoReloader):
         
         if unknownvars is None:
             unknownvars = []
-        solutions.sort(lambda x, y: x[0].score-y[0].score)
+        solutions.sort(key=lambda x: x[0].score)
         hasonesolution = False
         for solution in solutions:
             checkforzeros = solution[0].checkforzeros
@@ -7739,7 +7739,7 @@ class IKFastSolver(AutoReloader):
                 # the denoms for 0,1 and 2,3 are the same
                 for i in [0,2]:
                     denom = fraction(halftansubs[i][1])[1]
-                    term *= denom**(maxdenom[i/2]-monoms[i]-monoms[i+1])
+                    term *= denom**(maxdenom[int(i/2)]-monoms[i]-monoms[i+1])
                 complexityvalue = self.codeComplexity(term.expand())
                 if complexityvalue < 450:
                     eqnew += simplify(term)
@@ -8106,7 +8106,7 @@ class IKFastSolver(AutoReloader):
         othervarsubs = [(sin(v)**2,1-cos(v)**2) for v in othervars]
         eqpolys = [Poly(eq.subs(varsubs),cvar,svar) for eq in raweqns]
         eqpolys = [eq for eq in eqpolys if sum(eq.degree_list()) == 1 and not eq.TC().has(solvevar)]
-        #eqpolys.sort(lambda x,y: iksolver.codeComplexity(x) - iksolver.codeComplexity(y))
+        #eqpolys.sort(key=lambda x: iksolver.codeComplexity(x))
         partialsolutions = []
         neweqs = []
         for p0,p1 in combinations(eqpolys,2):
@@ -8121,7 +8121,7 @@ class IKFastSolver(AutoReloader):
             # cos(A)**2 + sin(A)**2 - 1 = 0, useful equation but the squares introduce wrong solutions
             #neweqs.append(partialsolution[0]**2+partialsolution[1]**2-partialsolution[2]**2)
         # try to cross
-        partialsolutions.sort(lambda x, y: int(min(x[0])-min(y[0])))
+        partialsolutions.sort(key=lambda x: int(min(x[0])))
         for (rank0,ps0),(rank1,ps1) in combinations(partialsolutions,2):
             if self.equal(ps0[0]*ps1[2]-ps1[0]*ps0[2],S.Zero):
                 continue
@@ -8365,7 +8365,7 @@ class IKFastSolver(AutoReloader):
             eqcombinations = []
             for eqs in combinations(neweqns,2):
                 eqcombinations.append((eqs[0][0]+eqs[1][0],[Eq(e[1],0) for e in eqs]))
-            eqcombinations.sort(lambda x, y: x[0]-y[0])
+            eqcombinations.sort(key=lambda x: x[0])
             hasgoodsolution = False
             for icomb,comb in enumerate(eqcombinations):
                 # skip if too complex
@@ -8391,7 +8391,7 @@ class IKFastSolver(AutoReloader):
                         sollist = s
                     solversolution = AST.SolverSolution(var.name,jointeval=[],isHinge=self.IsHinge(var.name))
                     goodsolution = 0
-                    for svarsol,cvarsol in sollist:
+                    for svarsol,cvarsol in list(sollist.items()):
                         # solutions cannot be trivial
                         soldiff = (svarsol-cvarsol).subs(listsymbols)
                         soldiffComplexity = self.codeComplexity(soldiff)
@@ -8707,7 +8707,7 @@ class IKFastSolver(AutoReloader):
             eqnew, symbols = self.groupTerms(eq, unknownvars, symbolgen)
             allsymbols += symbols
             orgeqns.append([self.codeComplexity(eq),Poly(eqnew,*unknownvars)])
-        orgeqns.sort(lambda x, y: x[0]-y[0])
+        orgeqns.sort(key=lambda x: x[0])
         neweqns = orgeqns[:]
         
         pairwisesubs = [(svar0*cvar1,Symbol('s0c1')),(svar0*svar1,Symbol('s0s1')),(cvar0*cvar1,Symbol('c0c1')),(cvar0*svar1,Symbol('c0s1')),(cvar0*svar0,Symbol('s0c0')),(cvar1*svar1,Symbol('c1s1'))]
@@ -8790,7 +8790,7 @@ class IKFastSolver(AutoReloader):
                     break
             if singleeqs is not None:
                 neweqns += singleeqs
-                neweqns.sort(lambda x, y: x[0]-y[0])
+                neweqns.sort(key=lambda x: x[0])
 
         # check if any equations are at least degree 1 (if not, try to compute some)
         for ivar in range(2):
@@ -8840,7 +8840,7 @@ class IKFastSolver(AutoReloader):
                                 polyeqs.append([self.codeComplexity(eqnew),Poly(eqnew,*unknownvars)])
                                 addedeqs.append(eq)
             neweqns += polyeqs
-        neweqns.sort(lambda x,y: x[0]-y[0])
+        neweqns.sort(key=lambda x: x[0])
 
         rawsolutions = []
         # try single variable solution, only return if a single solution has been found
@@ -9589,11 +9589,11 @@ python ikfast.py --robot=robots/barrettwam.robot.xml --baselink=0 --eelink=7 --s
     parser.add_option('--freeindex', action='append', type='int', dest='freeindices',default=[],
                       help='Optional joint index specifying a free parameter of the manipulator. If not specified, assumes all joints not solving for are free parameters. Can be specified multiple times for multiple free parameters.')
     parser.add_option('--iktype', action='store', dest='iktype',default='transform6d',
-                      help='The iktype to generate the ik for. Possible values are: %s'%(', '.join(name for name,fn in IKFastSolver.GetSolvers().items())))
+                      help='The iktype to generate the ik for. Possible values are: %s'%(', '.join(name for name,fn in list(IKFastSolver.GetSolvers().items()))))
     parser.add_option('--maxcasedepth', action='store', type='int', dest='maxcasedepth',default=3,
                       help='The max depth to go into degenerate cases. If ikfast file is too big, try reducing this, (default=%default).')
     parser.add_option('--lang', action='store',type='string',dest='lang',default='cpp',
-                      help='The language to generate the code in (default=%default), available=('+','.join(name for name,value in CodeGenerators.items())+')')
+                      help='The language to generate the code in (default=%default), available=('+','.join(name for name,value in list(CodeGenerators.items()))+')')
     parser.add_option('--debug','-d', action='store', type='int',dest='debug',default=logging.INFO,
                       help='Debug level for python nose (smaller values allow more text).')
     

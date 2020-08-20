@@ -285,7 +285,7 @@ def DrawAxes(env,target,dist=1.0,linewidth=1,colormode='rgb',coloradd=None):
     :param colormode: optionally override default color mode of rgb to cmy
     :param coloradd: an optional 3-element vector for 
     """
-    if isinstance(target,basestring):
+    if isinstance(target, str):
         T = env.GetKinBody(target).GetTransform()
     elif hasattr(target,'GetTransform'):
         T = target.GetTransform()

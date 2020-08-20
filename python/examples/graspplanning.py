@@ -88,14 +88,11 @@ Then execute:
 .. examplepost-block:: graspplanning
 
 """
-from __future__ import with_statement # for python 2.5
+ # for python 3.7
 __author__ = 'Rosen Diankov'
 
 import time
-try:
-    from itertools import izip
-except:
-    izip = zip
+
 import openravepy
 if not __openravepy_build_doc__:
     from openravepy import *
@@ -170,7 +167,7 @@ class GraspPlanning(openravepy.metaclass.AutoReloader):
                         needdests_graspables = [graspable for graspable in self.graspables if graspable[1] is None]
                         curdests = [graspable[0].target.GetTransform() for graspable in needdests_graspables]
                         alldests = self.setRandomDestinations([graspable[0].target for graspable in needdests_graspables],table)
-                        for graspable,dests in izip(needdests_graspables,alldests):
+                        for graspable,dests in zip(needdests_graspables,alldests):
                             graspable[1] = dests+curdests
                     finally:
                         for target in alltargets:
@@ -337,7 +334,7 @@ class GraspPlanning(openravepy.metaclass.AutoReloader):
             with env:
                 robot.Grab(target)
             if waitforkey:
-                input('press any key to continue grasp')
+                eval(input('press any key to continue grasp'))
 
             success = graspindex
             if movehanddown:
@@ -482,6 +479,6 @@ if __name__ == "__main__":
     run()
 
 def test():
-    import graspplanning
+    from . import graspplanning
     self=graspplanning.GraspPlanning(robot,randomize=False,nodestinations=False)
     success = self.graspAndPlaceObject(self.graspables[2][0],self.graspables[2][1])

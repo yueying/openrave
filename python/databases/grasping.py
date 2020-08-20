@@ -246,7 +246,7 @@ class GraspingModel(DatabaseGenerator):
         # graspikparam_nocol is the serialized IkParameterization. It can hold a max of 8 values, the first being the type
         self.graspindices = dict()
         self.totaldof = 0
-        for name,dof in graspdof.items():
+        for name,dof in list(graspdof.items()):
             self.graspindices[name] = list(range(self.totaldof,self.totaldof+dof))
             self.totaldof += dof
     def clone(self,envother):
@@ -669,7 +669,7 @@ class GraspingModel(DatabaseGenerator):
                             self.robot.SetTransform(finalconfig[1])
                             self.env.UpdatePublishedBodies()
                         if delay is None:
-                            input('press any key to continue: ')
+                            eval(input('press any key to continue: '))
                         elif delay > 0:
                             time.sleep(delay)
                     except PlanningError as e:
@@ -695,7 +695,7 @@ class GraspingModel(DatabaseGenerator):
                     self.env.UpdatePublishedBodies()
                     # wait while environment is locked?
                     if delay is None:
-                        input('press any key to continue: ')
+                        eval(input('press any key to continue: '))
                     elif delay > 0:
                         time.sleep(delay)
     def testGrasp(self,graspingnoise=None,Ngraspingtries = 20,forceclosurethreshold=1e-9,**kwargs):

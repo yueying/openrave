@@ -20,9 +20,7 @@
 """
  # for python 3.7
 
-from sympy import __version__ as sympy_version
-if sympy_version < '0.7.0':
-    raise ImportError('ikfast needs sympy 0.7.x or greater')
+from sympy import *
 
 import sys, copy, time, datetime
 import io
@@ -55,7 +53,6 @@ except:
         TranslationYAxisAngleXNorm4D=0x4400000f
         TranslationZAxisAngleYNorm4D=0x44000010
 
-from sympy import *
 
 try:
     import re # for indenting
@@ -121,11 +118,11 @@ def evalNumbers(expr):
             evalexprs.append(newresult)
         N = len(evalexprs)
         while N > 1:
-            for i in range(N/2):
+            for i in range(int(N/2)):
                 evalexprs[2*i]+=evalexprs[2*i+1]
                 evalexprs[i] = evalexprs[2*i]
-            if N & 1:
-                evalexprs[N/2] = evalexprs[N-1]
+            if int(N) & 1:
+                evalexprs[int(N/2)] = evalexprs[int(N-1)]
                 N += 1
             N /= 2
         return evalexprs[0]
@@ -726,7 +723,7 @@ int main(int argc, char** argv)
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
 
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -778,7 +775,7 @@ int main(int argc, char** argv)
         fcode += self.generateTree(node.jointtree)
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -842,7 +839,7 @@ IkReal r00 = 0, r11 = 0, r22 = 0;
         fcode += self.generateTree(node.jointtree)
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -893,7 +890,7 @@ IkReal r00 = 0, r11 = 0, r22 = 0;
         fcode += self.generateTree(node.jointtree)
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -946,7 +943,7 @@ IkReal r00 = 0, r11 = 0, r22 = 0;
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
 
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -1009,7 +1006,7 @@ IkReal r00 = 0, r11 = 0, r22 = 0;
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
 
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -1061,7 +1058,7 @@ IkReal r00 = 0, r11 = 0, r22 = 0;
         fcode += self.generateTree(node.jointtree)
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n\n"
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
@@ -1119,7 +1116,7 @@ IkReal r00 = 0, r11 = 0, r22 = 0;
         code += fcode + "}\nreturn solutions.GetNumSolutions()>0;\n}\n"
 
         # write other functions
-        for name,functioncode in self.functions.items():
+        for name,functioncode in list(self.functions.items()):
             code += functioncode
         code += "};\n"
         return code
