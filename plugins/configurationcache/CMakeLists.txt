@@ -4,7 +4,7 @@
 add_library(configurationcache SHARED configurationcachetree.h cachechecker.cpp 
 configurationcache.cpp configurationcachetree.cpp configurationjitterer.cpp)
 target_link_libraries(configurationcache libopenrave ${LAPACK_LIBRARIES})
-target_link_libraries(configurationcache PRIVATE boost_assertion_failed)
+target_link_libraries(configurationcache PRIVATE ${Log4cxx_LIBRARIES}  boost_assertion_failed)
 set_target_properties(configurationcache PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS} -DOPENRAVE_DLL_EXPORTS -DOPENRAVE_DLL" LINK_FLAGS "${PLUGIN_LINK_FLAGS}")
 install(TARGETS configurationcache DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${PLUGINS_BASE})
 
@@ -25,7 +25,7 @@ if( HAVE_ALL_PYTHON_HEADERS )
 
   add_library(openravepy_configurationcache SHARED openravepy_configurationcache.cpp)
 
-  target_link_libraries(openravepy_configurationcache PUBLIC ${OPENRAVEPY_CONFIGURATIONCACHE_LINKED_LIBRARIES} PRIVATE boost_assertion_failed)
+  target_link_libraries(openravepy_configurationcache PUBLIC ${Log4cxx_LIBRARIES}  ${OPENRAVEPY_CONFIGURATIONCACHE_LINKED_LIBRARIES} PRIVATE boost_assertion_failed)
 
   set(OPENRAVEPY_CONFIGURATIONCACHE_COMPILE_FLAGS "")
   if(USE_PYBIND11_PYTHON_BINDINGS)

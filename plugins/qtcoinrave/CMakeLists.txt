@@ -56,7 +56,7 @@ if (Qt5_FOUND)
   endif()
 
   target_link_libraries(qtcoinrave ${extLIBS} libopenrave)
-  target_link_libraries(qtcoinrave PRIVATE boost_assertion_failed)
+  target_link_libraries(qtcoinrave PRIVATE ${Log4cxx_LIBRARIES} boost_assertion_failed)
   set_target_properties(qtcoinrave PROPERTIES COMPILE_FLAGS "${QTCOIN_COMPILE_FLAGS} ${SOQT_CXXFLAGS} ${COIN_CXXFLAGS}" LINK_FLAGS "${QTCOIN_LINK_FLAGS}")
   install(TARGETS qtcoinrave DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}plugin-qtcoinrave)
   

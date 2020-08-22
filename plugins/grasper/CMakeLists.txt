@@ -6,7 +6,7 @@ if( QHULL_FOUND AND QHULL_INCLUDE_DIR )
 endif()
 find_package(Boost REQUIRED COMPONENTS thread system)
 add_library(grasper SHARED grasper.cpp graspermodule.cpp grasperplanner.cpp  plugindefs.h)
-target_link_libraries(grasper PRIVATE boost_assertion_failed ${Boost_LIBRARIES})
+target_link_libraries(grasper PRIVATE ${Log4cxx_LIBRARIES}  boost_assertion_failed ${Boost_LIBRARIES})
 
 if ( QHULL_FOUND )
   add_definitions(-DQHULL_FOUND)

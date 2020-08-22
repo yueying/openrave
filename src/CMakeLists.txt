@@ -1,4 +1,4 @@
-# Populates ssources list
+﻿# Populates ssources list
 set (openrave_SOURCES openrave.cpp)
 
 include_directories(${OPENRAVE_INCLUDE_LOCAL_DIRS})
@@ -66,7 +66,7 @@ else()
 endif()
 
 if( LOG4CXX_FOUND )
-  set(openrave_libraries ${openrave_libraries} ${LOG4CXX_LIBRARIES})
+  set(openrave_libraries ${openrave_libraries} ${Log4cxx_LIBRARIES})
 endif()
 
 if(NOT OPENRAVE_DISABLE_ASSERT_HANDLER)
@@ -100,7 +100,7 @@ else()
 endif()
 
 target_link_libraries(openrave ${Boost_DATE_TIME_LIBRARY} ${Boost_THREAD_LIBRARY} ${SOCKET_LIBS} ${openrave_libraries} libopenrave libopenrave-core)
-target_link_libraries(openrave PRIVATE boost_assertion_failed)
+target_link_libraries(openrave PRIVATE ${Log4cxx_LIBRARIES}  boost_assertion_failed)
 
 install(TARGETS openrave DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base)
 if( OPT_BUILD_PACKAGE_DEFAULT AND OPENRAVE_BIN_SUFFIX )

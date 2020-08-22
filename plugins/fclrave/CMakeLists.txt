@@ -1,4 +1,4 @@
-###########################################
+﻿###########################################
 # fclrave openrave plugin
 ###########################################
 find_package(FCL QUIET)
@@ -104,7 +104,7 @@ if( FCL_FOUND )
     link_directories(${OPENRAVE_LINK_DIRS} ${FCL_LIBRARY_DIRS} )
     include_directories(${FCL_INCLUDE_DIRS} ${FCL_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${CCD_INCLUDE_DIR} ${OCTOMAP_INCLUDE_DIRS})
     add_library(fclrave SHARED fclrave.cpp fclcollision.h fclstatistics.h fclspace.h plugindefs.h fclmanagercache.h)
-    target_link_libraries(fclrave libopenrave ${FCL_LIBRARY} ${CCD_LIBRARY} ${OCTOMAP_LIBRARIES})
+    target_link_libraries(fclrave libopenrave ${Log4cxx_LIBRARIES}  ${FCL_LIBRARY} ${CCD_LIBRARY} ${OCTOMAP_LIBRARIES})
     target_link_libraries(fclrave PRIVATE boost_assertion_failed)
     if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR COMPILER_IS_CLANG)
       add_definitions("-std=c++11")
