@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2008 Carnegie Mellon University (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2006-2008 Carnegie Mellon University (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -57,6 +57,7 @@
 
 #ifdef _WIN32
 typedef int socklen_t;
+#pragma comment(lib, "Ws2_32.lib")
 #endif
 
 #include <string>
