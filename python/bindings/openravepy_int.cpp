@@ -401,7 +401,7 @@ object toPyArray(const TransformMatrix& t)
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
 	py::tuple shape = py::make_tuple(4, 4);
-	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	py::numpy::ndarray pyvalues = py::numpy::zeros(shape, py::numpy::dtype::get_builtin<dReal>());
 	dReal* pdata = (dReal*)pyvalues.get_data();
 	pdata[0] = t.m[0]; pdata[1] = t.m[1]; pdata[2] = t.m[2]; pdata[3] = t.trans.x;
 	pdata[4] = t.m[4]; pdata[5] = t.m[5]; pdata[6] = t.m[6]; pdata[7] = t.trans.y;
@@ -428,7 +428,7 @@ object toPyArray(const Transform& t)
     return pyvalues;
 #else // USE_PYBIND11_PYTHON_BINDINGS
 	py::tuple shape = py::make_tuple(7);
-	py::numpy::ndarray pyvalues = py::numpy::empty(shape, py::numpy::dtype::get_builtin<dReal>());
+	py::numpy::ndarray pyvalues = py::numpy::zeros(shape, py::numpy::dtype::get_builtin<dReal>());
 	dReal* pdata = (dReal*)pyvalues.get_data();
 	pdata[0] = t.rot.x; pdata[1] = t.rot.y; pdata[2] = t.rot.z; pdata[3] = t.rot.w;
 	pdata[4] = t.trans.x; pdata[5] = t.trans.y; pdata[6] = t.trans.z;
@@ -455,7 +455,7 @@ AttributesList toAttributesList(py::dict odict)
 #ifdef USE_PYBIND11_PYTHON_BINDINGS
         for (const std::pair<py::handle, py::handle>& item : odict)
 #else
-        py::list iterkeys = (py::list)odict.iterkeys();
+        py::list iterkeys = (py::list)odict.keys();
         const size_t num = py::len(iterkeys);
         for (size_t i = 0; i < num; i++)
 #endif
@@ -1497,9 +1497,9 @@ object PyEnvironmentBase::CheckCollisionRays(py::numpy::ndarray rays, PyKinBodyP
     bool* pcollision = (bool*) bufcollision.ptr;
 #else // USE_PYBIND11_PYTHON_BINDINGS
 	py::tuple pypos_shape = py::make_tuple(num, 6);
-	py::numpy::ndarray pypos = py::numpy::empty(pypos_shape, py::numpy::dtype::get_builtin<dReal>());
+	py::numpy::ndarray pypos = py::numpy::zeros(pypos_shape, py::numpy::dtype::get_builtin<dReal>());
 	dReal* ppos = (dReal*)pypos.get_data();
-	py::numpy::ndarray pycollision = py::numpy::empty(py::make_tuple(num), py::numpy::dtype::get_builtin<bool>());
+	py::numpy::ndarray pycollision = py::numpy::zeros(py::make_tuple(num), py::numpy::dtype::get_builtin<bool>());
 	bool* pcollision = (bool*)pycollision.get_data();
 #endif // USE_PYBIND11_PYTHON_BINDINGS
     {

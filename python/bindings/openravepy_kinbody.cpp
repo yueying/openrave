@@ -3119,7 +3119,7 @@ object PyKinBody::GetLinkAccelerations(object odofaccelerations, object oexterna
             (*pmapExternalAccelerations)[linkindex] = make_pair(Vector(py::extract<dReal>(olinkaccelerations[0]),py::extract<dReal>(olinkaccelerations[1]),py::extract<dReal>(olinkaccelerations[2])),Vector(py::extract<dReal>(olinkaccelerations[3]),py::extract<dReal>(olinkaccelerations[4]),py::extract<dReal>(olinkaccelerations[5])));
         }
 #else
-        py::list iterkeys = (py::list)odict.iterkeys();
+        py::list iterkeys = (py::list)odict.keys();
         for (int i = 0; i < py::len(iterkeys); i++) {
             int linkindex = py::extract<int>(iterkeys[i]);
             object olinkaccelerations = odict[iterkeys[i]];
@@ -3502,7 +3502,7 @@ object PyKinBody::ComputeInverseDynamics(object odofaccelerations, object oexter
             mapExternalForceTorque[linkindex] = make_pair(Vector(py::extract<dReal>(oforcetorque[0]),py::extract<dReal>(oforcetorque[1]),py::extract<dReal>(oforcetorque[2])),Vector(py::extract<dReal>(oforcetorque[3]),py::extract<dReal>(oforcetorque[4]),py::extract<dReal>(oforcetorque[5])));
         }
 #else
-        py::list iterkeys = (py::list)odict.iterkeys();
+        py::list iterkeys = (py::list)odict.keys();
         for (int i = 0; i < py::len(iterkeys); i++) {
             int linkindex = py::extract<int>(iterkeys[i]);
             object oforcetorque = odict[iterkeys[i]];
