@@ -1,4 +1,5 @@
 add_subdirectory(bindings)
+add_subdirectory(examples)
 set(HAVE_ALL_PYTHON_HEADERS ${HAVE_ALL_PYTHON_HEADERS} PARENT_SCOPE)
 
 if( OPT_BUILD_PACKAGE_DEFAULT )

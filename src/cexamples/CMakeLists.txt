@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6.0)
+﻿cmake_minimum_required (VERSION 2.6.0)
 project (cexamples)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../..) # only used for cexamples!
@@ -18,6 +18,9 @@ macro(build_openrave_executable name)
   set_target_properties(${name} PROPERTIES COMPILE_FLAGS "${OpenRAVE_CXX_FLAGS} -DOPENRAVE_C_DLL -DOPENRAVE_C_CORE_DLL")
   set_target_properties(${name} PROPERTIES LINK_FLAGS "${OpenRAVE_LINK_FLAGS}")
   target_link_libraries(${name} ${OpenRAVE_CORE_C_LIBRARIES} -lm)
+  if(ENABLE_SOLUTION_FOLDERS)
+	set_target_properties(${name} PROPERTIES FOLDER "c samples")
+  endif(ENABLE_SOLUTION_FOLDERS)
   install(TARGETS ${name} DESTINATION . )
 endmacro(build_openrave_executable)
 

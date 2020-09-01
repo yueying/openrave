@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2010 Rosen Diankov (rdiankov@cs.cmu.edu)
 //
 // This program is free software: you can redistribute it and/or modify
@@ -355,24 +355,24 @@ protected:
         bool _bPadded;
     };
 
-    bool GraspPlanning(ostream& sout, istream& sinput)
+    bool GraspPlanning(std::ostream& sout, std::istream& sinput)
     {
         RobotBase::ManipulatorConstPtr pmanip = _robot->GetActiveManipulator();
 
-        vector<dReal> vgrasps;
+		std::vector<dReal> vgrasps;
         std::shared_ptr<GraspParameters> graspparams(new GraspParameters(GetEnv()));
 
         KinBodyPtr ptarget;
         int nNumGrasps=0, nGraspDim=0;
         dReal fApproachOffset=0.0f;     // offset before approaching to the target
-        string targetname;
-        vector<Transform> vObjDestinations;
-        string strpreshapetraj;     // save the preshape trajectory
+		std::string targetname;
+		std::vector<Transform> vObjDestinations;
+		std::string strpreshapetraj;     // save the preshape trajectory
         bool bCombinePreShapeTraj = true;
         bool bExecute = true;
-        string strtrajfilename;
+		std::string strtrajfilename;
         bool bRandomDests = true, bRandomGrasps = true;     // if true, permute the grasps and destinations when iterating through them
-        std::shared_ptr<ostream> pOutputTrajStream;
+        std::shared_ptr<std::ostream> pOutputTrajStream;
         int nMaxSeedGrasps = 20, nMaxSeedDests = 5, nMaxSeedIkSolutions = 0;
         int nMaxIterations = 4000;
         bool bQuitAfterFirstRun = false;
@@ -383,11 +383,13 @@ protected:
         dReal fRRTStepLength = 0; // if > 0, then user set
 
         // indices into the grasp table
-        int iGraspDir = -1, iGraspPos = -1, iGraspRoll = -1, iGraspPreshape = -1, iGraspStandoff = -1, imanipulatordirection = -1, iGraspFinalFingers=-1, iChuckingDirection=-1, iGraspTranslationOffset=-1;
+		int iGraspDir = -1, iGraspPos = -1, iGraspRoll = -1, iGraspPreshape = -1;
+		int iGraspStandoff = -1, imanipulatordirection = -1, iGraspFinalFingers = -1;
+		int iChuckingDirection = -1, iGraspTranslationOffset = -1;
         int iGraspTransform = -1;     // if >= 0, use the grasp transform to check for collisions
         int iGraspTransformNoCol = -1;
         int iStartCountdown = 40;
-        string cmd;
+		std::string cmd;
         CollisionReportPtr report(new CollisionReport);
         Vector vLocalGraspTranslationOffset;
 
@@ -406,7 +408,7 @@ protected:
                 }
             }
             else if( cmd == "outputtraj" ) {
-                pOutputTrajStream = std::shared_ptr<ostream>(&sout,utils::null_deleter());
+                pOutputTrajStream = std::shared_ptr<std::ostream>(&sout,utils::null_deleter());
             }
             else if( cmd == "execute" ) {
                 sinput >> bExecute;
@@ -526,7 +528,8 @@ protected:
         }
 
         if( pmanip->IsGrabbing(*ptarget) ) {
-            throw OPENRAVE_EXCEPTION_FORMAT("manipulator %s is already grasping %s", pmanip->GetName()%ptarget->GetName(),ORE_InvalidArguments);
+            throw OPENRAVE_EXCEPTION_FORMAT("manipulator %s is already grasping %s",
+				pmanip->GetName()%ptarget->GetName(),ORE_InvalidArguments);
         }
         RobotBase::RobotStateSaver saver(_robot);
 
@@ -535,7 +538,7 @@ protected:
             RAVELOG_INFO("planning with mobile base!\n");
         }
 
-        vector<int> vindices(pmanip->GetArmIndices().size()+pmanip->GetGripperIndices().size());
+		std::vector<int> vindices(pmanip->GetArmIndices().size()+pmanip->GetGripperIndices().size());
         std::copy(pmanip->GetArmIndices().begin(),pmanip->GetArmIndices().end(),vindices.begin());
         std::copy(pmanip->GetGripperIndices().begin(),pmanip->GetGripperIndices().end(),vindices.begin()+pmanip->GetArmIndices().size());
         _robot->SetActiveDOFs(vindices, nMobileAffine, _robot->GetAffineRotationAxis());
@@ -548,10 +551,10 @@ protected:
 
         CollisionOptionsStateSaver optionstate(GetEnv()->GetCollisionChecker(),GetEnv()->GetCollisionChecker()->GetCollisionOptions()|CO_ActiveDOFs,false);
 
-        vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
+		std::vector<dReal> vinsertconfiguration; // configuration to add at the beginning of the trajectory, usually it is in collision
         // jitter again for initial collision
 
-        vector<dReal> vCurHandValues, vCurRobotValues, vHandLowerLimits, vHandUpperLimits;
+		std::vector<dReal> vCurHandValues, vCurRobotValues, vHandLowerLimits, vHandUpperLimits;
         _robot->SetActiveDOFs(pmanip->GetGripperIndices());
         _robot->GetActiveDOFValues(vCurHandValues);
         _robot->GetActiveDOFLimits(vHandLowerLimits,vHandUpperLimits);

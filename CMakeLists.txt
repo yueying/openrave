@@ -30,6 +30,15 @@ set(LIB_SUFFIX CACHE STRING "suffix for the library directory need for x86-64 sy
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+IF (CMAKE_VERSION VERSION_GREATER 2.8.0)
+	SET(ENABLE_SOLUTION_FOLDERS ON CACHE BOOL "Group projects under virtual folders of the compiler IDE (e.g. VisualStudio)")
+ENDIF (CMAKE_VERSION VERSION_GREATER 2.8.0)
+
+if (ENABLE_SOLUTION_FOLDERS)
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+  set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
+endif (ENABLE_SOLUTION_FOLDERS)
+
 # Custom CMake options
 option(OPT_VIDEORECORDING "Enable video recording" ON)
 option(OPT_PLUGINS "Build the pluings" ON)
