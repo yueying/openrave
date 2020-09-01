@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -27,16 +27,17 @@ TrajectoryBase::TrajectoryBase(EnvironmentBasePtr penv) : InterfaceBase(PT_Traje
 
 void TrajectoryBase::serialize(std::ostream& O, int options) const
 {
-    O << "<trajectory type=\"" << GetXMLId() << "\">" << endl << GetConfigurationSpecification();
-    O << "<data count=\"" << GetNumWaypoints() << "\">" << endl;
+	//TODO: it's not good way to set the end tag with 'std::endl'
+    O << "<trajectory type=\"" << GetXMLId() << "\">"  << GetConfigurationSpecification();
+    O << "<data count=\"" << GetNumWaypoints() << "\">" ;
     std::vector<dReal> data;
     GetWaypoints(0,GetNumWaypoints(),data);
     FOREACHC(it,data){
         O << *it << " ";
     }
-    O << "</data>" << endl;
+    O << "</data>";
     if( GetDescription().size() > 0 ) {
-        O << "<description><![CDATA[" << GetDescription() << "]]></description>" << endl;
+        O << "<description><![CDATA[" << GetDescription() << "]]></description>";
     }
     if( GetReadableInterfaces().size() > 0 ) {
         xmlreaders::StreamXMLWriterPtr writer(new xmlreaders::StreamXMLWriter("readable"));

@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This file is part of OpenRAVE.
@@ -1894,12 +1894,12 @@ std::ostream& operator<<(std::ostream& O, const ConfigurationSpecification &spec
     }
     std::sort(vgroupindices.begin(), vgroupindices.end(), boost::bind(CompareGroupsOfIndices, boost::ref(spec), _1, _2));
 
-    O << "<configuration>" << endl;
+    O << "<configuration>" ;
     FOREACH(itgroupindex, vgroupindices) {
         const ConfigurationSpecification::Group& group = spec._vgroups[*itgroupindex];
-        O << "<group name=\"" << group.name << "\" offset=\"" << group.offset << "\" dof=\"" << group.dof << "\" interpolation=\"" << group.interpolation << "\"/>" << endl;
+        O << "<group name=\"" << group.name << "\" offset=\"" << group.offset << "\" dof=\"" << group.dof << "\" interpolation=\"" << group.interpolation << "\"/>" ;
     }
-    O << "</configuration>" << endl;
+    O << "</configuration>";
     return O;
 }
 
