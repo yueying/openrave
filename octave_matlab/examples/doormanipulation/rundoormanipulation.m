@@ -104,7 +104,7 @@ while(1)
     if( success )
         disp(sprintf('success opening door planning time: %f', time));
 
-        success = orProblemSendCommand(['MoveManipulator armvals ' sprintf('%f ', startgoal(robot.armjoints+1,1))], probs.manip);
+        success = orProblemSendCommand(['MoveManipulator goal ' sprintf('%f ', startgoal(robot.armjoints+1,1))], probs.manip);
         if( isempty(success) )
             disp('failed to plan to handle');
             continue;

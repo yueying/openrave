@@ -67,7 +67,8 @@ robot.graspavoidlinks = G.robot.avoidlinks;
 
 robot.activemanip = 1;
 robot.manip = robot.manips{robot.activemanip};
-orProblemSendCommand(['setactivemanip ' robot.manip.name],probs.manip);
+%%orProblemSendCommand(['setactivemanip ' robot.manip.name],probs.manip);
+orRobotSetActiveManipulator(robot.id,robot.manip.name);
 
 scenedata.home = orBodyGetJointValues(robot.id);
 

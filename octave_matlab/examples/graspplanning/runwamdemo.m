@@ -17,7 +17,7 @@ global probs
 orEnvSetOptions('debug 4');
 
 scenefile = 'data/lab1.env.xml';
-grasptablefile = '../grasping/grasptables/grasp_barrett_mug1.mat';
+grasptablefile = 'matlab/examples/grasping/grasptables/grasp_barrett_mug1.mat';
 [robot, scenedata] = SetupSceneFromGraspTables(scenefile,grasptablefile);
 
 armjoints = robot.manips{robot.activemanip}.armjoints;

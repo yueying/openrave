@@ -24,7 +24,7 @@ if( ~exist('home','var') )
     home = zeros([robot.totaldof 1]);
 end
 
-s = orProblemSendCommand(['MoveManipulator armvals ' sprintf('%f ', home(robot.armjoints+1))], probid);
+s = orProblemSendCommand(['MoveManipulator goal ' sprintf('%f ', home(robot.armjoints+1))], probid);
 
 if( isempty(s) )
     return;

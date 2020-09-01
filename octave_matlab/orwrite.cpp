@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2008 Carnegie Mellon University (rdiankov@cs.cmu.edu)
+﻿// Copyright (C) 2006-2008 Carnegie Mellon University (rdiankov@cs.cmu.edu)
 //
 // This file is part of OpenRAVE.
 // OpenRAVE is free software: you can redistribute it and/or modify
@@ -45,7 +45,7 @@ void mexFunction(int nlhs,       mxArray *plhs[],
     mxGetString(prhs[0], &v[0], v.size());
     v[mxGetNumberOfElements(prhs[0])] = '\n';
     c->Writeline(&v[0],v.size());
-
+	mexPrintf("write command %s ,size:%d \n", &v[0], v.size());
     if( !bCloseSocket )
         c->sockd = -1;
     delete c;

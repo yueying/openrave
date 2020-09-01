@@ -10,6 +10,12 @@ matlab_add_mex(NAME orwrite SRC ${OCTAVEMATLAB_FILES_DIR}/orwrite.cpp ${OCTAVEMA
 add_dependencies(orread orcreate) # used to force mex to be called once at a time
 add_dependencies(orwrite orread) # used to force mex to be called once at a time
 
+if(ENABLE_SOLUTION_FOLDERS)
+	set_target_properties(orcreate PROPERTIES FOLDER "matlab")
+	set_target_properties(orread PROPERTIES FOLDER "matlab")
+	set_target_properties(orwrite PROPERTIES FOLDER "matlab")
+endif(ENABLE_SOLUTION_FOLDERS)
+
 # because MATLAB is non-free, have to distribute the source files
 set(CPACK_COMPONENT_${COMPONENT_PREFIX_UPPER}MATLAB_DEPENDS ${COMPONENT_PREFIX}base PARENT_SCOPE)
 set(CPACK_COMPONENT_${COMPONENT_PREFIX_UPPER}MATLAB_DISPLAY_NAME "Matlab Bindings" PARENT_SCOPE)
