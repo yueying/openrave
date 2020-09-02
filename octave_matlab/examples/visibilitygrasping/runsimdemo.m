@@ -20,8 +20,17 @@ dopause = 0;
 while(1)
     orProblemSendCommand('releaseall',probs.manip);
     RobotGoInitial(robot,scenedata.home);
-
-    res = orProblemSendCommand(['MoveToObserveTarget target ' scenedata.targetname ' sampleprob 0.001 sensorindex 0 maxiter 4000 convexfile ' scenedata.convexfile ' visibilitytrans ' scenedata.visibilityfile],probs.visual,1);
+    
+    convex_data = load(scenedata.convexfile,'-ascii')
+    
+    cmd = ['SetCameraAndTarget sensorrobot ' robot.name ...
+    ' targetlink ' scenedata.targetname ' ' num2str(scenedata.targetid) ...
+    ' sensorindex 0 manipname ' robot.manip.name]%% ...
+    %%' convexdata ' num2str(size(convex_data,1)) ' ' sprintf('%f ', convex_data)];
+    
+    orProblemSendCommand(cmd,probs.visual,1);
+    
+    res = orProblemSendCommand(['MoveToObserveTarget  sampleprob 0.001  maxiter 4000 ' ],probs.visual,1);
     if( isempty(res) )
         warning('failed to move to target');
         continue;

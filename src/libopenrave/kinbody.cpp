@@ -4566,7 +4566,7 @@ void KinBody::GetAttached(std::set<KinBodyConstPtr>& setAttached) const
 void KinBody::GetAttached(std::vector<KinBodyPtr>& vAttached) const
 {
     if( vAttached.empty() || find(vAttached.begin(), vAttached.end(), shared_kinbody_const()) == vAttached.end() ) {
-        vAttached.push_back(boost::const_pointer_cast<KinBody>(shared_kinbody_const()));
+        vAttached.push_back(std::const_pointer_cast<KinBody>(shared_kinbody_const()));
     }
     FOREACHC(itbody,_listAttachedBodies) {
         KinBodyPtr pattached = itbody->lock();

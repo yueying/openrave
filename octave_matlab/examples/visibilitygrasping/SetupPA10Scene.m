@@ -34,6 +34,7 @@ end
 robot = robots{1};
 robot.activemanip = 1;
 robot.manips = orRobotGetManipulators(robot.id);
+robot.manip = robot.manips{robot.activemanip};
 robot.CreateHandFn = [];%@RobotCreateSchunkHand;
 robot.testhandname = 'testhand';
 robot.dof = orBodyGetDOF(robot.id);

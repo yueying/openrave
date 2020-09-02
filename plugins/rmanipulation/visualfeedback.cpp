@@ -711,8 +711,13 @@ Visibility computation checks occlusion with other objects using ray sampling in
 
                 _targetlink = ptarget->GetLink(targetlinkname);
                 if( !_targetlink ) {
-                    throw OPENRAVE_EXCEPTION_FORMAT("could not find target link %s of target %s", targetname%targetlinkname, ORE_InvalidArguments);
-                }
+					if (!ptarget->GetLinks().empty()){
+						_targetlink = ptarget->GetLinks().front();
+					}
+					else{
+						throw OPENRAVE_EXCEPTION_FORMAT("could not find target link %s of target %s", targetname%targetlinkname, ORE_InvalidArguments);
+					}
+				}
             }
             else if( cmd == "targetgeomname" ) {
                 sinput >> _targetGeomName;
