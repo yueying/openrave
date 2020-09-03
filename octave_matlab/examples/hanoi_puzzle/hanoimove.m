@@ -34,7 +34,7 @@ for ang2 = -pi/2:0.4:(1.5*pi)
             if( MoveToHandPosition(grasps{i}) )
                 % succeeded so grab the disk
                 orEnvWait(robot.id);
-                orProblemSendCommand('closefingers',probs.manip);
+                orProblemSendCommand('closefingers',probs.task);
                 orEnvWait(robot.id);
                 orProblemSendCommand(['grabbody name ' diskname],probs.manip);
 

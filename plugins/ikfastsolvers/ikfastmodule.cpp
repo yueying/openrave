@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -352,7 +352,9 @@ public:
 
     int main(const string& cmd)
     {
-        if( cmd.size() > 0 ) {
+		std::string trim_cmd = cmd;
+		boost::trim(trim_cmd);
+		if (trim_cmd.size() > 0) {
             rapidjson::Document document;  ///< contains entire rapid json document to parse parameters.
             if (document.Parse(cmd.c_str(), cmd.size()).HasParseError()) {
                 throw OPENRAVE_EXCEPTION_FORMAT("Failed to parse cmd (offset %u): %s, data=%s", ((unsigned)document.GetErrorOffset())%(GetParseError_En(document.GetParseError()))%cmd, ORE_InvalidState);
