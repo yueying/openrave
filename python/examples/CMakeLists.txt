@@ -29,7 +29,6 @@ FILE(GLOB listexamples
 REMOVE_MATCHING_FILES_FROM_LIST(".*init__.py" listexamples)
 
 FOREACH(FILE_PATH ${listexamples})
-    MESSAGE(${FILE_PATH})
     STRING(REGEX REPLACE ".+/(.+)\\..*" "\\1" FILE_NAME ${FILE_PATH})
     openravepy_add_example(${FILE_NAME} "${FILE_PATH}")
 	if(ENABLE_SOLUTION_FOLDERS)

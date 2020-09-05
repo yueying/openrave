@@ -99,7 +99,7 @@ else()
   set(SOCKET_LIBS)
 endif()
 
-target_link_libraries(openrave ${Boost_DATE_TIME_LIBRARY} ${Boost_THREAD_LIBRARY} ${SOCKET_LIBS} ${openrave_libraries} libopenrave libopenrave-core)
+target_link_libraries(openrave PUBLIC ${Boost_DATE_TIME_LIBRARY} ${Boost_THREAD_LIBRARY} ${SOCKET_LIBS} ${openrave_libraries} libopenrave libopenrave-core)
 target_link_libraries(openrave PRIVATE ${Log4cxx_LIBRARIES}  boost_assertion_failed)
 
 install(TARGETS openrave DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base)

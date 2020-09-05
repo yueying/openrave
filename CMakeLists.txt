@@ -16,6 +16,10 @@ cmake_policy(SET CMP0002 NEW)
 # http://www.cmake.org/cmake/help/cmake-2.6.html#policy:CMP0003
 cmake_policy(SET CMP0003 NEW)
 
+cmake_policy(SET CMP0054 NEW)
+cmake_policy(SET CMP0020 NEW)
+cmake_policy(SET CMP0022 NEW)
+
 set(CMAKE_CXX_STANDARD 11)
 # Use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -102,7 +106,7 @@ set(OPENRAVE_PYTHON_INSTALL_DIR)
 if( OPT_PYTHON )
   include(FindPythonInterp)
   ## check python
-  find_package(PythonLibs 2) # using PYTHON_INCLUDE_PATH instead of PYTHON_INCLUDE_DIRS?
+  find_package(PythonLibs) # using PYTHON_INCLUDE_PATH instead of PYTHON_INCLUDE_DIRS?
   if( NOT PYTHON_EXECUTABLE )
     # look specifically for 2.6
     find_program(PYTHON_EXECUTABLE NAMES python2.6 python PATHS [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.6\\InstallPath])
@@ -112,7 +116,7 @@ if( OPT_PYTHON )
   if( NOT PYTHON_INCLUDE_DIRS )
     set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
   endif()
-
+  
   if( PYTHON_EXECUTABLE )
     get_filename_component(PYTHON_EXECUTABLE_NAME ${PYTHON_EXECUTABLE} NAME)
     # architecture independent
@@ -134,14 +138,15 @@ if( OPT_PYTHON )
       OUTPUT_VARIABLE OPENRAVE_PYTHON_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       RESULT_VARIABLE _python_failed2)
+	file(TO_CMAKE_PATH ${_python_numpy_include} python_numpy_include)
 
     if( ${_python_failed0} EQUAL 0 AND ${_python_failed2} EQUAL 0 )
-      if( NOT IS_DIRECTORY "${_python_numpy_include}" )
+      if( NOT IS_DIRECTORY "${python_numpy_include}" )
         set(PYTHON_EXECUTABLE)
       else()
-        set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${_python_numpy_include})
+        set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${python_numpy_include})
       endif()
-
+	  
       # get the major.minor python version
       execute_process(
         COMMAND ${PYTHON_EXECUTABLE} -c "import sys; print('%d.%d'%sys.version_info[0:2])"

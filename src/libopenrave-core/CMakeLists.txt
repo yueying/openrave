@@ -80,7 +80,7 @@ set_target_properties(libopenrave-core PROPERTIES OUTPUT_NAME openrave${OPENRAVE
                                   COMPILE_FLAGS "${LIBOPENRAVE_COMPILE_FLAGS} -DOPENRAVE_CORE_DLL_EXPORTS -DOPENRAVE_CORE_DLL"
                                   LINK_FLAGS "${LIBOPENRAVE_LINK_FLAGS}")
 
-target_link_libraries(libopenrave-core libopenrave ${OPENRAVE_CORE_LIBRARIES})
+target_link_libraries(libopenrave-core PUBLIC libopenrave ${OPENRAVE_CORE_LIBRARIES})
 target_link_libraries(libopenrave-core PRIVATE boost_assertion_failed)
 if( MSVC )
   install(TARGETS libopenrave-core RUNTIME DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base LIBRARY DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT ${COMPONENT_PREFIX}base)
@@ -99,7 +99,7 @@ if( OPT_CBINDINGS )
     CLEAN_DIRECT_OUTPUT 1
     COMPILE_FLAGS "${LIBOPENRAVE_COMPILE_FLAGS} -DOPENRAVE_C_CORE_DLL_EXPORTS -DOPENRAVE_C_CORE_DLL -DOPENRAVE_CORE_DLL"
     LINK_FLAGS "${LIBOPENRAVE_LINK_FLAGS}")
-  target_link_libraries (libopenrave-core_c libopenrave-core ${OPENRAVE_CORE_LIBRARIES})
+  target_link_libraries (libopenrave-core_c PUBLIC libopenrave-core ${OPENRAVE_CORE_LIBRARIES})
   target_link_libraries (libopenrave-core_c PRIVATE boost_assertion_failed)
   if( MSVC )
     install(TARGETS libopenrave-core_c RUNTIME DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base LIBRARY DESTINATION bin COMPONENT ${COMPONENT_PREFIX}base ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT ${COMPONENT_PREFIX}cbindings-base)

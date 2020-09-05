@@ -4,9 +4,9 @@
 add_library(textserver SHARED textserver.cpp textserver.h plugindefs.h)
 find_package(Boost REQUIRED COMPONENTS thread system)
 if( MSVC )
-  target_link_libraries(textserver libopenrave imm32 winmm ws2_32)
+  target_link_libraries(textserver PUBLIC libopenrave imm32 winmm ws2_32)
 else()
-  target_link_libraries(textserver libopenrave)
+  target_link_libraries(textserver PUBLIC libopenrave)
 endif()
 target_link_libraries(textserver PRIVATE ${Log4cxx_LIBRARIES} boost_assertion_failed ${Boost_LIBRARIES})
 

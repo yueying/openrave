@@ -4,7 +4,7 @@
 find_package(Coin NAMES Inventor Coin REQUIRED)
 find_package(SoQt REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread system)
-if (NOT SOQT_LIBRARY_FOUND)
+if (NOT SoQt_FOUND)
   message(STATUS "WARNING: SoQt not found, disabling QtCoin GUI plugin. Please install SoQt (http://www.coin3d.org)")
 endif ()
 
@@ -30,7 +30,7 @@ set(CMAKE_AUTOMOC ON)
 ADD_DEFINITIONS(-DQT_DISABLE_DEPRECATED_BEFORE=0)
 
 if (Qt5_FOUND)
-  message(STATUS "Detected SoQt/Coin3D GUI, making plugin ${Coin_INCLUDE_DIR}----- ${SoQt_INCLUDE_DIRS}")
+  message(STATUS "Detected SoQt/Coin3D GUI, making plugin")
   include_directories(${OPENGL_INCLUDE_DIR} ${Coin_INCLUDE_DIR} ${SoQt_INCLUDE_DIRS} ${SoQt_INCLUDE_DIR} )
   link_directories(${OPENRAVE_LINK_DIRS}  ${Coin_LIB_DIR} ${SoQt_LIBRARY_DIRS})
 
@@ -55,7 +55,7 @@ if (Qt5_FOUND)
     set(extLIBS ${extLIBS} winmm imm32 ws2_32)
   endif()
 
-  target_link_libraries(qtcoinrave ${extLIBS} libopenrave)
+  target_link_libraries(qtcoinrave PUBLIC ${extLIBS} libopenrave)
   target_link_libraries(qtcoinrave PRIVATE ${Log4cxx_LIBRARIES} boost_assertion_failed)
   set_target_properties(qtcoinrave PROPERTIES COMPILE_FLAGS "${QTCOIN_COMPILE_FLAGS} ${SOQT_CXXFLAGS} ${COIN_CXXFLAGS}" LINK_FLAGS "${QTCOIN_LINK_FLAGS}")
   install(TARGETS qtcoinrave DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}plugin-qtcoinrave)

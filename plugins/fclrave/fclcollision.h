@@ -1265,7 +1265,7 @@ private:
         }
 
         it->second->Synchronize();
-        //RAVELOG_VERBOSE_FORMAT("env=%d, returning body manager cache %x (self=%d)", GetEnv()->GetId()%it->second.get()%_bIsSelfCollisionChecker);
+        RAVELOG_VERBOSE_FORMAT("env=%d, returning body manager cache %x (self=%d)", GetEnv()->GetId()%it->second.get()%_bIsSelfCollisionChecker);
         //it->second->PrintStatus(OpenRAVE::Level_Info);
         return *it->second;
     }
