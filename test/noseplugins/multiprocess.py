@@ -115,12 +115,12 @@ try:
     from unittest.runner import _WritelnDecorator
 except ImportError:
     from unittest import _WritelnDecorator
-from Queue import Empty
+from queue import Empty
 from warnings import warn
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    import StringIO
+    import io
 
 if sys.version_info >= (3, 0):
     def bytes_(s, encoding='utf8'):
@@ -158,7 +158,7 @@ class ForceErrorClass(object):
     def __str__(self):
         return ''
     def __unicode__(self):
-        return u''
+        return ''
 
 def _import_mp():
     global Process, Queue, Pool, Event, Value, Array
@@ -439,7 +439,7 @@ class MultiProcessTestRunner(TextTestRunner):
                     try:
                         if len(w.currentargs.value) > 0:
                             worker_args = pickle.loads(bytes_(w.currentargs.value,'ascii'))
-                    except EOFError,e:
+                    except EOFError as e:
                         log.warn('worker %d: exception in getting worker args (%s): %s',iworker, w.currentargs.value, str(e))
                         
                     test_addr = worker_addr
@@ -700,7 +700,7 @@ class MultiProcessTestRunner(TextTestRunner):
         result.testsRun += testsRun
         result.failures.extend(failures)
         result.errors.extend(errors)
-        for key, (storage, label, isfail) in errorClasses.items():
+        for key, (storage, label, isfail) in list(errorClasses.items()):
             if key not in result.errorClasses:
                 # Ordinarily storage is result attribute
                 # but it's only processed through the errorClasses
@@ -759,7 +759,7 @@ def __runner(ix, testQueue, resultQueue, currentaddr, currentargs, currentstart,
         failures = [(TestLet(c), err) for c, err in result.failures]
         errors = [(TestLet(c), err) for c, err in result.errors]
         errorClasses = {}
-        for key, (storage, label, isfail) in result.errorClasses.items():
+        for key, (storage, label, isfail) in list(result.errorClasses.items()):
             errorClasses[key] = ([(TestLet(c), err) for c, err in storage],
                                  label, isfail)
         return (
@@ -894,7 +894,7 @@ class NoSharedFixtureContextSuite(ContextSuite):
                     # chains
                     try:
                         test(orig)
-                    except KeyboardInterrupt,e:
+                    except KeyboardInterrupt as e:
                         err = (TimedOutException,TimedOutException(str(test)), sys.exc_info()[2])
                         test.config.plugins.addError(test,err)
                         orig.addError(test,err)

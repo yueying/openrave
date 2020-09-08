@@ -11,20 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import with_statement # for python 2.5
+ # for python 2.5
 
 from openravepy import *
 from openravepy import misc
 import numpy
 from numpy import *
 
-from itertools import izip, combinations
+from itertools import combinations
 import nose
 from nose.tools import assert_raises
 import fnmatch
 import time
 import os
-import cPickle as pickle
+import pickle as pickle
 import logging
 
 _multiprocess_can_split_ = True
@@ -71,7 +71,7 @@ def teardown_module(module):
 
 def transdist(list0,list1):
     assert(len(list0)==len(list1))
-    return sum([sum(abs(item0-item1)) for item0, item1 in izip(list0,list1)])
+    return sum([sum(abs(item0-item1)) for item0, item1 in zip(list0,list1)])
 
 def axisangledist(axis0,axis1):
     return 2*arccos(numpy.minimum(1.0,dot(quatFromAxisAngle(axis0),quatFromAxisAngle(axis1))))

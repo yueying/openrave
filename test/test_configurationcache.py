@@ -22,7 +22,7 @@ class TestConfigurationCache(EnvironmentSetup):
         self.LoadEnv('data/lab1.env.xml')
         env=self.env
         robot=env.GetRobots()[0]
-        robot.SetActiveDOFs(range(7))
+        robot.SetActiveDOFs(list(range(7)))
         cache=openravepy_configurationcache.ConfigurationCache(robot)
 
         values = robot.GetActiveDOFValues()
@@ -40,7 +40,7 @@ class TestConfigurationCache(EnvironmentSetup):
 
         originalvalues = array([0,pi/2,0,pi/6,0,0,0])
 
-        sampler = RaveCreateSpaceSampler(env, u'MT19937')
+        sampler = RaveCreateSpaceSampler(env, 'MT19937')
         sampler.SetSpaceDOF(robot.GetActiveDOF())
         report=CollisionReport()
 
@@ -110,7 +110,7 @@ class TestConfigurationCache(EnvironmentSetup):
             assert(success is not None)
             env.SetCollisionChecker(cachechecker)
             robot.SetSelfCollisionChecker(cachechecker)
-            sampler = RaveCreateSpaceSampler(env, u'RobotConfiguration %s'%robot.GetName())
+            sampler = RaveCreateSpaceSampler(env, 'RobotConfiguration %s'%robot.GetName())
             sampler.SampleSequence(SampleDataType.Real,1)
             report=CollisionReport()
 
@@ -140,12 +140,12 @@ class TestConfigurationCache(EnvironmentSetup):
         self.LoadEnv('data/lab1.env.xml')
         env=self.env
         robot=env.GetRobots()[0]
-        robot.SetActiveDOFs(range(7))
+        robot.SetActiveDOFs(list(range(7)))
         cache=openravepy_configurationcache.ConfigurationCache(robot)
         cache.SetFreeSpaceThresh(1)
         values = robot.GetActiveDOFValues()
         inserted = cache.InsertConfiguration(values, None)
-        sampler = RaveCreateSpaceSampler(env, u'MT19937')
+        sampler = RaveCreateSpaceSampler(env, 'MT19937')
         sampler.SetSpaceDOF(robot.GetActiveDOF())
         with env:
              self.log.info('testing exhaustive insertion...')

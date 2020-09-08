@@ -435,7 +435,7 @@ class RunRobot(EnvironmentSetup):
                 self.RunTrajectory(robot,traj)
                 raise ValueError('controller did not throw limit expected exception!')
             
-            except Exception, e:
+            except Exception as e:
                 pass
 
             traj.Init(robot.GetActiveConfigurationSpecification())
@@ -447,7 +447,7 @@ class RunRobot(EnvironmentSetup):
                 self.RunTrajectory(robot,traj)
                 raise ValueError('controller did not throw velocity limit expected exception!')
             
-            except Exception, e:
+            except Exception as e:
                 pass
 
     def test_bigrange(self):
@@ -499,7 +499,7 @@ class RunRobot(EnvironmentSetup):
         links = manip.GetChildLinks()
         assert(all([l.GetName().startswith('l_gripper') or l.GetName() == 'l_wrist_roll_link' for l in links]))
         ilinks = manip.GetIndependentLinks()
-        expectednames = set([u'base_footprint', u'base_link', u'base_bellow_link', u'base_laser_link', u'bl_caster_rotation_link', u'bl_caster_l_wheel_link', u'bl_caster_r_wheel_link', u'br_caster_rotation_link', u'br_caster_l_wheel_link', u'br_caster_r_wheel_link', u'fl_caster_rotation_link', u'fl_caster_l_wheel_link', u'fl_caster_r_wheel_link', u'fr_caster_rotation_link', u'fr_caster_l_wheel_link', u'fr_caster_r_wheel_link', u'torso_lift_motor_screw_link'])
+        expectednames = set(['base_footprint', 'base_link', 'base_bellow_link', 'base_laser_link', 'bl_caster_rotation_link', 'bl_caster_l_wheel_link', 'bl_caster_r_wheel_link', 'br_caster_rotation_link', 'br_caster_l_wheel_link', 'br_caster_r_wheel_link', 'fl_caster_rotation_link', 'fl_caster_l_wheel_link', 'fl_caster_r_wheel_link', 'fr_caster_rotation_link', 'fr_caster_l_wheel_link', 'fr_caster_r_wheel_link', 'torso_lift_motor_screw_link'])
         curnames = set([l.GetName() for l in ilinks])
         assert(expectednames==curnames)
         cjoints = manip.GetChildJoints()
@@ -573,7 +573,7 @@ class RunRobot(EnvironmentSetup):
             affine = DOFAffine.Transform
             self.LoadEnv('robots/pr2-beta-static.zae')
             robot=env.GetRobots()[0]
-            robot.SetActiveDOFs(range(robot.GetDOF()), affine, [0,0,1])
+            robot.SetActiveDOFs(list(range(robot.GetDOF())), affine, [0,0,1])
             lowerlimit, upperlimit = robot.GetActiveDOFLimits()
             deltastep = 0.0001
             for itry in range(20):

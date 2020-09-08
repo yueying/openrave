@@ -20,7 +20,7 @@ class TestSampling(EnvironmentSetup):
         if sp is None:
             return
         
-        for type in enum_to_dict(openravepy_int.SampleDataType).values():
+        for type in list(enum_to_dict(openravepy_int.SampleDataType).values()):
             if sp.Supports(type):
                 for dim in [1,5]:
                     self.log.debug('name=%s, type=%s, dim=%d',samplername,type,dim)
@@ -55,6 +55,6 @@ class TestSampling(EnvironmentSetup):
         # values is obtained by toPyArray, so should be a 1D numpy array
         values = sp.SampleSequence(SampleDataType.Real,1)
         assert(len(values) == robot.GetActiveDOF())
-        robot.SetActiveDOFs(range(robot.GetDOF()-4),Robot.DOFAffine.X|Robot.DOFAffine.Y|Robot.DOFAffine.RotationAxis,[0,0,1])
+        robot.SetActiveDOFs(list(range(robot.GetDOF()-4)),Robot.DOFAffine.X|Robot.DOFAffine.Y|Robot.DOFAffine.RotationAxis,[0,0,1])
         values = sp.SampleSequence(SampleDataType.Real,1)
         assert(len(values) == robot.GetActiveDOF())

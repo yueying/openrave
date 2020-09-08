@@ -93,7 +93,7 @@ class TestEnvironment(EnvironmentSetup):
         body.SetName(name)
         env.Add(body)
         assert(body.GetName()==name)
-        assert(unicode(body.GetName())==name)
+        assert(str(body.GetName())==name)
 
         openrave_config = Popen(['openrave-config','--share-dir'],stdout=PIPE)
         share_dir = openrave_config.communicate()[0].strip()
@@ -102,7 +102,7 @@ class TestEnvironment(EnvironmentSetup):
         robotname = 'ロボット名'.decode('utf-8')
         linkname = 'テスト'.decode('utf-8')
         shutil.copyfile(srcfile,destfile)
-        urobotxml = u"""<?xml version="1.0" encoding="utf-8"?>
+        urobotxml = """<?xml version="1.0" encoding="utf-8"?>
 <robot name="%s">
   <kinbody>
     <body name="%s">
@@ -117,12 +117,12 @@ class TestEnvironment(EnvironmentSetup):
         robot=self.LoadRobotData(robotxml)
         assert(robot.GetName() == robotname)
         assert(robot.GetLinks()[0].GetName() == linkname)
-        assert(unicode(robot.GetName()).encode('euc-jp') == robotname.encode('euc-jp'))
+        assert(str(robot.GetName()).encode('euc-jp') == robotname.encode('euc-jp'))
         env.Remove(robot)
 
         robot=self.LoadRobotData(robotxml)
         assert(robot.GetName() == robotname)
-        assert(unicode(robot.GetName()).encode('euc-jp') == robotname.encode('euc-jp'))
+        assert(str(robot.GetName()).encode('euc-jp') == robotname.encode('euc-jp'))
         assert(robot.GetLinks()[0].GetName() == linkname)
                     
     def test_cloneplan(self):
@@ -156,7 +156,7 @@ class TestEnvironment(EnvironmentSetup):
             clonedenv.Clone(env, CloningOptions.Bodies)
             endtime=time.time()-starttime
             self.log.info('clone time: %fs',endtime)
-            print endtime
+            print(endtime)
             misc.CompareEnvironments(env,clonedenv,epsilon=g_epsilon)
             clonedrobot = clonedenv.GetRobot(robot.GetName())
             assert(clonedrobot.GetActiveManipulator().GetName() == robot.GetActiveManipulator().GetName())

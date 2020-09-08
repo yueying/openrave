@@ -59,7 +59,7 @@ class TestKinematics(EnvironmentSetup):
                         body.SetLinkTransformations(Tallnew,zeros(body.GetDOF()))
                         _Tallnew,_doflastvaluesnew = body.GetLinkTransformations(True)
                         assert( transdist(Tallnew,_Tallnew) <= g_epsilon*len(Tallnew) )
-                        for link, T in izip(body.GetLinks(),Tallold):
+                        for link, T in zip(body.GetLinks(),Tallold):
                             link.SetTransform(T)
                         _Tallold,_doflastvaluesold = body.GetLinkTransformations(True)
                         assert( transdist(Tallold,_Tallold) <= g_epsilon*len(Tallold) )
@@ -86,7 +86,7 @@ class TestKinematics(EnvironmentSetup):
                             _dofvaluesnew = joint.GetValues()
                             assert( all(abs(joint.SubtractValues(dofvaluesnew[joint.GetDOFIndex():(joint.GetDOFIndex()+joint.GetDOF())], _dofvaluesnew)) <= g_epsilon) )
                         Tallnew2 = [randtrans() for link in body.GetLinks()]
-                        for link,T in izip(body.GetLinks(),Tallnew2):
+                        for link,T in zip(body.GetLinks(),Tallnew2):
                             link.SetTransform(T)
                         _Tallnew2,_doflastvaluesnew2 = body.GetLinkTransformations(True)
                         assert( transdist(Tallnew2, _Tallnew2) <= g_epsilon*len(Tallnew2) )
@@ -174,7 +174,7 @@ class TestKinematics(EnvironmentSetup):
                         # check consistency with jacobians, since base is 0 vel, do not have to do any extra conversions
                         body.SetDOFVelocities(dofvelnew,linear=[0,0,0],angular=[0,0,0],checklimits=True)
                         linkvels = body.GetLinkVelocities()
-                        for link,vel in izip(body.GetLinks(),linkvels):
+                        for link,vel in zip(body.GetLinks(),linkvels):
                             Jt=body.CalculateJacobian(link.GetIndex(),link.GetTransform()[0:3,3])
                             assert( transdist(dot(Jt,dofvelnew),vel[0:3]) <= g_epsilon)
                             Jr=body.CalculateAngularVelocityJacobian(link.GetIndex())
@@ -186,18 +186,18 @@ class TestKinematics(EnvironmentSetup):
                         assert( transdist(body.GetDOFVelocities(),dofvelnew) <= g_epsilon )
                         linkvels = body.GetLinkVelocities()
                         newlinkvels = random.rand(len(body.GetLinks()),6)-0.5
-                        for link,vel in izip(body.GetLinks(),newlinkvels):
+                        for link,vel in zip(body.GetLinks(),newlinkvels):
                             link.SetVelocity(vel[0:3],vel[3:6])
                             assert( transdist(link.GetVelocity(),vel) <= g_epsilon )
                         assert( transdist(body.GetLinkVelocities(),newlinkvels) <= g_epsilon )
                         body.SetDOFVelocities(dofvelnew,linear=[0,0,0],angular=[0,0,0],checklimits=True)
                         assert( transdist(body.GetDOFVelocities(),dofvelnew) <= g_epsilon )
-                        for link,vel in izip(body.GetLinks(),linkvels):
+                        for link,vel in zip(body.GetLinks(),linkvels):
                             link.SetVelocity(vel[0:3],vel[3:6])
                         assert( transdist(body.GetLinkVelocities(),linkvels) <= g_epsilon and transdist(body.GetDOFVelocities(),dofvelnew) <= g_epsilon )
                         for joint in body.GetJoints():
                             assert( transdist(joint.GetVelocities(), dofvelnew[joint.GetDOFIndex():(joint.GetDOFIndex()+joint.GetDOF())]) <= g_epsilon )
-                        for link,vel in izip(body.GetLinks(),linkvels):
+                        for link,vel in zip(body.GetLinks(),linkvels):
                             assert( transdist(link.GetVelocity(),vel) <= g_epsilon )
 
                         body.SetDOFValues(dofvaluesnew)
@@ -301,7 +301,7 @@ class TestKinematics(EnvironmentSetup):
                     for ijoint2,joint2 in enumerate(body.GetDependencyOrderedJoints()[:ijoint]):
                         assert( transdist(joint2.GetAxis(0), jointaxes0[ijoint2]) <= g_epsilon )
                         assert( transdist(joint2.GetAnchor(), jointanchors0[ijoint2]) <= g_epsilon )
-                for ilink0,ilink1 in combinations(range(len(body.GetLinks())),2):
+                for ilink0,ilink1 in combinations(list(range(len(body.GetLinks()))),2):
                     link0 = body.GetLinks()[ilink0]
                     link1 = body.GetLinks()[ilink1]
                     jointchain = body.GetChain( ilink0, ilink1, returnjoints = True )
@@ -462,7 +462,7 @@ class TestKinematics(EnvironmentSetup):
                         
                         # compute the coriolis term: C_ij = 0.5*sum(dM_ij/dtheta_k + dM_ik/dtheta_j + dM_kj/dtheta_i)
                         def ComputeDynamicsM(body,dofvalues):
-                            body.SetDOFValues(dofvalues,range(body.GetDOF()),checklimits=True)
+                            body.SetDOFValues(dofvalues,list(range(body.GetDOF())),checklimits=True)
                             M = zeros((body.GetDOF(),body.GetDOF()))
                             for index in range(body.GetDOF()):
                                 testaccel = zeros(body.GetDOF())
@@ -494,7 +494,7 @@ class TestKinematics(EnvironmentSetup):
 
                         torquegravity = torquebase-torquenogravity
                         
-                        body.SetDOFValues(dofvaluesnew,range(body.GetDOF()),checklimits=True)
+                        body.SetDOFValues(dofvaluesnew,list(range(body.GetDOF())),checklimits=True)
                         body.SetDOFVelocities(dofvelnew,*link0vel,checklimits=True)    
                         env.GetPhysicsEngine().SetGravity(2*gravity)
                         torquegravity2 = body.ComputeInverseDynamics(None)-torquenogravity
@@ -511,7 +511,7 @@ class TestKinematics(EnvironmentSetup):
                         # compute potential energy with respect to gravity
                         def ComputePotentialEnergy(body,dofvalues):
                             gravity = body.GetEnv().GetPhysicsEngine().GetGravity()
-                            body.SetDOFValues(dofvalues,range(body.GetDOF()),checklimits=True)
+                            body.SetDOFValues(dofvalues,list(range(body.GetDOF())),checklimits=True)
                             PE = 0.0
                             for link in body.GetLinks():
                                 PE += dot(gravity,link.GetGlobalCOM()*link.GetMass())

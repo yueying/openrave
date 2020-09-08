@@ -20,7 +20,7 @@ class TestCOLLADA(EnvironmentSetup):
         testdesc='asdfa{}<>ff\nffas\nff<f>'
         with env:
             for robotfile in g_robotfiles:
-                self.log.info(u'checking collada %s', robotfile)
+                self.log.info('checking collada %s', robotfile)
                 env.Reset()
                 robot0=self.LoadRobot(robotfile)
                 # add a transform to test that offsets are handled correctly
@@ -214,7 +214,7 @@ class TestCOLLADA(EnvironmentSetup):
         self.LoadEnv('data/pr2test1.env.xml')
 
         robot=env.GetRobots()[0]
-        robot.SetDOFValues(ones(robot.GetDOF()),range(robot.GetDOF()),checklimits=KinBody.CheckLimitsAction.CheckLimits)
+        robot.SetDOFValues(ones(robot.GetDOF()),list(range(robot.GetDOF())),checklimits=KinBody.CheckLimitsAction.CheckLimits)
         Trobot = matrixFromAxisAngle([pi/4,0,0])
         Trobot[0:3,3] = [1.0,2.0,3.0]
         robot.SetTransform(Trobot)
@@ -534,7 +534,7 @@ class TestCOLLADA(EnvironmentSetup):
         env3 = Environment()
         
         for body2 in env2.GetBodies():
-            print 'opening ', body2.GetURI()
+            print('opening ', body2.GetURI())
             if body2.IsRobot():
                 body3 = env3.ReadRobotURI(body2.GetURI())
             else:

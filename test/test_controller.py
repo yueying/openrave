@@ -20,7 +20,7 @@ class RunController(EnvironmentSetup):
         EnvironmentSetup.setup(self)
 
     def _PreprocessRobot(self,robot):
-        robot.SetController(RaveCreateController(self.env,self.controllername),range(robot.GetDOF()), 1)
+        robot.SetController(RaveCreateController(self.env,self.controllername),list(range(robot.GetDOF())), 1)
         return super(RunController,self)._PreprocessRobot(robot)
         
     def test_multitraj(self):

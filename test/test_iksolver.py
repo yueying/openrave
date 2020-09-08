@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from common_test_openrave import *
-import cPickle as pickle
+import pickle as pickle
 
 class TestIkSolver(EnvironmentSetup):
     def test_customfilter(self):
@@ -24,7 +24,7 @@ class TestIkSolver(EnvironmentSetup):
             ikmodel.autogenerate()
 
         with env:
-            robot.SetDOFValues(ones(robot.GetDOF()),range(robot.GetDOF()),checklimits=True)
+            robot.SetDOFValues(ones(robot.GetDOF()),list(range(robot.GetDOF())),checklimits=True)
             T = ikmodel.manip.GetTransform()
             sols = ikmodel.manip.FindIKSolutions(T,IkFilterOptions.CheckEnvCollisions)
             index = 2

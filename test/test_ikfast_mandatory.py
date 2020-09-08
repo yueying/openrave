@@ -143,7 +143,7 @@ class TestIkFast(EnvironmentSetup):
                     rows.append(ikparamvalues+freevalues)
                 colwidths = [max([len(row[i]) for row in rows]) for i in range(len(rows[0]))]
                 for i,row in enumerate(rows):
-                    print prefix + ' '.join([row[j].ljust(colwidths[j]) for j in range(len(colwidths))])
+                    print(prefix + ' '.join([row[j].ljust(colwidths[j]) for j in range(len(colwidths))]))
             # jenkins plot measurement data
             self.PrintMeasurement('compile-time (s)', '%.3f'%compiletime)
             self.PrintMeasurement('success', '%.4f'%successrate)

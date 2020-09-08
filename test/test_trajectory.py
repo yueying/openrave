@@ -35,7 +35,7 @@ class TestTrajectory(EnvironmentSetup):
         samplepoints = [traj3.Sample(t) for t in arange(0,mergedtraj.GetDuration(),0.001)]
         
         with robot:
-            dofvalues=traj3.GetConfigurationSpecification().ExtractJointValues(traj3.GetWaypoint(-1),robot,range(robot.GetDOF()),0)
+            dofvalues=traj3.GetConfigurationSpecification().ExtractJointValues(traj3.GetWaypoint(-1),robot,list(range(robot.GetDOF())),0)
             robot.SetDOFValues(dofvalues)
             assert( transdist(manip1.GetTransform(),Tgoal1) <= g_epsilon)
             assert( transdist(manip2.GetTransform(),Tgoal2) <= g_epsilon)
@@ -231,7 +231,7 @@ class TestTrajectory(EnvironmentSetup):
         self.LoadEnv('data/katanatable.env.xml')
         robot=env.GetRobots()[0]
         with env:
-            robot.SetActiveDOFs(range(5))
+            robot.SetActiveDOFs(list(range(5)))
             traj = RaveCreateTrajectory(env,'')
             origvalues = robot.GetActiveDOFValues()
 
@@ -272,13 +272,13 @@ class TestTrajectory(EnvironmentSetup):
             curtime = 0
             trajdata = traj.Sample(0)
             for i in range(traj.GetNumWaypoints()-1):
-                print curtime
+                print(curtime)
                 start = traj.GetWaypoint(i)
                 end = traj.GetWaypoint(i+1)
                 enddeltatime = spec.ExtractDeltaTime(end)
                 if enddeltatime > stepsize:
                     for t in reversed(arange(curtime+enddeltatime,curtime,-stepsize)):
-                        print t
+                        print(t)
                         newdata = traj.Sample(t)
                         spec.InsertDeltaTime(newdata,t-curtime)
                         curtime = t
@@ -302,7 +302,7 @@ class TestTrajectory(EnvironmentSetup):
         env.Load('robots/barrettwam.robot.xml')
         with env:
             robot=env.GetRobots()[0]
-            robot.SetActiveDOFs(range(7))
+            robot.SetActiveDOFs(list(range(7)))
             finalvalues = numpy.minimum(0.5,robot.GetActiveDOFLimits()[1])
             parameters = Planner.PlannerParameters()
             parameters.SetRobotActiveJoints(robot)
@@ -319,7 +319,7 @@ class TestTrajectory(EnvironmentSetup):
                 ret=planningutils.RetimeActiveDOFTrajectory(traj,robot,True,maxvelmult=1,maxaccelmult=1,plannername='parabolictrajectoryretimer')
                 assert(ret.statusCode==PlannerStatusCode.Failed)
                 
-            except openrave_exception,e:
+            except openrave_exception as e:
                 pass
             
             ret=planningutils.RetimeActiveDOFTrajectory(traj,robot,False,maxvelmult=1,maxaccelmult=1,plannername='parabolictrajectoryretimer')
@@ -360,7 +360,7 @@ class TestTrajectory(EnvironmentSetup):
             assert(abs(traj.GetDuration()-testtraj.GetDuration()) <= g_epsilon)
             planningutils.VerifyTrajectory(parameters,testtraj,samplingstep=0.002)
             
-            robot.SetActiveDOFs(range(7,11))
+            robot.SetActiveDOFs(list(range(7,11)))
             traj = RaveCreateTrajectory(env,'')
             traj.Init(robot.GetActiveConfigurationSpecification())
             traj.Insert(0,[0, -2.220446049250314e-16, 0, 1.047197551200003, 0.5, 0.5, 0.5, 1.0471975512])
@@ -662,7 +662,7 @@ class TestTrajectory(EnvironmentSetup):
             try:
                 self.RunTrajectory(robot,traj)
                 raise ValueError('bad trajectory should throw an exception!')
-            except openrave_exception,e:
+            except openrave_exception as e:
                 pass
             
     def test_reverse(self):
@@ -785,7 +785,7 @@ class TestTrajectory(EnvironmentSetup):
         self.LoadEnv('data/katanatable.env.xml')
         robot=env.GetRobots()[0]
         with env:
-            robot.SetActiveDOFs(range(5))
+            robot.SetActiveDOFs(list(range(5)))
             robot.SetDOFVelocityLimits(linspace(1,5,robot.GetDOF()))
             robot.SetDOFAccelerationLimits(linspace(10,50,robot.GetDOF()))
             traj = RaveCreateTrajectory(env,'')

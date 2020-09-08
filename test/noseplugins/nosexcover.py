@@ -53,7 +53,7 @@ Output code coverage report.
         import coverage
         coverage.stop()
         modules = [ module
-                    for name, module in sys.modules.items()
+                    for name, module in list(sys.modules.items())
                     if self.wantModuleCoverage(name, module) ]
         log.debug("Coverage report will cover modules: %s", modules)
         morfs = [ m.__file__ for m in modules if hasattr(m, '__file__') ]
