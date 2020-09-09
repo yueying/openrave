@@ -211,12 +211,10 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
         value.SetInt64(PyLong_AsLong(obj.ptr()));
 #endif
     }
-#ifdef USE_PYBIND11_PYTHON_BINDINGS
     else if (PyLong_Check(obj.ptr()))
     {
         value.SetInt64(PyLong_AsLong(obj.ptr()));
     }
-#endif
     else if (PyBytes_Check(obj.ptr()))
     {
         value.SetString(PyBytes_AsString(obj.ptr()), PyBytes_GET_SIZE(obj.ptr()));
@@ -355,7 +353,9 @@ void toRapidJSONValue(const object &obj, rapidjson::Value &value, rapidjson::Doc
     }
     else
     {
-        throw OPENRAVE_EXCEPTION_FORMAT0(_("unsupported python type"), ORE_InvalidArguments);
+        std::string reprstr = extract<std::string>(obj.attr("__repr__")());
+        std::string classstr = extract<std::string>(obj.attr("__class__").attr("__name__"));
+        throw OPENRAVE_EXCEPTION_FORMAT(_("Unsupported python class '%s' for object %s"), classstr%reprstr, ORE_InvalidArguments);
     }
 }
 
