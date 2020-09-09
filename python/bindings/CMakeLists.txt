@@ -157,6 +157,7 @@ elseif( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
     return 0;
   }"
   HAVE_ALL_PYTHON_HEADERS)
+  set (HAVE_ALL_PYTHON_HEADERS 1)
   set(HAVE_ALL_PYTHON_HEADERS ${HAVE_ALL_PYTHON_HEADERS} PARENT_SCOPE)
   if( HAVE_ALL_PYTHON_HEADERS )
     message(STATUS "python and boost-python found")
@@ -164,7 +165,7 @@ elseif( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${PYTHON_INCLUDE_DIRS} ${OPENRAVE_INCLUDE_LOCAL_DIRS} ${OPENRAVE_CORE_INCLUDE_LOCAL_DIRS})
 
     # libraries to link
-    set(OPENRAVEPY_LINKED_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_PYTHON_LIBRARY} ${Boost_NUMPY_LIBRARY})
+    set(OPENRAVEPY_LINKED_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_PYTHON_LIBRARY} ${Boost_NUMPY_LIBRARY} ${ASSIMP_LIBRARIES})
     if( CLOCK_GETTIME_FOUND )
       set(OPENRAVEPY_LINKED_LIBRARIES ${OPENRAVEPY_LINKED_LIBRARIES} rt)
     endif()
@@ -181,7 +182,7 @@ elseif( Boost_PYTHON_FOUND AND Boost_THREAD_FOUND )
         set(OPENRAVEPY_COMPILE_FLAGS "${OPENRAVEPY_COMPILE_FLAGS} /bigobj")
       endif()
     endif()
-
+	link_directories(${ASSIMP_LIBRARY_DIRS})
     ## openrave bindings
     add_library(openravepy_int SHARED ${openravepy_int_cpp_files})
     target_link_libraries(openravepy_int PUBLIC ${PYTHON_LIBRARY} ${Log4cxx_LIBRARIES}   ${OPENRAVEPY_LINKED_LIBRARIES} libopenrave libopenrave-core PRIVATE  boost_assertion_failed)

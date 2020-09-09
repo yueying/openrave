@@ -62,37 +62,19 @@ find_path(CCD_INCLUDE_DIR ccd/ccd.h)
 find_library(CCD_LIBRARY ccd)
 
 add_definitions(-DNOMINMAX)
-message(STATUS "---------------before find FCL")
-if( FCL_FOUND )
-	message(STATUS "find FCL")
-  #STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" FCL_MINOR_VERSION ${FCL_VERSION})
 
-  #if(FCL_MINOR_VERSION GREATER "4")
+if( FCL_FOUND )
     set(CMAKE_REQUIRED_INCLUDES ${FCL_INCLUDE_DIRS} ${FCL_INCLUDEDIR})
     set(CMAKE_REQUIRED_FLAGS "${PLUGIN_COMPILE_FLAGS} ${FCL_CFLAGS_OTHER} -std=c++11 ${PLUGIN_LINK_FLAGS} ${FCL_LDFLAGS}")
     set(CMAKE_REQUIRED_LIBRARIES fcl)
-    check_cxx_source_compiles("
-      #include <fcl/broadphase/broadphase.h>
-
-      int main() {
-        fcl::NaiveCollisionManager manager;
-        manager.replaceObject(nullptr, nullptr, false);
-        return 0;
-      }"
-      FCL_HAS_REPLACEOBJECT)
-
-    if( FCL_HAS_REPLACEOBJECT )
-      add_definitions(-DFCLRAVE_USE_REPLACEOBJECT)
-    endif()
-
 
     check_cxx_source_compiles("
-      #include <fcl/broadphase/broadphase.h>
+      #include <fcl/fcl.h>
 
       int main() {
-        fcl::DynamicAABBTreeCollisionManager manager;
-        std::vector<fcl::CollisionObject*> v;
-        manager.update(v, false);
+        fcl::DynamicAABBTreeCollisionManager<double> manager;
+		std::vector<fcl::CollisionObject<double>*> v;
+		manager.update();
         return 0;
       }"
       FCL_SUPPORT_BULK_UPDATE)
@@ -111,13 +93,12 @@ if( FCL_FOUND )
     endif()
     set_target_properties(fclrave PROPERTIES COMPILE_FLAGS "${PLUGIN_COMPILE_FLAGS} ${FCL_CFLAGS_OTHER} -std=c++11" LINK_FLAGS "${PLUGIN_LINK_FLAGS} ${FCL_LDFLAGS}")
     install(TARGETS fclrave DESTINATION ${OPENRAVE_PLUGINS_INSTALL_DIR} COMPONENT ${COMPONENT_PREFIX}plugin-fclrave)
-  #else()
-  #  message(STATUS "Could not find FCL. Please install FCL (https://github.com/flexible-collision-library/fcl)")
-  #endif()
+  else()
+    message(STATUS "Could not find FCL. Please install FCL (https://github.com/flexible-collision-library/fcl)")
+  endif()
 
-  set(CPACK_COMPONENT_${COMPONENT_PREFIX_UPPER}PLUGIN-FCLRAVE_DISPLAY_NAME "Plugin for Flexible Collision Library (fcl) Collision" PARENT_SCOPE)
-  set(PLUGIN_COMPONENT ${COMPONENT_PREFIX}plugin-fclrave PARENT_SCOPE)
-endif()
+set(CPACK_COMPONENT_${COMPONENT_PREFIX_UPPER}PLUGIN-FCLRAVE_DISPLAY_NAME "Plugin for Flexible Collision Library (fcl) Collision" PARENT_SCOPE)
+set(PLUGIN_COMPONENT ${COMPONENT_PREFIX}plugin-fclrave PARENT_SCOPE)
 
 # restore the link dirs
 link_directories(${OPENRAVE_LINK_DIRS})

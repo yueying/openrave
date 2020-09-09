@@ -83,7 +83,7 @@ class DatabaseGenerator(metaclass.AutoReloader):
         if len(filename) == 0:
             return None
         try:
-            with open(filename, 'r') as f:
+            with open(filename, 'rb') as f:
                 modelversion,params = pickle.load(f)
             if modelversion == self.getversion():
                 return params

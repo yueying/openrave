@@ -353,17 +353,6 @@ public:
                                         _vTrackingActiveLinks[ilink] = isLinkActive;
                                         CollisionObjectPtr pcolobj = _fclspace.GetLinkBV(*pnewinfo, probot->GetLinks()[ilink]->GetIndex());
                                         if( bIsActiveLinkEnabled && !!pcolobj ) {
-    #ifdef FCLRAVE_USE_REPLACEOBJECT
-    #ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
-                                            SaveCollisionObjectDebugInfos(pcolobj.get());
-    #endif
-                                            if( !!ittracking->second.vcolobjs.at(ilink) ) {
-                                                pmanager->replaceObject(ittracking->second.vcolobjs.at(ilink).get(), pcolobj.get(), false);
-                                            }
-                                            else {
-                                                pmanager->registerObject(pcolobj.get());
-                                            }
-    #else
                                             // no replace
                                             if( !!ittracking->second.vcolobjs.at(ilink) ) {
                                                 pmanager->unregisterObject(ittracking->second.vcolobjs.at(ilink).get());
@@ -372,7 +361,6 @@ public:
                                             SaveCollisionObjectDebugInfos(pcolobj.get());
     #endif
                                             pmanager->registerObject(pcolobj.get());
-    #endif
                                             bcallsetup = true;
                                         }
                                         else {
@@ -468,18 +456,6 @@ public:
                         if( newLinkEnableStates.at(ilink) ) {
                             CollisionObjectPtr pcolobj = _fclspace.GetLinkBV(*pinfo, ilink);
                             if( !!pcolobj ) {
-#ifdef FCLRAVE_USE_REPLACEOBJECT
-#ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
-                                SaveCollisionObjectDebugInfos(pcolobj.get());
-#endif
-                                if( !!itcache->second.vcolobjs.at(ilink) ) {
-                                    pmanager->replaceObject(itcache->second.vcolobjs.at(ilink).get(), pcolobj.get(), false);
-                                }
-                                else {
-                                    pmanager->registerObject(pcolobj.get());
-                                }
-#else
-
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
                                     pmanager->unregisterObject(itcache->second.vcolobjs.at(ilink).get());
@@ -488,7 +464,6 @@ public:
                                 SaveCollisionObjectDebugInfos(pcolobj.get());
 #endif
                                 pmanager->registerObject(pcolobj.get());
-#endif
                                 bcallsetup = true;
                             }
                             else {
@@ -520,18 +495,6 @@ public:
                             CollisionObjectPtr pcolobj = _fclspace.GetLinkBV(*pinfo, ilink);
                             if( !!pcolobj ) {
                                 //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s adding obj %x from link %d", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecker()%pbody->GetName()%pcolobj.get()%ilink);
-#ifdef FCLRAVE_USE_REPLACEOBJECT
-#ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
-                                SaveCollisionObjectDebugInfos(pcolobj.get());
-#endif
-                                if( !!itcache->second.vcolobjs.at(ilink) ) {
-                                    //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s replacing cached obj %x with %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecker()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get()%pcolobj.get());
-                                    pmanager->replaceObject(itcache->second.vcolobjs.at(ilink).get(), pcolobj.get(), false);
-                                }
-                                else {
-                                    pmanager->registerObject(pcolobj.get());
-                                }
-#else
 
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
@@ -543,7 +506,6 @@ public:
                                 SaveCollisionObjectDebugInfos(pcolobj.get());
 #endif
                                 pmanager->registerObject(pcolobj.get());
-#endif
                                 bcallsetup = true;
                                 itcache->second.vcolobjs.at(ilink) = pcolobj;
                             }
@@ -584,21 +546,6 @@ public:
 #endif
                             }
                             else {
-#ifdef FCLRAVE_USE_REPLACEOBJECT
-#ifdef FCLRAVE_DEBUG_COLLISION_OBJECTS
-                                SaveCollisionObjectDebugInfos(pcolobj.get());
-#endif
-
-                                // different object, have to replace
-                                if( !!itcache->second.vcolobjs.at(ilink) ) {
-                                    //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s replacing cached obj %x with %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecker()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get()%pcolobj.get());
-                                    pmanager->replaceObject(itcache->second.vcolobjs.at(ilink).get(), pcolobj.get(), false);
-                                }
-                                else {
-                                    pmanager->registerObject(pcolobj.get());
-                                }
-#else // FCLRAVE_USE_REPLACEOBJECT
-
                                 // no replace
                                 if( !!itcache->second.vcolobjs.at(ilink) ) {
                                     //RAVELOG_VERBOSE_FORMAT("env=%d, %x (self=%d), body %s unregister cached obj %x ", pbody->GetEnv()->GetId()%this%_fclspace.IsSelfCollisionChecke()%pbody->GetName()%itcache->second.vcolobjs.at(ilink).get());
@@ -609,7 +556,6 @@ public:
                                 SaveCollisionObjectDebugInfos(pcolobj.get());
 #endif
                                 pmanager->registerObject(pcolobj.get());
-#endif // FCLRAVE_USE_REPLACEOBJECT
                             }
 
                             bcallsetup = true;

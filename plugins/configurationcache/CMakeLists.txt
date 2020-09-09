@@ -23,8 +23,8 @@ if( HAVE_ALL_PYTHON_HEADERS )
     set(OPENRAVEPY_CONFIGURATIONCACHE_LINKED_LIBRARIES ${OPENRAVEPY_CONFIGURATIONCACHE_LINKED_LIBRARIES} ${Boost_PYTHON_LIBRARY})
   endif()
 
+  link_directories(${ASSIMP_LIBRARY_DIRS})
   add_library(openravepy_configurationcache SHARED openravepy_configurationcache.cpp)
-
   target_link_libraries(openravepy_configurationcache PUBLIC ${Log4cxx_LIBRARIES}  ${OPENRAVEPY_CONFIGURATIONCACHE_LINKED_LIBRARIES} PRIVATE boost_assertion_failed)
 
   set(OPENRAVEPY_CONFIGURATIONCACHE_COMPILE_FLAGS "")
