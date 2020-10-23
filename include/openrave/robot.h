@@ -62,6 +62,13 @@ public:
         void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const override;
         void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale, int options) override;
 
+        inline const std::string& GetId() const {
+            return _id;
+        }
+        inline const std::string& GetName() const {
+            return _name;
+        }
+
         std::string _id; ///< unique id for manipulator info
         std::string _name;
         std::string _sBaseLinkName, _sEffectorLinkName; ///< name of the base and effector links of the robot used to determine the chain
@@ -85,6 +92,7 @@ public:
         GripperInfo(const GripperInfo& other) {
             *this = other;
         };
+        // need this because of _docGripperInfo
         GripperInfo& operator=(const GripperInfo& other);
         bool operator==(const GripperInfo& other) const {
             return _id == other._id
@@ -101,6 +109,14 @@ public:
         void SerializeJSON(rapidjson::Value &value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const override;
         void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale, int options) override;
 
+        inline const std::string& GetId() const {
+            return _id;
+        }
+        inline const std::string& GetName() const {
+            return name;
+        }
+
+        UpdateFromInfoResult UpdateFromInfo(const GripperInfo& info);
 
         std::string _id; /// < unique id
         std::string name; ///< unique name
@@ -154,7 +170,10 @@ public:
             return GetTransform();
         }
 
-        virtual const std::string& GetName() const {
+        inline const std::string& GetId() const {
+            return _info._id;
+        }
+        inline const std::string& GetName() const {
             return _info._name;
         }
 
@@ -509,6 +528,7 @@ public:
         AttachedSensorInfo(const AttachedSensorInfo& other) {
             *this = other;
         };
+        // need this because of _docSensorGeometry
         AttachedSensorInfo& operator=(const AttachedSensorInfo& other) {
             _id = other._id;
             _name = other._name;
@@ -537,6 +557,13 @@ public:
         void Reset() override;
         void SerializeJSON(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator, dReal fUnitScale, int options) const override;
         void DeserializeJSON(const rapidjson::Value& value, dReal fUnitScale, int options) override;
+
+        inline const std::string& GetId() const {
+            return _id;
+        }
+        inline const std::string& GetName() const {
+            return _name;
+        }
 
         std::string _id;
         std::string _name;
@@ -581,7 +608,11 @@ public:
                 return RobotBasePtr(_probot);
             }
         }
-        virtual const std::string& GetName() const {
+
+        inline const std::string& GetId() const {
+            return _info._id;
+        }
+        inline const std::string& GetName() const {
             return _info._name;
         }
 
@@ -658,7 +689,6 @@ public:
         ConnectedBodyInfo(const ConnectedBodyInfo& other) {
             *this = other;
         };
-        ConnectedBodyInfo& operator=(const ConnectedBodyInfo& other);
         bool operator==(const ConnectedBodyInfo& other) const;
         bool operator!=(const ConnectedBodyInfo& other) const {
             return !operator==(other);
@@ -670,6 +700,13 @@ public:
 
         /// \brief Updates the infos depending on the robot at the identity and zero position.
         void InitInfoFromBody(RobotBase& robot);
+
+        inline const std::string& GetId() const {
+            return _id;
+        }
+        inline const std::string& GetName() const {
+            return _name;
+        }
 
         std::string _id; ///< unique id of the connected body
         std::string _name; ///< the name of the connected body info
@@ -761,6 +798,9 @@ public:
             }
         }
 
+        inline const std::string& GetId() const {
+            return _info._id;
+        }
         inline const std::string& GetName() const {
             return _info._name;
         }
@@ -816,7 +856,6 @@ public:
         RobotBaseInfo(const RobotBaseInfo& other) : KinBodyInfo(other) {
             *this = other;
         };
-        RobotBaseInfo& operator=(const RobotBaseInfo& other);
         bool operator==(const RobotBaseInfo& other) const;
         bool operator!=(const RobotBaseInfo& other) const{
             return !operator==(other);
@@ -1286,9 +1325,6 @@ protected:
     virtual void _PostprocessChangedParameters(uint32_t parameters);
 
     virtual void _UpdateAttachedSensors();
-
-    /// \brief goes through all the link/joint ids and makes sure they are unique
-    void _ResolveInfoIds() override;
 
     std::vector<ManipulatorPtr> _vecManipulators; ///< \see GetManipulators
     ManipulatorPtr _pManipActive;

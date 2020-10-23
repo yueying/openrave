@@ -1,4 +1,4 @@
-// -*- coding: utf-8 -*-
+﻿// -*- coding: utf-8 -*-
 // Copyright (C) 2006-2011 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -169,8 +169,13 @@ protected:
     class BaseCameraJSONReader : public BaseJSONReader
     {
 public:
-        BaseCameraJSONReader() { 
-            _pgeom.reset(new CameraGeomData());
+        BaseCameraJSONReader(ReadablePtr pReadable) {
+            if (!!pReadable) {
+                _pgeom = std::dynamic_pointer_cast<CameraGeomData>(pReadable);
+            }
+            else {
+                _pgeom.reset(new CameraGeomData());
+            }
         }
         virtual ~BaseCameraJSONReader() {}
         ReadablePtr GetReadable() override {
@@ -186,9 +191,9 @@ public:
         return BaseXMLReaderPtr(new BaseCameraXMLReader(std::dynamic_pointer_cast<BaseCameraSensor>(ptr)));
     }
 
-    static BaseJSONReaderPtr CreateJSONReader(InterfaceBasePtr ptr, const AttributesList& atts)
+    static BaseJSONReaderPtr CreateJSONReader(ReadablePtr pReadable, const AttributesList& atts)
     {
-        return BaseJSONReaderPtr(new BaseCameraJSONReader());
+        return BaseJSONReaderPtr(new BaseCameraJSONReader(pReadable));
     }
 
     BaseCameraSensor(EnvironmentBasePtr penv) : SensorBase(penv) {
