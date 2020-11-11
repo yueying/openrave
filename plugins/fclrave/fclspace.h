@@ -590,6 +590,7 @@ private:
         case OpenRAVE::GT_None:
             return CollisionGeometryPtr();
 
+        case OpenRAVE::GT_CalibrationBoard:
         case OpenRAVE::GT_Box:
             return make_shared<fcl::Box<dReal>>(info._vGeomData.x*2.0f,info._vGeomData.y*2.0f,info._vGeomData.z*2.0f);
 
